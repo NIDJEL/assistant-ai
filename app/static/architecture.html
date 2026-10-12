@@ -1,1 +1,76 @@
-<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Как работает Ритм — блок-схемы</title><link rel="icon" href="/static/favicon.svg"><link rel="stylesheet" href="/static/style.css"><link rel="stylesheet" href="/static/architecture.css"></head><body class="architecture-page"><header class="architecture-header"><a class="brand" href="/"><span class="brand-icon">р.</span>ритм.</a><a href="/">← Вернуться к ассистенту</a></header><main><div class="eyebrow">УСТРОЙСТВО ПРОТОТИПА</div><h1>От ваших слов — к готовому плану<span>.</span></h1><p class="intro">Три блок-схемы показывают путь запроса, решения ассистента и поиск по архиву. Нажмите на схему, чтобы открыть её в полном размере.</p><section class="diagram-section"><a href="/diagrams/architecture.svg" target="_blank" rel="noopener"><img src="/diagrams/architecture.svg" alt="Архитектура: пользователь, браузер, FastAPI, интерпретатор, бизнес-логика и SQLite. Дополнительная модель Ollama возвращает только структуру запроса."></a><div class="explanation"><h2>Каждый слой решает свою задачу</h2><p>Браузер распознаёт речь и озвучивает ответ. Интерпретатор извлекает действие, тему и дату. Бизнес-логика проверяет данные и конфликты, а SQLite сохраняет события и состояние разговора.</p></div></section><section class="diagram-section"><a href="/diagrams/request-flow.svg" target="_blank" rel="noopener"><img class="flow-diagram" src="/diagrams/request-flow.svg" alt="Алгоритм: проверить повтор запроса, разобрать действие, уточнить недостающие данные, проверить конфликты, выполнить действие и вернуть ответ."></a><div class="explanation"><h2>Уточнение — часть разговора</h2><p>«Поставь встречу с Иваном завтра» → «На какое время?» → «В 15:00» → сохранение. Если следующий запрос — «А перенеси её на послезавтра», ассистент использует последнюю запись. При нескольких совпадениях предлагает выбрать номер.</p></div></section><section class="diagram-section"><a href="/diagrams/search.svg" target="_blank" rel="noopener"><img src="/diagrams/search.svg" alt="Поиск: выделить тему, нормализовать русские словоформы, сопоставить синонимы, оценить релевантность и показать результаты."></a><div class="explanation"><h2>Поиск понимает близкие формулировки</h2><p>«Контракт» и «договор», «Иваном» и «Иван» приводятся к общей форме. Редкие слова получают больший вес. Поиск работает по всему архиву, включая завершённые события.</p></div></section><footer class="page-footer"><span>Ритм · архитектура прототипа</span><a href="/docs">Документация API ↗</a></footer></main></body></html>
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Как работает Ритм — блок-схемы</title>
+    <link rel="icon" href="/static/favicon.svg" />
+    <link rel="stylesheet" href="/static/style.css" />
+    <link rel="stylesheet" href="/static/architecture.css" />
+  </head>
+  <body class="architecture-page">
+    <header class="architecture-header">
+      <a class="brand" href="/"><span class="brand-icon">р.</span>ритм.</a
+      ><a href="/">← Вернуться к ассистенту</a>
+    </header>
+    <main>
+      <div class="eyebrow">УСТРОЙСТВО ПРОТОТИПА</div>
+      <h1>От ваших слов — к готовому плану<span>.</span></h1>
+      <p class="intro">
+        Три блок-схемы показывают путь запроса, решения ассистента и поиск по
+        архиву. Нажмите на схему, чтобы открыть её в полном размере.
+      </p>
+      <section class="diagram-section">
+        <a href="/diagrams/architecture.svg" target="_blank" rel="noopener"
+          ><img
+            src="/diagrams/architecture.svg"
+            alt="Архитектура: пользователь, браузер, FastAPI, интерпретатор, бизнес-логика и SQLite. Дополнительная модель Ollama возвращает только структуру запроса."
+        /></a>
+        <div class="explanation">
+          <h2>Каждый слой решает свою задачу</h2>
+          <p>
+            Браузер распознаёт речь и озвучивает ответ. Интерпретатор извлекает
+            действие, тему и дату. Бизнес-логика проверяет данные и конфликты, а
+            SQLite сохраняет события и состояние разговора.
+          </p>
+        </div>
+      </section>
+      <section class="diagram-section">
+        <a href="/diagrams/request-flow.svg" target="_blank" rel="noopener"
+          ><img
+            class="flow-diagram"
+            src="/diagrams/request-flow.svg"
+            alt="Алгоритм: проверить повтор запроса, разобрать действие, уточнить недостающие данные, проверить конфликты, выполнить действие и вернуть ответ."
+        /></a>
+        <div class="explanation">
+          <h2>Уточнение — часть разговора</h2>
+          <p>
+            «Поставь встречу с Иваном завтра» → «На какое время?» → «В 15:00» →
+            сохранение. Если следующий запрос — «А перенеси её на послезавтра»,
+            ассистент использует последнюю запись. При нескольких совпадениях
+            предлагает выбрать номер.
+          </p>
+        </div>
+      </section>
+      <section class="diagram-section">
+        <a href="/diagrams/search.svg" target="_blank" rel="noopener"
+          ><img
+            src="/diagrams/search.svg"
+            alt="Поиск: выделить тему, нормализовать русские словоформы, сопоставить синонимы, оценить релевантность и показать результаты."
+        /></a>
+        <div class="explanation">
+          <h2>Поиск понимает близкие формулировки</h2>
+          <p>
+            «Контракт» и «договор», «Иваном» и «Иван» приводятся к общей форме.
+            Редкие слова получают больший вес. Поиск работает по всему архиву,
+            включая завершённые события.
+          </p>
+        </div>
+      </section>
+      <footer class="page-footer">
+        <span>Ритм · архитектура прототипа</span
+        ><a href="/docs">Документация API ↗</a>
+      </footer>
+    </main>
+  </body>
+</html>

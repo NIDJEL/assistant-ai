@@ -2,5 +2,7 @@
   "name": "rhythm-assistant-browser-tests",
   "private": true,
   "type": "module",
-  "scripts": { "test": "node --test tests/voice.test.js" }
+  "scripts": {
+    "test": "node --test tests/voice.test.js"
+  }
 }
