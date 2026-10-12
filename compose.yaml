@@ -1,0 +1,19 @@
+services:
+  assistant:
+    build: .
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      APP_TIMEZONE: ${APP_TIMEZONE:-Europe/Moscow}
+      AUTO_IMPORT_DEMO: ${AUTO_IMPORT_DEMO:-true}
+      NLP_PROVIDER: ${NLP_PROVIDER:-rules}
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:7b}
+      OLLAMA_TIMEOUT: ${OLLAMA_TIMEOUT:-20}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - rhythm-data:/app/var
+    restart: unless-stopped
+volumes:
+  rhythm-data:

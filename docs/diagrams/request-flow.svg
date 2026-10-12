@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 1110" role="img" aria-label="02 / Как обрабатывается запрос">
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#718a79"/></marker></defs>
+<rect width="1120" height="1110" rx="20" fill="#f7f9f3"/>
+<g font-family="Segoe UI,Arial,sans-serif" fill="#183b3a">
+<text x="32" y="45" font-size="25" font-weight="600">02 / Как обрабатывается запрос</text>
+<text x="32" y="74" font-size="14" fill="#778875">Уточнение не создаёт событие. Повторная доставка одного request_id не повторяет действие.</text>
+<rect x="390" y="105" width="320" height="77" rx="13" fill="#ffffff" stroke="#dbe5d3"/>
+<text x="550.0" y="135" text-anchor="middle" font-size="16" font-weight="600" fill="#183b3a">Сообщение + session_id</text>
+<text x="550.0" y="160" text-anchor="middle" font-size="12.0" fill="#778875">Голос уже преобразован в текст</text>
+<polyline points="550,182 550,207" fill="none" stroke="#718a79" stroke-width="2" marker-end="url(#arrow)"/>
+<polygon points="550.0,207 690,253.0 550.0,299 410,253.0" fill="#eaf1e3" stroke="#b5c9aa"/>
+<text x="550.0" y="258.0" text-anchor="middle" font-size="14">Запрос уже выполнен?</text>
+<rect x="800" y="215" width="275" height="83" rx="13" fill="#ffffff" stroke="#dbe5d3"/>
+<text x="937.5" y="245" text-anchor="middle" font-size="16" font-weight="600" fill="#183b3a">Вернуть сохранённый ответ</text>
+<text x="937.5" y="270" text-anchor="middle" font-size="12.0" fill="#778875">Без повторного изменения данных</text>
+<polyline points="690,253 800,253" fill="none" stroke="#718a79" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="735" y="245" font-size="12" fill="#628067">Да</text>
+<polyline points="550,299 550,332" fill="none" stroke="#718a79" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="561" y="319" font-size="12" fill="#628067">Нет</text>
+<rect x="390" y="332" width="320" height="90" rx="13" fill="#ffffff" stroke="#dbe5d3"/>
+<text x="550.0" y="362" text-anchor="middle" font-size="16" font-weight="600" fill="#183b3a">Определить действие и поля</text>
+<text x="550.0" y="387" text-anchor="middle" font-size="12.0" fill="#778875">NLP / Ollama → валидированный Command</text>
+<text x="550.0" y="408" text-anchor="middle" font-size="12.0" fill="#778875">Учесть контекст текущего диалога</text>
+<polyline points="550,422 550,462" fill="none" stroke="#718a79" stroke-width="2" marker-end="url(#arrow)"/>
+<polygon points="550.0,462 690,508.0 550.0,554 410,508.0" fill="#eaf1e3" stroke="#b5c9aa"/>
+<text x="550.0" y="513.0" text-anchor="middle" font-size="14">Создание / изменение?</text>
+<rect x="800" y="466" width="275" height="90" rx="13" fill="#ffffff" stroke="#dbe5d3"/>
+<text x="937.5" y="496" text-anchor="middle" font-size="16" font-weight="600" fill="#183b3a">Список или поиск</text>
+<text x="937.5" y="521" text-anchor="middle" font-size="12.0" fill="#778875">Выбрать записи по периоду / теме</text>
+<text x="937.5" y="542" text-anchor="middle" font-size="12.0" fill="#778875">Нормализовать и ранжировать</text>
+<polyline points="690,508 800,508" fill="none" stroke="#718a79" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="735" y="500" font-size="12" fill="#628067">Нет</text>
+<polyline points="550,554 550,593" fill="none" stroke="#718a79" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="561" y="577" font-size="12" fill="#628067">Да</text>
+<polygon points="550.0,593 690,639.0 550.0,685 410,639.0" fill="#eaf1e3" stroke="#b5c9aa"/>
+<text x="550.0" y="644.0" text-anchor="middle" font-size="14">Данных достаточно?</text>
+<rect x="35" y="593" width="280" height="100" rx="13" fill="#ffffff" stroke="#dbe5d3"/>
+<text x="175.0" y="623" text-anchor="middle" font-size="16" font-weight="600" fill="#183b3a">Задать уточняющий вопрос</text>
+<text x="175.0" y="648" text-anchor="middle" font-size="12.0" fill="#778875">Дата, время или номер записи</text>
+<text x="175.0" y="669" text-anchor="middle" font-size="12.0" fill="#778875">Сохранить pending в SQLite</text>
+<polyline points="410,639 315,639" fill="none" stroke="#718a79" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="353" y="630" font-size="12" fill="#628067">Нет</text>
+<polyline points="175,593 175,143 390,143" fill="none" stroke="#718a79" stroke-width="2" marker-end="url(#arrow)" stroke-dasharray="6 5"/>
+<text x="48" y="126" font-size="12" fill="#628067">Следующий ответ</text>
+<polyline points="550,685 550,725" fill="none" stroke="#718a79" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="561" y="710" font-size="12" fill="#628067">Да</text>
+<polygon points="550.0,725 690,771.0 550.0,817 410,771.0" fill="#eaf1e3" stroke="#b5c9aa"/>
+<text x="550.0" y="776.0" text-anchor="middle" font-size="14">Есть конфликт встреч?</text>
+<rect x="800" y="728" width="275" height="96" rx="13" fill="#ffffff" stroke="#dbe5d3"/>
+<text x="937.5" y="758" text-anchor="middle" font-size="16" font-weight="600" fill="#183b3a">Уточнить конфликт</text>
+<text x="937.5" y="783" text-anchor="middle" font-size="12.0" fill="#778875">Другое время / да / отмена</text>
+<text x="937.5" y="804" text-anchor="middle" font-size="12.0" fill="#778875">Перепроверить перед сохранением</text>
+<polyline points="690,771 800,771" fill="none" stroke="#718a79" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="735" y="760" font-size="12" fill="#628067">Да</text>
+<polyline points="1075,771 1102,771 1102,95 550,95 550,105" fill="none" stroke="#718a79" stroke-width="2" marker-end="url(#arrow)" stroke-dasharray="6 5"/>
+<text x="765" y="90" font-size="12" fill="#628067">Ответ → повторная проверка</text>
+<polyline points="550,817 550,854" fill="none" stroke="#718a79" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="564" y="841" font-size="12" fill="#628067">Нет / подтверждено</text>
+<rect x="390" y="854" width="320" height="90" rx="13" fill="#183b3a" stroke="#dbe5d3"/>
+<text x="550.0" y="884" text-anchor="middle" font-size="16" font-weight="600" fill="#ffffff">Выполнить действие</text>
+<text x="550.0" y="909" text-anchor="middle" font-size="12.0" fill="#ffffff">Параметризованный SQL</text>
+<text x="550.0" y="930" text-anchor="middle" font-size="12.0" fill="#ffffff">Событие + контекст + ответ атомарно</text>
+<polyline points="550,944 550,979" fill="none" stroke="#718a79" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="390" y="979" width="320" height="80" rx="13" fill="#ffffff" stroke="#dbe5d3"/>
+<text x="550.0" y="1009" text-anchor="middle" font-size="16" font-weight="600" fill="#183b3a">Показать и озвучить ответ</text>
+<text x="550.0" y="1034" text-anchor="middle" font-size="12.0" fill="#778875">Браузер обновляет список событий</text>
+<polyline points="937,556 1089,556 1089,1019 710,1019" fill="none" stroke="#718a79" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="32" y="1090" font-size="12" fill="#778875">Удаление требует отдельного подтверждения; при неоднозначном выборе ассистент спрашивает номер записи.</text>
+</g></svg>
