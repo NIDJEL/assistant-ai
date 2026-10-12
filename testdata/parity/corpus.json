@@ -1,0 +1,3633 @@
+{
+  "clock": "2026-10-12T12:30:00+03:00",
+  "timezone": "Europe/Moscow",
+  "reference_commit": "1b7fcd6",
+  "temporal": [
+    {
+      "text": "сегодня",
+      "expected": {
+        "date": "2026-10-12",
+        "time": null,
+        "start": "2026-10-12",
+        "end": "2026-10-13",
+        "duration": 60,
+        "error": null
+      }
+    },
+    {
+      "text": "завтра",
+      "expected": {
+        "date": "2026-10-13",
+        "time": null,
+        "start": "2026-10-13",
+        "end": "2026-10-14",
+        "duration": 60,
+        "error": null
+      }
+    },
+    {
+      "text": "послезавтра",
+      "expected": {
+        "date": "2026-10-14",
+        "time": null,
+        "start": "2026-10-14",
+        "end": "2026-10-15",
+        "duration": 60,
+        "error": null
+      }
+    },
+    {
+      "text": "вчера",
+      "expected": {
+        "date": "2026-10-11",
+        "time": null,
+        "start": "2026-10-11",
+        "end": "2026-10-12",
+        "duration": 60,
+        "error": null
+      }
+    },
+    {
+      "text": "в пятницу",
+      "expected": {
+        "date": "2026-10-16",
+        "time": null,
+        "start": "2026-10-16",
+        "end": "2026-10-17",
+        "duration": 60,
+        "error": null
+      }
+    },
+    {
+      "text": "в следующий понедельник",
+      "expected": {
+        "date": "2026-10-19",
+        "time": null,
+        "start": "2026-10-19",
+        "end": "2026-10-20",
+        "duration": 60,
+        "error": null
+      }
+    },
+    {
+      "text": "через два часа",
+      "expected": {
+        "date": "2026-10-12",
+        "time": "14:30",
+        "start": "2026-10-12",
+        "end": "2026-10-13",
+        "duration": 60,
+        "error": null
+      }
+    },
+    {
+      "text": "через 30 минут",
+      "expected": {
+        "date": "2026-10-12",
+        "time": "13:00",
+        "start": "2026-10-12",
+        "end": "2026-10-13",
+        "duration": 60,
+        "error": null
+      }
+    },
+    {
+      "text": "через три дня",
+      "expected": {
+        "date": "2026-10-15",
+        "time": null,
+        "start": "2026-10-15",
+        "end": "2026-10-16",
+        "duration": 60,
+        "error": null
+      }
+    },
+    {
+      "text": "завтра в 10 утра",
+      "expected": {
+        "date": "2026-10-13",
+        "time": "10:00",
+        "start": "2026-10-13",
+        "end": "2026-10-14",
+        "duration": 60,
+        "error": null
+      }
+    },
+    {
+      "text": "завтра в десять утра",
+      "expected": {
+        "date": "2026-10-13",
+        "time": "10:00",
+        "start": "2026-10-13",
+        "end": "2026-10-14",
+        "duration": 60,
+        "error": null
+      }
+    },
+    {
+      "text": "завтра в 3 дня",
+      "expected": {
+        "date": "2026-10-13",
+        "time": "15:00",
+        "start": "2026-10-13",
+        "end": "2026-10-14",
+        "duration": 60,
+        "error": null
+      }
+    },
+    {
+      "text": "завтра в 7 вечера",
+      "expected": {
+        "date": "2026-10-13",
+        "time": "19:00",
+        "start": "2026-10-13",
+        "end": "2026-10-14",
+        "duration": 60,
+        "error": null
+      }
+    },
+    {
+      "text": "в четверг в 11",
+      "expected": {
+        "date": "2026-10-15",
+        "time": "11:00",
+        "start": "2026-10-15",
+        "end": "2026-10-16",
+        "duration": 60,
+        "error": null
+      }
+    },
+    {
+      "text": "2026-11-02 в 17:45",
+      "expected": {
+        "date": "2026-11-02",
+        "time": "17:45",
+        "start": "2026-11-02",
+        "end": "2026-11-03",
+        "duration": 60,
+        "error": null
+      }
+    },
+    {
+      "text": "02.11.2026 в 17:45",
+      "expected": {
+        "date": "2026-11-02",
+        "time": "17:45",
+        "start": "2026-11-02",
+        "end": "2026-11-03",
+        "duration": 60,
+        "error": null
+      }
+    },
+    {
+      "text": "2 ноября 2026",
+      "expected": {
+        "date": "2026-11-02",
+        "time": null,
+        "start": "2026-11-02",
+        "end": "2026-11-03",
+        "duration": 60,
+        "error": null
+      }
+    },
+    {
+      "text": "2 января",
+      "expected": {
+        "date": "2027-01-02",
+        "time": null,
+        "start": "2027-01-02",
+        "end": "2027-01-03",
+        "duration": 60,
+        "error": null
+      }
+    },
+    {
+      "text": "до конца недели",
+      "expected": {
+        "date": "2026-10-18",
+        "time": null,
+        "start": "2026-10-12",
+        "end": "2026-10-19",
+        "duration": 60,
+        "error": null
+      }
+    },
+    {
+      "text": "в двадцать один",
+      "expected": {
+        "date": null,
+        "time": "21:00",
+        "start": null,
+        "end": null,
+        "duration": 60,
+        "error": null
+      }
+    },
+    {
+      "text": "на эту неделю",
+      "expected": {
+        "date": null,
+        "time": null,
+        "start": "2026-10-12",
+        "end": "2026-10-19",
+        "duration": 60,
+        "error": null
+      }
+    },
+    {
+      "text": "на следующей неделе",
+      "expected": {
+        "date": null,
+        "time": null,
+        "start": "2026-10-19",
+        "end": "2026-10-26",
+        "duration": 60,
+        "error": null
+      }
+    },
+    {
+      "text": "за прошлую неделю",
+      "expected": {
+        "date": null,
+        "time": null,
+        "start": "2026-10-05",
+        "end": "2026-10-12",
+        "duration": 60,
+        "error": null
+      }
+    },
+    {
+      "text": "на выходных",
+      "expected": {
+        "date": null,
+        "time": null,
+        "start": "2026-10-17",
+        "end": "2026-10-19",
+        "duration": 60,
+        "error": null
+      }
+    },
+    {
+      "text": "за 2024 год",
+      "expected": {
+        "date": null,
+        "time": null,
+        "start": "2024-01-01",
+        "end": "2025-01-01",
+        "duration": 60,
+        "error": null
+      }
+    },
+    {
+      "text": "31.02.2026",
+      "expected": {
+        "date": null,
+        "time": null,
+        "start": null,
+        "end": null,
+        "duration": 60,
+        "error": "Такой даты нет в календаре. Укажите дату в формате ДД.ММ.ГГГГ."
+      }
+    },
+    {
+      "text": "31 февраля",
+      "expected": {
+        "date": null,
+        "time": null,
+        "start": null,
+        "end": null,
+        "duration": 60,
+        "error": "Такой даты нет в календаре. Уточните день и месяц."
+      }
+    },
+    {
+      "text": "в 25:00",
+      "expected": {
+        "date": null,
+        "time": null,
+        "start": null,
+        "end": null,
+        "duration": 60,
+        "error": "Время должно быть от 00:00 до 23:59. Уточните время."
+      }
+    },
+    {
+      "text": "в 15:75",
+      "expected": {
+        "date": null,
+        "time": null,
+        "start": null,
+        "end": null,
+        "duration": 60,
+        "error": "Время должно быть от 00:00 до 23:59. Уточните время."
+      }
+    },
+    {
+      "text": "сегодня завтра",
+      "expected": {
+        "date": "2026-10-12",
+        "time": null,
+        "start": "2026-10-12",
+        "end": "2026-10-13",
+        "duration": 60,
+        "error": "В запросе несколько разных дат. Укажите одну дату события."
+      }
+    },
+    {
+      "text": "на 2 минуты",
+      "expected": {
+        "date": null,
+        "time": null,
+        "start": null,
+        "end": null,
+        "duration": 60,
+        "error": "Длительность встречи должна быть от 5 минут до 24 часов."
+      }
+    },
+    {
+      "text": "через 0 часов",
+      "expected": {
+        "date": null,
+        "time": null,
+        "start": null,
+        "end": null,
+        "duration": 60,
+        "error": "Укажите интервал от 1 до 366 дней (или часов/минут)."
+      }
+    }
+  ],
+  "commands": [
+    {
+      "text": "Напомни мне завтра в 10 утра позвонить Ивану",
+      "expected": {
+        "action": "create",
+        "kind": "reminder",
+        "title": "Позвонить Ивану",
+        "query": "",
+        "date": "2026-10-13",
+        "time": "10:00",
+        "period_start": "2026-10-13",
+        "period_end": "2026-10-14",
+        "duration_minutes": 60,
+        "target_id": null,
+        "error": null,
+        "provider": "rules"
+      }
+    },
+    {
+      "text": "В пятницу нужно отправить отчет",
+      "expected": {
+        "action": "create",
+        "kind": "task",
+        "title": "Отправить отчет",
+        "query": "",
+        "date": "2026-10-16",
+        "time": null,
+        "period_start": "2026-10-16",
+        "period_end": "2026-10-17",
+        "duration_minutes": 60,
+        "target_id": null,
+        "error": null,
+        "provider": "rules"
+      }
+    },
+    {
+      "text": "Поставь задачу купить билеты до конца недели",
+      "expected": {
+        "action": "create",
+        "kind": "task",
+        "title": "Купить билеты",
+        "query": "",
+        "date": "2026-10-18",
+        "time": null,
+        "period_start": "2026-10-12",
+        "period_end": "2026-10-19",
+        "duration_minutes": 60,
+        "target_id": null,
+        "error": null,
+        "provider": "rules"
+      }
+    },
+    {
+      "text": "Добавь встречу с командой завтра в 15:00",
+      "expected": {
+        "action": "create",
+        "kind": "meeting",
+        "title": "Встреча с командой",
+        "query": "",
+        "date": "2026-10-13",
+        "time": "15:00",
+        "period_start": "2026-10-13",
+        "period_end": "2026-10-14",
+        "duration_minutes": 60,
+        "target_id": null,
+        "error": null,
+        "provider": "rules"
+      }
+    },
+    {
+      "text": "В четверг в 11 у меня встреча с дизайнером",
+      "expected": {
+        "action": "create",
+        "kind": "meeting",
+        "title": "Встреча с дизайнером",
+        "query": "",
+        "date": "2026-10-15",
+        "time": "11:00",
+        "period_start": "2026-10-15",
+        "period_end": "2026-10-16",
+        "duration_minutes": 60,
+        "target_id": null,
+        "error": null,
+        "provider": "rules"
+      }
+    },
+    {
+      "text": "Что у меня сегодня?",
+      "expected": {
+        "action": "list",
+        "kind": null,
+        "title": "",
+        "query": "Что",
+        "date": "2026-10-12",
+        "time": null,
+        "period_start": "2026-10-12",
+        "period_end": "2026-10-13",
+        "duration_minutes": 60,
+        "target_id": null,
+        "error": null,
+        "provider": "rules"
+      }
+    },
+    {
+      "text": "Какие планы на сегодня?",
+      "expected": {
+        "action": "list",
+        "kind": null,
+        "title": "",
+        "query": "Какие планы",
+        "date": "2026-10-12",
+        "time": null,
+        "period_start": "2026-10-12",
+        "period_end": "2026-10-13",
+        "duration_minutes": 60,
+        "target_id": null,
+        "error": null,
+        "provider": "rules"
+      }
+    },
+    {
+      "text": "Покажи мои встречи на сегодня",
+      "expected": {
+        "action": "list",
+        "kind": "meeting",
+        "title": "",
+        "query": "Покажи встречи",
+        "date": "2026-10-12",
+        "time": null,
+        "period_start": "2026-10-12",
+        "period_end": "2026-10-13",
+        "duration_minutes": 60,
+        "target_id": null,
+        "error": null,
+        "provider": "rules"
+      }
+    },
+    {
+      "text": "Есть ли у меня встречи сегодня?",
+      "expected": {
+        "action": "list",
+        "kind": "meeting",
+        "title": "",
+        "query": "Есть ли встречи",
+        "date": "2026-10-12",
+        "time": null,
+        "period_start": "2026-10-12",
+        "period_end": "2026-10-13",
+        "duration_minutes": 60,
+        "target_id": null,
+        "error": null,
+        "provider": "rules"
+      }
+    },
+    {
+      "text": "Какие задачи у меня на завтра?",
+      "expected": {
+        "action": "list",
+        "kind": "task",
+        "title": "",
+        "query": "Какие",
+        "date": "2026-10-13",
+        "time": null,
+        "period_start": "2026-10-13",
+        "period_end": "2026-10-14",
+        "duration_minutes": 60,
+        "target_id": null,
+        "error": null,
+        "provider": "rules"
+      }
+    },
+    {
+      "text": "Что запланировано на эту неделю?",
+      "expected": {
+        "action": "list",
+        "kind": null,
+        "title": "",
+        "query": "Что запланировано",
+        "date": null,
+        "time": null,
+        "period_start": "2026-10-12",
+        "period_end": "2026-10-19",
+        "duration_minutes": 60,
+        "target_id": null,
+        "error": null,
+        "provider": "rules"
+      }
+    },
+    {
+      "text": "Найди задачу про презентацию",
+      "expected": {
+        "action": "search",
+        "kind": "task",
+        "title": "",
+        "query": "презентацию",
+        "date": null,
+        "time": null,
+        "period_start": null,
+        "period_end": null,
+        "duration_minutes": 60,
+        "target_id": null,
+        "error": null,
+        "provider": "rules"
+      }
+    },
+    {
+      "text": "Когда у меня была встреча с Иваном?",
+      "expected": {
+        "action": "search",
+        "kind": "meeting",
+        "title": "",
+        "query": "встреча с Иваном",
+        "date": null,
+        "time": null,
+        "period_start": null,
+        "period_end": null,
+        "duration_minutes": 60,
+        "target_id": null,
+        "error": null,
+        "provider": "rules"
+      }
+    },
+    {
+      "text": "Я когда-то ставил задачу по договору, найди ее",
+      "expected": {
+        "action": "search",
+        "kind": "task",
+        "title": "",
+        "query": "договору",
+        "date": null,
+        "time": null,
+        "period_start": null,
+        "period_end": null,
+        "duration_minutes": 60,
+        "target_id": null,
+        "error": null,
+        "provider": "rules"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "name": "four_actions",
+      "steps": [
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "В пятницу нужно отправить отчёт",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "4937dd20-e271-53d7-8eec-cdb7fe876cac"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Задача сохранена: #1 «Отправить отчёт» — 16.10.2026.",
+            "action": "create",
+            "events": [
+              {
+                "id": 1,
+                "kind": "task",
+                "title": "Отправить отчёт",
+                "date": "2026-10-16",
+                "time": null,
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              }
+            ],
+            "conflicts": [],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "4937dd20-e271-53d7-8eec-cdb7fe876cac",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "Напомни мне завтра в 10 утра позвонить Ивану",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "fd68769f-5347-5adb-8cbb-e05f42eab218"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Напоминание сохранено: #2 «Позвонить Ивану» — 13.10.2026 в 10:00.",
+            "action": "create",
+            "events": [
+              {
+                "id": 2,
+                "kind": "reminder",
+                "title": "Позвонить Ивану",
+                "date": "2026-10-13",
+                "time": "10:00",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              }
+            ],
+            "conflicts": [],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "fd68769f-5347-5adb-8cbb-e05f42eab218",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "Добавь встречу с командой завтра в 15:00",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "d64d9f3b-b2c5-5ee2-8814-71c710788143"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Встреча сохранена: #3 «Встреча с командой» — 13.10.2026 в 15:00.",
+            "action": "create",
+            "events": [
+              {
+                "id": 3,
+                "kind": "meeting",
+                "title": "Встреча с командой",
+                "date": "2026-10-13",
+                "time": "15:00",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              }
+            ],
+            "conflicts": [],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "d64d9f3b-b2c5-5ee2-8814-71c710788143",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "Что запланировано на эту неделю?",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "03eb802b-0f50-51d1-b69b-b3790ed6901b"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Запланировано событий: 3\n#2 «Позвонить Ивану» — 13.10.2026 в 10:00\n#3 «Встреча с командой» — 13.10.2026 в 15:00\n#1 «Отправить отчёт» — 16.10.2026",
+            "action": "list",
+            "events": [
+              {
+                "id": 2,
+                "kind": "reminder",
+                "title": "Позвонить Ивану",
+                "date": "2026-10-13",
+                "time": "10:00",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              },
+              {
+                "id": 3,
+                "kind": "meeting",
+                "title": "Встреча с командой",
+                "date": "2026-10-13",
+                "time": "15:00",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              },
+              {
+                "id": 1,
+                "kind": "task",
+                "title": "Отправить отчёт",
+                "date": "2026-10-16",
+                "time": null,
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              }
+            ],
+            "total": 3,
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "03eb802b-0f50-51d1-b69b-b3790ed6901b",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "Есть ли у меня встречи завтра?",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "5326b138-39e9-5080-91f3-9ee8b46fbd6d"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Запланировано событий: 1\n#3 «Встреча с командой» — 13.10.2026 в 15:00",
+            "action": "list",
+            "events": [
+              {
+                "id": 3,
+                "kind": "meeting",
+                "title": "Встреча с командой",
+                "date": "2026-10-13",
+                "time": "15:00",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              }
+            ],
+            "total": 1,
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "5326b138-39e9-5080-91f3-9ee8b46fbd6d",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "Найди задачу про отчет",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "2de63c03-81d1-5845-886b-b90627093ed4"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Нашёл записи\n#1 «Отправить отчёт» — 16.10.2026",
+            "action": "search",
+            "events": [
+              {
+                "id": 1,
+                "kind": "task",
+                "title": "Отправить отчёт",
+                "date": "2026-10-16",
+                "time": null,
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null,
+                "score": 1.0
+              }
+            ],
+            "total": 1,
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "2de63c03-81d1-5845-886b-b90627093ed4",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "dialogue_context",
+      "steps": [
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "Поставь встречу с Иваном завтра",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "73694316-3aab-5c49-be6d-0b827ecaebc2"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "На какое время поставить событие? Например, в 15:00.",
+            "action": "clarify",
+            "events": [],
+            "candidates": [],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "73694316-3aab-5c49-be6d-0b827ecaebc2",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": true
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "В 15:00",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "b98b2a9f-dd89-508e-a149-785a757a37ae"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Встреча сохранена: #1 «Встреча с Иваном» — 13.10.2026 в 15:00.",
+            "action": "create",
+            "events": [
+              {
+                "id": 1,
+                "kind": "meeting",
+                "title": "Встреча с Иваном",
+                "date": "2026-10-13",
+                "time": "15:00",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              }
+            ],
+            "conflicts": [],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "b98b2a9f-dd89-508e-a149-785a757a37ae",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "А перенеси ее на послезавтра",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "63c5207e-fa44-57b7-a4ba-18e55f8427f0"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Перенесено: #1 «Встреча с Иваном» — 14.10.2026 в 15:00.",
+            "action": "update",
+            "events": [
+              {
+                "id": 1,
+                "kind": "meeting",
+                "title": "Встреча с Иваном",
+                "date": "2026-10-14",
+                "time": "15:00",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              }
+            ],
+            "conflicts": [],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "63c5207e-fa44-57b7-a4ba-18e55f8427f0",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "Отметь ее выполненной",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "31f87ee7-95a0-5706-beb8-36e9bfd8cb78"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Отмечено выполненным: #1 «Встреча с Иваном» — 14.10.2026 в 15:00.",
+            "action": "complete",
+            "events": [
+              {
+                "id": 1,
+                "kind": "meeting",
+                "title": "Встреча с Иваном",
+                "date": "2026-10-14",
+                "time": "15:00",
+                "duration_minutes": 60,
+                "status": "done",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              }
+            ],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "31f87ee7-95a0-5706-beb8-36e9bfd8cb78",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/events?status=done",
+          "status": 200,
+          "expected": {
+            "events": [
+              {
+                "id": 1,
+                "kind": "meeting",
+                "title": "Встреча с Иваном",
+                "date": "2026-10-14",
+                "time": "15:00",
+                "duration_minutes": 60,
+                "status": "done",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              }
+            ],
+            "total": 1,
+            "offset": 0,
+            "limit": 100
+          }
+        }
+      ]
+    },
+    {
+      "name": "date_title_clarifications",
+      "steps": [
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "Добавь встречу с Ольгой",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "232b64ca-f307-517d-9fb5-b522cbf4d872"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "На какую дату запланировать событие?",
+            "action": "clarify",
+            "events": [],
+            "candidates": [],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "232b64ca-f307-517d-9fb5-b522cbf4d872",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": true
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "завтра",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "e6eebe7a-aed3-5efa-86d8-8d6dc67cb230"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "На какое время поставить событие? Например, в 15:00.",
+            "action": "clarify",
+            "events": [],
+            "candidates": [],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "e6eebe7a-aed3-5efa-86d8-8d6dc67cb230",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": true
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "в 11",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "761343a4-e0bc-55cc-8c43-1022c6c423cb"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Встреча сохранена: #1 «Встреча с Ольгой» — 13.10.2026 в 11:00.",
+            "action": "create",
+            "events": [
+              {
+                "id": 1,
+                "kind": "meeting",
+                "title": "Встреча с Ольгой",
+                "date": "2026-10-13",
+                "time": "11:00",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              }
+            ],
+            "conflicts": [],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "761343a4-e0bc-55cc-8c43-1022c6c423cb",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "Поставь задачу",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "d7e5db87-83ab-5cbe-95b2-08732ce041a1"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Что нужно сделать или с кем провести встречу?",
+            "action": "clarify",
+            "events": [],
+            "candidates": [],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "d7e5db87-83ab-5cbe-95b2-08732ce041a1",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": true
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "Забрать посылку",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "00445db4-a8fd-5ea9-aee4-cdeedc8d7d00"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Задача сохранена: #2 «Забрать посылку» — без срока.",
+            "action": "create",
+            "events": [
+              {
+                "id": 2,
+                "kind": "task",
+                "title": "Забрать посылку",
+                "date": null,
+                "time": null,
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              }
+            ],
+            "conflicts": [],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "00445db4-a8fd-5ea9-aee4-cdeedc8d7d00",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "invalid_time_correction",
+      "steps": [
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "Добавь встречу с командой завтра в 25:00",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "bb3142f3-e33f-5e58-b11d-a5228816e218"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Время должно быть от 00:00 до 23:59. Уточните время.",
+            "action": "clarify",
+            "events": [],
+            "candidates": [],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "bb3142f3-e33f-5e58-b11d-a5228816e218",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": true
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "в 16:00",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "429df673-341f-5581-a1e6-bea4babbec08"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Встреча сохранена: #1 «Встреча с командой» — 13.10.2026 в 16:00.",
+            "action": "create",
+            "events": [
+              {
+                "id": 1,
+                "kind": "meeting",
+                "title": "Встреча с командой",
+                "date": "2026-10-13",
+                "time": "16:00",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              }
+            ],
+            "conflicts": [],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "429df673-341f-5581-a1e6-bea4babbec08",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "invalid_date_correction",
+      "steps": [
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "Добавь встречу с Иваном 31.02.2026 в 15:00",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "fd62e462-26c4-5526-8a40-bd935c0e15e3"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Такой даты нет в календаре. Укажите дату в формате ДД.ММ.ГГГГ.",
+            "action": "clarify",
+            "events": [],
+            "candidates": [],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "fd62e462-26c4-5526-8a40-bd935c0e15e3",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": true
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "завтра",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "2c3d13c4-211e-5ebf-9e6b-a1ce6eb452c0"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Встреча сохранена: #1 «Встреча с Иваном» — 13.10.2026 в 15:00.",
+            "action": "create",
+            "events": [
+              {
+                "id": 1,
+                "kind": "meeting",
+                "title": "Встреча с Иваном",
+                "date": "2026-10-13",
+                "time": "15:00",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              }
+            ],
+            "conflicts": [],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "2c3d13c4-211e-5ebf-9e6b-a1ce6eb452c0",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "missing_reminder_title",
+      "steps": [
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "Напомни завтра в 10 утра",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "8c914b1e-5d58-5f63-b5a3-b6a33d3e3e6a"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Что нужно сделать или с кем провести встречу?",
+            "action": "clarify",
+            "events": [],
+            "candidates": [],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "8c914b1e-5d58-5f63-b5a3-b6a33d3e3e6a",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": true
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "купить билеты",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "473aadcd-c84d-5712-9d38-93ac9f2fd76e"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Напоминание сохранено: #1 «купить билеты» — 13.10.2026 в 10:00.",
+            "action": "create",
+            "events": [
+              {
+                "id": 1,
+                "kind": "reminder",
+                "title": "купить билеты",
+                "date": "2026-10-13",
+                "time": "10:00",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              }
+            ],
+            "conflicts": [],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "473aadcd-c84d-5712-9d38-93ac9f2fd76e",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "conflicts_and_adjacent_intervals",
+      "steps": [
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "Добавь встречу с Иваном завтра в 15:00 на два часа",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "544c424a-96b8-5057-995b-12d2f335356c"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Встреча сохранена: #1 «Встреча с Иваном» — 13.10.2026 в 15:00.",
+            "action": "create",
+            "events": [
+              {
+                "id": 1,
+                "kind": "meeting",
+                "title": "Встреча с Иваном",
+                "date": "2026-10-13",
+                "time": "15:00",
+                "duration_minutes": 120,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              }
+            ],
+            "conflicts": [],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "544c424a-96b8-5057-995b-12d2f335356c",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "Добавь встречу с Ольгой завтра в 16:00",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "eabd4598-d753-5bd4-bac1-610bec006fe7"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Это время пересекается с другой встречей: #1 «Встреча с Иваном» — 13.10.2026 в 15:00. Укажите другое время или ответьте «да», чтобы сохранить пересечение.",
+            "action": "clarify",
+            "events": [],
+            "candidates": [
+              {
+                "id": 1,
+                "kind": "meeting",
+                "title": "Встреча с Иваном",
+                "date": "2026-10-13",
+                "time": "15:00",
+                "duration_minutes": 120,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              }
+            ],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "eabd4598-d753-5bd4-bac1-610bec006fe7",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": true
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/events",
+          "status": 200,
+          "expected": {
+            "events": [
+              {
+                "id": 1,
+                "kind": "meeting",
+                "title": "Встреча с Иваном",
+                "date": "2026-10-13",
+                "time": "15:00",
+                "duration_minutes": 120,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              }
+            ],
+            "total": 1,
+            "offset": 0,
+            "limit": 100
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "в 17:00",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "bbf9ae37-ed7b-5591-a5f6-23726ca413af"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Встреча сохранена: #2 «Встреча с Ольгой» — 13.10.2026 в 17:00.",
+            "action": "create",
+            "events": [
+              {
+                "id": 2,
+                "kind": "meeting",
+                "title": "Встреча с Ольгой",
+                "date": "2026-10-13",
+                "time": "17:00",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              }
+            ],
+            "conflicts": [],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "bbf9ae37-ed7b-5591-a5f6-23726ca413af",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "Перенеси встречу с Ольгой на завтра в 15:30",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "a848e8c1-8ccc-5d7f-bce3-bf7a90076a86"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Перенос пересекается с встречей: #1 «Встреча с Иваном» — 13.10.2026 в 15:00. Укажите другое время или ответьте «да».",
+            "action": "clarify",
+            "events": [],
+            "candidates": [
+              {
+                "id": 1,
+                "kind": "meeting",
+                "title": "Встреча с Иваном",
+                "date": "2026-10-13",
+                "time": "15:00",
+                "duration_minutes": 120,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              }
+            ],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "a848e8c1-8ccc-5d7f-bce3-bf7a90076a86",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": true
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "да",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "f8dacfdf-ece8-502e-b050-9c31851626c1"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Перенесено: #2 «Встреча с Ольгой» — 13.10.2026 в 15:30.",
+            "action": "update",
+            "events": [
+              {
+                "id": 2,
+                "kind": "meeting",
+                "title": "Встреча с Ольгой",
+                "date": "2026-10-13",
+                "time": "15:30",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              }
+            ],
+            "conflicts": [
+              {
+                "id": 1,
+                "kind": "meeting",
+                "title": "Встреча с Иваном",
+                "date": "2026-10-13",
+                "time": "15:00",
+                "duration_minutes": 120,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              }
+            ],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "f8dacfdf-ece8-502e-b050-9c31851626c1",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "cancel_and_force",
+      "steps": [
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "Добавь встречу с Иваном завтра в 15:00",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "c2dd4034-15e2-53c1-b728-818f0e79a093"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Встреча сохранена: #1 «Встреча с Иваном» — 13.10.2026 в 15:00.",
+            "action": "create",
+            "events": [
+              {
+                "id": 1,
+                "kind": "meeting",
+                "title": "Встреча с Иваном",
+                "date": "2026-10-13",
+                "time": "15:00",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              }
+            ],
+            "conflicts": [],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "c2dd4034-15e2-53c1-b728-818f0e79a093",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "Добавь встречу с Ольгой завтра в 15:30",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "7963c498-3bb7-5405-9772-c5ef6c2db7d3"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Это время пересекается с другой встречей: #1 «Встреча с Иваном» — 13.10.2026 в 15:00. Укажите другое время или ответьте «да», чтобы сохранить пересечение.",
+            "action": "clarify",
+            "events": [],
+            "candidates": [
+              {
+                "id": 1,
+                "kind": "meeting",
+                "title": "Встреча с Иваном",
+                "date": "2026-10-13",
+                "time": "15:00",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              }
+            ],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "7963c498-3bb7-5405-9772-c5ef6c2db7d3",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": true
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "нет",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "31f653a9-2784-5127-a437-8a48b52c38fb"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Действие отменено.",
+            "action": "cancel",
+            "events": [],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "31f653a9-2784-5127-a437-8a48b52c38fb",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "Добавь встречу с Ольгой завтра в 15:30",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "fc85a712-14e7-52e5-bb12-464a12308855"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Это время пересекается с другой встречей: #1 «Встреча с Иваном» — 13.10.2026 в 15:00. Укажите другое время или ответьте «да», чтобы сохранить пересечение.",
+            "action": "clarify",
+            "events": [],
+            "candidates": [
+              {
+                "id": 1,
+                "kind": "meeting",
+                "title": "Встреча с Иваном",
+                "date": "2026-10-13",
+                "time": "15:00",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              }
+            ],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "fc85a712-14e7-52e5-bb12-464a12308855",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": true
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "да",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "04880ad1-2664-539a-b460-026c4d70d989"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Встреча сохранена: #2 «Встреча с Ольгой» — 13.10.2026 в 15:30.",
+            "action": "create",
+            "events": [
+              {
+                "id": 2,
+                "kind": "meeting",
+                "title": "Встреча с Ольгой",
+                "date": "2026-10-13",
+                "time": "15:30",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              }
+            ],
+            "conflicts": [
+              {
+                "id": 1,
+                "kind": "meeting",
+                "title": "Встреча с Иваном",
+                "date": "2026-10-13",
+                "time": "15:00",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              }
+            ],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "04880ad1-2664-539a-b460-026c4d70d989",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "midnight",
+      "steps": [
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "Добавь встречу с Иваном сегодня в 23:30 на два часа",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "0667bf04-a30e-5823-984d-62eceb0df390"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Встреча сохранена: #1 «Встреча с Иваном» — 12.10.2026 в 23:30.",
+            "action": "create",
+            "events": [
+              {
+                "id": 1,
+                "kind": "meeting",
+                "title": "Встреча с Иваном",
+                "date": "2026-10-12",
+                "time": "23:30",
+                "duration_minutes": 120,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              }
+            ],
+            "conflicts": [],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "0667bf04-a30e-5823-984d-62eceb0df390",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "Добавь встречу с Ольгой завтра в 00:30",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "94eb07d9-12bc-5ae3-9dbe-1dc18842d39d"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Это время пересекается с другой встречей: #1 «Встреча с Иваном» — 12.10.2026 в 23:30. Укажите другое время или ответьте «да», чтобы сохранить пересечение.",
+            "action": "clarify",
+            "events": [],
+            "candidates": [
+              {
+                "id": 1,
+                "kind": "meeting",
+                "title": "Встреча с Иваном",
+                "date": "2026-10-12",
+                "time": "23:30",
+                "duration_minutes": 120,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              }
+            ],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "94eb07d9-12bc-5ae3-9dbe-1dc18842d39d",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "morphology_synonyms_typo",
+      "steps": [
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "Поставь задачу проверить договор с Иваном",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "58c2253e-64a9-5662-b250-c9e28b3ce97b"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Задача сохранена: #1 «Проверить договор с Иваном» — без срока.",
+            "action": "create",
+            "events": [
+              {
+                "id": 1,
+                "kind": "task",
+                "title": "Проверить договор с Иваном",
+                "date": null,
+                "time": null,
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              }
+            ],
+            "conflicts": [],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "58c2253e-64a9-5662-b250-c9e28b3ce97b",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "Поставь задачу подготовить презентацию",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "14a2f627-1f53-558c-ade2-e6edeb153d88"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Задача сохранена: #2 «Подготовить презентацию» — без срока.",
+            "action": "create",
+            "events": [
+              {
+                "id": 2,
+                "kind": "task",
+                "title": "Подготовить презентацию",
+                "date": null,
+                "time": null,
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              }
+            ],
+            "conflicts": [],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "14a2f627-1f53-558c-ade2-e6edeb153d88",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "Найди задачу про контракт с Иваном",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "d1c73b8c-5714-5abe-ba8e-1910633e1523"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Нашёл записи\n#1 «Проверить договор с Иваном» — без срока",
+            "action": "search",
+            "events": [
+              {
+                "id": 1,
+                "kind": "task",
+                "title": "Проверить договор с Иваном",
+                "date": null,
+                "time": null,
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null,
+                "score": 1.0
+              }
+            ],
+            "total": 1,
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "d1c73b8c-5714-5abe-ba8e-1910633e1523",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "Найди задачу про презинтацию",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "de38913e-bd36-5d58-80b4-1cbb1460e7db"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Нашёл записи\n#2 «Подготовить презентацию» — без срока",
+            "action": "search",
+            "events": [
+              {
+                "id": 2,
+                "kind": "task",
+                "title": "Подготовить презентацию",
+                "date": null,
+                "time": null,
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null,
+                "score": 1.0
+              }
+            ],
+            "total": 1,
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "de38913e-bd36-5d58-80b4-1cbb1460e7db",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "Я когда-то ставил задачу по договору, найди ее",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "029594c5-8e5d-5f49-b701-15d9ab68d6e2"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Нашёл записи\n#1 «Проверить договор с Иваном» — без срока",
+            "action": "search",
+            "events": [
+              {
+                "id": 1,
+                "kind": "task",
+                "title": "Проверить договор с Иваном",
+                "date": null,
+                "time": null,
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null,
+                "score": 1.0
+              }
+            ],
+            "total": 1,
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "029594c5-8e5d-5f49-b701-15d9ab68d6e2",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "ambiguity_and_delete",
+      "steps": [
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "Поставь задачу отправить договор Ивану",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "f1d76789-0131-5bf5-b498-14f36c080848"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Задача сохранена: #1 «Отправить договор Ивану» — без срока.",
+            "action": "create",
+            "events": [
+              {
+                "id": 1,
+                "kind": "task",
+                "title": "Отправить договор Ивану",
+                "date": null,
+                "time": null,
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              }
+            ],
+            "conflicts": [],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "f1d76789-0131-5bf5-b498-14f36c080848",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "Поставь задачу отправить договор Ольге",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "7a446265-d826-55a1-b3a2-9c5135d63600"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Задача сохранена: #2 «Отправить договор Ольге» — без срока.",
+            "action": "create",
+            "events": [
+              {
+                "id": 2,
+                "kind": "task",
+                "title": "Отправить договор Ольге",
+                "date": null,
+                "time": null,
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              }
+            ],
+            "conflicts": [],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "7a446265-d826-55a1-b3a2-9c5135d63600",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "Удали задачу про договор",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "7ef07fc4-c5b5-54c7-915c-d40ab7775fe1"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Уточните номер записи:\n#1 «Отправить договор Ивану» — без срока\n#2 «Отправить договор Ольге» — без срока",
+            "action": "clarify",
+            "events": [],
+            "candidates": [
+              {
+                "id": 1,
+                "kind": "task",
+                "title": "Отправить договор Ивану",
+                "date": null,
+                "time": null,
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null,
+                "score": 1.0
+              },
+              {
+                "id": 2,
+                "kind": "task",
+                "title": "Отправить договор Ольге",
+                "date": null,
+                "time": null,
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null,
+                "score": 1.0
+              }
+            ],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "7ef07fc4-c5b5-54c7-915c-d40ab7775fe1",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": true
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "#1",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "c8e3fe81-2d35-52a2-8950-62a638f57c74"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Удалить #1 «Отправить договор Ивану» — без срока? Ответьте «да» или «нет».",
+            "action": "clarify",
+            "events": [],
+            "candidates": [],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "c8e3fe81-2d35-52a2-8950-62a638f57c74",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": true
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/events",
+          "status": 200,
+          "expected": {
+            "events": [
+              {
+                "id": 1,
+                "kind": "task",
+                "title": "Отправить договор Ивану",
+                "date": null,
+                "time": null,
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              },
+              {
+                "id": 2,
+                "kind": "task",
+                "title": "Отправить договор Ольге",
+                "date": null,
+                "time": null,
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              }
+            ],
+            "total": 2,
+            "offset": 0,
+            "limit": 100
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "нет",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "331ac43b-3929-5458-9d40-3c38997447f1"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Действие отменено.",
+            "action": "cancel",
+            "events": [],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "331ac43b-3929-5458-9d40-3c38997447f1",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "Удали задачу #1",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "104f4105-5329-54f0-bf34-294ef91f8236"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Удалить #1 «Отправить договор Ивану» — без срока? Ответьте «да» или «нет».",
+            "action": "clarify",
+            "events": [],
+            "candidates": [],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "104f4105-5329-54f0-bf34-294ef91f8236",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": true
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "Да, пожалуйста",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "7d6a3673-21af-59f7-81a1-7b9269d07f85"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Удалено: #1 «Отправить договор Ивану» — без срока.",
+            "action": "delete",
+            "events": [],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "7d6a3673-21af-59f7-81a1-7b9269d07f85",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/events",
+          "status": 200,
+          "expected": {
+            "events": [
+              {
+                "id": 2,
+                "kind": "task",
+                "title": "Отправить договор Ольге",
+                "date": null,
+                "time": null,
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              }
+            ],
+            "total": 1,
+            "offset": 0,
+            "limit": 100
+          }
+        }
+      ]
+    },
+    {
+      "name": "idempotency",
+      "steps": [
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "Поставь задачу купить билеты",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "16424485-5634-5bef-845e-54652a9db3c6"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Задача сохранена: #1 «Купить билеты» — без срока.",
+            "action": "create",
+            "events": [
+              {
+                "id": 1,
+                "kind": "task",
+                "title": "Купить билеты",
+                "date": null,
+                "time": null,
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              }
+            ],
+            "conflicts": [],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "16424485-5634-5bef-845e-54652a9db3c6",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "Поставь задачу купить билеты",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "16424485-5634-5bef-845e-54652a9db3c6"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Задача сохранена: #1 «Купить билеты» — без срока.",
+            "action": "create",
+            "events": [
+              {
+                "id": 1,
+                "kind": "task",
+                "title": "Купить билеты",
+                "date": null,
+                "time": null,
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              }
+            ],
+            "conflicts": [],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "16424485-5634-5bef-845e-54652a9db3c6",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/events",
+          "status": 200,
+          "expected": {
+            "events": [
+              {
+                "id": 1,
+                "kind": "task",
+                "title": "Купить билеты",
+                "date": null,
+                "time": null,
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              }
+            ],
+            "total": 1,
+            "offset": 0,
+            "limit": 100
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "Поставь задачу купить хлеб",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "16424485-5634-5bef-845e-54652a9db3c6"
+          },
+          "status": 422,
+          "expected_detail": "request_id уже использован для другого сообщения"
+        }
+      ]
+    },
+    {
+      "name": "week_boundary",
+      "steps": [
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "Добавь встречу с Иваном 18.10.2026 в 23:00",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "f5444227-bc72-55f7-a09c-52a4aff6a1ad"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Встреча сохранена: #1 «Встреча с Иваном» — 18.10.2026 в 23:00.",
+            "action": "create",
+            "events": [
+              {
+                "id": 1,
+                "kind": "meeting",
+                "title": "Встреча с Иваном",
+                "date": "2026-10-18",
+                "time": "23:00",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              }
+            ],
+            "conflicts": [],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "f5444227-bc72-55f7-a09c-52a4aff6a1ad",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "Добавь встречу с Ольгой 19.10.2026 в 10:00",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "bc9e5e8f-22f1-5e22-bca9-e1ee3eb46456"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Встреча сохранена: #2 «Встреча с Ольгой» — 19.10.2026 в 10:00.",
+            "action": "create",
+            "events": [
+              {
+                "id": 2,
+                "kind": "meeting",
+                "title": "Встреча с Ольгой",
+                "date": "2026-10-19",
+                "time": "10:00",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              }
+            ],
+            "conflicts": [],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "bc9e5e8f-22f1-5e22-bca9-e1ee3eb46456",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "Что запланировано на эту неделю?",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "4ee12703-334d-5b72-8816-d5db07310c50"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Запланировано событий: 1\n#1 «Встреча с Иваном» — 18.10.2026 в 23:00",
+            "action": "list",
+            "events": [
+              {
+                "id": 1,
+                "kind": "meeting",
+                "title": "Встреча с Иваном",
+                "date": "2026-10-18",
+                "time": "23:00",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              }
+            ],
+            "total": 1,
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "4ee12703-334d-5b72-8816-d5db07310c50",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "Что запланировано на следующей неделе?",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "f595a720-ee56-57c0-92be-dfd88c03e3ca"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Запланировано событий: 1\n#2 «Встреча с Ольгой» — 19.10.2026 в 10:00",
+            "action": "list",
+            "events": [
+              {
+                "id": 2,
+                "kind": "meeting",
+                "title": "Встреча с Ольгой",
+                "date": "2026-10-19",
+                "time": "10:00",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              }
+            ],
+            "total": 1,
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "f595a720-ee56-57c0-92be-dfd88c03e3ca",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "import_archive_search",
+      "steps": [
+        {
+          "method": "POST",
+          "path": "/api/import-demo",
+          "status": 200,
+          "expected": {
+            "imported": 1000,
+            "skipped": 0,
+            "total_rows": 1000
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/import-demo",
+          "status": 200,
+          "expected": {
+            "imported": 0,
+            "skipped": 1000,
+            "total_rows": 1000
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/events?q=контракт%20Иван&limit=200",
+          "status": 200,
+          "expected": {
+            "events": [
+              {
+                "id": 2,
+                "kind": "task",
+                "title": "Отправить договор Иваном",
+                "date": "2024-01-12",
+                "time": "13:45",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": "csv:voice_assistant_events_1000.csv:2",
+                "score": 1.0
+              },
+              {
+                "id": 57,
+                "kind": "reminder",
+                "title": "Напомнить Иваном про договору",
+                "date": "2024-03-23",
+                "time": "10:00",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": "csv:voice_assistant_events_1000.csv:57",
+                "score": 1.0
+              },
+              {
+                "id": 288,
+                "kind": "task",
+                "title": "Согласовать договор с Иваном",
+                "date": "2025-03-08",
+                "time": "19:45",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": "csv:voice_assistant_events_1000.csv:288",
+                "score": 1.0
+              },
+              {
+                "id": 794,
+                "kind": "reminder",
+                "title": "Напомнить Иваном про договору",
+                "date": "2027-02-28",
+                "time": "08:45",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": "csv:voice_assistant_events_1000.csv:794",
+                "score": 1.0
+              },
+              {
+                "id": 20,
+                "kind": "task",
+                "title": "Позвонить Иваном",
+                "date": "2024-01-29",
+                "time": "13:15",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": "csv:voice_assistant_events_1000.csv:20",
+                "score": 0.559
+              },
+              {
+                "id": 22,
+                "kind": "task",
+                "title": "Позвонить Иваном",
+                "date": "2024-02-02",
+                "time": "08:45",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": "csv:voice_assistant_events_1000.csv:22",
+                "score": 0.559
+              },
+              {
+                "id": 23,
+                "kind": "task",
+                "title": "Позвонить Иваном",
+                "date": "2024-02-02",
+                "time": "15:00",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": "csv:voice_assistant_events_1000.csv:23",
+                "score": 0.559
+              },
+              {
+                "id": 31,
+                "kind": "task",
+                "title": "Подготовить вопросы для Иваном",
+                "date": "2024-02-11",
+                "time": "19:45",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": "csv:voice_assistant_events_1000.csv:31",
+                "score": 0.559
+              },
+              {
+                "id": 52,
+                "kind": "task",
+                "title": "Обсудить презентации с Иваном",
+                "date": "2024-03-17",
+                "time": "19:45",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": "csv:voice_assistant_events_1000.csv:52",
+                "score": 0.559
+              },
+              {
+                "id": 66,
+                "kind": "task",
+                "title": "Согласовать презентацию с Иваном",
+                "date": "2024-04-14",
+                "time": "09:45",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": "csv:voice_assistant_events_1000.csv:66",
+                "score": 0.559
+              },
+              {
+                "id": 94,
+                "kind": "task",
+                "title": "Отправить итоги встречи Иваном",
+                "date": "2024-05-27",
+                "time": "14:00",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": "csv:voice_assistant_events_1000.csv:94",
+                "score": 0.559
+              },
+              {
+                "id": 95,
+                "kind": "reminder",
+                "title": "Напомнить Иваном про презентации",
+                "date": "2024-05-30",
+                "time": "20:00",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": "csv:voice_assistant_events_1000.csv:95",
+                "score": 0.559
+              },
+              {
+                "id": 170,
+                "kind": "task",
+                "title": "Позвонить Иваном",
+                "date": "2024-09-25",
+                "time": "16:15",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": "csv:voice_assistant_events_1000.csv:170",
+                "score": 0.559
+              },
+              {
+                "id": 222,
+                "kind": "task",
+                "title": "Отправить итоги встречи Иваном",
+                "date": "2024-11-24",
+                "time": "15:30",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": "csv:voice_assistant_events_1000.csv:222",
+                "score": 0.559
+              },
+              {
+                "id": 225,
+                "kind": "task",
+                "title": "Отправить итоги встречи Иваном",
+                "date": "2024-11-28",
+                "time": "20:15",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": "csv:voice_assistant_events_1000.csv:225",
+                "score": 0.559
+              },
+              {
+                "id": 284,
+                "kind": "task",
+                "title": "Отправить итоги встречи Иваном",
+                "date": "2025-02-28",
+                "time": "20:45",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": "csv:voice_assistant_events_1000.csv:284",
+                "score": 0.559
+              },
+              {
+                "id": 303,
+                "kind": "task",
+                "title": "Обсудить мобильному приложению с Иваном",
+                "date": "2025-03-25",
+                "time": "10:45",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": "csv:voice_assistant_events_1000.csv:303",
+                "score": 0.559
+              },
+              {
+                "id": 309,
+                "kind": "meeting",
+                "title": "Встреча с Иваном по CRM",
+                "date": "2025-04-04",
+                "time": "18:00",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": "csv:voice_assistant_events_1000.csv:309",
+                "score": 0.559
+              },
+              {
+                "id": 345,
+                "kind": "task",
+                "title": "Обсудить бюджету с Иваном",
+                "date": "2025-05-23",
+                "time": "13:45",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": "csv:voice_assistant_events_1000.csv:345",
+                "score": 0.559
+              },
+              {
+                "id": 349,
+                "kind": "reminder",
+                "title": "Напомнить Иваном про мобильному приложению",
+                "date": "2025-06-02",
+                "time": "08:00",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": "csv:voice_assistant_events_1000.csv:349",
+                "score": 0.559
+              },
+              {
+                "id": 354,
+                "kind": "task",
+                "title": "Согласовать техническое задание с Иваном",
+                "date": "2025-06-11",
+                "time": "10:00",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": "csv:voice_assistant_events_1000.csv:354",
+                "score": 0.559
+              },
+              {
+                "id": 429,
+                "kind": "meeting",
+                "title": "Встреча с Иваном по презентации",
+                "date": "2025-09-27",
+                "time": "15:45",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": "csv:voice_assistant_events_1000.csv:429",
+                "score": 0.559
+              },
+              {
+                "id": 468,
+                "kind": "task",
+                "title": "Подготовить вопросы для Иваном",
+                "date": "2025-11-18",
+                "time": "10:00",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": "csv:voice_assistant_events_1000.csv:468",
+                "score": 0.559
+              },
+              {
+                "id": 479,
+                "kind": "reminder",
+                "title": "Напомнить Иваном про аналитике",
+                "date": "2025-12-07",
+                "time": "20:15",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": "csv:voice_assistant_events_1000.csv:479",
+                "score": 0.559
+              },
+              {
+                "id": 488,
+                "kind": "task",
+                "title": "Согласовать техническое задание с Иваном",
+                "date": "2025-12-23",
+                "time": "17:45",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": "csv:voice_assistant_events_1000.csv:488",
+                "score": 0.559
+              },
+              {
+                "id": 530,
+                "kind": "meeting",
+                "title": "Встреча с Иваном по презентации",
+                "date": "2026-03-05",
+                "time": "15:45",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": "csv:voice_assistant_events_1000.csv:530",
+                "score": 0.559
+              },
+              {
+                "id": 552,
+                "kind": "task",
+                "title": "Отправить итоги встречи Иваном",
+                "date": "2026-04-14",
+                "time": "13:45",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": "csv:voice_assistant_events_1000.csv:552",
+                "score": 0.559
+              },
+              {
+                "id": 589,
+                "kind": "task",
+                "title": "Позвонить Иваном",
+                "date": "2026-05-28",
+                "time": "15:45",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": "csv:voice_assistant_events_1000.csv:589",
+                "score": 0.559
+              },
+              {
+                "id": 612,
+                "kind": "task",
+                "title": "Позвонить Иваном",
+                "date": "2026-06-27",
+                "time": "10:30",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": "csv:voice_assistant_events_1000.csv:612",
+                "score": 0.559
+              },
+              {
+                "id": 804,
+                "kind": "meeting",
+                "title": "Встреча с Иваном по бюджету",
+                "date": "2027-03-20",
+                "time": "08:45",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": "csv:voice_assistant_events_1000.csv:804",
+                "score": 0.559
+              },
+              {
+                "id": 814,
+                "kind": "task",
+                "title": "Обсудить мобильному приложению с Иваном",
+                "date": "2027-04-07",
+                "time": "17:30",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": "csv:voice_assistant_events_1000.csv:814",
+                "score": 0.559
+              },
+              {
+                "id": 838,
+                "kind": "task",
+                "title": "Отправить коммерческое предложение Иваном",
+                "date": "2027-05-13",
+                "time": "14:30",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": "csv:voice_assistant_events_1000.csv:838",
+                "score": 0.559
+              },
+              {
+                "id": 877,
+                "kind": "task",
+                "title": "Согласовать презентацию с Иваном",
+                "date": "2027-07-06",
+                "time": "18:15",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": "csv:voice_assistant_events_1000.csv:877",
+                "score": 0.559
+              },
+              {
+                "id": 884,
+                "kind": "task",
+                "title": "Отправить смету Иваном",
+                "date": "2027-07-19",
+                "time": "15:15",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": "csv:voice_assistant_events_1000.csv:884",
+                "score": 0.559
+              },
+              {
+                "id": 911,
+                "kind": "reminder",
+                "title": "Напомнить Иваном про бюджету",
+                "date": "2027-08-31",
+                "time": "20:15",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": "csv:voice_assistant_events_1000.csv:911",
+                "score": 0.559
+              },
+              {
+                "id": 969,
+                "kind": "task",
+                "title": "Обсудить бюджету с Иваном",
+                "date": "2027-11-15",
+                "time": "20:00",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": "csv:voice_assistant_events_1000.csv:969",
+                "score": 0.559
+              }
+            ],
+            "total": 36,
+            "offset": 0,
+            "limit": 200
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/events?start=2024-01-01&end=2025-01-01&limit=3",
+          "status": 200,
+          "expected": {
+            "events": [
+              {
+                "id": 1,
+                "kind": "task",
+                "title": "Подготовить техническое задание",
+                "date": "2024-01-07",
+                "time": "14:45",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": "csv:voice_assistant_events_1000.csv:1"
+              },
+              {
+                "id": 2,
+                "kind": "task",
+                "title": "Отправить договор Иваном",
+                "date": "2024-01-12",
+                "time": "13:45",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": "csv:voice_assistant_events_1000.csv:2"
+              },
+              {
+                "id": 3,
+                "kind": "task",
+                "title": "Отправить итоги встречи Марией",
+                "date": "2024-01-14",
+                "time": "14:30",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": "csv:voice_assistant_events_1000.csv:3"
+              }
+            ],
+            "total": 252,
+            "offset": 0,
+            "limit": 3
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "Когда у меня была встреча с Иваном?",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "c3e85b64-37b0-52f6-b769-7ef5c0112455"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Нашёл записи\n#309 «Встреча с Иваном по CRM» — 04.04.2025 в 18:00\n#429 «Встреча с Иваном по презентации» — 27.09.2025 в 15:45\n#530 «Встреча с Иваном по презентации» — 05.03.2026 в 15:45\n#804 «Встреча с Иваном по бюджету» — 20.03.2027 в 08:45",
+            "action": "search",
+            "events": [
+              {
+                "id": 309,
+                "kind": "meeting",
+                "title": "Встреча с Иваном по CRM",
+                "date": "2025-04-04",
+                "time": "18:00",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": "csv:voice_assistant_events_1000.csv:309",
+                "score": 1.0
+              },
+              {
+                "id": 429,
+                "kind": "meeting",
+                "title": "Встреча с Иваном по презентации",
+                "date": "2025-09-27",
+                "time": "15:45",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": "csv:voice_assistant_events_1000.csv:429",
+                "score": 1.0
+              },
+              {
+                "id": 530,
+                "kind": "meeting",
+                "title": "Встреча с Иваном по презентации",
+                "date": "2026-03-05",
+                "time": "15:45",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": "csv:voice_assistant_events_1000.csv:530",
+                "score": 1.0
+              },
+              {
+                "id": 804,
+                "kind": "meeting",
+                "title": "Встреча с Иваном по бюджету",
+                "date": "2027-03-20",
+                "time": "08:45",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": "csv:voice_assistant_events_1000.csv:804",
+                "score": 1.0
+              }
+            ],
+            "total": 4,
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "c3e85b64-37b0-52f6-b769-7ef5c0112455",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "validation_status",
+      "steps": [
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": " ",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "d8efe70c-fba2-5d7b-9754-a146aa39d000"
+          },
+          "status": 422
+        },
+        {
+          "method": "GET",
+          "path": "/api/events?start=2026-02-31",
+          "status": 422
+        },
+        {
+          "method": "GET",
+          "path": "/api/events?start=2026-10-13&end=2026-10-12",
+          "status": 422,
+          "expected_detail": "end должен быть позже start (правая граница не включается)"
+        },
+        {
+          "method": "GET",
+          "path": "/api/events?limit=100000",
+          "status": 422
+        },
+        {
+          "method": "PATCH",
+          "path": "/api/events/9999",
+          "body": {
+            "status": "done"
+          },
+          "status": 404,
+          "expected_detail": "Запись не найдена"
+        },
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "Поставь задачу купить хлеб",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "f2871936-e1f4-5b1e-a1eb-67d95332f5e7"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Задача сохранена: #1 «Купить хлеб» — без срока.",
+            "action": "create",
+            "events": [
+              {
+                "id": 1,
+                "kind": "task",
+                "title": "Купить хлеб",
+                "date": null,
+                "time": null,
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              }
+            ],
+            "conflicts": [],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "f2871936-e1f4-5b1e-a1eb-67d95332f5e7",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/api/events/1",
+          "body": {
+            "status": "done"
+          },
+          "status": 200,
+          "expected": {
+            "id": 1,
+            "kind": "task",
+            "title": "Купить хлеб",
+            "date": null,
+            "time": null,
+            "duration_minutes": 60,
+            "status": "done",
+            "created_at": "2026-10-12T12:30:00+03:00",
+            "updated_at": "2026-10-12T12:30:00+03:00",
+            "source_key": null
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/events?status=done",
+          "status": 200,
+          "expected": {
+            "events": [
+              {
+                "id": 1,
+                "kind": "task",
+                "title": "Купить хлеб",
+                "date": null,
+                "time": null,
+                "duration_minutes": 60,
+                "status": "done",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              }
+            ],
+            "total": 1,
+            "offset": 0,
+            "limit": 100
+          }
+        }
+      ]
+    },
+    {
+      "name": "due_reminders",
+      "steps": [
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "Напомни сегодня в 12:30 отправить отчёт",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "02264ff2-5062-521a-8b92-2484734d411b"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Напоминание сохранено: #1 «Отправить отчёт» — 12.10.2026 в 12:30.",
+            "action": "create",
+            "events": [
+              {
+                "id": 1,
+                "kind": "reminder",
+                "title": "Отправить отчёт",
+                "date": "2026-10-12",
+                "time": "12:30",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              }
+            ],
+            "conflicts": [],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "02264ff2-5062-521a-8b92-2484734d411b",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "Напомни сегодня в 10:00 отправить договор",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "975ddfcc-2a81-5b61-a311-cc5b054bf7b6"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Напоминание сохранено: #2 «Отправить договор» — 12.10.2026 в 10:00.",
+            "action": "create",
+            "events": [
+              {
+                "id": 2,
+                "kind": "reminder",
+                "title": "Отправить договор",
+                "date": "2026-10-12",
+                "time": "10:00",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              }
+            ],
+            "conflicts": [],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "975ddfcc-2a81-5b61-a311-cc5b054bf7b6",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "Напомни сегодня в 13:00 купить билеты",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "7692a9d3-9390-55e7-b7ea-d634e4de19e8"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Напоминание сохранено: #3 «Купить билеты» — 12.10.2026 в 13:00.",
+            "action": "create",
+            "events": [
+              {
+                "id": 3,
+                "kind": "reminder",
+                "title": "Купить билеты",
+                "date": "2026-10-12",
+                "time": "13:00",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              }
+            ],
+            "conflicts": [],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "7692a9d3-9390-55e7-b7ea-d634e4de19e8",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/reminders/due",
+          "status": 200,
+          "expected": {
+            "events": [
+              {
+                "id": 1,
+                "kind": "reminder",
+                "title": "Отправить отчёт",
+                "date": "2026-10-12",
+                "time": "12:30",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              }
+            ],
+            "now": "2026-10-12T12:30:00+03:00"
+          }
+        }
+      ]
+    },
+    {
+      "name": "restart_context",
+      "steps": [
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "Добавь встречу с Иваном завтра",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "ec5c5204-970e-505e-8e9d-1273707d47b2"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "На какое время поставить событие? Например, в 15:00.",
+            "action": "clarify",
+            "events": [],
+            "candidates": [],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "ec5c5204-970e-505e-8e9d-1273707d47b2",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": true
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "в 12",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "e0d41a59-c308-5ff2-8ddb-d6e70e31341d"
+          },
+          "restart": true,
+          "status": 200,
+          "expected": {
+            "reply": "Встреча сохранена: #1 «Встреча с Иваном» — 13.10.2026 в 12:00.",
+            "action": "create",
+            "events": [
+              {
+                "id": 1,
+                "kind": "meeting",
+                "title": "Встреча с Иваном",
+                "date": "2026-10-13",
+                "time": "12:00",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              }
+            ],
+            "conflicts": [],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "e0d41a59-c308-5ff2-8ddb-d6e70e31341d",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/events",
+          "status": 200,
+          "expected": {
+            "events": [
+              {
+                "id": 1,
+                "kind": "meeting",
+                "title": "Встреча с Иваном",
+                "date": "2026-10-13",
+                "time": "12:00",
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              }
+            ],
+            "total": 1,
+            "offset": 0,
+            "limit": 100
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/history/00000000-0000-0000-0000-000000000001",
+          "status": 200,
+          "expected": {
+            "exchanges": [
+              {
+                "message": "Добавь встречу с Иваном завтра",
+                "response": {
+                  "reply": "На какое время поставить событие? Например, в 15:00.",
+                  "action": "clarify",
+                  "events": [],
+                  "candidates": [],
+                  "session_id": "00000000-0000-0000-0000-000000000001",
+                  "request_id": "ec5c5204-970e-505e-8e9d-1273707d47b2",
+                  "provider": "rules",
+                  "timezone": "Europe/Moscow",
+                  "pending": true
+                },
+                "created_at": "2026-10-12T12:30:00+03:00"
+              },
+              {
+                "message": "в 12",
+                "response": {
+                  "reply": "Встреча сохранена: #1 «Встреча с Иваном» — 13.10.2026 в 12:00.",
+                  "action": "create",
+                  "events": [
+                    {
+                      "id": 1,
+                      "kind": "meeting",
+                      "title": "Встреча с Иваном",
+                      "date": "2026-10-13",
+                      "time": "12:00",
+                      "duration_minutes": 60,
+                      "status": "open",
+                      "created_at": "2026-10-12T12:30:00+03:00",
+                      "updated_at": "2026-10-12T12:30:00+03:00",
+                      "source_key": null
+                    }
+                  ],
+                  "conflicts": [],
+                  "session_id": "00000000-0000-0000-0000-000000000001",
+                  "request_id": "e0d41a59-c308-5ff2-8ddb-d6e70e31341d",
+                  "provider": "rules",
+                  "timezone": "Europe/Moscow",
+                  "pending": false
+                },
+                "created_at": "2026-10-12T12:30:00+03:00"
+              }
+            ],
+            "state": {
+              "last_ids": [
+                1
+              ]
+            }
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "Перенеси ее на завтра",
+            "session_id": "00000000-0000-0000-0000-000000000002",
+            "request_id": "e7fcbed8-1f50-54cf-a4ae-c50d9253d23f"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Не нашёл запись для этого действия. Укажите название или номер, например #42.",
+            "action": "clarify",
+            "events": [],
+            "session_id": "00000000-0000-0000-0000-000000000002",
+            "request_id": "e7fcbed8-1f50-54cf-a4ae-c50d9253d23f",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "pending_expiry",
+      "steps": [
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "Добавь встречу с Иваном завтра",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "59252365-4544-5c34-8513-789604347393"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "На какое время поставить событие? Например, в 15:00.",
+            "action": "clarify",
+            "events": [],
+            "candidates": [],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "59252365-4544-5c34-8513-789604347393",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": true
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "в 12",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "ca6521de-82db-5d47-81b1-84c2a09be888"
+          },
+          "minutes_later": 31,
+          "status": 200,
+          "expected": {
+            "reply": "Я помогу с задачами, встречами и напоминаниями. Например: «Напомни завтра в 10 утра позвонить Ивану», «В пятницу нужно отправить отчёт», «Что у меня на эту неделю?» или «Найди задачу по договору».",
+            "action": "help",
+            "events": [],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "ca6521de-82db-5d47-81b1-84c2a09be888",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "task_mentioning_meeting",
+      "steps": [
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "Поставь задачу подготовиться к встрече с Иваном завтра",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "2c4adff1-2864-5c40-94ca-26108d7d74e4"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Задача сохранена: #1 «Подготовиться к встрече с Иваном» — 13.10.2026.",
+            "action": "create",
+            "events": [
+              {
+                "id": 1,
+                "kind": "task",
+                "title": "Подготовиться к встрече с Иваном",
+                "date": "2026-10-13",
+                "time": null,
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              }
+            ],
+            "conflicts": [],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "2c4adff1-2864-5c40-94ca-26108d7d74e4",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "period_needs_day",
+      "steps": [
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "Поставь задачу отправить отчёт на следующей неделе",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "4502bf47-b2b1-57d0-a294-88196388c1b7"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "На какой день в указанном периоде поставить событие?",
+            "action": "clarify",
+            "events": [],
+            "candidates": [],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "4502bf47-b2b1-57d0-a294-88196388c1b7",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": true
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/chat",
+          "body": {
+            "message": "20 октября",
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "4d02b52d-dbed-540f-940a-aa9a9213a676"
+          },
+          "status": 200,
+          "expected": {
+            "reply": "Задача сохранена: #1 «Отправить отчёт» — 20.10.2026.",
+            "action": "create",
+            "events": [
+              {
+                "id": 1,
+                "kind": "task",
+                "title": "Отправить отчёт",
+                "date": "2026-10-20",
+                "time": null,
+                "duration_minutes": 60,
+                "status": "open",
+                "created_at": "2026-10-12T12:30:00+03:00",
+                "updated_at": "2026-10-12T12:30:00+03:00",
+                "source_key": null
+              }
+            ],
+            "conflicts": [],
+            "session_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "4d02b52d-dbed-540f-940a-aa9a9213a676",
+            "provider": "rules",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          }
+        }
+      ]
+    }
+  ]
+}

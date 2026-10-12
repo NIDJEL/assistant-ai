@@ -10,3 +10,5 @@ artifacts/
 node_modules/
 .coverage
 htmlcov/
+*.sqlite3-shm
+*.sqlite3-wal
