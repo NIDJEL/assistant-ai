@@ -16,6 +16,10 @@ jobs:
       - run: pip install -r requirements.lock -r requirements-dev.txt
       - run: ruff check .
       - run: python -m pytest -q
+      - name: Check shared corpus against unchanged Python reference
+        run: |
+          python -m scripts.export_parity
+          git diff --exit-code -- testdata/parity/corpus.json internal/search/data/russian.json
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -33,3 +37,45 @@ jobs:
           curl --fail http://localhost:8000/
           docker logs rhythm-smoke
           docker rm -f rhythm-smoke
+  go-parity:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go: ['1.25.x', '1.27.1']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go }}
+          cache: true
+      - run: go mod verify
+      - run: go vet ./...
+      - run: go test -race -count=1 ./...
+  go-container:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker compose -f compose.go.yaml config --quiet
+      - run: docker build -f Dockerfile.golang -t rhythm-go:test .
+      - name: Go container smoke and persistence
+        run: |
+          docker run -d --name rhythm-go-smoke -p 8081:8000 -v rhythm-go-ci:/app/var rhythm-go:test
+          for attempt in $(seq 1 30); do
+            if curl --fail http://localhost:8081/health; then break; fi
+            sleep 1
+          done
+          curl --fail http://localhost:8081/health | grep '"backend":"go"'
+          curl --fail -X POST http://localhost:8081/api/chat -H 'Content-Type: application/json' -d '{"message":"Поставь задачу проверить контейнер"}'
+          docker restart rhythm-go-smoke
+          for attempt in $(seq 1 30); do
+            if curl --fail http://localhost:8081/health; then break; fi
+            sleep 1
+          done
+          curl --fail http://localhost:8081/health | grep '"events":1001'
+          curl --fail http://localhost:8081/
+          docker exec rhythm-go-smoke /app/server -healthcheck
+          docker stop --time=10 rhythm-go-smoke
+          docker logs rhythm-go-smoke
+          test "$(docker inspect --format='{{.State.ExitCode}}' rhythm-go-smoke)" = "0"
+          docker rm rhythm-go-smoke
+          docker volume rm rhythm-go-ci

@@ -1,5 +1,7 @@
 # Ритм — голосовой ассистент для задач и встреч
 
+**Go migration P0:** добавлен отдельный Go backend с storage migration и общими parity tests. Запуск: `docker compose -f compose.go.yaml up --build -d`, адрес [localhost:8081](http://localhost:8081). Python-структура и текущий frontend сохранены. [Go foundation и проверки](docs/GO_PARITY.md), [приоритеты P0–P4](docs/MIGRATION_PLAN.md), [актуальный Go API](docs/API_CONTRACT_NEXT.md). Новый React/voice UX — следующий этап P1; live Яндекс CalDAV — P2.
+
 Прототип личного планировщика на русском языке: создание задач, напоминаний и встреч, просмотр расписания и поиск по старым записям. Ввод голосом или текстом, ответ текстом и по желанию голосом.
 
 **Работающий локальный прототип:** [http://localhost:8000](http://localhost:8000). **Блок-схемы:** [http://localhost:8000/architecture](http://localhost:8000/architecture). Эти ссылки работают на компьютере, где запущено приложение. Публичное размещение не выполнялось: выбран локальный запуск и Docker.
