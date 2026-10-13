@@ -4,7 +4,7 @@ import { exitDuration, reducedMotion } from './motion';
 const PresentContext = createContext(true);
 export function usePresent() { return useContext(PresentContext); }
 
-export function Presence({ present, children }: { present: boolean; children: ReactNode }) {
+export function Presence({ present, children, duration = exitDuration }: { present: boolean; children: ReactNode; duration?: number }) {
   const [mounted, setMounted] = useState(present);
   const content = useRef(children);
   if (present) content.current = children;
@@ -12,8 +12,8 @@ export function Presence({ present, children }: { present: boolean; children: Re
   useEffect(() => {
     if (present) return;
     if (reducedMotion()) { setMounted(false); return; }
-    const timer = window.setTimeout(() => setMounted(false), exitDuration);
+    const timer = window.setTimeout(() => setMounted(false), duration);
     return () => window.clearTimeout(timer);
-  }, [present]);
+  }, [present, duration]);
   return mounted || present ? <PresentContext value={present}>{present ? children : content.current}</PresentContext> : null;
 }

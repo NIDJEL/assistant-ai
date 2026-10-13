@@ -53,10 +53,6 @@ html[data-motion='reduced'] .widget-drag-overlay { transform: none; }
 @media (max-width: 760px) { .today-page { height: calc(100dvh - 60px); }.calendar-cell { height: 69px; } }
 
 
-.panel-collapse { display: none; background: #fff; box-shadow: 0 3px 12px #366fb012; border-color: #edf4ff; color: #324aa2; border-radius: 50%; }
-@media (min-width:1180px) { .panel-collapse { display: flex; position: fixed; top: 35px; z-index: 3; right: calc(330px + 4px + max(0px, (100vw - 1920px)/2)); } }
-@media (min-width:1650px) { .panel-collapse { right: calc(355px + 4px + max(0px, (100vw - 1920px)/2)); } }
-@media (max-width:1359px) and (min-width:1180px) { .panel-collapse { right: 287px; } }
 
 
 .chat-event-card { display: flex; align-items: flex-start; gap: 18px; width: 100%; padding: 17px 20px; border: 1px solid #e2ebff; border-radius: 14px; color: #ff6559; background: linear-gradient(120deg,#fff,#f7faff); text-align: left; }.chat-event-card > svg { flex-shrink: 0; margin-top: 3px; }.chat-event-card > span { flex: 1; min-width: 0; }.chat-event-card strong { display: block; font-size: 18px; color: var(--text); font-weight: 600; }.chat-event-card small { display: flex; align-items: center; gap: 8px; text-align: left; margin-top: 8px; font-size: 14px; color: #8b9dce; }.chat-event-card.kind-meeting { color: var(--accent); }.assistant-message .reply-time { margin-top: 0; }.assistant-message .tts-button { float: left; margin: 9px 0 0; border: 0; min-height: 28px; width: 29px; }.assistant-message .reply-time { padding-top: 13px; font-size: 12px; }
