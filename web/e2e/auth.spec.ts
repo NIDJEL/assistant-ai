@@ -4,6 +4,37 @@ import { mkdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
 const password = 'test password 12345';
 async function settle(page: Page) { await page.evaluate(async () => { await Promise.allSettled(document.getAnimations().filter(animation => animation.effect?.getComputedTiming().iterations !== Infinity).map(animation => animation.finished)); }); }
+test('auth tabs visibly slide in both directions and preserve entered values', async ({ page }) => {
+ for (const reducedMotion of ['no-preference', 'reduce'] as const) {
+  await page.emulateMedia({ reducedMotion }); await page.goto('/auth'); await settle(page);
+  await page.getByLabel('Почта', { exact: true }).fill('motion@example.test');
+  for (const name of ['Создать аккаунт', 'Войти']) {
+   const movement = await page.getByRole('tab', { name, exact: true }).evaluate(async button => {
+    const slider = button.parentElement!.querySelector('span')!; const from = slider.getBoundingClientRect().left; const positions: number[] = [];
+    (button as HTMLElement).click();
+    for (let frame = 0; frame < 40; frame++) { await new Promise(resolve => requestAnimationFrame(resolve)); positions.push(slider.getBoundingClientRect().left); }
+    return { from, to: positions.at(-1)!, positions };
+   });
+   expect(Math.abs(movement.to - movement.from)).toBeGreaterThan(50);
+   expect(movement.positions.some(position => position > Math.min(movement.from, movement.to) + 2 && position < Math.max(movement.from, movement.to) - 2)).toBe(true);
+   await expect(page.getByRole('tab', { name, exact: true })).toHaveAttribute('aria-selected', 'true');
+   await expect(page.getByLabel('Почта', { exact: true })).toHaveValue('motion@example.test');
+  }
+ }
+});
+test('registration uses persistent labels inside spacious fields', async ({ page }) => {
+ await page.setViewportSize({ width: 1366, height: 768 }); await page.goto('/auth'); await page.getByRole('tab', { name: 'Создать аккаунт' }).click(); await settle(page);
+ await expect(page.getByText('Ваши дела — в одном спокойном ритме')).toHaveCount(0);
+ for (const label of ['Имя', 'Почта', 'Пароль', 'Повторите пароль']) {
+  const field = page.getByLabel(label, { exact: true });
+  expect(await field.evaluate(input => {
+   const control = input.closest('.auth-input')!.getBoundingClientRect(); const label = input.parentElement!.querySelector('.auth-input-label')!.getBoundingClientRect();
+   return control.height >= 48 && label.top >= control.top && label.bottom <= control.bottom;
+  })).toBe(true);
+ }
+ await page.getByLabel('Имя', { exact: true }).fill('Анна'); await page.getByLabel('Почта', { exact: true }).focus();
+ await expect.poll(() => page.getByLabel('Имя', { exact: true }).evaluate(input => input.parentElement!.querySelector('.auth-input-label')!.getBoundingClientRect().bottom < input.getBoundingClientRect().top + input.getBoundingClientRect().height / 2)).toBe(true);
+});
 test('login and registration fit desktop and mobile windows without scrolling or clipping', async ({ page }) => {
  await page.emulateMedia({ reducedMotion: 'reduce' });
  for (const viewport of [{ width: 1536, height: 1024 }, { width: 1440, height: 900 }, { width: 1366, height: 768 }, { width: 1280, height: 720 }, { width: 593, height: 932 }, { width: 390, height: 844 }, { width: 360, height: 740 }]) {
