@@ -8,13 +8,14 @@ import { DayEvent } from '../../features/calendar/DayEvent';
 import { byMoment } from '../../features/events/presentation';
 import { addDays, addMonths, formatDay, formatMonth, isCivilDay, monthDays, weekStart } from '../../features/calendar/dates';
 import { useEventSearch } from '../../hooks/useEventSearch';
+import { motionUpdate } from '../../components/motion/motion';
 type View = 'month' | 'week' | 'day';
 export function CalendarPage() {
   const { today } = useData(); const actions = useEventActions(); const [params, setParams] = useSearchParams();
   const selected = isCivilDay(params.get('date')) ? params.get('date')! : today;
   const [view, setView] = useState<View>('month'); const [query, setQuery] = useState(''); const result = useEventSearch(query);
   const events = [...result.events].sort(byMoment); const dayEvents = events.filter(event => event.date === selected);
-  const select = (day: string) => setParams({ date: day }, { replace: true });
+  const select = (day: string) => motionUpdate(() => setParams({ date: day }, { replace: true }));
   const change = (direction: number) => select(view === 'month' ? addMonths(selected, direction) : addDays(selected, direction * (view === 'week' ? 7 : 1)));
   const canChange = (direction: number) => view === 'month' ? addMonths(selected, direction).slice(0, 7) !== selected.slice(0, 7) : view === 'week' ? weekStart(addDays(selected, direction * 7)) !== weekStart(selected) : addDays(selected, direction) !== selected;
   const days = view === 'month' ? monthDays(selected) : [...new Set(Array.from({ length: 7 }, (_, i) => addDays(weekStart(selected), i)))];

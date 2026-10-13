@@ -30,12 +30,18 @@ Schema v4 adds an optional `events.details` JSON column: tags, subtasks with sta
 
 Widget sorting uses dnd-kit PointerSensor and KeyboardSensor. Only the handle activates dragging. An overlay lifts the card while the original keeps its height; adjacent cards animate. Space / Up / Down / Space reorder by one logical card even when heights differ. Reduced-motion preference removes CSS transitions and drop animation.
 
+## Motion
+
+Navigation, filters, calendar selection, meeting details and panel visibility use browser View Transitions with 320 ms easing. The router commits synchronously inside the snapshot callback; it never waits for an animation frame while rendering is paused. Rapid navigation skips the previous visual transition while applying each state update once. Browsers without this API use ordinary navigation and a short page fade.
+
+Task details, priority filters and inline reminders animate their measured height. Closing content becomes inert, and reopening during the 220 ms exit preserves the reminder draft. Dialogs, drawers and menus have entry and exit animations; closing dialogs reject clicks and submission until native focus is restored on unmount. Buttons, checks, switches and new chat bubbles have gentle feedback. Layout widths and type sizes are unchanged. System reduced motion disables snapshot, height and CSS animations, with immediate closing.
+
 ## Verification
 
 - `go test ./...` and `go vet ./...`: passed; existing shared parity/contract corpus retained.
 - Linux Docker `go test -race -count=1 ./...`: passed.
 - Frontend: 26 tests passed; production build and frozen lockfile installation passed. Delayed search keeps menus/editors mounted; immediate refresh replays newer preferences.
-- Browser: 11 E2E passed, including pointer and keyboard sorting, handle-only activation, add/remove/duplicate prevention, widget settings and persistence, task subtasks, meeting selection, selected day, inline reminder and integration detail.
+- Browser: 14 E2E passed, including pointer and keyboard sorting, handle-only activation, add/remove/duplicate prevention, widget settings and persistence, task subtasks, meeting selection, selected day, inline reminder and integration detail. Motion checks verify a successfully started snapshot of the destination, rapid navigation, reversible reminder closing with draft preservation, blocked submission during modal exit, focus restoration and reduced motion.
 - Responsive checks: 1920, 1600, 1440, 1280, 834 and 390 px, with overflow assertions and tablet/mobile drawers.
 - Voice: pause → zero POST; continued dictation → appended draft; Send → exactly one POST. Voice controller and manual-send implementation unchanged.
 - Python reference: 73 tests passed; legacy voice: 6 tests passed.

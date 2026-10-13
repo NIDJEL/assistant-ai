@@ -1,6 +1,7 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
 import { Search, X, Inbox, Plus, type LucideIcon } from 'lucide-react';
 import { Mascot } from './Brand';
+import { motionUpdate } from './motion/motion';
 export function Button({ children, variant = 'primary', className = '', ...props }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'primary' | 'soft' | 'ghost' | 'danger' }) {
   return <button type="button" className={`button ${variant} ${className}`} {...props}>{children}</button>;
 }
@@ -14,7 +15,7 @@ export function SearchBox({ value, onChange, label, placeholder = label }: { val
   return <div className="search-box"><Search size={20} aria-hidden="true"/><input aria-label={label} placeholder={placeholder} value={value} maxLength={200} onChange={e => onChange(e.target.value)}/>{value && <IconButton icon={X} label="Очистить поиск" onClick={() => onChange('')}/>}</div>;
 }
 export function Segments<T extends string>({ value, onChange, options, label }: { value: T; onChange: (value: T) => void; options: { value: T; label: string; count?: number }[]; label: string }) {
-  return <div className="segments" role="group" aria-label={label}>{options.map(option => <button type="button" key={option.value} aria-pressed={value === option.value} onClick={() => onChange(option.value)}>{option.label}{option.count !== undefined && <span className="count">{option.count}</span>}</button>)}</div>;
+  return <div className="segments" role="group" aria-label={label}>{options.map(option => <button type="button" key={option.value} aria-pressed={value === option.value} onClick={() => { if (value !== option.value) motionUpdate(() => onChange(option.value)); }}>{option.label}{option.count !== undefined && <span className="count">{option.count}</span>}</button>)}</div>;
 }
 export function Empty({ children = 'Пока ничего нет', action }: { children?: ReactNode; action?: ReactNode }) {
   return <div className="empty-state"><Inbox size={30} aria-hidden="true"/><p>{children}</p>{action}</div>;

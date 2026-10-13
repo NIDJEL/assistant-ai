@@ -5,6 +5,7 @@ import { Alert, Button } from '../components/UI';
 import { useData } from './DataContext';
 import { errorMessage } from '../api/client';
 import type { EventKind, RhythmEvent } from '../types/api';
+import { Presence } from '../components/motion/Presence';
 interface Actions {
   create: (kind: EventKind, date?: string, time?: string, preset?: { title: string; duration: number }) => void; edit: (event: RhythmEvent, focusDate?: boolean) => void;
   complete: (event: RhythmEvent) => Promise<void>; remove: (event: RhythmEvent) => void;
@@ -30,8 +31,8 @@ export function EventActionsProvider({ children }: { children: ReactNode }) {
   }
   return <Context value={actions}>{children}
     {error && !deleting && <div className="toast"><Alert action={<Button variant="ghost" onClick={() => setError('')}>Закрыть</Button>}>{error}</Alert></div>}
-    {editor && <EventEditor key={editor.nonce} spec={editor} onClose={() => setEditor(null)}/>}
-    {deleting && <Dialog title="Удалить запись?" onClose={() => setDeleting(null)}><p className="delete-title">{deleting.title}</p>{error && <Alert>{error}</Alert>}<footer className="dialog-actions"><Button variant="ghost" onClick={() => setDeleting(null)}>Отмена</Button><Button variant="danger" onClick={() => void confirmDelete()} disabled={busy}>{busy ? 'Удаляю…' : 'Удалить'}</Button></footer></Dialog>}
+    <Presence present={!!editor}>{editor && <EventEditor key={editor.nonce} spec={editor} onClose={() => setEditor(null)}/>}</Presence>
+    <Presence present={!!deleting}>{deleting && <Dialog title="Удалить запись?" onClose={() => setDeleting(null)}><p className="delete-title">{deleting.title}</p>{error && <Alert>{error}</Alert>}<footer className="dialog-actions"><Button variant="ghost" onClick={() => setDeleting(null)}>Отмена</Button><Button variant="danger" onClick={() => void confirmDelete()} disabled={busy}>{busy ? 'Удаляю…' : 'Удалить'}</Button></footer></Dialog>}</Presence>
   </Context>;
 }
 export function useEventActions() { const actions = useContext(Context); if (!actions) throw new Error('EventActionsProvider missing'); return actions; }

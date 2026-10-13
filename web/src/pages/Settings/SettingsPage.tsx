@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { UserRound, Volume2, PanelRight, Server, RefreshCw, Bell, Link2 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { MotionLink as Link } from '../../components/motion/MotionNavLink';
 import { useData } from '../../app/DataContext';
 import { usePreferences } from '../../app/PreferencesContext';
 import { PageHeader, Button } from '../../components/UI';

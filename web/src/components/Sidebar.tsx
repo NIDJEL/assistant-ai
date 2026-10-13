@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom';
+import { MotionNavLink as NavLink } from './motion/MotionNavLink';
 import { Settings } from 'lucide-react';
 import { navigation } from '../app/navigation';
 import { usePreferences } from '../app/PreferencesContext';
