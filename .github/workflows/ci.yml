@@ -39,6 +39,20 @@ jobs:
           docker rm -f rhythm-smoke
   go-parity:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: rhythm_test
+          POSTGRES_USER: rhythm
+          POSTGRES_PASSWORD: ci-only-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U rhythm -d rhythm_test"
+          --health-interval 5s --health-timeout 3s --health-retries 12
+    env:
+      TEST_DATABASE_URL: postgres://rhythm:ci-only-password@127.0.0.1:5432/rhythm_test?sslmode=disable
     strategy:
       matrix:
         go: ['1.25.x', '1.27.1']
@@ -55,34 +69,41 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: docker compose -f compose.go.yaml config --quiet
-      - run: docker build -t rhythm-go:test .
-      - name: Go container smoke and persistence
+      - name: PostgreSQL runtime smoke and persistence
         run: |
-          docker run -d --name rhythm-go-smoke -p 8081:8000 -v rhythm-go-ci:/app/var rhythm-go:test
+          export POSTGRES_PASSWORD=$(openssl rand -hex 24)
+          export SESSION_SECRET=$(openssl rand -hex 32)
+          docker compose -f compose.go.yaml config --quiet
+          docker compose up --build -d --wait
+          curl --fail http://localhost:8081/health
+          curl --fail http://localhost:8081/auth | grep '<div id="root">'
+          python scripts/smoke_auth.py --phase prepare
+          docker compose restart app
           for attempt in $(seq 1 30); do
             if curl --fail http://localhost:8081/health; then break; fi
             sleep 1
           done
-          curl --fail http://localhost:8081/health | grep '"backend":"go"'
-          curl --fail -X POST http://localhost:8081/api/chat -H 'Content-Type: application/json' -d '{"message":"Поставь задачу проверить контейнер"}'
-          docker restart rhythm-go-smoke
-          for attempt in $(seq 1 30); do
-            if curl --fail http://localhost:8081/health; then break; fi
-            sleep 1
-          done
-          curl --fail http://localhost:8081/health | grep '"events":1001'
-          curl --fail http://localhost:8081/
-          curl --fail http://localhost:8081/calendar | grep '<div id="root">'
-          curl --fail http://localhost:8081/settings | grep '<div id="root">'
-          docker exec rhythm-go-smoke /app/server -healthcheck
-          docker stop --time=10 rhythm-go-smoke
-          docker logs rhythm-go-smoke
-          test "$(docker inspect --format='{{.State.ExitCode}}' rhythm-go-smoke)" = "0"
-          docker rm rhythm-go-smoke
-          docker volume rm rhythm-go-ci
+          python scripts/smoke_auth.py --phase verify
+          docker compose exec -T app /app/server -healthcheck
+          docker compose stop --timeout 10 app
+          test "$(docker inspect --format='{{.State.ExitCode}}' $(docker compose ps -a -q app))" = "0"
+          docker compose down -v
   frontend:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: rhythm_test
+          POSTGRES_USER: rhythm
+          POSTGRES_PASSWORD: ci-only-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U rhythm -d rhythm_test"
+          --health-interval 5s --health-timeout 3s --health-retries 12
+    env:
+      TEST_DATABASE_URL: postgres://rhythm:ci-only-password@127.0.0.1:5432/rhythm_test?sslmode=disable
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -105,7 +126,8 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: p1-browser-results
+          name: p12-browser-results
           path: |
             web/playwright-report
             web/test-results
+            docs/screenshots/p1-2

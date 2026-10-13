@@ -1,19 +1,48 @@
 services:
-  go-assistant:
+  app:
     build: .
     ports:
       - "127.0.0.1:8081:8000"
     environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-rhythm}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@postgres:5432/${POSTGRES_DB:-rhythm}?sslmode=disable
+      SESSION_SECRET: ${SESSION_SECRET:?Set SESSION_SECRET (32+ random characters) in .env}
+      PUBLIC_URL: ${PUBLIC_URL:-http://localhost:8081}
+      APP_ENV: ${APP_ENV:-development}
       APP_TIMEZONE: ${APP_TIMEZONE:-Europe/Moscow}
-      AUTO_IMPORT_DEMO: ${AUTO_IMPORT_DEMO:-true}
       NLP_PROVIDER: ${NLP_PROVIDER:-rules}
-      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://ollama:11434}
       OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:7b}
       OLLAMA_TIMEOUT: ${OLLAMA_TIMEOUT:-20}
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+      YANDEX_CLIENT_ID: ${YANDEX_CLIENT_ID:-}
+      YANDEX_CLIENT_SECRET: ${YANDEX_CLIENT_SECRET:-}
+      YANDEX_REDIRECT_URI: ${YANDEX_REDIRECT_URI:-}
+      VK_CLIENT_ID: ${VK_CLIENT_ID:-}
+      VK_CLIENT_SECRET: ${VK_CLIENT_SECRET:-}
+      VK_REDIRECT_URI: ${VK_REDIRECT_URI:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-rhythm}
+      POSTGRES_USER: ${POSTGRES_USER:-rhythm}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
     volumes:
-      - rhythm-go-data:/app/var
+      - rhythm-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    restart: unless-stopped
+  ollama:
+    image: ollama/ollama:latest
+    profiles: ["ollama"]
+    volumes:
+      - rhythm-ollama-data:/root/.ollama
     restart: unless-stopped
 volumes:
-  rhythm-go-data:
+  rhythm-postgres-data:
+  rhythm-ollama-data:

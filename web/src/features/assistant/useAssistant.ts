@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useAuth } from '../../app/AuthContext';
 import * as api from '../../api/assistant';
 import { errorMessage } from '../../api/client';
 import { useData } from '../../app/DataContext';
@@ -6,20 +7,14 @@ import { usePreferences } from '../../app/PreferencesContext';
 import { speak, stopSpeaking } from '../voice/tts';
 import type { ChatInput, ChatResponse } from '../../types/api';
 export interface ChatItem { id: string; message: string; response?: ChatResponse; created: string; error?: string }
-function sessionId(): string {
-  try {
-    for (const key of ['rhythm.session.v1', 'rhythm-session']) {
-      const stored = localStorage.getItem(key);
-      if (stored && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(stored)) {
-        try { localStorage.setItem('rhythm.session.v1', stored); } catch { /* Keep the valid existing session. */ }
-        return stored;
-      }
-    }
-  } catch { /* In-memory session works when storage is disabled. */ }
-  const id = crypto.randomUUID(); try { localStorage.setItem('rhythm.session.v1', id); } catch { /* optional persistence */ } return id;
+function sessionId(userId: string): string {
+ const key = `rhythm.session.v2.${userId}`;
+ try { const stored = localStorage.getItem(key); if (stored && /^[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(stored)) return stored; } catch { /* storage optional */ }
+ const id = crypto.randomUUID(); try { localStorage.setItem(key, id); } catch { /* storage optional */ } return id;
 }
 export function useAssistant() {
-  const [session] = useState(sessionId); const [items, setItems] = useState<ChatItem[]>([]); const [busy, setBusy] = useState(false);
+  const { user } = useAuth();
+  const [session] = useState(() => sessionId(user!.id)); const [items, setItems] = useState<ChatItem[]>([]); const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true); const [historyError, setHistoryError] = useState('');
   const locked = useRef(false); const interacted = useRef(false); const pending = useRef<ChatInput | null>(null);
   const { refresh, accept } = useData(); const { preferences } = usePreferences();

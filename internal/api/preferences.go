@@ -23,6 +23,10 @@ func (a *API) preferences(w http.ResponseWriter, r *http.Request) {
 		a.fail(w, r, domain.Validation("Некорректный UUID профиля"))
 		return
 	}
+	if a.Auth != nil && id.String() != repository.UserID(r.Context()) {
+		a.fail(w, r, &domain.AppError{Code: "not_found", Message: "Профиль не найден", Status: 404})
+		return
+	}
 	var value json.RawMessage
 	if r.Method == http.MethodPut {
 		if err = decode(w, r, &value); err != nil {

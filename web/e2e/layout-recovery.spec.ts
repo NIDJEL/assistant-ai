@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 import { ready, noOverflow, screenshot } from './helpers';
 import { dayKey, addDays } from '../src/features/calendar/dates';
 import type { Health, RhythmEvent } from '../src/types/api';

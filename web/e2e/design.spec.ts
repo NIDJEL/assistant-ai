@@ -1,11 +1,11 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 import { ready, noOverflow } from './helpers';
 import { dayKey, addDays, formatDay } from '../src/features/calendar/dates';
 import type { Health, RhythmEvent } from '../src/types/api';
 
-test('widget handle reorder, add/remove, per-page settings and SQLite persistence', async ({ page, request }) => {
+test('widget handle reorder, add/remove, per-page settings and PostgreSQL persistence', async ({ page, request }) => {
   await ready(page, '/calendar');
-  const profile = await page.evaluate(() => localStorage.getItem('rhythm.profile.v1'));
+  const profile = (await (await request.get('/api/auth/me')).json()).user.id;
   const saved = async () => (await (await request.get(`/api/preferences/${profile}`)).json()).layouts?.['/calendar'];
   const handle = page.getByRole('button', { name: 'Переместить: Календарь', exact: true });
   await handle.focus(); await page.keyboard.press('Space'); await page.keyboard.press('ArrowDown');

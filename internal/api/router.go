@@ -14,10 +14,13 @@ import (
 
 	"github.com/NIDJEL/assistant-ai/internal/api/dto"
 	"github.com/NIDJEL/assistant-ai/internal/assistant"
+	"github.com/NIDJEL/assistant-ai/internal/auth"
 	"github.com/NIDJEL/assistant-ai/internal/calendar"
 	"github.com/NIDJEL/assistant-ai/internal/clock"
 	"github.com/NIDJEL/assistant-ai/internal/config"
 	"github.com/NIDJEL/assistant-ai/internal/domain"
+	"github.com/NIDJEL/assistant-ai/internal/repository"
+	"github.com/NIDJEL/assistant-ai/internal/storage/postgres"
 	"github.com/NIDJEL/assistant-ai/migrations"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -25,6 +28,7 @@ import (
 )
 
 type API struct {
+	Auth      *auth.Service
 	Config    config.Config
 	Clock     clock.Clock
 	Calendar  *calendar.Service
@@ -40,21 +44,49 @@ func (a *API) Router() http.Handler {
 	r.Use(a.security)
 	r.Use(middleware.Timeout(45 * time.Second))
 	r.Get("/health", a.health)
-	r.Get("/api/preferences/{profile}", a.preferences)
-	r.Put("/api/preferences/{profile}", a.preferences)
-	r.Post("/api/chat", a.chat)
-	r.Get("/api/history/{session_id}", a.history)
-	r.Get("/api/events", a.events(domain.EventUnknown))
-	r.Get("/api/tasks", a.events(domain.EventTask))
-	r.Get("/api/meetings", a.events(domain.EventMeeting))
-	r.Get("/api/reminders", a.events(domain.EventReminder))
-	r.Get("/api/reminders/due", a.due)
-	r.Get("/api/events/{id}", a.get)
-	r.Post("/api/events", a.create)
-	r.Patch("/api/events/{id}", a.update)
-	r.Delete("/api/events/{id}", a.delete)
-	r.Post("/api/events/{id}/restore", a.restore)
-	r.Post("/api/import-demo", a.importDemo)
+	if a.Auth != nil {
+		a.authRoutes(r)
+	}
+	r.Group(func(r chi.Router) {
+		if a.Auth != nil {
+			r.Use(a.requireUser)
+			r.Use(a.csrf)
+		}
+		r.Get("/api/preferences/{profile}", a.preferences)
+		r.Put("/api/preferences/{profile}", a.preferences)
+		r.Post("/api/chat", a.chat)
+		r.Get("/api/history/{session_id}", a.history)
+		r.Get("/api/events", a.events(domain.EventUnknown))
+		r.Get("/api/tasks", a.events(domain.EventTask))
+		r.Get("/api/meetings", a.events(domain.EventMeeting))
+		r.Get("/api/reminders", a.events(domain.EventReminder))
+		r.Get("/api/reminders/due", a.due)
+		r.Get("/api/calendar", a.events(domain.EventUnknown))
+		r.Get("/api/archive", func(w http.ResponseWriter, r *http.Request) {
+			q := r.URL.Query()
+			q.Set("deleted", "true")
+			r.URL.RawQuery = q.Encode()
+			a.events(domain.EventUnknown)(w, r)
+		})
+		r.Get("/api/integrations", func(w http.ResponseWriter, r *http.Request) {
+			if db, ok := a.Calendar.Store.(*postgres.Database); ok {
+				connections, err := db.Connections(r.Context())
+				if err != nil {
+					a.fail(w, r, err)
+					return
+				}
+				write(w, 200, map[string]any{"connections": connections})
+				return
+			}
+			write(w, 200, map[string]any{"connections": []any{}})
+		})
+		r.Get("/api/events/{id}", a.get)
+		r.Post("/api/events", a.create)
+		r.Patch("/api/events/{id}", a.update)
+		r.Delete("/api/events/{id}", a.delete)
+		r.Post("/api/events/{id}/restore", a.restore)
+		r.Post("/api/import-demo", a.importDemo)
+	})
 	r.Get("/openapi.json", func(w http.ResponseWriter, r *http.Request) { write(w, 200, OpenAPI()) })
 	r.Get("/docs", a.docs)
 	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.Dir(filepath.Join(a.Config.Root, "app/static")))))
@@ -121,6 +153,25 @@ func id(r *http.Request) (int64, error) {
 	return value, nil
 }
 func (a *API) health(w http.ResponseWriter, r *http.Request) {
+	if a.Auth != nil {
+		u, err := a.currentUser(r)
+		if err != nil {
+			a.fail(w, r, err)
+			return
+		}
+		count := 0
+		if u != nil {
+			count, err = a.Calendar.Count(repository.WithUser(r.Context(), u.ID))
+		} else if p, ok := a.Calendar.Store.(interface{ Ping(context.Context) error }); ok {
+			err = p.Ping(r.Context())
+		}
+		if err != nil {
+			a.fail(w, r, err)
+			return
+		}
+		write(w, 200, map[string]any{"status": "ok", "events": count, "timezone": a.Config.Timezone, "nlp_provider": a.Config.NLPProvider, "now": a.Clock.Now(), "backend": "go", "storage": "postgresql", "schema_version": 1})
+		return
+	}
 	count, err := a.Calendar.Count(r.Context())
 	if err != nil {
 		a.fail(w, r, err)

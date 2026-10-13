@@ -15,13 +15,16 @@ import (
 
 	"github.com/NIDJEL/assistant-ai/internal/api"
 	"github.com/NIDJEL/assistant-ai/internal/assistant"
+	"github.com/NIDJEL/assistant-ai/internal/auth"
 	"github.com/NIDJEL/assistant-ai/internal/calendar"
 	"github.com/NIDJEL/assistant-ai/internal/clock"
 	"github.com/NIDJEL/assistant-ai/internal/config"
+	"github.com/NIDJEL/assistant-ai/internal/integrations/vk"
+	"github.com/NIDJEL/assistant-ai/internal/integrations/yandex"
 	"github.com/NIDJEL/assistant-ai/internal/llm"
 	"github.com/NIDJEL/assistant-ai/internal/nlp"
 	"github.com/NIDJEL/assistant-ai/internal/search"
-	"github.com/NIDJEL/assistant-ai/internal/storage/sqlite"
+	"github.com/NIDJEL/assistant-ai/internal/storage/postgres"
 )
 
 func run(log *slog.Logger) error {
@@ -49,13 +52,27 @@ func run(log *slog.Logger) error {
 	}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
-	store, err := sqlite.Open(ctx, cfg.DatabasePath)
+	if cfg.DatabaseURL == "" {
+		return errors.New("DATABASE_URL is required; runtime uses PostgreSQL. See .env.example")
+	}
+	if len(cfg.SessionSecret) < 32 {
+		return errors.New("SESSION_SECRET must contain at least 32 characters")
+	}
+	store, err := postgres.Open(ctx, cfg.DatabaseURL)
 	if err != nil {
 		return err
 	}
 	defer store.Close()
-	if store.BackupPath != "" {
-		log.Info("database backed up before migration", "path", store.BackupPath)
+	providers := map[string]auth.Provider{}
+	if cfg.YandexClientID != "" && cfg.YandexClientSecret != "" && cfg.YandexRedirectURI != "" {
+		providers["yandex"] = yandex.New(cfg.YandexClientID, cfg.YandexClientSecret, cfg.YandexRedirectURI)
+	}
+	if cfg.VKClientID != "" && cfg.VKRedirectURI != "" {
+		providers["vk"] = vk.New(cfg.VKClientID, cfg.VKClientSecret, cfg.VKRedirectURI)
+	}
+	authService, err := auth.New(store, cfg.SessionSecret, providers)
+	if err != nil {
+		return err
 	}
 	engine, err := search.New()
 	if err != nil {
@@ -63,19 +80,12 @@ func run(log *slog.Logger) error {
 	}
 	cal := &calendar.Service{Store: store, Search: engine, Location: cfg.Location, DemoPath: filepath.Join(cfg.Root, "data/voice_assistant_events_1000.csv")}
 	now := clock.System{Location: cfg.Location}
-	if cfg.AutoImport {
-		result, err := cal.ImportDemo(ctx, now.Now())
-		if err != nil {
-			return err
-		}
-		log.Info("demo import", "imported", result.Imported, "skipped", result.Skipped)
-	}
 	interpreter := nlp.Hybrid{}
 	if cfg.NLPProvider != "rules" {
 		interpreter.Fallback = &llm.Ollama{URL: cfg.OllamaURL, Model: cfg.OllamaModel, Timezone: cfg.Timezone, Client: &http.Client{Timeout: cfg.OllamaTimeout}}
 	}
 	service := assistant.New(store, interpreter, cal)
-	app := &api.API{Config: cfg, Clock: now, Calendar: cal, Assistant: service, Logger: log}
+	app := &api.API{Config: cfg, Clock: now, Calendar: cal, Assistant: service, Auth: authService, Logger: log}
 	server := &http.Server{Addr: cfg.Address, Handler: app.Router(), ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 10 * time.Second, WriteTimeout: 50 * time.Second, IdleTimeout: 60 * time.Second,
 		BaseContext: func(net.Listener) context.Context { return ctx }, ErrorLog: slog.NewLogLogger(log.Handler(), slog.LevelError)}
 	done := make(chan error, 1)

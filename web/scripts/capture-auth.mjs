@@ -1,0 +1,18 @@
+import { chromium } from '@playwright/test';
+import { mkdir, copyFile, writeFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
+const directory = resolve('../docs/screenshots/p1-2');
+await mkdir(directory, { recursive: true });
+if (process.env.AUTH_REFERENCE) await copyFile(process.env.AUTH_REFERENCE, resolve(directory, 'reference.png'));
+const browser = await chromium.launch();
+const page = await browser.newPage({ viewport: { width: 1536, height: 1024 }, locale: 'ru-RU', reducedMotion: 'reduce' });
+const base = process.env.P1_BASE_URL || 'http://127.0.0.1:8083';
+await page.goto(`${base}/auth`); await page.getByRole('heading', { name: 'Добро пожаловать в Ритм' }).waitFor();
+await page.screenshot({ path: resolve(directory, 'login-desktop.png'), fullPage: true });
+await page.getByRole('tab', { name: 'Создать аккаунт' }).click(); await page.getByLabel('Повторите пароль').waitFor();
+await page.screenshot({ path: resolve(directory, 'register-desktop.png'), fullPage: true });
+await page.setViewportSize({ width: 390, height: 844 }); await page.getByRole('tab', { name: 'Войти', exact: true }).click();
+await page.getByRole('heading', { name: 'Добро пожаловать в Ритм' }).waitFor();
+await page.screenshot({ path: resolve(directory, 'login-mobile.png'), fullPage: true });
+await writeFile(resolve(directory, 'index.html'), `<!doctype html><html lang="ru"><meta charset="utf-8"><title>P1.2 · Auth comparison</title><style>body{font:16px system-ui;background:#eef5fc;margin:30px;color:#111b46}main{display:grid;grid-template-columns:1fr 1fr;gap:20px}img{width:100%;border-radius:12px}section{margin:20px 0}h1{font-size:24px}a{color:#1678ff}</style><h1>Ритм · утверждённый reference / React</h1><main><section><h2>REFERENCE</h2><img src="reference.png"></section><section><h2>ACTUAL · 1536 × 1024</h2><img src="login-desktop.png"></section></main><main><section><h2>Регистрация</h2><img src="register-desktop.png"></section><section><h2>Мобильный экран</h2><img style="max-width:390px" src="login-mobile.png"></section></main></html>`);
+await browser.close();

@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/NIDJEL/assistant-ai/internal/domain"
@@ -30,11 +31,14 @@ func (a *API) recover(next http.Handler) http.Handler {
 func (a *API) security(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("X-Content-Type-Options", "nosniff")
+		if r.URL.Path == "/health" || strings.HasPrefix(r.URL.Path, "/api/") {
+			w.Header().Set("Cache-Control", "no-store")
+		}
 		w.Header().Set("Referrer-Policy", "same-origin")
 		w.Header().Set("Permissions-Policy", "microphone=(self)")
-		policy := "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'"
+		policy := "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://avatars.yandex.net https://*.vk.com https://*.vk.ru https://*.userapi.com; connect-src 'self'; frame-ancestors 'none'"
 		if r.URL.Path == "/docs" {
-			policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'"
+			policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' data: https://avatars.yandex.net https://*.vk.com https://*.vk.ru https://*.userapi.com; connect-src 'self'; frame-ancestors 'none'"
 		}
 		w.Header().Set("Content-Security-Policy", policy)
 		next.ServeHTTP(w, r)

@@ -73,9 +73,9 @@ it('keeps a reminder menu mounted during a delayed search response', async () =>
   await waitFor(() => expect(document.querySelector('.row-menu')).toHaveTextContent('Удалить'));
 });
 it('replays newer cached preferences after an immediate refresh instead of restoring stale server values', async () => {
-  localStorage.setItem('rhythm.preferences.v1', JSON.stringify({ name: 'Анна', widgets: false, tts: false, layouts: {}, revision: 2 }));
+  localStorage.setItem('rhythm.preferences.v1.11111111-1111-4111-8111-111111111111', JSON.stringify({ name: 'Анна', widgets: false, tts: false, layouts: {}, revision: 2 }));
   const { handler } = await start('/settings', { preferences: { name: 'Алексей', widgets: true, revision: 1 } });
-  expect(screen.getByLabelText('Ваше имя')).toHaveValue('Анна');
+  expect(screen.getByLabelText('Ваше имя')).toHaveValue('Алексей'); // Identity name comes from the authenticated user.
   expect(screen.getByRole('button', { name: 'Показать виджеты' })).toBeInTheDocument();
   await waitFor(() => expect(handler.mock.calls.some(([, init]) => init?.method === 'PUT' && JSON.parse(String(init.body)).revision === 2 && JSON.parse(String(init.body)).name === 'Анна')).toBe(true));
 });
@@ -83,14 +83,15 @@ it('archive search calls the typed client and filters real results', async () =>
   const { user, handler } = await start('/archive'); await user.type(screen.getByRole('textbox', { name: 'Поиск в архиве' }), 'договор');
   await waitFor(() => expect(handler.mock.calls.some(([path]) => String(path).includes('q=%D0%B4%D0%BE%D0%B3%D0%BE%D0%B2%D0%BE%D1%80'))).toBe(true)); expect(screen.getByRole('button', { name: 'Архивный договор' })).toBeInTheDocument();
 });
-it('continues the legacy browser session and preserves its TTS preference', async () => {
-  const id = '11111111-1111-4111-8111-111111111111'; localStorage.setItem('rhythm-session', id); localStorage.setItem('rhythm-speak', 'true');
-  const { handler, user } = await start();
-  await waitFor(() => expect(handler.mock.calls.some(([path]) => String(path).endsWith(`/api/history/${id}`))).toBe(true)); expect(localStorage.getItem('rhythm.session.v1')).toBe(id);
-  await user.click(screen.getByRole('link', { name: 'Настройки' })); expect(screen.getByRole('switch', { name: 'Озвучивать ответы' })).toBeChecked();
+it('ignores another legacy browser user’s dialogue and TTS preference', async () => {
+ const legacy = '22222222-2222-4222-8222-222222222222'; localStorage.setItem('rhythm-session', legacy); localStorage.setItem('rhythm-speak', 'true');
+ const { handler, user } = await start();
+ await waitFor(() => expect(handler.mock.calls.some(([path]) => String(path).startsWith('/api/history/'))).toBe(true));
+ expect(handler.mock.calls.some(([path]) => String(path).endsWith(`/api/history/${legacy}`))).toBe(false);
+ await user.click(screen.getByRole('link', { name: 'Настройки' })); expect(screen.getByRole('switch', { name: 'Озвучивать ответы' })).not.toBeChecked();
 });
 it('replaces a corrupt stored session UUID instead of repeatedly failing history', async () => {
-  localStorage.setItem('rhythm.session.v1', '-'.repeat(36)); await start(); expect(localStorage.getItem('rhythm.session.v1')).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+  localStorage.setItem('rhythm.session.v2.11111111-1111-4111-8111-111111111111', '-'.repeat(36)); await start(); expect(localStorage.getItem('rhythm.session.v2.11111111-1111-4111-8111-111111111111')).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
 });
 it('assistant event cards reflect completion from the server instead of stale history snapshots', async () => {
   const { user } = await start(); await user.type(screen.getByRole('textbox', { name: 'Сообщение ассистенту' }), 'Создай задачу'); await user.click(screen.getByRole('button', { name: 'Отправить сообщение' })); await screen.findByText('Готово. Задача сохранена.');

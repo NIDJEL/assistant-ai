@@ -35,6 +35,7 @@ func New(store repository.Store, interpreter Interpreter, cal *calendar.Service)
 	return &Service{Store: store, Interpreter: interpreter, Calendar: cal, locks: map[string]*lockEntry{}}
 }
 func (s *Service) sessionLock(ctx context.Context, id string) (func(), error) {
+	id = repository.UserID(ctx) + ":" + id
 	s.mu.Lock()
 	e := s.locks[id]
 	if e == nil {

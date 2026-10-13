@@ -109,7 +109,9 @@ func OpenAPI() map[string]any {
 		}
 		paths[path] = ops
 	}
-	return map[string]any{"openapi": "3.0.3", "info": map[string]string{"title": "Ритм — Go parity API", "version": "0.2.0"}, "paths": paths, "components": map[string]any{"schemas": schemas}}
+	authOpenAPI(paths, schemas)
+	paths["/health"].(map[string]any)["get"].(map[string]any)["security"] = []any{}
+	return map[string]any{"openapi": "3.0.3", "info": map[string]string{"title": "Ритм — multi-user API", "version": "0.4.0"}, "paths": paths, "security": []map[string]any{{"sessionCookie": []string{}}}, "components": map[string]any{"schemas": schemas, "securitySchemes": map[string]any{"sessionCookie": map[string]any{"type": "apiKey", "in": "cookie", "name": sessionCookie}}}}
 }
 func (a *API) docs(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")

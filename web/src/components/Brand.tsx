@@ -1,6 +1,7 @@
 import { useId } from 'react';
-export function BrandMark({ small = false }: { small?: boolean }) {
-  return <svg className={small ? 'brand-mark small' : 'brand-mark'} viewBox="0 0 64 42" aria-hidden="true"><path d="M6 31 Q26 -3 31 18 T58 12" fill="none" stroke="currentColor" strokeWidth="8" strokeLinecap="round" /></svg>;
+export function BrandMark({ small = false, gradient = false }: { small?: boolean; gradient?: boolean }) {
+  const id = useId();
+  return <svg className={small ? 'brand-mark small' : 'brand-mark'} viewBox="0 0 64 42" aria-hidden="true">{gradient && <defs><linearGradient id={id}><stop stopColor="#0878ff"/><stop offset=".55" stopColor="#338bff"/><stop offset="1" stopColor="#9ac6ff"/></linearGradient></defs>}<path d="M6 31 Q26 -3 31 18 T58 12" fill="none" stroke={gradient ? `url(#${id})` : 'currentColor'} strokeWidth="8" strokeLinecap="round" /></svg>;
 }
 export function Mascot() {
   const id = useId();

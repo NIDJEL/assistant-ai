@@ -9,6 +9,7 @@ export function mockServer(options: { chatGate?: Promise<void>; historyGate?: Pr
   const handler = vi.fn(async (path: string | URL | Request, init: RequestInit = {}) => {
     const url = new URL(String(path), 'http://localhost'); const method = init.method || 'GET';
     const json = (data: unknown, status = 200) => new Response(JSON.stringify(data), { status, headers: { 'Content-Type': 'application/json' } });
+    if (url.pathname === '/api/auth/me') return json({ user: { id: '11111111-1111-4111-8111-111111111111', name: 'Алексей', email: 'alex@example.test', avatar_url: '', onboarding_completed: true, providers: ['email'] } });
     if (url.pathname === '/health') return json({ backend: 'go', status: 'ok', now: '2026-10-13T12:30:00+03:00', timezone: 'Europe/Moscow', events: events.filter(event => !event.deleted_at).length, nlp_provider: 'rules', schema_version: 5 });
     if (url.pathname.startsWith('/api/history/')) { await options.historyGate; return json({ exchanges: [], state: {} }); }
     if (url.pathname.startsWith('/api/preferences/')) { if (method === 'PUT') return json(JSON.parse(String(init.body))); return json(options.preferences || {}); }
