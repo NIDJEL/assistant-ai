@@ -6,7 +6,7 @@ import { useData } from './DataContext';
 import { errorMessage } from '../api/client';
 import type { EventKind, RhythmEvent } from '../types/api';
 interface Actions {
-  create: (kind: EventKind, date?: string, time?: string) => void; edit: (event: RhythmEvent, focusDate?: boolean) => void;
+  create: (kind: EventKind, date?: string, time?: string, preset?: { title: string; duration: number }) => void; edit: (event: RhythmEvent, focusDate?: boolean) => void;
   complete: (event: RhythmEvent) => Promise<void>; remove: (event: RhythmEvent) => void;
 }
 const Context = createContext<Actions | null>(null);
@@ -14,7 +14,7 @@ export function EventActionsProvider({ children }: { children: ReactNode }) {
   const data = useData(); const [editor, setEditor] = useState<EditorSpec | null>(null); const [deleting, setDeleting] = useState<RhythmEvent | null>(null);
   const [error, setError] = useState(''); const [busy, setBusy] = useState(false); const locked = useRef(false); const pendingIds = useRef(new Set<number>());
   const actions: Actions = {
-    create: (kind, date, time) => setEditor({ kind, date, time, nonce: Date.now() }),
+    create: (kind, date, time, preset) => setEditor({ kind, date, time, ...preset, nonce: Date.now() }),
     edit: (event, focusDate) => setEditor({ kind: event.kind, event, focusDate, nonce: Date.now() }),
     remove: event => { setError(''); setDeleting(event); },
     complete: async event => {

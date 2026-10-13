@@ -114,6 +114,10 @@ func (s *Service) Create(ctx context.Context, e domain.Event, now time.Time, for
 }
 
 type Patch struct {
+	Tags                 *[]string
+	Subtasks             *[]domain.Subtask
+	Participants         *[]domain.Participant
+	ReminderEnabled      *bool
 	Title, Description   *string
 	Location, MeetingURL *string
 	Date                 **domain.Date
@@ -133,6 +137,18 @@ func (s *Service) Update(ctx context.Context, id int64, p Patch, now time.Time) 
 		}
 		if e == nil {
 			return &domain.AppError{Code: "not_found", Message: "Запись не найдена", Status: 404}
+		}
+		if p.Tags != nil {
+			e.Tags = *p.Tags
+		}
+		if p.Subtasks != nil {
+			e.Subtasks = *p.Subtasks
+		}
+		if p.Participants != nil {
+			e.Participants = *p.Participants
+		}
+		if p.ReminderEnabled != nil {
+			e.ReminderEnabled = p.ReminderEnabled
 		}
 		if p.Title != nil {
 			e.Title = *p.Title
@@ -205,7 +221,7 @@ func (s *Service) Due(ctx context.Context, now time.Time) ([]domain.Event, error
 	for _, e := range reminders {
 		start, _, ok := e.Interval(s.Location)
 		age := now.Sub(start)
-		if ok && age >= 0 && age <= 5*time.Minute {
+		if (e.ReminderEnabled == nil || *e.ReminderEnabled) && ok && age >= 0 && age <= 5*time.Minute {
 			result = append(result, e)
 		}
 	}

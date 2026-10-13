@@ -40,6 +40,8 @@ func (a *API) Router() http.Handler {
 	r.Use(a.security)
 	r.Use(middleware.Timeout(45 * time.Second))
 	r.Get("/health", a.health)
+	r.Get("/api/preferences/{profile}", a.preferences)
+	r.Put("/api/preferences/{profile}", a.preferences)
 	r.Post("/api/chat", a.chat)
 	r.Get("/api/history/{session_id}", a.history)
 	r.Get("/api/events", a.events(domain.EventUnknown))

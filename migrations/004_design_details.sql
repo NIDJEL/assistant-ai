@@ -1,0 +1,2 @@
+ALTER TABLE events ADD COLUMN details TEXT NOT NULL DEFAULT '{}';
+CREATE TABLE preferences (id TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at TEXT NOT NULL);

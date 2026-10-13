@@ -11,6 +11,7 @@ export function mockServer(options: { chatGate?: Promise<void>; historyGate?: Pr
     const json = (data: unknown, status = 200) => new Response(JSON.stringify(data), { status, headers: { 'Content-Type': 'application/json' } });
     if (url.pathname === '/health') return json({ backend: 'go', status: 'ok', now: '2026-10-13T12:30:00+03:00', timezone: 'Europe/Moscow', events: events.length, nlp_provider: 'rules', schema_version: 3 });
     if (url.pathname.startsWith('/api/history/')) { await options.historyGate; return json({ exchanges: [], state: {} }); }
+    if (url.pathname.startsWith('/api/preferences/')) { if (method === 'PUT') return json(JSON.parse(String(init.body))); return json({}); }
     if (url.pathname === '/api/chat') {
       const input = JSON.parse(String(init.body)) as ChatInput; chats.push(input); await options.chatGate;
       if (options.failFirstChat && chats.length === 1) throw new TypeError('offline');

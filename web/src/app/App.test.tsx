@@ -14,10 +14,10 @@ it('navigates all eight pages and preserves explicit integration states', async 
   for (const name of ['Календарь', 'Задачи', 'Встречи', 'Напоминания', 'Архив', 'Интеграции']) {
     await user.click(within(nav).getByRole('link', { name })); expect(screen.getByRole('heading', { level: 1, name })).toBeInTheDocument();
   }
-  expect(screen.getAllByText('Скоро')).toHaveLength(10);
-  expect(screen.queryByText('Подключено', { exact: true })).not.toBeInTheDocument();
-  await user.click(screen.getByRole('button', { name: 'Настроить' })); expect(screen.getByRole('dialog')).toHaveTextContent('Подключение будет доступно на этапе P2');
-  await user.click(screen.getByRole('button', { name: 'Понятно' })); await user.click(screen.getByRole('link', { name: 'Настройки' })); expect(screen.getByRole('heading', { level: 1, name: 'Настройки' })).toBeInTheDocument();
+  expect(screen.getAllByText('Скоро')).toHaveLength(5);
+  expect(document.querySelectorAll('.integration-state')).toHaveLength(6);
+  await user.click(screen.getByRole('button', { name: 'Настроить' })); expect(screen.getByRole('complementary', { name: 'Интеграция' })).toHaveTextContent('Подключение будет доступно на этапе P2'); expect(screen.queryByRole('complementary', { name: 'Виджеты' })).not.toBeInTheDocument();
+  await user.click(screen.getByRole('button', { name: 'Назад к виджетам' })); await user.click(screen.getByRole('link', { name: 'Настройки' })); expect(screen.getByRole('heading', { level: 1, name: 'Настройки' })).toBeInTheDocument();
 });
 it.each(['Send', 'Enter'])('%s sends exactly once while a request is in progress', async mode => {
   const gate = deferred(); const server = await start('/', { chatGate: gate.promise });
@@ -46,7 +46,7 @@ it('late history response does not overwrite a new conversation', async () => {
 it('calendar renders server events and day/week/month navigation', async () => {
   const { user } = await start('/calendar'); expect(within(screen.getByRole('main')).getByText('октябрь 2026')).toBeInTheDocument();
   const views = screen.getByRole('group', { name: 'Вид календаря' }); await user.click(within(views).getByRole('button', { name: 'Неделя' })); expect(screen.getByRole('region', { name: 'Календарь на неделю' })).toBeInTheDocument();
-  await user.click(within(views).getByRole('button', { name: 'День' })); expect(screen.getByRole('button', { name: 'Редактировать «Обсуждение проекта»' })).toBeInTheDocument();
+  await user.click(within(views).getByRole('button', { name: 'День' })); expect(within(screen.getByRole('region', { name: 'События выбранного дня' })).getByRole('button', { name: 'Обсуждение проекта' })).toBeInTheDocument();
 });
 it('task completion calls PATCH and moves the event to completed', async () => {
   const { user, writes } = await start('/tasks'); await user.click(screen.getByRole('checkbox', { name: 'Завершить «Подготовить отчёт»' }));
@@ -59,9 +59,9 @@ it('meeting conflict is displayed and force requires a second explicit action', 
   await user.click(within(dialog).getByRole('button', { name: 'Сохранить с пересечением' })); await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument()); expect(writes[1].input.force).toBe(true);
 });
 it('reminder edit persists title and time', async () => {
-  const { user, writes } = await start('/reminders'); await user.click(screen.getByRole('button', { name: 'Редактировать «Позвонить Ивану»' }));
-  const dialog = screen.getByRole('dialog'); const title = within(dialog).getByLabelText('Название'); await user.clear(title); await user.type(title, 'Позвонить Марии'); fireEvent.change(within(dialog).getByLabelText('Время', { exact: true }), { target: { value: '09:45' } }); await user.click(within(dialog).getByRole('button', { name: 'Сохранить' }));
-  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument()); expect(writes[0]).toMatchObject({ method: 'PATCH', input: { title: 'Позвонить Марии', time: '09:45' } });
+  const { user, writes } = await start('/reminders'); await user.click(within(screen.getByRole('main')).getByRole('button', { name: 'Позвонить Ивану' }));
+  const dialog = screen.getByRole('form', { name: 'Редактор: Позвонить Ивану' }); const title = within(dialog).getByLabelText('Название напоминания'); await user.clear(title); await user.type(title, 'Позвонить Марии'); fireEvent.change(within(dialog).getByLabelText('Время напоминания', { exact: true }), { target: { value: '09:45' } }); await user.click(within(dialog).getByRole('button', { name: 'Сохранить' }));
+  await waitFor(() => expect(screen.queryByRole('form', { name: 'Редактор: Позвонить Ивану' })).not.toBeInTheDocument()); expect(writes[0]).toMatchObject({ method: 'PATCH', input: { title: 'Позвонить Марии', time: '09:45' } });
 });
 it('archive search calls the typed client and filters real results', async () => {
   const { user, handler } = await start('/archive'); await user.type(screen.getByRole('textbox', { name: 'Поиск в архиве' }), 'договор');

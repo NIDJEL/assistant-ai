@@ -38,7 +38,7 @@ func TestMigrateV2MeetingMetadata(t *testing.T) {
 	}
 	_ = db.DB.QueryRow("SELECT count(*) FROM events").Scan(&count)
 	_ = db.DB.QueryRow("PRAGMA user_version").Scan(&version)
-	if location != "" || meetingURL != "" || count != 1001 || version != 3 || db.BackupPath == "" {
+	if location != "" || meetingURL != "" || count != 1001 || version != migrations.LatestVersion || db.BackupPath == "" {
 		t.Fatal("v2 migration changed existing data")
 	}
 }

@@ -29,7 +29,7 @@ docker compose down
 
 Все даты и счётчики основаны на Go API. При первом старте импортируется предоставленный CSV из 1000 записей; повторный импорт не создаёт дубли. `AUTO_IMPORT_DEMO=false` отключает импорт для новой базы.
 
-Яндекс Календарь показывает «Не подключён» и подготовленный UI P2. Google Calendar, Telegram, Zoom, Notion и Slack — «Скоро». Live CalDAV/OAuth и draggable widget persistence не входят в P1. Приложение остаётся personal assistant.
+Яндекс Календарь показывает «Не подключён» и подготовленный UI P2. Google Calendar, Telegram, Zoom, Notion и Slack — «Скоро». Live CalDAV/OAuth остаются этапом P2. P1.1 добавляет визуальное выравнивание, подзадачи, участников встреч, inline-редактор напоминаний и draggable widgets с хранением настроек в SQLite. Приложение остаётся personal assistant.
 
 ## Голос
 
@@ -70,9 +70,11 @@ python -m pytest -q
 node --test tests/voice.test.js
 ```
 
-SQLite настроен на WAL, busy_timeout=5000 и foreign_keys=1. Миграции создают согласованный backup и сохраняют ID/history/pending. Schema v3 добавляет место и URL встречи. LLM HTTP выполняется вне короткой write transaction. Hybrid NLP и исходный общий corpus P0 сохранены.
+SQLite настроен на WAL, busy_timeout=5000 и foreign_keys=1. Миграции создают согласованный backup и сохраняют ID/history/pending. Schema v3 добавляет место и URL встречи; v4 — метки, подзадачи, участников, состояние напоминаний и preferences. LLM HTTP выполняется вне короткой write transaction. Hybrid NLP и исходный общий corpus P0 сохранены.
 
 ## Документация
+
+- [P1.1: visual alignment, REFERENCE / ACTUAL и проверки](docs/P1_1_DESIGN_PARITY.md)
 
 - [P1: модули, runtime, ограничения и проверки](docs/P1_UI.md)
 - [Desktop screenshots всех страниц, mobile и voice proof](docs/P1_SCREENSHOTS.md)

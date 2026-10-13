@@ -6,8 +6,8 @@ export function Mascot() {
   const id = useId();
   return <svg className="mascot" viewBox="0 0 390 190" aria-hidden="true">
     <defs><linearGradient id={id}><stop stopColor="#e6f3ff"/><stop offset="1" stopColor="#d4e4ff"/></linearGradient></defs>
-    <path d="M380 14 C295 -20 286 86 230 38 C158 -21 61 31 66 98 C69 167 154 158 197 143 C272 117 296 193 390 166" fill="none" stroke="#eff6ff" strokeWidth="10"/>
-    <path d="M385 35 C314 6 298 109 241 63 C173 8 92 42 89 100 C87 151 158 132 190 125 C265 108 301 170 390 140 L390 105 C319 135 287 59 232 101 C190 135 121 127 131 83 C143 41 182 62 220 84 C277 129 316 46 387 66Z" fill={`url(#${id})`} opacity=".7"/>
-    <path d="M131 97 Q148 111 156 91 M178 85 Q194 99 204 78" fill="none" stroke="#2c43b7" strokeWidth="3" strokeLinecap="round"/>
+    <path d="M390 5 C323 -14 307 77 250 50 C211 31 191 14 156 18 C95 22 54 75 71 126 C88 180 144 166 184 151 C227 135 258 158 291 169 C328 182 356 162 390 141" fill="none" stroke="#e1edff" strokeWidth="7"/>
+    <path d="M390 20 C328 -10 307 98 250 75 C208 58 191 24 152 37 C104 54 90 91 107 123 C126 157 166 142 195 129 C231 113 261 142 291 145 C330 149 355 105 390 114 L390 158 C351 146 335 185 289 179 C254 175 227 147 197 154 C158 165 107 191 83 147 C58 103 89 38 139 25 C193 9 204 49 245 47 C286 47 300 -18 349 0 L390 0Z" fill={`url(#${id})`} opacity=".54"/>
+    <path d="M114 113 Q132 126 140 108 M163 99 Q180 112 190 94" fill="none" stroke="#1425b0" strokeWidth="3" strokeLinecap="round"/>
   </svg>;
 }

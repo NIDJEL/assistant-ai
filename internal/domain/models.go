@@ -11,6 +11,7 @@ import (
 )
 
 type Event struct {
+	EventDetails
 	ID                 int64         `json:"id"`
 	Kind               EventType     `json:"kind"`
 	Title              string        `json:"title"`
@@ -48,6 +49,9 @@ func (e Event) Interval(loc *time.Location) (time.Time, time.Time, bool) {
 	return start, start.Add(e.Duration), true
 }
 func (e Event) Validate() error {
+	if err := e.EventDetails.Validate(); err != nil {
+		return err
+	}
 	if utf8.RuneCountInString(e.Location) > 500 || len(e.MeetingURL) > 2048 {
 		return errors.New("Сократите место встречи или ссылку")
 	}

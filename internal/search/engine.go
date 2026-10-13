@@ -111,7 +111,7 @@ func (e *Engine) Search(events []domain.Event, query string, limit int) []domain
 	docs := make([]map[string]bool, len(events))
 	freq := map[string]int{}
 	for i, event := range events {
-		docs[i] = e.Tokens(event.Title + " " + event.Description)
+		docs[i] = e.Tokens(event.Title + " " + event.Description + " " + strings.Join(event.Tags, " "))
 		for token := range docs[i] {
 			freq[token]++
 		}
