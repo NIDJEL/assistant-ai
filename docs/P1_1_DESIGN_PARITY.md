@@ -26,7 +26,7 @@ Unsupported recurrence, reminder sound, system notifications and live integratio
 
 Schema v4 adds an optional `events.details` JSON column: tags, subtasks with stable IDs, meeting participants, and reminder enabled state. Existing event fields and the assistant/NLP contracts are retained. Empty optional fields are omitted from JSON. Disabling a reminder excludes it from the due-reminders endpoint. Search also includes real task tags.
 
-`GET/PUT /api/preferences/{profile}` persists a browser UUID profile in SQLite. `panel_visible` (plus the compatible `widgets` field), name/TTS, per-page widget order, hidden widget types and record limits survive refresh and server restart. Old browser preferences are imported once. Writes are serialized, failures are visible with Retry, and a widget type is never duplicated.
+`GET/PUT /api/preferences/{profile}` persists a browser UUID profile in SQLite. `panel_visible` (plus the compatible `widgets` field), name/TTS, per-page widget order, hidden widget types and record limits survive refresh and server restart. Old browser preferences are imported once. A monotonic revision prevents stale writes from replacing newer settings; a newer cached edit is replayed after an immediate refresh. Writes are serialized, failures are visible with Retry, and a widget type is never duplicated.
 
 Widget sorting uses dnd-kit PointerSensor and KeyboardSensor. Only the handle activates dragging. An overlay lifts the card while the original keeps its height; adjacent cards animate. Space / Up / Down / Space reorder by one logical card even when heights differ. Reduced-motion preference removes CSS transitions and drop animation.
 
@@ -34,7 +34,7 @@ Widget sorting uses dnd-kit PointerSensor and KeyboardSensor. Only the handle ac
 
 - `go test ./...` and `go vet ./...`: passed; existing shared parity/contract corpus retained.
 - Linux Docker `go test -race -count=1 ./...`: passed.
-- Frontend: 24 tests passed; production build and frozen lockfile installation passed.
+- Frontend: 26 tests passed; production build and frozen lockfile installation passed. Delayed search keeps menus/editors mounted; immediate refresh replays newer preferences.
 - Browser: 11 E2E passed, including pointer and keyboard sorting, handle-only activation, add/remove/duplicate prevention, widget settings and persistence, task subtasks, meeting selection, selected day, inline reminder and integration detail.
 - Responsive checks: 1920, 1600, 1440, 1280, 834 and 390 px, with overflow assertions and tablet/mobile drawers.
 - Voice: pause → zero POST; continued dictation → appended draft; Send → exactly one POST. Voice controller and manual-send implementation unchanged.

@@ -63,6 +63,22 @@ it('reminder edit persists title and time', async () => {
   const dialog = screen.getByRole('form', { name: 'Редактор: Позвонить Ивану' }); const title = within(dialog).getByLabelText('Название напоминания'); await user.clear(title); await user.type(title, 'Позвонить Марии'); fireEvent.change(within(dialog).getByLabelText('Время напоминания', { exact: true }), { target: { value: '09:45' } }); await user.click(within(dialog).getByRole('button', { name: 'Сохранить' }));
   await waitFor(() => expect(screen.queryByRole('form', { name: 'Редактор: Позвонить Ивану' })).not.toBeInTheDocument()); expect(writes[0]).toMatchObject({ method: 'PATCH', input: { title: 'Позвонить Марии', time: '09:45' } });
 });
+it('keeps a reminder menu mounted during a delayed search response', async () => {
+  const gate = deferred(); const { user, handler } = await start('/reminders', { searchGate: gate.promise });
+  await user.type(screen.getByRole('textbox', { name: 'Поиск напоминаний' }), 'Позвонить Ивану');
+  await waitFor(() => expect(handler.mock.calls.some(([path]) => String(path).includes('q='))).toBe(true));
+  await user.click(screen.getByRole('button', { name: 'Действия: Позвонить Ивану' }));
+  expect(document.querySelector('.row-menu')).toHaveTextContent('Удалить');
+  await act(async () => gate.resolve());
+  await waitFor(() => expect(document.querySelector('.row-menu')).toHaveTextContent('Удалить'));
+});
+it('replays newer cached preferences after an immediate refresh instead of restoring stale server values', async () => {
+  localStorage.setItem('rhythm.preferences.v1', JSON.stringify({ name: 'Анна', widgets: false, tts: false, layouts: {}, revision: 2 }));
+  const { handler } = await start('/settings', { preferences: { name: 'Алексей', widgets: true, revision: 1 } });
+  expect(screen.getByLabelText('Ваше имя')).toHaveValue('Анна');
+  expect(screen.getByRole('button', { name: 'Показать виджеты' })).toBeInTheDocument();
+  await waitFor(() => expect(handler.mock.calls.some(([, init]) => init?.method === 'PUT' && JSON.parse(String(init.body)).revision === 2 && JSON.parse(String(init.body)).name === 'Анна')).toBe(true));
+});
 it('archive search calls the typed client and filters real results', async () => {
   const { user, handler } = await start('/archive'); await user.type(screen.getByRole('textbox', { name: 'Поиск в архиве' }), 'договор');
   await waitFor(() => expect(handler.mock.calls.some(([path]) => String(path).includes('q=%D0%B4%D0%BE%D0%B3%D0%BE%D0%B2%D0%BE%D1%80'))).toBe(true)); expect(screen.getByRole('button', { name: 'Архивный договор' })).toBeInTheDocument();

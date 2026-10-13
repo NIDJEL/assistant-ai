@@ -35,8 +35,21 @@ func (a *API) preferences(w http.ResponseWriter, r *http.Request) {
 			a.fail(w, r, domain.Validation("Настройки должны быть объектом"))
 			return
 		}
+		if raw, ok := object["revision"]; ok {
+			var revision int64
+			if err := json.Unmarshal(raw, &revision); err != nil || revision < 0 {
+				a.fail(w, r, domain.Validation("Версия настроек должна быть неотрицательным целым числом"))
+				return
+			}
+		}
 		err = a.Calendar.Store.Write(r.Context(), func(tx repository.Tx) error {
-			return tx.(preferenceStore).SavePreferences(r.Context(), id.String(), value, a.Clock.Now())
+			store := tx.(preferenceStore)
+			if err := store.SavePreferences(r.Context(), id.String(), value, a.Clock.Now()); err != nil {
+				return err
+			}
+			var err error
+			value, err = store.Preferences(r.Context(), id.String())
+			return err
 		})
 	} else {
 		err = a.Calendar.Store.Read(r.Context(), func(tx repository.Tx) error {

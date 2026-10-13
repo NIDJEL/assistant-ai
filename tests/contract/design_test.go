@@ -84,6 +84,12 @@ func TestDesignMetadataAndPreferencesSurviveRestart(t *testing.T) {
 	if order[0] != "tasks" {
 		t.Fatal(prefs)
 	}
+	call("PUT", profile, `{"revision":10,"panel_visible":false}`, 200)
+	stale := call("PUT", profile, `{"revision":9,"panel_visible":true}`, 200)
+	if stale["panel_visible"] != false || stale["revision"] != float64(10) {
+		t.Fatal("stale write replaced newer preferences", stale)
+	}
+	call("PUT", profile, `{"revision":-1}`, 422)
 	call("PATCH", "/api/events/"+id, `{"subtasks":[],"tags":[]}`, 200)
 	loaded = call("GET", "/api/events/"+id, "", 200)
 	if loaded["subtasks"] != nil || loaded["tags"] != nil {

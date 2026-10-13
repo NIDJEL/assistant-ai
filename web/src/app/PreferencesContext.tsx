@@ -2,11 +2,11 @@ import { createContext, useContext, useEffect, useRef, useState, type ReactNode 
 import { request, errorMessage } from '../api/client';
 export type WidgetKey = 'calendar' | 'today' | 'tasks' | 'meetings' | 'progress' | 'quick' | 'tags';
 export interface WidgetLayout { order: WidgetKey[]; hidden: WidgetKey[]; settings: Partial<Record<WidgetKey, { limit: number }>> }
-export interface Preferences { name: string; tts: boolean; widgets: boolean; layouts: Record<string, WidgetLayout> }
-const defaults: Preferences = { name: 'Алексей', tts: false, widgets: true, layouts: {} };
+export interface Preferences { name: string; tts: boolean; widgets: boolean; layouts: Record<string, WidgetLayout>; revision: number }
+const defaults: Preferences = { name: 'Алексей', tts: false, widgets: true, layouts: {}, revision: 0 };
 const key = 'rhythm.preferences.v1';
 function normalize(value: Partial<Preferences> & { panel_visible?: boolean }): Preferences {
-  return { name: typeof value.name === 'string' && value.name.trim() ? value.name.slice(0, 50) : defaults.name, tts: typeof value.tts === 'boolean' ? value.tts : localStorage.getItem('rhythm-speak') === 'true', widgets: typeof value.panel_visible === 'boolean' ? value.panel_visible : typeof value.widgets === 'boolean' ? value.widgets : true, layouts: value.layouts && typeof value.layouts === 'object' ? value.layouts : {} };
+  return { name: typeof value.name === 'string' && value.name.trim() ? value.name.slice(0, 50) : defaults.name, tts: typeof value.tts === 'boolean' ? value.tts : localStorage.getItem('rhythm-speak') === 'true', widgets: typeof value.panel_visible === 'boolean' ? value.panel_visible : typeof value.widgets === 'boolean' ? value.widgets : true, layouts: value.layouts && typeof value.layouts === 'object' ? value.layouts : {}, revision: Number.isSafeInteger(value.revision) && value.revision! >= 0 ? value.revision! : 0 };
 }
 function read(): Preferences { try { return normalize(JSON.parse(localStorage.getItem(key) || '{}')); } catch { return defaults; } }
 function profile() {
@@ -31,13 +31,13 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
     let canceled = false;
     void request<Partial<Preferences>>(endpoint.current).then(value => {
       if (canceled) return;
-      if (Object.keys(value).length) { const next = normalize(value); current.current = next; setPreferences(next); localStorage.setItem(key, JSON.stringify(next)); }
+      if (Object.keys(value).length) { const next = normalize(value); if (current.current.revision > next.revision) persist(current.current); else { current.current = next; setPreferences(next); localStorage.setItem(key, JSON.stringify(next)); } }
       else persist(current.current);
     }).catch(e => { if (!canceled) setError(errorMessage(e)); }).finally(() => { if (!canceled) setReady(true); });
     return () => { canceled = true; };
   }, []);
   const update = (patch: Partial<Preferences>) => {
-    const next = { ...current.current, ...patch }; current.current = next; setPreferences(next);
+    const next = { ...current.current, ...patch, revision: Math.max(Date.now(), current.current.revision + 1) }; current.current = next; setPreferences(next);
     localStorage.setItem(key, JSON.stringify(next)); persist(next);
   };
   return <Context value={{ preferences, update, ready, saving, error, retry: () => persist(current.current) }}>{children}</Context>;

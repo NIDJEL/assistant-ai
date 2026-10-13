@@ -4,14 +4,14 @@ export function fixture(id: number, kind: RhythmEvent['kind'], title: string, ov
   return { id, kind, title, description: '', date: today, time: kind === 'task' ? null : '10:00', duration_minutes: 60, priority: 'normal', status: 'open', location: '', meeting_url: '', created_at: '2026-10-13T10:00:00+03:00', updated_at: '2026-10-13T10:00:00+03:00', source_key: null, external_calendar_id: null, ...overrides };
 }
 export const initial = [fixture(1, 'task', 'Подготовить отчёт'), fixture(2, 'meeting', 'Обсуждение проекта'), fixture(3, 'reminder', 'Позвонить Ивану', { time: '08:00' }), fixture(4, 'task', 'Архивный договор', { date: '2026-10-01', status: 'done' })];
-export function mockServer(options: { chatGate?: Promise<void>; historyGate?: Promise<void>; failFirstChat?: boolean } = {}) {
+export function mockServer(options: { chatGate?: Promise<void>; historyGate?: Promise<void>; searchGate?: Promise<void>; preferences?: Record<string, unknown>; failFirstChat?: boolean } = {}) {
   let events = initial.map(e => ({ ...e })); const chats: ChatInput[] = []; const writes: { method: string; input: EventInput | EventPatch }[] = [];
   const handler = vi.fn(async (path: string | URL | Request, init: RequestInit = {}) => {
     const url = new URL(String(path), 'http://localhost'); const method = init.method || 'GET';
     const json = (data: unknown, status = 200) => new Response(JSON.stringify(data), { status, headers: { 'Content-Type': 'application/json' } });
     if (url.pathname === '/health') return json({ backend: 'go', status: 'ok', now: '2026-10-13T12:30:00+03:00', timezone: 'Europe/Moscow', events: events.length, nlp_provider: 'rules', schema_version: 3 });
     if (url.pathname.startsWith('/api/history/')) { await options.historyGate; return json({ exchanges: [], state: {} }); }
-    if (url.pathname.startsWith('/api/preferences/')) { if (method === 'PUT') return json(JSON.parse(String(init.body))); return json({}); }
+    if (url.pathname.startsWith('/api/preferences/')) { if (method === 'PUT') return json(JSON.parse(String(init.body))); return json(options.preferences || {}); }
     if (url.pathname === '/api/chat') {
       const input = JSON.parse(String(init.body)) as ChatInput; chats.push(input); await options.chatGate;
       if (options.failFirstChat && chats.length === 1) throw new TypeError('offline');
@@ -20,6 +20,7 @@ export function mockServer(options: { chatGate?: Promise<void>; historyGate?: Pr
     }
     if (url.pathname === '/api/events' && method === 'GET') {
       const q = url.searchParams.get('q')?.toLowerCase() || ''; const matched = events.filter(event => !q || event.title.toLowerCase().includes(q));
+      if (q) await options.searchGate;
       const offset = Number(url.searchParams.get('offset') || 0); return json({ events: matched.slice(offset, offset + 200), total: matched.length, limit: 200, offset });
     }
     if (url.pathname === '/api/events' && method === 'POST') {

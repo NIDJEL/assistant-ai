@@ -260,6 +260,6 @@ func (r *Repo) Preferences(ctx context.Context, id string) (json.RawMessage, err
 	return json.RawMessage(raw), err
 }
 func (r *Repo) SavePreferences(ctx context.Context, id string, value json.RawMessage, now time.Time) error {
-	_, err := r.q.ExecContext(ctx, "INSERT INTO preferences VALUES(?,?,?) ON CONFLICT(id) DO UPDATE SET value=excluded.value,updated_at=excluded.updated_at", id, string(value), now.Format(time.RFC3339Nano))
+	_, err := r.q.ExecContext(ctx, "INSERT INTO preferences VALUES(?,?,?) ON CONFLICT(id) DO UPDATE SET value=excluded.value,updated_at=excluded.updated_at WHERE coalesce(json_extract(excluded.value,'$.revision'),0)>=coalesce(json_extract(preferences.value,'$.revision'),0)", id, string(value), now.Format(time.RFC3339Nano))
 	return err
 }
