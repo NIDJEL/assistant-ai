@@ -1,12 +1,13 @@
-import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { request, errorMessage } from '../api/client';
 export type WidgetKey = 'calendar' | 'today' | 'tasks' | 'meetings' | 'progress' | 'quick' | 'tags';
 export interface WidgetLayout { order: WidgetKey[]; hidden: WidgetKey[]; settings: Partial<Record<WidgetKey, { limit: number }>> }
-export interface Preferences { name: string; tts: boolean; widgets: boolean; layouts: Record<string, WidgetLayout>; revision: number }
-const defaults: Preferences = { name: 'Алексей', tts: false, widgets: true, layouts: {}, revision: 0 };
+export type MotionPreference = 'system' | 'full' | 'reduced';
+export interface Preferences { name: string; tts: boolean; widgets: boolean; motion: MotionPreference; layouts: Record<string, WidgetLayout>; revision: number }
+const defaults: Preferences = { name: 'Алексей', tts: false, widgets: true, motion: 'system', layouts: {}, revision: 0 };
 const key = 'rhythm.preferences.v1';
 function normalize(value: Partial<Preferences> & { panel_visible?: boolean }): Preferences {
-  return { name: typeof value.name === 'string' && value.name.trim() ? value.name.slice(0, 50) : defaults.name, tts: typeof value.tts === 'boolean' ? value.tts : localStorage.getItem('rhythm-speak') === 'true', widgets: typeof value.panel_visible === 'boolean' ? value.panel_visible : typeof value.widgets === 'boolean' ? value.widgets : true, layouts: value.layouts && typeof value.layouts === 'object' ? value.layouts : {}, revision: Number.isSafeInteger(value.revision) && value.revision! >= 0 ? value.revision! : 0 };
+  return { name: typeof value.name === 'string' && value.name.trim() ? value.name.slice(0, 50) : defaults.name, tts: typeof value.tts === 'boolean' ? value.tts : localStorage.getItem('rhythm-speak') === 'true', widgets: typeof value.panel_visible === 'boolean' ? value.panel_visible : typeof value.widgets === 'boolean' ? value.widgets : true, motion: value.motion === 'full' || value.motion === 'reduced' ? value.motion : 'system', layouts: value.layouts && typeof value.layouts === 'object' ? value.layouts : {}, revision: Number.isSafeInteger(value.revision) && value.revision! >= 0 ? value.revision! : 0 };
 }
 function read(): Preferences { try { return normalize(JSON.parse(localStorage.getItem(key) || '{}')); } catch { return defaults; } }
 function profile() {
@@ -20,6 +21,10 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false); const [saving, setSaving] = useState(false); const [error, setError] = useState('');
   const endpoint = useRef(`/api/preferences/${profile()}`); const queue = useRef(Promise.resolve());
   const pendingWrites = useRef(0);
+  useLayoutEffect(() => {
+    document.documentElement.dataset.motion = preferences.motion;
+    return () => { delete document.documentElement.dataset.motion; };
+  }, [preferences.motion]);
   function persist(next: Preferences) {
     pendingWrites.current++; setSaving(true);
     queue.current = queue.current.catch(() => {}).then(async () => {

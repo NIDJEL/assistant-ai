@@ -32,16 +32,20 @@ Widget sorting uses dnd-kit PointerSensor and KeyboardSensor. Only the handle ac
 
 ## Motion
 
-Navigation, filters, calendar selection, meeting details and panel visibility use browser View Transitions with 320 ms easing. The router commits synchronously inside the snapshot callback; it never waits for an animation frame while rendering is paused. Rapid navigation skips the previous visual transition while applying each state update once. Browsers without this API use ordinary navigation and a short page fade.
+Navigation, filters, calendar selection, meeting details and panel visibility use browser View Transitions with 440 ms easing and a gentle slide. Individual widget snapshots animate between their positions across pages. The router commits synchronously inside the snapshot callback; it never waits for an animation frame while rendering is paused. Rapid navigation skips the previous visual transition while applying each state update once. Browsers without this API and navigation beneath a closing mobile drawer use a live page fade.
 
-Task details, priority filters and inline reminders animate their measured height. Closing content becomes inert, and reopening during the 220 ms exit preserves the reminder draft. Dialogs, drawers and menus have entry and exit animations; closing dialogs reject clicks and submission until native focus is restored on unmount. Buttons, checks, switches and new chat bubbles have gentle feedback. Layout widths and type sizes are unchanged. System reduced motion disables snapshot, height and CSS animations, with immediate closing.
+The widget panel stays mounted across routes. A measured layout animation moves retained cards and introduces added cards when native snapshots are unavailable or a picker is open. The inner card animates independently of the sortable wrapper, avoiding interference with dragging. Adjacent drag cards and the drop overlay use 440 ms easing.
+
+Task details, priority filters and inline reminders animate their measured height. Closing content becomes inert, and reopening during the 220 ms exit preserves the reminder draft. Dialogs, drawers and menus have entry and exit animations; closing dialogs reject clicks and submission until native focus is restored on unmount. Buttons, checks, switches and new chat bubbles have gentle feedback. Layout widths and type sizes are unchanged.
+
+Settings → Interface → Animations offers System (default), Smooth and No animations. The selected mode persists in the existing SQLite profile and browser cache. System follows `prefers-reduced-motion`; Smooth explicitly enables motion within Rhythm even when the browser reports reduced motion. No animations disables snapshot, layout, backdrop and CSS animations, with immediate closing. No OS settings are changed.
 
 ## Verification
 
 - `go test ./...` and `go vet ./...`: passed; existing shared parity/contract corpus retained.
 - Linux Docker `go test -race -count=1 ./...`: passed.
 - Frontend: 26 tests passed; production build and frozen lockfile installation passed. Delayed search keeps menus/editors mounted; immediate refresh replays newer preferences.
-- Browser: 14 E2E passed, including pointer and keyboard sorting, handle-only activation, add/remove/duplicate prevention, widget settings and persistence, task subtasks, meeting selection, selected day, inline reminder and integration detail. Motion checks verify a successfully started snapshot of the destination, rapid navigation, reversible reminder closing with draft preservation, blocked submission during modal exit, focus restoration and reduced motion.
+- Browser: 17 E2E passed, including pointer and keyboard sorting, handle-only activation, add/remove/duplicate prevention, widget settings and persistence, task subtasks, meeting selection, selected day, inline reminder and integration detail. Motion checks verify a successfully started destination snapshot, rapid navigation, reversible reminder closing with draft preservation, blocked submission during modal exit, focus restoration, reduced motion, explicit Smooth mode despite system reduced motion, persistence, widget movement without native snapshots and navigation beneath closing drawers at 593 px.
 - Responsive checks: 1920, 1600, 1440, 1280, 834 and 390 px, with overflow assertions and tablet/mobile drawers.
 - Voice: pause → zero POST; continued dictation → appended draft; Send → exactly one POST. Voice controller and manual-send implementation unchanged.
 - Python reference: 73 tests passed; legacy voice: 6 tests passed.

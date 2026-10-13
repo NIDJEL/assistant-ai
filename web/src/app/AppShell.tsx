@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Presence } from '../components/motion/Presence';
 import { motionUpdate } from '../components/motion/motion';
 import { Outlet, useLocation, useSearchParams } from 'react-router-dom';
@@ -13,9 +13,10 @@ import { useData } from './DataContext';
 export function AppShell() {
   const prefs = usePreferences(); const { preferences, update } = prefs; const { health, error, refresh } = useData(); const location = useLocation(); const [params, setParams] = useSearchParams();
   const [menu, setMenu] = useState(false); const [widgetsDrawer, setWidgetsDrawer] = useState(false);
+  useEffect(() => { setMenu(false); setWidgetsDrawer(false); }, [location.pathname]);
   const service = location.pathname === '/integrations' && services.some(s => s.id === params.get('service')) ? params.get('service') : null;
   const panelVisible = preferences.widgets || !!service;
-  const panel = service ? <IntegrationDetail id={service} onBack={() => motionUpdate(() => setParams({}))}/> : <WidgetPanel key={location.pathname}/>;
+  const panel = service ? <IntegrationDetail id={service} onBack={() => motionUpdate(() => setParams({}))}/> : <WidgetPanel/>;
   return <div className={`app-shell ${panelVisible ? '' : 'widgets-hidden'}`}>
     <a className="skip-link" href="#main-content">К содержимому</a><aside className="sidebar"><Sidebar/></aside>
     <main className="main-panel" id="main-content"><div className="shell-controls"><IconButton icon={Menu} label="Открыть навигацию" className="mobile-menu" onClick={() => setMenu(true)}/><button type="button" className="drawer-widget-button" aria-label="Открыть виджеты" onClick={() => setWidgetsDrawer(true)}><PanelRight size={19}/><span>{service ? 'Интеграция' : 'Виджеты'}</span></button>{!panelVisible && <IconButton icon={PanelRight} label="Показать виджеты" className="desktop-widget-button" onClick={() => motionUpdate(() => update({ widgets: true }))}/>}</div>

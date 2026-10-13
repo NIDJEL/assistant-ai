@@ -79,3 +79,61 @@ test('reduced motion keeps navigation and forms immediate and functional', async
   await page.getByRole('button', { name: 'Неделя', exact: true }).click(); await expect(page.getByRole('region', { name: 'Календарь на неделю' })).toBeVisible();
   await noOverflow(page); expect(await page.evaluate(() => document.getAnimations().length)).toBe(0);
 });
+
+test('explicit smooth mode overrides system reduced motion and persists after reload', async ({ page, request }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' }); await ready(page, '/settings');
+  const setting = page.getByLabel('Анимации интерфейса', { exact: true }); await expect(setting).toHaveValue('system');
+  await setting.selectOption('full');
+  const profile = await page.evaluate(() => localStorage.getItem('rhythm.profile.v1'));
+  await expect.poll(async () => (await (await request.get(`/api/preferences/${profile}`)).json()).motion).toBe('full');
+  expect(await page.locator('.switch-row input').first().evaluate(node => getComputedStyle(node, '::after').transitionDuration)).toContain('0.44s');
+  await page.reload(); await expect(setting).toHaveValue('full');
+  await page.getByRole('link', { name: 'Задачи', exact: true }).click(); await page.getByRole('button', { name: 'Новая задача' }).click();
+  expect(await page.getByRole('dialog').evaluate(node => node.getAnimations().length)).toBeGreaterThan(0);
+  await page.keyboard.press('Escape'); await expect(page.getByRole('dialog')).toHaveCount(0);
+  await page.getByRole('link', { name: 'Настройки', exact: true }).click(); await setting.selectOption('reduced');
+  expect(await page.locator('.switch-row input').first().evaluate(node => getComputedStyle(node, '::after').transitionDuration)).toBe('0s');
+  await page.getByRole('link', { name: 'Задачи', exact: true }).click(); await page.getByRole('button', { name: 'Новая задача' }).click();
+  expect(await page.getByRole('dialog').evaluate(node => node.getAnimations().length)).toBe(0);
+  expect(await page.getByRole('dialog').evaluate(node => getComputedStyle(node, '::backdrop').animationName)).toBe('none');
+});
+
+test('widgets slide to their new positions without View Transitions, including add/remove and drag', async ({ page }) => {
+  await page.addInitScript(() => { Object.defineProperty(document, 'startViewTransition', { value: undefined, configurable: true }); });
+  await page.emulateMedia({ reducedMotion: 'reduce' }); await ready(page, '/settings');
+  await page.getByLabel('Анимации интерфейса', { exact: true }).selectOption('full');
+  await page.getByRole('link', { name: 'Календарь', exact: true }).click();
+  await page.evaluate(async () => { await Promise.allSettled(document.getAnimations().map(animation => animation.finished)); });
+  const moving = page.locator('[data-widget="tasks"] .widget');
+  await page.getByRole('link', { name: 'Задачи', exact: true }).click();
+  const routeFrames = await moving.evaluate(node => node.getAnimations().map(animation => (animation.effect as KeyframeEffect).getKeyframes()));
+  expect(routeFrames.some(frames => String(frames[0].transform).startsWith('translate(') && frames[0].transform !== frames.at(-1)?.transform)).toBe(true);
+  await page.getByRole('link', { name: 'Календарь', exact: true }).click();
+  await page.evaluate(async () => { await Promise.allSettled(document.getAnimations().map(animation => animation.finished)); });
+  await page.getByRole('button', { name: 'Добавить виджет', exact: true }).click();
+  const picker = page.getByRole('dialog', { name: 'Ваши виджеты' });
+  await picker.locator('.widget-picker > div').filter({ hasText: 'Календарь' }).getByRole('button', { name: 'Убрать' }).click();
+  expect(await page.locator('[data-widget="today"] .widget').evaluate(node => node.getAnimations().length)).toBeGreaterThan(0);
+  await picker.locator('.widget-picker > div').filter({ hasText: 'Календарь' }).getByRole('button', { name: 'Добавить', exact: true }).click();
+  await page.keyboard.press('Escape'); await expect(picker).toHaveCount(0);
+  const handle = page.getByRole('button', { name: 'Переместить: Календарь', exact: true }); await handle.focus();
+  await page.keyboard.press('Space'); await page.keyboard.press('ArrowDown');
+  const duration = await page.locator('[data-widget="today"]').evaluate(node => getComputedStyle(node).transitionDuration);
+  expect(duration).toBe('0.44s'); await page.keyboard.press('Escape');
+  await noOverflow(page);
+});
+
+test('narrow browser animates navigation beneath closing navigation and widget drawers', async ({ page }) => {
+  await page.setViewportSize({ width: 593, height: 932 }); await page.emulateMedia({ reducedMotion: 'reduce' });
+  await ready(page, '/settings'); await page.getByLabel('Анимации интерфейса', { exact: true }).selectOption('full');
+  await page.getByRole('button', { name: 'Открыть навигацию' }).click();
+  await page.getByRole('dialog', { name: 'Навигация' }).getByRole('link', { name: 'Календарь', exact: true }).click();
+  await expect(page.locator('h1')).toHaveText('Календарь');
+  expect(await page.locator('.page').evaluate(node => node.getAnimations().length)).toBeGreaterThan(0);
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Открыть виджеты', exact: true }).click();
+  await page.getByRole('dialog', { name: 'Виджеты' }).getByRole('link', { name: 'Все задачи', exact: true }).click();
+  await expect(page.locator('h1')).toHaveText('Задачи');
+  expect(await page.locator('.page').evaluate(node => node.getAnimations().length)).toBeGreaterThan(0);
+  await expect(page.getByRole('dialog')).toHaveCount(0); await noOverflow(page);
+});
