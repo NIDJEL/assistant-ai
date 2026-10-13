@@ -16,6 +16,7 @@ test('side panels stay at screen edges, hidden widgets do not stretch content an
   expect(await page.locator('.sidebar').evaluate(node => node.getBoundingClientRect().width)).toBe(76);
   await expect(page.locator('.sidebar .nav-link span').first()).toBeHidden(); await noOverflow(page);
   await page.reload(); await expect(page.getByRole('button', { name: 'Развернуть навигацию' })).toBeVisible();
+  await expect(page.locator('h1')).toHaveText('Календарь'); await expect(page.locator('.widgets-heading')).toBeVisible();
   await screenshot(page, 'collapsed-navigation', info);
   await page.getByRole('button', { name: 'Скрыть виджеты' }).click(); await settle(page);
   expect(await page.locator('.main-panel > .page').evaluate(node => node.getBoundingClientRect().width)).toBeLessThanOrEqual(1280);
