@@ -4,6 +4,24 @@ import { mkdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
 const password = 'test password 12345';
 async function settle(page: Page) { await page.evaluate(async () => { await Promise.allSettled(document.getAnimations().filter(animation => animation.effect?.getComputedTiming().iterations !== Infinity).map(animation => animation.finished)); }); }
+test('login and registration fit desktop and mobile windows without scrolling or clipping', async ({ page }) => {
+ await page.emulateMedia({ reducedMotion: 'reduce' });
+ for (const viewport of [{ width: 1536, height: 1024 }, { width: 1440, height: 900 }, { width: 1366, height: 768 }, { width: 1280, height: 720 }, { width: 593, height: 932 }, { width: 390, height: 844 }, { width: 360, height: 740 }]) {
+  await page.setViewportSize(viewport); await page.goto('/auth');
+  for (const mode of ['login', 'register']) {
+   if (mode === 'register') { await page.getByRole('tab', { name: 'Создать аккаунт' }).click(); await expect(page.getByLabel('Повторите пароль')).toBeVisible(); }
+   const size = await page.evaluate(() => ({ height: document.documentElement.scrollHeight, width: document.documentElement.scrollWidth, viewportHeight: innerHeight, viewportWidth: innerWidth }));
+   expect(size.height, `${mode} at ${viewport.width}×${viewport.height}`).toBeLessThanOrEqual(size.viewportHeight);
+   expect(size.width).toBeLessThanOrEqual(size.viewportWidth);
+   await expect(page.locator('.auth-segment')).toBeInViewport({ ratio: 1 });
+   await expect(page.locator('.auth-form .auth-primary')).toBeInViewport({ ratio: 1 });
+   await expect(page.locator('.auth-legal')).toBeInViewport({ ratio: 1 });
+   for (const input of await page.locator('.auth-form input').all()) await expect(input).toBeInViewport({ ratio: 1 });
+   expect(await page.locator('.auth-card').evaluate(element => element.scrollHeight <= element.clientHeight + 1)).toBe(true);
+   expect(await page.locator('.auth-oauth img').evaluateAll(images => images.every(image => image instanceof HTMLImageElement && image.complete && image.naturalWidth > 0))).toBe(true);
+  }
+ }
+});
 test('logout clears protected content in another tab sharing the session', async ({ page, context }) => {
  const registered = await context.request.post('/api/auth/register', { data: { name: 'Две вкладки', email: `tabs-${Date.now()}@example.test`, password, password_confirmation: password } }); expect(registered.status()).toBe(201); await context.request.post('/api/auth/onboarding', { data: {} });
  await page.goto('/tasks'); await expect(page.locator('.profile-name')).toHaveText('Две вкладки'); const other = await context.newPage(); await other.goto('/settings'); await other.getByRole('button', { name: 'Выйти', exact: true }).click();
