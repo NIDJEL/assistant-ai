@@ -18,6 +18,7 @@ import (
 	"github.com/NIDJEL/assistant-ai/internal/clock"
 	"github.com/NIDJEL/assistant-ai/internal/config"
 	"github.com/NIDJEL/assistant-ai/internal/domain"
+	"github.com/NIDJEL/assistant-ai/migrations"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/google/uuid"
@@ -56,11 +57,9 @@ func (a *API) Router() http.Handler {
 	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.Dir(filepath.Join(a.Config.Root, "app/static")))))
 	r.Handle("/diagrams/*", http.StripPrefix("/diagrams/", http.FileServer(http.Dir(filepath.Join(a.Config.Root, "docs/diagrams")))))
 	r.Get("/architecture", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, filepath.Join(a.Config.Root, "app/static/architecture.html"))
+		http.ServeFile(w, r, filepath.Join(a.Config.Root, "docs/p1-architecture.html"))
 	})
-	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, filepath.Join(a.Config.Root, "app/static/index.html"))
-	})
+	a.frontendRoutes(r)
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
 		a.fail(w, r, &domain.AppError{Code: "not_found", Message: "Маршрут не найден", Status: 404})
 	})
@@ -124,7 +123,7 @@ func (a *API) health(w http.ResponseWriter, r *http.Request) {
 		a.fail(w, r, err)
 		return
 	}
-	write(w, 200, map[string]any{"status": "ok", "events": count, "timezone": a.Config.Timezone, "nlp_provider": a.Config.NLPProvider, "now": a.Clock.Now(), "backend": "go", "schema_version": 2})
+	write(w, 200, map[string]any{"status": "ok", "events": count, "timezone": a.Config.Timezone, "nlp_provider": a.Config.NLPProvider, "now": a.Clock.Now(), "backend": "go", "schema_version": migrations.LatestVersion})
 }
 func (a *API) chat(w http.ResponseWriter, r *http.Request) {
 	var body dto.Chat

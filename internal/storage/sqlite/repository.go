@@ -19,7 +19,7 @@ type executor interface {
 type Repo struct{ q executor }
 type scanner interface{ Scan(...any) error }
 
-const columns = "id,kind,title,date,time,duration_minutes,status,created_at,updated_at,source_key,description,priority,external_calendar_id"
+const columns = "id,kind,title,date,time,duration_minutes,status,created_at,updated_at,source_key,description,priority,external_calendar_id,location,meeting_url"
 
 func dateValue(v *domain.Date) any {
 	if v == nil {
@@ -38,7 +38,7 @@ func scanEvent(row scanner) (*domain.Event, error) {
 	var kind, status, priority, created, updated string
 	var day, clock, source, external sql.NullString
 	var minutes int
-	if err := row.Scan(&e.ID, &kind, &e.Title, &day, &clock, &minutes, &status, &created, &updated, &source, &e.Description, &priority, &external); err != nil {
+	if err := row.Scan(&e.ID, &kind, &e.Title, &day, &clock, &minutes, &status, &created, &updated, &source, &e.Description, &priority, &external, &e.Location, &e.MeetingURL); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
@@ -135,7 +135,7 @@ func (r *Repo) Create(ctx context.Context, e domain.Event, now time.Time) (*doma
 		return nil, err
 	}
 	stamp := now.Format(time.RFC3339Nano)
-	result, err := r.q.ExecContext(ctx, "INSERT INTO events(kind,title,date,time,duration_minutes,status,created_at,updated_at,source_key,description,priority,external_calendar_id) VALUES(?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(source_key) DO NOTHING", e.Kind.String(), e.Title, dateValue(e.Date), timeValue(e.StartTime), int(e.Duration/time.Minute), e.Status.String(), stamp, stamp, e.SourceKey, e.Description, e.Priority.String(), e.ExternalCalendarID)
+	result, err := r.q.ExecContext(ctx, "INSERT INTO events(kind,title,date,time,duration_minutes,status,created_at,updated_at,source_key,description,priority,external_calendar_id,location,meeting_url) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(source_key) DO NOTHING", e.Kind.String(), e.Title, dateValue(e.Date), timeValue(e.StartTime), int(e.Duration/time.Minute), e.Status.String(), stamp, stamp, e.SourceKey, e.Description, e.Priority.String(), e.ExternalCalendarID, e.Location, e.MeetingURL)
 	if err != nil {
 		return nil, err
 	}
@@ -153,7 +153,7 @@ func (r *Repo) Update(ctx context.Context, e domain.Event, now time.Time) (*doma
 	if err := e.Validate(); err != nil {
 		return nil, err
 	}
-	result, err := r.q.ExecContext(ctx, "UPDATE events SET title=?,date=?,time=?,duration_minutes=?,status=?,description=?,priority=?,external_calendar_id=?,updated_at=? WHERE id=?", e.Title, dateValue(e.Date), timeValue(e.StartTime), int(e.Duration/time.Minute), e.Status.String(), e.Description, e.Priority.String(), e.ExternalCalendarID, now.Format(time.RFC3339Nano), e.ID)
+	result, err := r.q.ExecContext(ctx, "UPDATE events SET title=?,date=?,time=?,duration_minutes=?,status=?,description=?,priority=?,external_calendar_id=?,location=?,meeting_url=?,updated_at=? WHERE id=?", e.Title, dateValue(e.Date), timeValue(e.StartTime), int(e.Duration/time.Minute), e.Status.String(), e.Description, e.Priority.String(), e.ExternalCalendarID, e.Location, e.MeetingURL, now.Format(time.RFC3339Nano), e.ID)
 	if err != nil {
 		return nil, err
 	}

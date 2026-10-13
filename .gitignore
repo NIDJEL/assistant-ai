@@ -12,3 +12,6 @@ node_modules/
 htmlcov/
 *.sqlite3-shm
 *.sqlite3-wal
+web/dist/
+web/test-results/
+web/playwright-report/

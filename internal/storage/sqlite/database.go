@@ -98,7 +98,7 @@ func (d *Database) migrate(ctx context.Context) error {
 	if err := d.DB.QueryRowContext(ctx, "PRAGMA user_version").Scan(&version); err != nil {
 		return err
 	}
-	if version > 2 {
+	if version > migrations.LatestVersion {
 		return fmt.Errorf("unsupported database schema version %d", version)
 	}
 	var hasEvents int
@@ -174,7 +174,7 @@ func (d *Database) migrate(ctx context.Context) error {
 				return err
 			}
 		}
-		_, err := r.q.ExecContext(ctx, "PRAGMA user_version=2")
+		_, err := r.q.ExecContext(ctx, fmt.Sprintf("PRAGMA user_version=%d", migrations.LatestVersion))
 		return err
 	})
 }

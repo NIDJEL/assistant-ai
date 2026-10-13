@@ -41,6 +41,8 @@ type Event struct {
 	Kind            domain.EventType  `json:"kind"`
 	Title           string            `json:"title"`
 	Description     string            `json:"description"`
+	Location        string            `json:"location"`
+	MeetingURL      string            `json:"meeting_url"`
 	Date            *domain.Date      `json:"date"`
 	Time            *domain.TimeOfDay `json:"time"`
 	DurationMinutes *int              `json:"duration_minutes"`
@@ -57,12 +59,14 @@ func (d Event) Domain() (domain.Event, error) {
 		}
 		duration = time.Duration(*d.DurationMinutes) * time.Minute
 	}
-	return domain.Event{Kind: d.Kind, Title: d.Title, Description: d.Description, Date: d.Date, StartTime: d.Time, Duration: duration, Status: d.Status, Priority: d.Priority}, nil
+	return domain.Event{Kind: d.Kind, Title: d.Title, Description: d.Description, Location: d.Location, MeetingURL: d.MeetingURL, Date: d.Date, StartTime: d.Time, Duration: duration, Status: d.Status, Priority: d.Priority}, nil
 }
 
 type Patch struct {
 	Title           *string          `json:"title"`
 	Description     *string          `json:"description"`
+	Location        *string          `json:"location"`
+	MeetingURL      *string          `json:"meeting_url"`
 	Date            json.RawMessage  `json:"date"`
 	Time            json.RawMessage  `json:"time"`
 	DurationMinutes *int             `json:"duration_minutes"`
@@ -72,7 +76,7 @@ type Patch struct {
 }
 
 func (p Patch) Domain() (calendar.Patch, error) {
-	result := calendar.Patch{Title: p.Title, Description: p.Description, Status: p.Status, Priority: p.Priority, Force: p.Force}
+	result := calendar.Patch{Title: p.Title, Description: p.Description, Location: p.Location, MeetingURL: p.MeetingURL, Status: p.Status, Priority: p.Priority, Force: p.Force}
 	if p.DurationMinutes != nil {
 		if *p.DurationMinutes < 5 || *p.DurationMinutes > 1440 {
 			return result, fmt.Errorf("Длительность должна быть от 5 минут до 24 часов")
@@ -94,7 +98,7 @@ func (p Patch) Domain() (calendar.Patch, error) {
 		}
 		result.Time = &t
 	}
-	if result.Title == nil && result.Description == nil && result.Date == nil && result.Time == nil && result.Duration == nil && result.Status == nil && result.Priority == nil {
+	if result.Title == nil && result.Description == nil && result.Location == nil && result.MeetingURL == nil && result.Date == nil && result.Time == nil && result.Duration == nil && result.Status == nil && result.Priority == nil {
 		return result, fmt.Errorf("Не указаны поля для изменения")
 	}
 	return result, nil

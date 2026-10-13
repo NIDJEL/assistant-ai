@@ -14,6 +14,7 @@ func OpenAPI() map[string]any {
 	eventProperties := map[string]any{
 		"kind": enum("task", "meeting", "reminder"), "title": map[string]any{"type": "string", "minLength": 1, "maxLength": 500},
 		"description": text(), "date": day, "time": clock, "duration_minutes": map[string]any{"type": "integer", "minimum": 5, "maximum": 1440, "default": 60},
+		"location": map[string]any{"type": "string", "maxLength": 500}, "meeting_url": map[string]any{"type": "string", "maxLength": 2048, "description": "HTTP(S) URL or empty string"},
 		"status": enum("open", "done"), "priority": enum("normal", "low", "high"), "force": map[string]any{"type": "boolean"},
 	}
 	schemas := map[string]any{
@@ -21,9 +22,9 @@ func OpenAPI() map[string]any {
 			"message": map[string]any{"type": "string", "minLength": 1, "maxLength": 2000}, "session_id": map[string]any{"type": "string", "format": "uuid"}, "request_id": map[string]any{"type": "string", "format": "uuid"}}},
 		"EventCreate": map[string]any{"type": "object", "additionalProperties": false, "required": []string{"kind", "title"}, "properties": eventProperties},
 		"EventPatch": map[string]any{"type": "object", "additionalProperties": false, "properties": map[string]any{
-			"title": eventProperties["title"], "description": text(), "date": day, "time": clock, "duration_minutes": eventProperties["duration_minutes"], "status": eventProperties["status"], "priority": eventProperties["priority"], "force": eventProperties["force"]}},
+			"title": eventProperties["title"], "description": text(), "location": eventProperties["location"], "meeting_url": eventProperties["meeting_url"], "date": day, "time": clock, "duration_minutes": eventProperties["duration_minutes"], "status": eventProperties["status"], "priority": eventProperties["priority"], "force": eventProperties["force"]}},
 		"Event": map[string]any{"type": "object", "required": []string{"id", "kind", "title", "duration_minutes", "status"}, "properties": map[string]any{
-			"id": map[string]any{"type": "integer", "format": "int64"}, "kind": eventProperties["kind"], "title": text(), "description": text(), "date": day, "time": clock, "duration_minutes": eventProperties["duration_minutes"], "status": eventProperties["status"], "priority": eventProperties["priority"], "created_at": map[string]any{"type": "string", "format": "date-time"}, "updated_at": map[string]any{"type": "string", "format": "date-time"}, "source_key": map[string]any{"type": "string", "nullable": true}, "external_calendar_id": map[string]any{"type": "string", "nullable": true}, "score": map[string]any{"type": "number"}}},
+			"id": map[string]any{"type": "integer", "format": "int64"}, "kind": eventProperties["kind"], "title": text(), "description": text(), "location": eventProperties["location"], "meeting_url": eventProperties["meeting_url"], "date": day, "time": clock, "duration_minutes": eventProperties["duration_minutes"], "status": eventProperties["status"], "priority": eventProperties["priority"], "created_at": map[string]any{"type": "string", "format": "date-time"}, "updated_at": map[string]any{"type": "string", "format": "date-time"}, "source_key": map[string]any{"type": "string", "nullable": true}, "external_calendar_id": map[string]any{"type": "string", "nullable": true}, "score": map[string]any{"type": "number"}}},
 		"Error": map[string]any{"type": "object", "required": []string{"error", "request_id"}, "properties": map[string]any{
 			"error": map[string]any{"type": "object", "required": []string{"code", "message"}, "properties": map[string]any{"code": text(), "message": text()}}, "request_id": text(), "detail": text()}},
 	}

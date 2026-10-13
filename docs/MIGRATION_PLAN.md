@@ -1,5 +1,7 @@
 # Ритм: миграция на Go с приоритетами P0–P4
 
+Исторический план P0. P0 merged в `main`; реализация P1 описана в [P1_UI.md](P1_UI.md). В P1 основной `Dockerfile` собирает Go + React, а исходный Python build сохранён в `Dockerfile.python` / `compose.python.yaml`.
+
 Обновлено 13 октября 2026 по принятым поправкам. Приложение остаётся personal assistant. Workspace/team/auth/permissions и обязательный assignee не вводятся.
 
 ## Приоритеты

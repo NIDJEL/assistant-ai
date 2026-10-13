@@ -27,11 +27,11 @@ GET `/`, `/architecture`, `/static/*`, `/diagrams/*` сохраняет суще
 
 Chat input: message (1–2000 Unicode characters), session_id/request_id UUID; при отсутствии UUID генерируется сервером. Output сохраняет reply/action/events/total/candidates/conflicts/provider/pending/timezone/session_id/request_id. `clarify` — успешный ответ 200, не создание события.
 
-Event output сохраняет id/kind/title/date/time/duration_minutes/status/created_at/updated_at/source_key; добавляет description, priority, external_calendar_id. Дополнительные поля обратно совместимы. Date — ISO civil date или null; time — HH:MM или null; timestamps — RFC3339; duration_minutes — integer 5–1440. Meeting/reminder требуют дату и время. Task может быть без срока.
+Event output сохраняет id/kind/title/date/time/duration_minutes/status/created_at/updated_at/source_key; добавляет description, priority, external_calendar_id. В P1 также добавлены location и meeting_url (пустая строка при отсутствии). Дополнительные поля обратно совместимы. Date — ISO civil date или null; time — HH:MM или null; timestamps — RFC3339; duration_minutes — integer 5–1440. Meeting/reminder требуют дату и время. Task может быть без срока.
 
-POST input: kind, title, необязательные description/date/time/duration_minutes/status/priority/force. Kind: task/meeting/reminder. Status: open/done. Priority: normal/low/high. Создание возвращает 201.
+POST input: kind, title, необязательные description/location/meeting_url/date/time/duration_minutes/status/priority/force. Location <= 500 Unicode characters, meeting_url <= 2048 bytes, HTTP(S) или пустая строка. Kind: task/meeting/reminder. Status: open/done. Priority: normal/low/high. Создание возвращает 201.
 
-PATCH input: title/description/date/time/duration_minutes/status/priority/force. Отсутствующее поле не меняется; null очищает nullable date/time, если domain validation это допускает. Kind и source_key не изменяются через PATCH. Пустой PATCH возвращает 422. DELETE возвращает 204.
+PATCH input: title/description/location/meeting_url/date/time/duration_minutes/status/priority/force. Отсутствующее поле не меняется; null очищает nullable date/time, если domain validation это допускает. Kind и source_key не изменяются через PATCH. Пустой PATCH возвращает 422. DELETE возвращает 204.
 
 Список сохраняет start/end/kind/status/q/offset/limit. Интервал `[start,end)`, end не включается. limit 1–200, default 100; offset >= 0. Поиск q работает по title/description, с нормализацией и ранжированием.
 
@@ -57,4 +57,4 @@ PATCH input: title/description/date/time/duration_minutes/status/priority/force.
 
 ## Отложенные API
 
-Calendar views/new UI — P1, live Yandex CalDAV и provider API — P2, preferences/widgets layout — P3, расширенные возможности — P4. API этих этапов будет добавляться вместе с работающим сервисом и тестами. Workspace/team/auth/permissions и assignee endpoints не планируются. Telegram/Zoom/Notion/Slack backend не реализуется; карточки — «Скоро».
+Calendar views/new UI реализованы в P1 поверх event API без отдельной /api/calendar. Live Yandex CalDAV и provider API — P2, persistence полного widgets layout — P3, расширенные возможности — P4. API следующих этапов будет добавляться вместе с работающим сервисом и тестами. Workspace/team/auth/permissions и assignee endpoints не планируются. Telegram/Zoom/Notion/Slack backend не реализуется; карточки — «Скоро».

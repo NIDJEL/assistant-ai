@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"net/url"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -14,6 +15,8 @@ type Event struct {
 	Kind               EventType     `json:"kind"`
 	Title              string        `json:"title"`
 	Description        string        `json:"description"`
+	Location           string        `json:"location"`
+	MeetingURL         string        `json:"meeting_url"`
 	Date               *Date         `json:"date"`
 	StartTime          *TimeOfDay    `json:"time"`
 	Duration           time.Duration `json:"-"`
@@ -45,6 +48,15 @@ func (e Event) Interval(loc *time.Location) (time.Time, time.Time, bool) {
 	return start, start.Add(e.Duration), true
 }
 func (e Event) Validate() error {
+	if utf8.RuneCountInString(e.Location) > 500 || len(e.MeetingURL) > 2048 {
+		return errors.New("Сократите место встречи или ссылку")
+	}
+	if e.MeetingURL != "" {
+		u, err := url.Parse(e.MeetingURL)
+		if err != nil || u.Host == "" || (u.Scheme != "https" && u.Scheme != "http") || u.User != nil {
+			return errors.New("Ссылка встречи должна начинаться с http:// или https://")
+		}
+	}
 	if e.Kind < EventTask || e.Kind > EventReminder {
 		return errors.New("Некорректный тип записи")
 	}

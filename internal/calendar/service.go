@@ -114,13 +114,14 @@ func (s *Service) Create(ctx context.Context, e domain.Event, now time.Time, for
 }
 
 type Patch struct {
-	Title, Description *string
-	Date               **domain.Date
-	Time               **domain.TimeOfDay
-	Duration           *time.Duration
-	Status             *domain.Status
-	Priority           *domain.Priority
-	Force              bool
+	Title, Description   *string
+	Location, MeetingURL *string
+	Date                 **domain.Date
+	Time                 **domain.TimeOfDay
+	Duration             *time.Duration
+	Status               *domain.Status
+	Priority             *domain.Priority
+	Force                bool
 }
 
 func (s *Service) Update(ctx context.Context, id int64, p Patch, now time.Time) (*domain.Event, error) {
@@ -138,6 +139,12 @@ func (s *Service) Update(ctx context.Context, id int64, p Patch, now time.Time) 
 		}
 		if p.Description != nil {
 			e.Description = *p.Description
+		}
+		if p.Location != nil {
+			e.Location = *p.Location
+		}
+		if p.MeetingURL != nil {
+			e.MeetingURL = *p.MeetingURL
 		}
 		if p.Date != nil {
 			e.Date = *p.Date

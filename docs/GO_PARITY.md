@@ -1,5 +1,7 @@
 # P0: Go foundation, SQLite migration и backend parity
 
+> Завершённый этап P0. Текущий React frontend и runtime P1: [P1_UI.md](P1_UI.md). Основной Dockerfile теперь собирает React + Go; Python reference использует Dockerfile.python. В P1 schema v3 добавляет только location/meeting_url.
+
 Этот этап добавляет Go backend рядом с текущим Python. Каталоги `app/`, Python-тесты, старый Dockerfile и Compose сохранены. React, исправление voice UX и внешние интеграции относятся к следующим этапам.
 
 ## Блок-схема P0

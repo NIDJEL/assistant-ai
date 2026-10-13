@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1070" role="img" aria-label="Ритм / P1: диктовка остаётся черновиком">
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10Z" fill="#6286cd"/></marker></defs>
+<rect width="1000" height="1070" rx="22" fill="#f2f7ff"/>
+<g font-family="Segoe UI,Arial,sans-serif" fill="#182653">
+<text x="32" y="46" font-size="27" font-weight="700">Ритм / P1: диктовка остаётся черновиком</text>
+<text x="32" y="78" font-size="15" fill="#6076a5">Только явный Send или Enter вызывает POST /api/chat.</text>
+<rect x="310" y="115" width="430" height="93" rx="16" fill="#ffffff" stroke="#dce8fc"/>
+<text x="525.0" y="146" text-anchor="middle" font-size="17" font-weight="650" fill="#172755">Нажать microphone</text>
+<text x="525.0" y="174" text-anchor="middle" font-size="13" fill="#6076a5">Включить recognition: ru-RU</text>
+<rect x="310" y="265" width="430" height="93" rx="16" fill="#ffffff" stroke="#dce8fc"/>
+<text x="525.0" y="296" text-anchor="middle" font-size="17" font-weight="650" fill="#172755">recognition.onresult</text>
+<text x="525.0" y="324" text-anchor="middle" font-size="13" fill="#6076a5">Partial/final объединяются без дублей</text>
+<rect x="310" y="420" width="430" height="110" rx="16" fill="#ffffff" stroke="#dce8fc"/>
+<text x="525.0" y="451" text-anchor="middle" font-size="17" font-weight="650" fill="#172755">Редактируемый draft</text>
+<text x="525.0" y="479" text-anchor="middle" font-size="13" fill="#6076a5">Можно изменить текст клавиатурой</text>
+<text x="525.0" y="502" text-anchor="middle" font-size="13" fill="#6076a5">Можно продолжить диктовку</text>
+<rect x="32" y="275" width="222" height="110" rx="16" fill="#ffffff" stroke="#dce8fc"/>
+<text x="143.0" y="306" text-anchor="middle" font-size="17" font-weight="650" fill="#172755">Пауза / onend</text>
+<text x="143.0" y="334" text-anchor="middle" font-size="13" fill="#6076a5">HTTP request отсутствует</text>
+<text x="143.0" y="357" text-anchor="middle" font-size="13" fill="#6076a5">Черновик сохраняется</text>
+<polyline points="310,310 254,310" fill="none" stroke="#6286cd" stroke-width="2" marker-end="url(#arrow)"/>
+<polyline points="143,385 143,475 310,475" fill="none" stroke="#6286cd" stroke-width="2" marker-end="url(#arrow)"/>
+<polyline points="525,208 525,265" fill="none" stroke="#6286cd" stroke-width="2" marker-end="url(#arrow)"/>
+<polyline points="525,358 525,420" fill="none" stroke="#6286cd" stroke-width="2" marker-end="url(#arrow)"/>
+<polygon points="525,590 730,655 525,720 320,655" fill="#e2efff" stroke="#a6c8fc"/>
+<text x="525" y="660" text-anchor="middle" font-size="18" font-weight="600">Send / Enter?</text>
+<polyline points="525,530 525,590" fill="none" stroke="#6286cd" stroke-width="2" marker-end="url(#arrow)"/>
+<polyline points="320,655 143,655 143,475" fill="none" stroke="#6286cd" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="218" y="641" font-size="13" fill="#496baa">Нет</text>
+<rect x="310" y="785" width="430" height="95" rx="16" fill="#ffffff" stroke="#dce8fc"/>
+<text x="525.0" y="816" text-anchor="middle" font-size="17" font-weight="650" fill="#172755">Остановить recognition</text>
+<text x="525.0" y="844" text-anchor="middle" font-size="13" fill="#6076a5">Late onend/result игнорируются</text>
+<polyline points="525,720 525,785" fill="none" stroke="#6286cd" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="539" y="756" font-size="13" fill="#496baa">Да</text>
+<rect x="310" y="938" width="430" height="100" rx="16" fill="#0875ff" stroke="#dce8fc"/>
+<text x="525.0" y="969" text-anchor="middle" font-size="17" font-weight="650" fill="#ffffff">Один POST /api/chat</text>
+<text x="525.0" y="997" text-anchor="middle" font-size="13" fill="#ffffff">Mutex + UUID request_id</text>
+<text x="525.0" y="1020" text-anchor="middle" font-size="13" fill="#ffffff">Ответ Go → conversation → TTS</text>
+<polyline points="525,880 525,938" fill="none" stroke="#6286cd" stroke-width="2" marker-end="url(#arrow)"/>
+</g></svg>
