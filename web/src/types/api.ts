@@ -10,6 +10,7 @@ export interface RhythmEvent extends EventDetails {
   date: string | null; time: string | null; duration_minutes: number;
   status: EventStatus; priority: Priority; location: string; meeting_url: string;
   created_at: string; updated_at: string; source_key: string | null;
+  deleted_at?: string;
   external_calendar_id: string | null; score?: number;
 }
 export interface EventInput extends EventDetails {
@@ -19,7 +20,7 @@ export interface EventInput extends EventDetails {
 }
 export type EventPatch = Partial<Omit<EventInput, 'kind'>>;
 export interface EventList { events: RhythmEvent[]; total: number; offset: number; limit: number }
-export interface EventQuery { start?: string; end?: string; kind?: EventKind; status?: EventStatus; q?: string }
+export interface EventQuery { start?: string; end?: string; kind?: EventKind; status?: EventStatus; q?: string; deleted?: string }
 export interface Health { status: string; backend: string; events: number; timezone: string; now: string; nlp_provider: string; schema_version: number }
 export interface ChatInput { message: string; session_id: string; request_id: string }
 export interface ChatResponse {

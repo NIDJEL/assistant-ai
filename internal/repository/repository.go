@@ -11,6 +11,8 @@ import (
 type Tx interface {
 	Count(context.Context) (int, error)
 	Get(context.Context, int64) (*domain.Event, error)
+	GetDeleted(context.Context, int64) (*domain.Event, error)
+	Restore(context.Context, int64, time.Time) (*domain.Event, error)
 	Events(context.Context, domain.Filter) ([]domain.Event, error)
 	Create(context.Context, domain.Event, time.Time) (*domain.Event, error)
 	Update(context.Context, domain.Event, time.Time) (*domain.Event, error)

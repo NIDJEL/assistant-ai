@@ -53,7 +53,7 @@ test('reminder close can be reversed without losing the draft, and an exiting di
       (node as HTMLElement).click(); return closing;
     });
     expect(result).toBe(true); await expect(page.getByLabel('Название напоминания')).toHaveValue('Несохранённый черновик');
-    await expect.poll(() => page.locator('.motion-collapse').evaluate(node => node.getAnimations().length)).toBe(0);
+    await expect.poll(() => page.locator('.reminder-inline').evaluate(node => node.closest('.motion-collapse')?.getAnimations().length || 0)).toBe(0);
     await page.getByRole('form').getByRole('button', { name: 'Отмена' }).click(); await expect(page.locator('.reminder-inline')).toHaveCount(0);
     const button = page.getByRole('button', { name: 'Новое напоминание' }); await button.click();
     let writes = 0; page.on('request', request => { if (request.method() === 'POST' && request.url().endsWith('/api/events')) writes++; });

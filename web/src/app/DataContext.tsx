@@ -10,6 +10,7 @@ interface Data {
   refresh: () => Promise<void>; create: (input: EventInput) => Promise<RhythmEvent>;
   accept: (items: RhythmEvent[]) => void;
   update: (id: number, input: EventPatch) => Promise<RhythmEvent>; remove: (id: number) => Promise<void>;
+  restore: (id: number, force?: boolean) => Promise<RhythmEvent>;
 }
 const Context = createContext<Data | null>(null);
 export function DataProvider({ children }: { children: ReactNode }) {
@@ -29,7 +30,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const create = async (input: EventInput) => { const item = await eventsAPI.createEvent(input); setEvents(current => [...current, item]); await refresh(); return item; };
   const update = async (id: number, input: EventPatch) => { const item = await eventsAPI.updateEvent(id, input); setEvents(current => current.map(event => event.id === id ? item : event)); await refresh(); return item; };
   const remove = async (id: number) => { await eventsAPI.deleteEvent(id); setEvents(current => current.filter(event => event.id !== id)); await refresh(); };
+  const restore = async (id: number, force = false) => { const item = await eventsAPI.restoreEvent(id, force); setEvents(current => [...current.filter(event => event.id !== id), item]); await refresh(); return item; };
   const accept = (items: RhythmEvent[]) => setEvents(current => [...new Map([...current, ...items].map(event => [event.id, event])).values()]);
-  return <Context value={{ events, health: info, today: info ? dayKey(info.now, info.timezone) : '', loading, error, revision, refresh, accept, create, update, remove }}>{children}</Context>;
+  return <Context value={{ events, health: info, today: info ? dayKey(info.now, info.timezone) : '', loading, error, revision, refresh, accept, create, update, remove, restore }}>{children}</Context>;
 }
 export function useData(): Data { const data = useContext(Context); if (!data) throw new Error('DataProvider missing'); return data; }

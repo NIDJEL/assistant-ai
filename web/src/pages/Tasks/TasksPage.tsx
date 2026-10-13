@@ -7,12 +7,13 @@ import { PageHeader, SearchBox, NewButton, Segments, Empty, Alert, IconButton, B
 import { TaskCard } from '../../features/events/TaskCard';
 import { addDays, weekStart } from '../../features/calendar/dates';
 import type { Priority, RhythmEvent } from '../../types/api';
+import { AnimatedList } from '../../components/motion/AnimatedList';
 import { Collapsible } from '../../components/motion/Collapsible';
 import { motionUpdate } from '../../components/motion/motion';
 type Filter = 'all' | 'today' | 'soon' | 'done';
 function TaskGroup({ title, icon: Icon, events, selected, select }: { title: string; icon: LucideIcon; events: RhythmEvent[]; selected: number | null; select: (id: number) => void }) {
   const [limit, setLimit] = useState(5); if (!events.length) return null;
-  return <section className="event-group task-group"><h2><Icon size={23}/>{title}<span className="count">{events.length}</span></h2>{events.slice(0, limit).map(event => <TaskCard key={event.id} event={event} expanded={selected === event.id} onSelect={() => select(event.id)}/>)}{events.length > limit && <Button variant="ghost" onClick={() => setLimit(limit + 20)}>Показать ещё</Button>}</section>;
+  return <section className="event-group task-group"><h2><Icon size={23}/>{title}<span className="count">{events.length}</span></h2><AnimatedList items={events.slice(0, limit)} itemKey={event => event.id} renderItem={event => <TaskCard event={event} expanded={selected === event.id} onSelect={() => select(event.id)}/>}/>{events.length > limit && <Button variant="ghost" onClick={() => setLimit(limit + 20)}>Показать ещё</Button>}</section>;
 }
 export function TasksPage() {
   const { today } = useData(); const actions = useEventActions(); const [query, setQuery] = useState(''); const [filter, setFilter] = useState<Filter>('all'); const [priority, setPriority] = useState<Priority | ''>(''); const [filters, setFilters] = useState(false); const [selected, setSelected] = useState<number | null>(null); const [collapsed, setCollapsed] = useState(false);
@@ -25,6 +26,6 @@ export function TasksPage() {
   const groups = [{ title: 'Сегодня', icon: Sun, events: pending.filter(e => e.date === today) }, { title: 'На неделе', icon: CalendarDays, events: pending.filter(e => e.date && e.date > today && e.date < weekEnd) }, { title: 'Позже', icon: Clock3, events: pending.filter(e => !e.date || e.date >= weekEnd) }, { title: 'Просрочено', icon: AlertCircle, events: pending.filter(e => e.date && e.date < today) }, { title: 'Выполнено', icon: CheckCircle2, events: items.filter(e => e.status === 'done') }];
   return <div className="page tasks-page"><div className="tasks-top"><PageHeader title="Задачи" subtitle="Все задачи под контролем" mascot={false}/><SearchBox value={query} onChange={setQuery} label="Поиск задач" placeholder="Поиск задач, проектов или меток..."/><IconButton icon={SlidersHorizontal} label="Фильтр приоритета" aria-expanded={filters} onClick={() => setFilters(!filters)}/></div><div className="toolbar tasks-toolbar"><Segments value={filter} onChange={setFilter} label="Фильтр задач" options={[{ value: 'all', label: 'Все', count: all.length }, { value: 'today', label: 'Сегодня', count: open.filter(e => e.date === today).length }, { value: 'soon', label: 'Скоро', count: open.filter(e => e.date && e.date > today && e.date <= addDays(today, 7)).length }, { value: 'done', label: 'Выполнено', count: done.length }]}/><NewButton onClick={() => actions.create('task')}>Новая задача</NewButton></div>
     <Collapsible open={filters}><label className="priority-filter">Приоритет<select value={priority} onChange={e => { const value = e.target.value as Priority | ''; motionUpdate(() => setPriority(value)); }}><option value="">Все</option><option value="high">Высокий</option><option value="normal">Обычный</option><option value="low">Низкий</option></select></label></Collapsible>{result.error && <Alert>{result.error}</Alert>}
-    <div className="event-groups">{groups.map(group => <TaskGroup key={group.title} {...group} selected={expanded} select={select}/>)}</div>{!items.length && !result.loading && <Empty>Подходящих задач нет</Empty>}
+    <AnimatedList className="event-groups motion-content" items={groups.filter(group => group.events.length)} itemKey={group => group.title} renderItem={group => <TaskGroup {...group} selected={expanded} select={select}/>}/>{!items.length && !result.loading && <Empty>Подходящих задач нет</Empty>}
   </div>;
 }

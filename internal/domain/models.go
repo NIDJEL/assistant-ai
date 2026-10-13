@@ -25,6 +25,7 @@ type Event struct {
 	Priority           Priority      `json:"priority"`
 	CreatedAt          time.Time     `json:"created_at"`
 	UpdatedAt          time.Time     `json:"updated_at"`
+	DeletedAt          *time.Time    `json:"deleted_at,omitempty"`
 	SourceKey          *string       `json:"source_key"`
 	ExternalCalendarID *string       `json:"external_calendar_id"`
 	Score              *float64      `json:"score,omitempty"`
@@ -225,6 +226,7 @@ type Exchange struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 type Filter struct {
+	Deleted              bool
 	Kind                 EventType
 	Status               Status
 	Start, End, Upcoming *Date

@@ -3,11 +3,11 @@ import { request, errorMessage } from '../api/client';
 export type WidgetKey = 'calendar' | 'today' | 'tasks' | 'meetings' | 'progress' | 'quick' | 'tags';
 export interface WidgetLayout { order: WidgetKey[]; hidden: WidgetKey[]; settings: Partial<Record<WidgetKey, { limit: number }>> }
 export type MotionPreference = 'system' | 'full' | 'reduced';
-export interface Preferences { name: string; tts: boolean; widgets: boolean; motion: MotionPreference; layouts: Record<string, WidgetLayout>; revision: number }
-const defaults: Preferences = { name: 'Алексей', tts: false, widgets: true, motion: 'system', layouts: {}, revision: 0 };
+export interface Preferences { name: string; tts: boolean; widgets: boolean; navCollapsed: boolean; motion: MotionPreference; layouts: Record<string, WidgetLayout>; revision: number }
+const defaults: Preferences = { name: 'Алексей', tts: false, widgets: true, navCollapsed: false, motion: 'system', layouts: {}, revision: 0 };
 const key = 'rhythm.preferences.v1';
 function normalize(value: Partial<Preferences> & { panel_visible?: boolean }): Preferences {
-  return { name: typeof value.name === 'string' && value.name.trim() ? value.name.slice(0, 50) : defaults.name, tts: typeof value.tts === 'boolean' ? value.tts : localStorage.getItem('rhythm-speak') === 'true', widgets: typeof value.panel_visible === 'boolean' ? value.panel_visible : typeof value.widgets === 'boolean' ? value.widgets : true, motion: value.motion === 'full' || value.motion === 'reduced' ? value.motion : 'system', layouts: value.layouts && typeof value.layouts === 'object' ? value.layouts : {}, revision: Number.isSafeInteger(value.revision) && value.revision! >= 0 ? value.revision! : 0 };
+  return { name: typeof value.name === 'string' && value.name.trim() ? value.name.slice(0, 50) : defaults.name, tts: typeof value.tts === 'boolean' ? value.tts : localStorage.getItem('rhythm-speak') === 'true', widgets: typeof value.panel_visible === 'boolean' ? value.panel_visible : typeof value.widgets === 'boolean' ? value.widgets : true, navCollapsed: value.navCollapsed === true, motion: value.motion === 'full' || value.motion === 'reduced' ? value.motion : 'system', layouts: value.layouts && typeof value.layouts === 'object' ? value.layouts : {}, revision: Number.isSafeInteger(value.revision) && value.revision! >= 0 ? value.revision! : 0 };
 }
 function read(): Preferences { try { return normalize(JSON.parse(localStorage.getItem(key) || '{}')); } catch { return defaults; } }
 function profile() {

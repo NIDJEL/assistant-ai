@@ -206,6 +206,30 @@ func (s *Service) Delete(ctx context.Context, id int64) error {
 		return tx.Delete(ctx, id)
 	})
 }
+func (s *Service) Restore(ctx context.Context, id int64, now time.Time, force bool) (*domain.Event, error) {
+	var result *domain.Event
+	err := s.Store.Write(ctx, func(tx repository.Tx) error {
+		e, err := tx.GetDeleted(ctx, id)
+		if err != nil {
+			return err
+		}
+		if e == nil {
+			return &domain.AppError{Code: "not_found", Message: "Удалённая запись не найдена", Status: 404}
+		}
+		if e.Status == domain.StatusOpen {
+			conflicts, err := s.Conflicts(ctx, tx, *e, id)
+			if err != nil {
+				return err
+			}
+			if len(conflicts) > 0 && !force {
+				return &domain.AppError{Code: "meeting_conflict", Message: "Время пересекается с другой встречей", Status: 409, Conflicts: conflicts}
+			}
+		}
+		result, err = tx.Restore(ctx, id, now)
+		return err
+	})
+	return result, err
+}
 func (s *Service) Due(ctx context.Context, now time.Time) ([]domain.Event, error) {
 	now = now.In(s.Location)
 	var reminders []domain.Event

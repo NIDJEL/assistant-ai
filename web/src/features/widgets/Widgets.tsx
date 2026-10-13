@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { MotionLink as Link } from '../../components/motion/MotionNavLink';
 import { motionUpdate } from '../../components/motion/motion';
 import { ArrowRight, ChevronLeft, ChevronRight, GripVertical, Plus, Settings } from 'lucide-react';
@@ -17,10 +17,11 @@ function Frame({ title, children, onAdd }: { title: string; children: React.Reac
   return <section className="widget"><header>{handle || <GripVertical size={18}/>}<h3>{title}</h3>{onAdd && <IconButton icon={Plus} label={`Добавить: ${title}`} onClick={onAdd}/>}<IconButton icon={Settings} className="widget-configure" label={`Настройки: ${title}`} onClick={configure}/></header>{children}</section>;
 }
 export function CalendarWidget() {
+  const { pathname } = useLocation();
   const { today, events } = useData(); const [params] = useSearchParams(); const selected = isCivilDay(params.get('date')) ? params.get('date')! : today; const [month, setMonth] = useState(monthStart(selected)); const navigate = useNavigate();
   useEffect(() => setMonth(monthStart(selected)), [selected]);
-  return <Frame title="Календарь"><div className="mini-month-heading"><strong>{formatMonth(month)}</strong><div><IconButton icon={ChevronLeft} label="Предыдущий месяц в виджете" disabled={addMonths(month, -1) === month} onClick={() => motionUpdate(() => setMonth(current => addMonths(current, -1)))}/><IconButton icon={ChevronRight} label="Следующий месяц в виджете" disabled={addMonths(month, 1) === month} onClick={() => motionUpdate(() => setMonth(current => addMonths(current, 1)))}/></div></div>
-    <div className="mini-calendar">{['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map(day => <span className="weekday" key={day}>{day}</span>)}{monthDays(month).map(day => <button type="button" key={day} className={`${day === selected ? 'today' : ''} ${day.slice(0, 7) !== month.slice(0, 7) ? 'outside' : ''}`} aria-label={`Календарь: ${dateLabel(day, today)}`} aria-current={day === today ? 'date' : undefined} onClick={() => motionUpdate(() => navigate(`/calendar?date=${day}`))}>{Number(day.slice(-2))}{events.some(event => event.date === day && event.status === 'open') && <i aria-hidden="true"/>}</button>)}</div>
+  return <Frame title="Календарь"><div className="mini-month-heading"><strong>{formatMonth(month)}</strong><div><IconButton icon={ChevronLeft} label="Предыдущий месяц в виджете" disabled={addMonths(month, -1) === month} onClick={() => motionUpdate(() => setMonth(current => addMonths(current, -1)), 'content', '.widgets-panel .mini-calendar, .drawer .mini-calendar')}/><IconButton icon={ChevronRight} label="Следующий месяц в виджете" disabled={addMonths(month, 1) === month} onClick={() => motionUpdate(() => setMonth(current => addMonths(current, 1)), 'content', '.widgets-panel .mini-calendar, .drawer .mini-calendar')}/></div></div>
+    <div className="mini-calendar">{['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map(day => <span className="weekday" key={day}>{day}</span>)}{monthDays(month).map(day => <button type="button" key={day} className={`${day === selected ? 'today' : ''} ${day.slice(0, 7) !== month.slice(0, 7) ? 'outside' : ''}`} aria-label={`Календарь: ${dateLabel(day, today)}`} aria-current={day === today ? 'date' : undefined} onClick={() => motionUpdate(() => navigate(`/calendar?date=${day}`), pathname === '/calendar' ? 'content' : 'navigation')}>{Number(day.slice(-2))}{events.some(event => event.date === day && event.status === 'open') && <i aria-hidden="true"/>}</button>)}</div>
   </Frame>;
 }
 function WidgetEvent({ event }: { event: RhythmEvent }) {

@@ -6,7 +6,7 @@ function useMotionClick({ onClick, to, ...props }: Pick<LinkProps, 'onClick' | '
   const click: NonNullable<LinkProps['onClick']> = event => {
     onClick?.(event);
     if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || props.reloadDocument || props.target && props.target !== '_self') return;
-    event.preventDefault(); motionUpdate(() => navigate(to, { replace: props.replace, state: props.state, relative: props.relative, preventScrollReset: props.preventScrollReset }));
+    event.preventDefault(); motionUpdate(() => navigate(to, { replace: props.replace, state: props.state, relative: props.relative, preventScrollReset: props.preventScrollReset }), 'navigation');
   };
   return click;
 }

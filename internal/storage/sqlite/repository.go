@@ -19,7 +19,7 @@ type executor interface {
 type Repo struct{ q executor }
 type scanner interface{ Scan(...any) error }
 
-const columns = "id,kind,title,date,time,duration_minutes,status,created_at,updated_at,source_key,description,priority,external_calendar_id,location,meeting_url,details"
+const columns = "id,kind,title,date,time,duration_minutes,status,created_at,updated_at,source_key,description,priority,external_calendar_id,location,meeting_url,details,deleted_at"
 
 func dateValue(v *domain.Date) any {
 	if v == nil {
@@ -36,10 +36,10 @@ func timeValue(v *domain.TimeOfDay) any {
 func scanEvent(row scanner) (*domain.Event, error) {
 	var e domain.Event
 	var kind, status, priority, created, updated string
-	var day, clock, source, external sql.NullString
+	var day, clock, source, external, deleted sql.NullString
 	var details string
 	var minutes int
-	if err := row.Scan(&e.ID, &kind, &e.Title, &day, &clock, &minutes, &status, &created, &updated, &source, &e.Description, &priority, &external, &e.Location, &e.MeetingURL, &details); err != nil {
+	if err := row.Scan(&e.ID, &kind, &e.Title, &day, &clock, &minutes, &status, &created, &updated, &source, &e.Description, &priority, &external, &e.Location, &e.MeetingURL, &details, &deleted); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
@@ -74,6 +74,13 @@ func scanEvent(row scanner) (*domain.Event, error) {
 	if e.UpdatedAt, err = time.Parse(time.RFC3339Nano, updated); err != nil {
 		return nil, err
 	}
+	if deleted.Valid {
+		stamp, err := time.Parse(time.RFC3339Nano, deleted.String)
+		if err != nil {
+			return nil, err
+		}
+		e.DeletedAt = &stamp
+	}
 	if source.Valid {
 		e.SourceKey = &source.String
 	}
@@ -85,14 +92,27 @@ func scanEvent(row scanner) (*domain.Event, error) {
 }
 func (r *Repo) Count(ctx context.Context) (int, error) {
 	var n int
-	err := r.q.QueryRowContext(ctx, "SELECT count(*) FROM events").Scan(&n)
+	err := r.q.QueryRowContext(ctx, "SELECT count(*) FROM events WHERE deleted_at IS NULL").Scan(&n)
 	return n, err
 }
 func (r *Repo) Get(ctx context.Context, id int64) (*domain.Event, error) {
-	return scanEvent(r.q.QueryRowContext(ctx, "SELECT "+columns+" FROM events WHERE id=?", id))
+	return scanEvent(r.q.QueryRowContext(ctx, "SELECT "+columns+" FROM events WHERE id=? AND deleted_at IS NULL", id))
+}
+func (r *Repo) GetDeleted(ctx context.Context, id int64) (*domain.Event, error) {
+	return scanEvent(r.q.QueryRowContext(ctx, "SELECT "+columns+" FROM events WHERE id=? AND deleted_at IS NOT NULL", id))
+}
+func (r *Repo) Restore(ctx context.Context, id int64, now time.Time) (*domain.Event, error) {
+	_, err := r.q.ExecContext(ctx, "UPDATE events SET deleted_at=NULL,updated_at=? WHERE id=? AND deleted_at IS NOT NULL", now.Format(time.RFC3339Nano), id)
+	if err != nil {
+		return nil, err
+	}
+	return r.Get(ctx, id)
 }
 func (r *Repo) Events(ctx context.Context, f domain.Filter) ([]domain.Event, error) {
-	where := []string{}
+	where := []string{"deleted_at IS NULL"}
+	if f.Deleted {
+		where[0] = "deleted_at IS NOT NULL"
+	}
 	args := []any{}
 	if f.Kind != domain.EventUnknown {
 		where = append(where, "kind=?")
@@ -176,7 +196,7 @@ func (r *Repo) Update(ctx context.Context, e domain.Event, now time.Time) (*doma
 	return r.Get(ctx, e.ID)
 }
 func (r *Repo) Delete(ctx context.Context, id int64) error {
-	_, err := r.q.ExecContext(ctx, "DELETE FROM events WHERE id=?", id)
+	_, err := r.q.ExecContext(ctx, "UPDATE events SET deleted_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id=? AND deleted_at IS NULL", id)
 	return err
 }
 func (r *Repo) State(ctx context.Context, id string) (domain.State, error) {

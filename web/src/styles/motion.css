@@ -7,6 +7,7 @@
 
 /* Snapshot transitions keep the layout, live forms and voice controller intact. */
 .main-panel { view-transition-name: main-panel; }
+.sidebar { view-transition-name: sidebar-panel; }
 .widgets-panel { view-transition-name: widgets-panel; }
 .page-header { view-transition-name: page-heading; }
 .meeting-details { view-transition-name: meeting-detail; }
@@ -23,6 +24,9 @@
 ::view-transition { pointer-events: none; }
 ::view-transition-group(*) { animation-duration: var(--motion-normal); animation-timing-function: var(--motion-ease); }
 ::view-transition-old(root), ::view-transition-new(root) { animation: none; }
+::view-transition-old(sidebar-panel) { animation: motion-fade-out var(--motion-exit) ease both; }
+::view-transition-new(sidebar-panel) { animation: motion-fade-in var(--motion-normal) var(--motion-ease) both; }
+::view-transition-old(*), ::view-transition-new(*) { object-fit: none; object-position: left top; }
 ::view-transition-old(main-panel), ::view-transition-old(widgets-panel), ::view-transition-old(page-heading), ::view-transition-old(meeting-detail), ::view-transition-old(selected-day) {
   animation: motion-fade-out var(--motion-exit) ease both;
 }

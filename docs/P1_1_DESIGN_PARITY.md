@@ -4,7 +4,7 @@ Approved user references are saved unchanged in [screenshots/p1-1/reference](scr
 
 ## Preserved scale
 
-The existing `app.css` shell widths, main padding and global type scale are retained: at 1440, sidebar 238 px, main 808 px and widgets 330 px, with 16 px gaps. Existing desktop/tablet/mobile breakpoints remain. No zoom, transform scale or global font-size adjustment is applied to the application. The calendar grid height is adjusted to keep the selected-day card visible; Today uses a bounded conversation scroll area to keep its composer at the bottom.
+The global type scale, main padding and existing desktop/tablet/mobile breakpoints remain. No zoom, transform scale or global font-size adjustment is applied. The latest width correction keeps the shell across the available screen, with navigation on the left and widgets on the right. At 1440 the side panels retain their 238 px / 330 px widths and 16 px gaps. When widgets are hidden, only the central page content is limited to 1280 px, aligned beside navigation; the shell itself is not compressed or centered. Desktop navigation can collapse to 76 px with icons and tooltips, and this preference survives refresh. Mobile navigation slides in from the left; widgets still open from the right. A stable scrollbar gutter prevents horizontal shifts as content changes.
 
 ## Pages
 
@@ -26,17 +26,21 @@ Unsupported recurrence, reminder sound, system notifications and live integratio
 
 Schema v4 adds an optional `events.details` JSON column: tags, subtasks with stable IDs, meeting participants, and reminder enabled state. Existing event fields and the assistant/NLP contracts are retained. Empty optional fields are omitted from JSON. Disabling a reminder excludes it from the due-reminders endpoint. Search also includes real task tags.
 
+Schema v5 adds `deleted_at` for recoverable deletion. Normal lists, counts, lookups, conflicts and due reminders exclude deleted records. Archive → Deleted reads `GET /api/events?deleted=true`; its Restore button calls `POST /api/events/{id}/restore`. Recovery preserves the same ID, original date, status and metadata, including after server restart. An open meeting must pass conflict checks before recovery; overriding a conflict requires a separate explicit action. Completed records remain in Archive → History. Deletion and completion show feedback with Undo. Records physically deleted before this migration cannot be recovered by this feature.
+
 `GET/PUT /api/preferences/{profile}` persists a browser UUID profile in SQLite. `panel_visible` (plus the compatible `widgets` field), name/TTS, per-page widget order, hidden widget types and record limits survive refresh and server restart. Old browser preferences are imported once. A monotonic revision prevents stale writes from replacing newer settings; a newer cached edit is replayed after an immediate refresh. Writes are serialized, failures are visible with Retry, and a widget type is never duplicated.
 
 Widget sorting uses dnd-kit PointerSensor and KeyboardSensor. Only the handle activates dragging. An overlay lifts the card while the original keeps its height; adjacent cards animate. Space / Up / Down / Space reorder by one logical card even when heights differ. Reduced-motion preference removes CSS transitions and drop animation.
 
 ## Motion
 
-Navigation, filters, calendar selection, meeting details and panel visibility use browser View Transitions with 440 ms easing and a gentle slide. Individual widget snapshots animate between their positions across pages. The router commits synchronously inside the snapshot callback; it never waits for an animation frame while rendering is paused. Rapid navigation skips the previous visual transition while applying each state update once. Browsers without this API and navigation beneath a closing mobile drawer use a live page fade.
+Navigation and panel visibility use browser View Transitions with 440 ms easing and a gentle slide. Individual widget snapshots animate between their positions across pages. The router commits synchronously inside the snapshot callback; it never waits for an animation frame while rendering is paused. Rapid navigation skips the previous visual transition while applying each state update once. Browsers without this API and navigation beneath a closing mobile drawer use a live page fade. Snapshot images retain their natural size when the layout width changes, avoiding text scaling.
+
+Calendar day/view selection and task, meeting and integration filters update only the relevant content. They do not capture or animate the shell, heading or toolbar. Measured containers interpolate changed heights; lists retain departing rows in position until their collapse finishes. Completing a reminder checks and strikes its title, collapses the row, and explains that it moved to the archive with an Undo action. Opening its inline editor leaves the title visible. Calendar date markers have equal fixed dimensions so they cannot shrink into ovals.
 
 The widget panel stays mounted across routes. A measured layout animation moves retained cards and introduces added cards when native snapshots are unavailable or a picker is open. The inner card animates independently of the sortable wrapper, avoiding interference with dragging. Adjacent drag cards and the drop overlay use 440 ms easing.
 
-Task details, priority filters and inline reminders animate their measured height. Closing content becomes inert, and reopening during the 220 ms exit preserves the reminder draft. Dialogs, drawers and menus have entry and exit animations; closing dialogs reject clicks and submission until native focus is restored on unmount. Buttons, checks, switches and new chat bubbles have gentle feedback. Layout widths and type sizes are unchanged.
+Task details, priority filters and inline reminders animate their measured height. Closing content becomes inert, and reopening during the 220 ms exit preserves the reminder draft. Dialogs, drawers and menus have entry and exit animations; closing dialogs reject clicks and submission until native focus is restored on unmount. Buttons, checks, switches and new chat bubbles have gentle feedback. Type sizes are unchanged.
 
 Settings → Interface → Animations offers System (default), Smooth and No animations. The selected mode persists in the existing SQLite profile and browser cache. System follows `prefers-reduced-motion`; Smooth explicitly enables motion within Rhythm even when the browser reports reduced motion. No animations disables snapshot, layout, backdrop and CSS animations, with immediate closing. No OS settings are changed.
 
@@ -45,8 +49,8 @@ Settings → Interface → Animations offers System (default), Smooth and No ani
 - `go test ./...` and `go vet ./...`: passed; existing shared parity/contract corpus retained.
 - Linux Docker `go test -race -count=1 ./...`: passed.
 - Frontend: 26 tests passed; production build and frozen lockfile installation passed. Delayed search keeps menus/editors mounted; immediate refresh replays newer preferences.
-- Browser: 17 E2E passed, including pointer and keyboard sorting, handle-only activation, add/remove/duplicate prevention, widget settings and persistence, task subtasks, meeting selection, selected day, inline reminder and integration detail. Motion checks verify a successfully started destination snapshot, rapid navigation, reversible reminder closing with draft preservation, blocked submission during modal exit, focus restoration, reduced motion, explicit Smooth mode despite system reduced motion, persistence, widget movement without native snapshots and navigation beneath closing drawers at 593 px.
-- Responsive checks: 1920, 1600, 1440, 1280, 834 and 390 px, with overflow assertions and tablet/mobile drawers.
+- Browser: 23 E2E passed, including pointer and keyboard sorting, handle-only activation, add/remove/duplicate prevention, widget settings and persistence, task subtasks, meeting selection, selected day, inline reminder and integration detail. Motion checks verify a successfully started destination snapshot, rapid navigation, reversible reminder closing with draft preservation, blocked submission during modal exit, focus restoration, reduced motion, explicit Smooth mode despite system reduced motion, persistence, widget movement without native snapshots and navigation beneath closing drawers at 593 px. Additional regressions verify side panels at screen edges, bounded content with widgets hidden, persistent navigation collapse, left mobile navigation, round date markers, stable headers/toolbars during filters, animated reminder completion with Undo, and same-ID recovery through the real Go API.
+- Responsive checks: 2560, 1920, 1600, 1440, 1280, 834, 593 and 390 px, with overflow assertions and tablet/mobile drawers.
 - Voice: pause → zero POST; continued dictation → appended draft; Send → exactly one POST. Voice controller and manual-send implementation unchanged.
 - Python reference: 73 tests passed; legacy voice: 6 tests passed.
 - Docker image build and dedicated container healthcheck passed; SQLite metadata/preferences are also tested after closing and reopening the database.
@@ -75,3 +79,14 @@ node web/scripts/capture-parity.mjs
 The optional fixture flag adds QA metadata/reminders through the actual Go API to that isolated database, exercising populated expanded/selected states. Original demo records supply the underlying titles and dates; screenshot records are not shipped as application data. Counts, progress and dates are calculated from API records. No screenshot April 2025 data is copied into the frontend.
 
 The P1 baseline branch is `p1-react-ui-voice` (P1 has not yet been merged into `main`), so the P1.1 PR targets that branch to keep the diff limited to visual alignment.
+
+## Latest layout and recovery screenshots
+
+The original comparison boards document the initial P1.1 alignment. These later browser captures show the user-requested corrections with records served by the real Go API in the separate E2E database:
+
+- [Full-width shell with side panels at screen edges, 2560 px](screenshots/p1-1/fixes/wide-calendar.png)
+- [Navigation collapsed to icons, 2560 px](screenshots/p1-1/fixes/collapsed-navigation.png)
+- [Widgets hidden: bounded central content, full-width shell](screenshots/p1-1/fixes/hidden-widgets.png)
+- [Mobile navigation opening from the left, 593 px](screenshots/p1-1/fixes/left-navigation.png)
+- [Reminder completion feedback and Undo](screenshots/p1-1/fixes/reminder-completed.png)
+- [Deleted records with Restore buttons](screenshots/p1-1/fixes/archive-restore.png)

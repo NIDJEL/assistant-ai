@@ -53,6 +53,7 @@ func (a *API) Router() http.Handler {
 	r.Post("/api/events", a.create)
 	r.Patch("/api/events/{id}", a.update)
 	r.Delete("/api/events/{id}", a.delete)
+	r.Post("/api/events/{id}/restore", a.restore)
 	r.Post("/api/import-demo", a.importDemo)
 	r.Get("/openapi.json", func(w http.ResponseWriter, r *http.Request) { write(w, 200, OpenAPI()) })
 	r.Get("/docs", a.docs)
@@ -174,6 +175,13 @@ func (a *API) events(fixed domain.EventType) http.HandlerFunc {
 			return
 		}
 		filter := domain.Filter{Kind: kind, Status: status}
+		if raw := q.Get("deleted"); raw != "" {
+			filter.Deleted, err = strconv.ParseBool(raw)
+			if err != nil {
+				a.fail(w, r, domain.Validation("deleted должен быть true или false"))
+				return
+			}
+		}
 		for name, target := range map[string]**domain.Date{"start": &filter.Start, "end": &filter.End} {
 			if raw := q.Get(name); raw != "" {
 				date, err := domain.ParseDate(raw)
@@ -289,4 +297,24 @@ func (a *API) delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(204)
+}
+func (a *API) restore(w http.ResponseWriter, r *http.Request) {
+	eventID, err := id(r)
+	if err != nil {
+		a.fail(w, r, err)
+		return
+	}
+	var body struct {
+		Force bool `json:"force"`
+	}
+	if err = decode(w, r, &body); err != nil {
+		a.fail(w, r, err)
+		return
+	}
+	e, err := a.Calendar.Restore(r.Context(), eventID, a.Clock.Now(), body.Force)
+	if err != nil {
+		a.fail(w, r, err)
+		return
+	}
+	write(w, 200, e)
 }
