@@ -8,8 +8,14 @@ test('widget handle reorder, add/remove, per-page settings and PostgreSQL persis
   const profile = (await (await request.get('/api/auth/me')).json()).user.id;
   const saved = async () => (await (await request.get(`/api/preferences/${profile}`)).json()).layouts?.['/calendar'];
   const handle = page.getByRole('button', { name: 'Переместить: Календарь', exact: true });
-  await handle.focus(); await page.keyboard.press('Space'); await page.keyboard.press('ArrowDown');
-  await expect(page.locator('.widget-drag-overlay')).toBeVisible(); await page.keyboard.press('Space');
+  await handle.focus(); await page.keyboard.press('Space');
+  const overlay = page.locator('.widget-drag-overlay');
+  await expect(overlay).toBeVisible();
+  const initial = await overlay.boundingBox();
+  if (!initial) throw new Error('Drag overlay missing');
+  await page.keyboard.press('ArrowDown');
+  await expect.poll(async () => (await overlay.boundingBox())?.y ?? initial.y).toBeGreaterThan(initial.y + 20);
+  await page.keyboard.press('Space');
   await expect.poll(async () => (await saved())?.order).toEqual(['today', 'calendar', 'tasks']);
   await page.reload(); await expect(page.locator('.widget-list > [data-widget]').first()).toHaveAttribute('data-widget', 'today');
   const titleBox = await page.locator('[data-widget="today"] h3').boundingBox();
