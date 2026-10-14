@@ -28,11 +28,25 @@ func OpenAPI() map[string]any {
 		"Error": map[string]any{"type": "object", "required": []string{"error", "request_id"}, "properties": map[string]any{
 			"error": map[string]any{"type": "object", "required": []string{"code", "message"}, "properties": map[string]any{"code": text(), "message": text()}}, "request_id": text(), "detail": text()}},
 	}
+
+	metadata := map[string]any{
+		"tags":             map[string]any{"type": "array", "maxItems": 12, "items": map[string]any{"type": "string", "minLength": 1, "maxLength": 50}},
+		"subtasks":         map[string]any{"type": "array", "maxItems": 50, "items": map[string]any{"type": "object", "required": []string{"id", "title", "done"}, "properties": map[string]any{"id": map[string]any{"type": "string", "maxLength": 80}, "title": map[string]any{"type": "string", "maxLength": 500}, "done": map[string]any{"type": "boolean"}}}},
+		"participants":     map[string]any{"type": "array", "maxItems": 50, "items": map[string]any{"type": "object", "required": []string{"name"}, "properties": map[string]any{"name": map[string]any{"type": "string", "maxLength": 100}, "email": map[string]any{"type": "string", "maxLength": 254}}}},
+		"reminder_enabled": map[string]any{"type": "boolean", "default": true},
+	}
+	for name, value := range metadata {
+		eventProperties[name] = value
+		for _, schema := range []string{"EventPatch", "Event"} {
+			schemas[schema].(map[string]any)["properties"].(map[string]any)[name] = value
+		}
+	}
+	schemas["Event"].(map[string]any)["properties"].(map[string]any)["deleted_at"] = map[string]any{"type": "string", "format": "date-time", "description": "Present only for deleted events"}
 	content := func(schema map[string]any) map[string]any {
 		return map[string]any{"application/json": map[string]any{"schema": schema}}
 	}
 	paths := map[string]any{}
-	for path, methods := range map[string][]string{"/health": {"get"}, "/api/chat": {"post"}, "/api/history/{session_id}": {"get"}, "/api/events": {"get", "post"}, "/api/events/{id}": {"get", "patch", "delete"}, "/api/tasks": {"get"}, "/api/meetings": {"get"}, "/api/reminders": {"get"}, "/api/reminders/due": {"get"}, "/api/import-demo": {"post"}} {
+	for path, methods := range map[string][]string{"/api/preferences/{profile}": {"get", "put"}, "/health": {"get"}, "/api/chat": {"post"}, "/api/history/{session_id}": {"get"}, "/api/events": {"get", "post"}, "/api/events/{id}": {"get", "patch", "delete"}, "/api/events/{id}/restore": {"post"}, "/api/tasks": {"get"}, "/api/meetings": {"get"}, "/api/reminders": {"get"}, "/api/reminders/due": {"get"}, "/api/import-demo": {"post"}} {
 		ops := map[string]any{}
 		for _, method := range methods {
 			status := "200"
@@ -43,7 +57,7 @@ func OpenAPI() map[string]any {
 				status = "204"
 			}
 			responseSchema := map[string]any{"type": "object"}
-			if path == "/api/events/{id}" || (path == "/api/events" && method == "post") {
+			if path == "/api/events/{id}" || path == "/api/events/{id}/restore" || (path == "/api/events" && method == "post") {
 				responseSchema = ref("Event")
 			}
 			if method == "get" && (path == "/api/events" || path == "/api/tasks" || path == "/api/meetings" || path == "/api/reminders") {
@@ -63,18 +77,28 @@ func OpenAPI() map[string]any {
 			if method == "post" && path == "/api/events" {
 				op["requestBody"] = map[string]any{"required": true, "content": content(ref("EventCreate"))}
 			}
+			if path == "/api/events/{id}/restore" {
+				op["requestBody"] = map[string]any{"required": true, "content": content(map[string]any{"type": "object", "additionalProperties": false, "properties": map[string]any{"force": map[string]any{"type": "boolean", "default": false}}})}
+			}
 			if method == "patch" {
 				op["requestBody"] = map[string]any{"required": true, "content": content(ref("EventPatch"))}
 			}
 			parameters := []any{}
-			if path == "/api/events/{id}" {
+			if path == "/api/preferences/{profile}" {
+				parameters = append(parameters, map[string]any{"name": "profile", "in": "path", "required": true, "schema": map[string]any{"type": "string", "format": "uuid"}})
+				if method == "put" {
+					op["requestBody"] = map[string]any{"required": true, "content": content(map[string]any{"type": "object", "description": "Personal browser profile preferences: panel visibility, per-page widget order, hidden types and settings. Maximum request size 64 KiB."})}
+				}
+			}
+
+			if path == "/api/events/{id}" || path == "/api/events/{id}/restore" {
 				parameters = append(parameters, map[string]any{"name": "id", "in": "path", "required": true, "schema": map[string]any{"type": "integer", "format": "int64", "minimum": 1}})
 			}
 			if path == "/api/history/{session_id}" {
 				parameters = append(parameters, map[string]any{"name": "session_id", "in": "path", "required": true, "schema": map[string]any{"type": "string", "format": "uuid"}})
 			}
 			if method == "get" && (path == "/api/events" || path == "/api/tasks" || path == "/api/meetings" || path == "/api/reminders") {
-				for name, schema := range map[string]any{"start": day, "end": day, "kind": eventProperties["kind"], "status": eventProperties["status"], "q": map[string]any{"type": "string", "maxLength": 200}, "limit": map[string]any{"type": "integer", "minimum": 1, "maximum": 200, "default": 100}, "offset": map[string]any{"type": "integer", "minimum": 0, "default": 0}} {
+				for name, schema := range map[string]any{"start": day, "end": day, "kind": eventProperties["kind"], "status": eventProperties["status"], "q": map[string]any{"type": "string", "maxLength": 200}, "deleted": map[string]any{"type": "boolean", "default": false, "description": "Only deleted events, available for restoration"}, "limit": map[string]any{"type": "integer", "minimum": 1, "maximum": 200, "default": 100}, "offset": map[string]any{"type": "integer", "minimum": 0, "default": 0}} {
 					parameters = append(parameters, map[string]any{"name": name, "in": "query", "schema": schema})
 				}
 			}

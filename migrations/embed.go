@@ -5,4 +5,4 @@ import "embed"
 //go:embed *.sql
 var Files embed.FS
 
-const LatestVersion = 3
+const LatestVersion = 5

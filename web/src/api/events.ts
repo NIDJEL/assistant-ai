@@ -17,3 +17,4 @@ export async function listEvents(query: EventQuery = {}, signal?: AbortSignal): 
 export const createEvent = (input: EventInput) => request<RhythmEvent>('/api/events', { method: 'POST', body: JSON.stringify(input) });
 export const updateEvent = (id: number, input: EventPatch) => request<RhythmEvent>(`/api/events/${id}`, { method: 'PATCH', body: JSON.stringify(input) });
 export const deleteEvent = (id: number) => request<void>(`/api/events/${id}`, { method: 'DELETE' });
+export const restoreEvent = (id: number, force = false) => request<RhythmEvent>(`/api/events/${id}/restore`, { method: 'POST', body: JSON.stringify({ force }) });

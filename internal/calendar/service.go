@@ -114,6 +114,10 @@ func (s *Service) Create(ctx context.Context, e domain.Event, now time.Time, for
 }
 
 type Patch struct {
+	Tags                 *[]string
+	Subtasks             *[]domain.Subtask
+	Participants         *[]domain.Participant
+	ReminderEnabled      *bool
 	Title, Description   *string
 	Location, MeetingURL *string
 	Date                 **domain.Date
@@ -133,6 +137,18 @@ func (s *Service) Update(ctx context.Context, id int64, p Patch, now time.Time) 
 		}
 		if e == nil {
 			return &domain.AppError{Code: "not_found", Message: "Запись не найдена", Status: 404}
+		}
+		if p.Tags != nil {
+			e.Tags = *p.Tags
+		}
+		if p.Subtasks != nil {
+			e.Subtasks = *p.Subtasks
+		}
+		if p.Participants != nil {
+			e.Participants = *p.Participants
+		}
+		if p.ReminderEnabled != nil {
+			e.ReminderEnabled = p.ReminderEnabled
 		}
 		if p.Title != nil {
 			e.Title = *p.Title
@@ -190,6 +206,30 @@ func (s *Service) Delete(ctx context.Context, id int64) error {
 		return tx.Delete(ctx, id)
 	})
 }
+func (s *Service) Restore(ctx context.Context, id int64, now time.Time, force bool) (*domain.Event, error) {
+	var result *domain.Event
+	err := s.Store.Write(ctx, func(tx repository.Tx) error {
+		e, err := tx.GetDeleted(ctx, id)
+		if err != nil {
+			return err
+		}
+		if e == nil {
+			return &domain.AppError{Code: "not_found", Message: "Удалённая запись не найдена", Status: 404}
+		}
+		if e.Status == domain.StatusOpen {
+			conflicts, err := s.Conflicts(ctx, tx, *e, id)
+			if err != nil {
+				return err
+			}
+			if len(conflicts) > 0 && !force {
+				return &domain.AppError{Code: "meeting_conflict", Message: "Время пересекается с другой встречей", Status: 409, Conflicts: conflicts}
+			}
+		}
+		result, err = tx.Restore(ctx, id, now)
+		return err
+	})
+	return result, err
+}
 func (s *Service) Due(ctx context.Context, now time.Time) ([]domain.Event, error) {
 	now = now.In(s.Location)
 	var reminders []domain.Event
@@ -205,7 +245,7 @@ func (s *Service) Due(ctx context.Context, now time.Time) ([]domain.Event, error
 	for _, e := range reminders {
 		start, _, ok := e.Interval(s.Location)
 		age := now.Sub(start)
-		if ok && age >= 0 && age <= 5*time.Minute {
+		if (e.ReminderEnabled == nil || *e.ReminderEnabled) && ok && age >= 0 && age <= 5*time.Minute {
 			result = append(result, e)
 		}
 	}

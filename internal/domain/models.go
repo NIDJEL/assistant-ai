@@ -11,6 +11,7 @@ import (
 )
 
 type Event struct {
+	EventDetails
 	ID                 int64         `json:"id"`
 	Kind               EventType     `json:"kind"`
 	Title              string        `json:"title"`
@@ -24,6 +25,7 @@ type Event struct {
 	Priority           Priority      `json:"priority"`
 	CreatedAt          time.Time     `json:"created_at"`
 	UpdatedAt          time.Time     `json:"updated_at"`
+	DeletedAt          *time.Time    `json:"deleted_at,omitempty"`
 	SourceKey          *string       `json:"source_key"`
 	ExternalCalendarID *string       `json:"external_calendar_id"`
 	Score              *float64      `json:"score,omitempty"`
@@ -48,6 +50,9 @@ func (e Event) Interval(loc *time.Location) (time.Time, time.Time, bool) {
 	return start, start.Add(e.Duration), true
 }
 func (e Event) Validate() error {
+	if err := e.EventDetails.Validate(); err != nil {
+		return err
+	}
 	if utf8.RuneCountInString(e.Location) > 500 || len(e.MeetingURL) > 2048 {
 		return errors.New("Сократите место встречи или ссылку")
 	}
@@ -221,6 +226,7 @@ type Exchange struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 type Filter struct {
+	Deleted              bool
 	Kind                 EventType
 	Status               Status
 	Start, End, Upcoming *Date

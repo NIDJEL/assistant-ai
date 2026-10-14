@@ -1,0 +1,99 @@
+:root {
+  --motion-fast: 180ms;
+  --motion-normal: 440ms;
+  --motion-exit: 220ms;
+  --motion-ease: cubic-bezier(.22, 1, .36, 1);
+}
+
+/* Snapshot transitions keep the layout, live forms and voice controller intact. */
+.main-panel { view-transition-name: main-panel; }
+.sidebar { view-transition-name: sidebar-panel; }
+.widgets-panel { view-transition-name: widgets-panel; }
+.page-header { view-transition-name: page-heading; }
+.meeting-details { view-transition-name: meeting-detail; }
+.selected-day { view-transition-name: selected-day; }
+.calendar-cell.selected .day-number { view-transition-name: selected-date; }
+.widgets-panel .mini-calendar .today { view-transition-name: widget-date; }
+.widgets-panel [data-widget='calendar'] { view-transition-name: widget-calendar; }
+.widgets-panel [data-widget='today'] { view-transition-name: widget-today; }
+.widgets-panel [data-widget='tasks'] { view-transition-name: widget-tasks; }
+.widgets-panel [data-widget='meetings'] { view-transition-name: widget-meetings; }
+.widgets-panel [data-widget='progress'] { view-transition-name: widget-progress; }
+.widgets-panel [data-widget='quick'] { view-transition-name: widget-quick; }
+.widgets-panel [data-widget='tags'] { view-transition-name: widget-tags; }
+::view-transition { pointer-events: none; }
+::view-transition-group(*) { animation-duration: var(--motion-normal); animation-timing-function: var(--motion-ease); }
+::view-transition-old(root), ::view-transition-new(root) { animation: none; }
+::view-transition-old(sidebar-panel) { animation: motion-fade-out var(--motion-exit) ease both; }
+::view-transition-new(sidebar-panel) { animation: motion-fade-in var(--motion-normal) var(--motion-ease) both; }
+::view-transition-old(*), ::view-transition-new(*) { object-fit: none; object-position: left top; }
+::view-transition-old(main-panel), ::view-transition-old(widgets-panel), ::view-transition-old(page-heading), ::view-transition-old(meeting-detail), ::view-transition-old(selected-day) {
+  animation: motion-fade-out var(--motion-exit) ease both;
+}
+::view-transition-new(main-panel), ::view-transition-new(widgets-panel), ::view-transition-new(page-heading), ::view-transition-new(meeting-detail), ::view-transition-new(selected-day) {
+  animation: motion-content-in var(--motion-normal) var(--motion-ease) both;
+}
+::view-transition-new(widgets-panel) { animation-name: motion-panel-in; }
+::view-transition-old(selected-date), ::view-transition-new(selected-date), ::view-transition-old(widget-date), ::view-transition-new(widget-date) { animation-duration: var(--motion-fast); }
+html:not([data-native-motion]) .page { animation: motion-fade-in var(--motion-normal) var(--motion-ease) both; }
+
+.motion-collapse { overflow: hidden; }
+.motion-collapse > div { display: flow-root; }
+.motion-collapse[data-open='false'] { pointer-events: none; }
+.dialog[open] { animation: motion-dialog-in var(--motion-normal) var(--motion-ease) both; }
+.dialog[open].closing { animation: motion-dialog-out var(--motion-exit) ease both; pointer-events: none; }
+.dialog[open]::backdrop { animation: motion-fade-in var(--motion-normal) ease both; }
+.dialog[open].closing::backdrop { animation: motion-fade-out var(--motion-exit) ease both; }
+.dialog.drawer[open] { animation-name: motion-drawer-in; }
+.dialog.drawer[open].closing { animation-name: motion-drawer-out; }
+.row-menu { transform-origin: top right; animation: motion-menu-in var(--motion-fast) var(--motion-ease) both; }
+.row-menu.closing { animation: motion-menu-out var(--motion-exit) ease both; pointer-events: none; }
+.menu-dismiss.closing { pointer-events: none; }
+
+.button, .icon-button, .quick-actions button, .microphone, .send-button, .drawer-widget-button {
+  transition: color var(--motion-fast) ease, background-color var(--motion-fast) ease, border-color var(--motion-fast) ease, box-shadow var(--motion-normal) var(--motion-ease), transform var(--motion-normal) var(--motion-ease), opacity var(--motion-fast) ease;
+}
+.task-card, .reminder-card, .integration-card, .meeting-tile, .calendar-cell, .search-box, input, textarea, select {
+  transition: background-color var(--motion-fast) ease, border-color var(--motion-normal) ease, box-shadow var(--motion-normal) var(--motion-ease), color var(--motion-fast) ease;
+}
+.nav-link, .segments button { position: relative; isolation: isolate; transition: color var(--motion-fast) ease, background-color var(--motion-fast) ease, box-shadow var(--motion-fast) ease, border-color var(--motion-fast) ease; }
+.nav-link::before, .segments button::before { content: ''; position: absolute; inset: 0; border-radius: inherit; z-index: -1; pointer-events: none; opacity: 0; transition: opacity var(--motion-normal) var(--motion-ease); }
+.nav-link::before { background: linear-gradient(110deg, #e9f4ff, #e8f2ff); }
+.nav-link.active { background: transparent; }
+.nav-link.active::before, .segments button[aria-pressed='true']::before { opacity: 1; }
+.segments button::before { background: linear-gradient(120deg, #2c89ff, #0870fc); }
+.segments button[aria-pressed='true'] { background: transparent; }
+.segments .count { transition: color var(--motion-fast) ease, background-color var(--motion-fast) ease; }
+.switch-row input::after { transition: transform var(--motion-normal) var(--motion-ease), box-shadow var(--motion-normal) ease; }
+input[type='checkbox']:not([role='switch'])::after { content: ''; position: absolute; left: 5px; top: 1px; width: 5px; height: 10px; border: solid white; border-width: 0 2px 2px 0; opacity: 0; transform: rotate(45deg) scale(.5); transition: opacity var(--motion-fast) ease, transform var(--motion-normal) var(--motion-ease); }
+input[type='checkbox']:not([role='switch']):checked::after { opacity: 1; transform: rotate(45deg) scale(1); }
+.message-bubble, .toast { animation: motion-message-in var(--motion-normal) var(--motion-ease) both; }
+
+@media (hover: hover) and (pointer: fine) {
+  .button:not(:disabled):hover, .quick-actions button:not(:disabled):hover { transform: translateY(-1px); box-shadow: 0 6px 16px #2674d61c; }
+  .button:not(:disabled):active, .quick-actions button:not(:disabled):active { transform: translateY(1px); transition-duration: 100ms; }
+  .task-card:hover, .reminder-card:hover { border-color: #cedff9; box-shadow: 0 4px 15px #5075b409; }
+  .icon-button:not(:disabled):hover { box-shadow: 0 3px 12px #2674d615; }
+}
+
+@keyframes motion-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes motion-fade-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes motion-content-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes motion-panel-in { from { opacity: 0; transform: translateX(16px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes motion-dialog-in { from { opacity: 0; transform: translateY(12px) scale(.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes motion-dialog-out { from { opacity: 1; transform: translateY(0) scale(1); } to { opacity: 0; transform: translateY(7px) scale(.985); } }
+@keyframes motion-drawer-in { from { opacity: 0; transform: translateX(32px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes motion-drawer-out { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(25px); } }
+@keyframes motion-menu-in { from { opacity: 0; transform: translateY(-4px) scale(.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes motion-menu-out { from { opacity: 1; transform: translateY(0) scale(1); } to { opacity: 0; transform: translateY(-3px) scale(.98); } }
+@keyframes motion-message-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+@media (prefers-reduced-motion: reduce) {
+  html:not([data-motion='full'])::view-transition-group(*), html:not([data-motion='full'])::view-transition-old(*), html:not([data-motion='full'])::view-transition-new(*) { animation: none !important; }
+  html:not([data-motion='full']) .button:hover, html:not([data-motion='full']) .quick-actions button:hover { transform: none; }
+}
+html[data-motion='reduced']::view-transition-group(*), html[data-motion='reduced']::view-transition-old(*), html[data-motion='reduced']::view-transition-new(*) { animation: none !important; }
+.motion-setting { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-top: 18px; font-size: 14px; }
+.motion-setting select { max-width: 100%; font-size: 13px; padding: 9px 12px; }
+.widget-placeholder .widget { opacity: .65; }
+.widget-list .widget { transition: opacity var(--motion-fast) ease, box-shadow var(--motion-normal) var(--motion-ease); }

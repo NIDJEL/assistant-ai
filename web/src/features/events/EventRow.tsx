@@ -7,6 +7,7 @@ import { priorityLabels } from './presentation';
 import { IconButton } from '../../components/UI';
 import type { RhythmEvent } from '../../types/api';
 export function CompleteCheckbox({ event, label }: { event: RhythmEvent; label?: string }) {
+  const { events } = useData(); event = events.find(current => current.id === event.id) || event;
   const actions = useEventActions(); const [pending, setPending] = useState<boolean | null>(null);
   async function toggle(value: boolean) { setPending(value); try { await actions.complete(event); } finally { setPending(null); } }
   return <input className="check" type="checkbox" checked={pending ?? event.status === 'done'} disabled={pending !== null} aria-busy={pending !== null} aria-label={label || `${event.status === 'done' ? 'Возобновить' : 'Завершить'} «${event.title}»`} onChange={e => void toggle(e.target.checked)}/>;

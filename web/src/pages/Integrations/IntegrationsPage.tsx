@@ -1,19 +1,26 @@
 import { useState } from 'react';
-import { CalendarDays, Send, Video, Link, Settings } from 'lucide-react';
-import { PageHeader, SearchBox, Button, Empty } from '../../components/UI';
-import { Dialog } from '../../components/Dialog';
-const services = [
-  { id: 'yandex', title: 'Яндекс Календарь', description: 'События и встречи в вашем Яндекс Календаре.', letter: 'Я', color: '#ff513f', calendar: true },
-  { id: 'telegram', title: 'Telegram', description: 'Уведомления о задачах и встречах.', icon: Send, color: '#00a8e8', calendar: false },
-  { id: 'google', title: 'Google Calendar', description: 'События вашего Google Календаря.', letter: '31', color: '#4285f4', calendar: true },
-  { id: 'zoom', title: 'Zoom', description: 'Ссылки для ваших онлайн-встреч.', icon: Video, color: '#228aff', calendar: false },
-  { id: 'notion', title: 'Notion', description: 'Задачи и заметки из Notion.', letter: 'N', color: '#151d31', calendar: false },
-  { id: 'slack', title: 'Slack', description: 'Уведомления о важных событиях.', icon: Link, color: '#8b53bc', calendar: false },
+import { motionUpdate } from '../../components/motion/motion';
+import { AnimatedList } from '../../components/motion/AnimatedList';
+import { useSearchParams } from 'react-router-dom';
+import { CalendarDays, Send, Video, Settings, ArrowLeft, RefreshCw, CheckSquare, Users, Bell, Trash2, Plus, MoreHorizontal } from 'lucide-react';
+import { PageHeader, SearchBox, Button, Empty, Segments, IconButton } from '../../components/UI';
+export const services = [
+  { id: 'yandex', title: 'Яндекс Календарь', description: 'Синхронизация событий и встреч из Яндекс Календаря в Ритм.' },
+  { id: 'telegram', title: 'Telegram', description: 'Получайте уведомления о задачах и встречах в Telegram.' },
+  { id: 'google', title: 'Google Calendar', description: 'Синхронизация событий с Google Календарём.' },
+  { id: 'zoom', title: 'Zoom', description: 'Создавайте встречи в Zoom из Ритм.' },
+  { id: 'notion', title: 'Notion', description: 'Импортируйте задачи и заметки из Notion в Ритм.' },
+  { id: 'slack', title: 'Slack', description: 'Получайте уведомления о важных событиях в Slack.' },
 ];
+export function ServiceLogo({ id }: { id: string }) {
+  return <span className={`service-logo service-${id}`} aria-hidden="true">{id === 'telegram' ? <Send size={33} fill="white"/> : id === 'zoom' ? <Video size={32} fill="white"/> : id === 'slack' ? <svg viewBox="0 0 54 54"><g strokeWidth="9" strokeLinecap="round"><path d="M21 5v17M5 21h17" stroke="#36c5f0"/><path d="M49 21H32M33 5v17" stroke="#2eb67d"/><path d="M33 49V32M49 33H32" stroke="#ecb22e"/><path d="M5 33h17M21 49V32" stroke="#e01e5a"/></g></svg> : id === 'google' ? <span className="google-calendar-logo"><b>31</b></span> : id === 'notion' ? <span className="notion-logo">N</span> : <span className="yandex-logo">Я</span>}</span>;
+}
+export function IntegrationDetail({ id, onBack }: { id: string; onBack: () => void }) {
+  const item = services.find(s => s.id === id) || services[0];
+  return <div className="integration-detail"><div className="integration-detail-toolbar"><IconButton icon={ArrowLeft} label="Назад к виджетам" onClick={onBack}/><IconButton icon={MoreHorizontal} label="Дополнительные настройки интеграции — скоро" disabled/></div><header><ServiceLogo id={item.id}/><div><h2>{item.title}</h2><span className="integration-state"><i className="dot"/>Не подключено</span><p>{item.description}</p></div></header><section className="sync-card"><h3>Статус синхронизации</h3><div className="sync-state"><span className="sync-icon"><RefreshCw size={29}/></span><div><strong>Требуется настройка</strong><p>Подключение будет доступно на этапе P2.</p></div></div></section><section className="sync-card"><h3>Настройки синхронизации</h3>{[{ icon: CalendarDays, title: 'События и встречи', subtitle: 'Импортировать события' }, { icon: CheckSquare, title: 'Задачи из календаря', subtitle: 'Создавать задачи из событий' }, { icon: Users, title: 'Участники', subtitle: 'Импортировать участников' }, { icon: Bell, title: 'Напоминания', subtitle: 'Синхронизировать напоминания' }].map(({ icon: Icon, title, subtitle }) => <label className="sync-setting" key={title}><Icon size={22}/><span><strong>{title}</strong><small>{subtitle}</small></span><span className="switch-row"><input aria-label={title} type="checkbox" role="switch" disabled checked={false} readOnly/></span></label>)}</section><Button variant="soft" disabled><RefreshCw size={19}/>Синхронизировать сейчас</Button><Button variant="danger" disabled><Trash2 size={19}/>Отключить интеграцию</Button><p className="integration-footnote">Настройки станут доступны после подключения сервиса.</p></div>;
+}
 export function IntegrationsPage() {
-  const [query, setQuery] = useState(''); const [config, setConfig] = useState(false);
-  const items = services.filter(item => item.title.toLowerCase().includes(query.toLowerCase().trim()));
-  return <div className="page"><PageHeader title="Интеграции" subtitle="Подключите нужные сервисы"/><div className="toolbar"><SearchBox value={query} onChange={setQuery} label="Найти интеграцию"/></div><div className="integration-grid">{items.map(item => <section className={`integration-card ${item.id === 'yandex' ? 'prepared' : ''}`} key={item.id}><header><span className="service-logo" style={{ background: item.color }} aria-hidden="true">{item.icon ? <item.icon size={32}/> : item.letter}</span><div><h2>{item.title}</h2><span className="integration-state">{item.id === 'yandex' ? 'Не подключён' : 'Скоро'}</span></div></header><p>{item.description}</p>{item.id === 'yandex' ? <Button variant="soft" onClick={() => setConfig(true)}><Settings size={19}/>Настроить</Button> : <span className="coming-soon">Скоро</span>}</section>)}</div>{!items.length && <Empty>Интеграция не найдена</Empty>}
-    {config && <Dialog title="Яндекс Календарь" onClose={() => setConfig(false)}><div className="integration-info"><CalendarDays size={40}/><span className="integration-state">Не подключён</span><p>Подключение будет доступно на этапе P2.</p><p className="muted">После подключения созданные в Ритм встречи появятся в вашем Яндекс Календаре.</p></div><footer className="dialog-actions"><Button onClick={() => setConfig(false)}>Понятно</Button></footer></Dialog>}
-  </div>;
+  const [query, setQuery] = useState(''); const [filter, setFilter] = useState<'all' | 'connected' | 'available'>('all'); const [params, setParams] = useSearchParams(); const selected = params.get('service');
+  const items = services.filter(item => item.title.toLowerCase().includes(query.toLowerCase().trim()) && filter !== 'connected');
+  return <div className="page integrations-page"><PageHeader title="Интеграции" subtitle="Подключите нужные сервисы"/><div className="toolbar"><SearchBox value={query} onChange={setQuery} label="Найти интеграцию" placeholder="Найти интеграцию..."/></div><div className="integration-filters"><Segments value={filter} onChange={setFilter} label="Фильтр интеграций" options={[{ value: 'all', label: 'Все' }, { value: 'connected', label: 'Подключено' }, { value: 'available', label: 'Доступно' }]}/></div><AnimatedList className="integration-grid motion-content" items={items} itemKey={item => item.id} renderItem={item => <section className={`integration-card ${selected === item.id ? 'prepared' : ''}`} key={item.id}><header><ServiceLogo id={item.id}/><div><h2>{item.title}</h2><span className="integration-state"><i className="dot"/>{item.id === 'yandex' ? 'Не подключено' : 'Скоро'}</span></div></header><p>{item.description}</p><footer><Button variant={item.id === 'yandex' ? 'soft' : 'primary'} disabled={item.id !== 'yandex'} onClick={() => motionUpdate(() => setParams({ service: item.id }))}>{item.id === 'yandex' ? <Settings size={19}/> : <Plus size={19}/ >}{item.id === 'yandex' ? 'Настроить' : 'Подключить'}</Button><IconButton icon={MoreHorizontal} label={`Подробнее: ${item.title}`} onClick={() => motionUpdate(() => setParams({ service: item.id }))}/></footer></section>}/>{!items.length && <Empty>{filter === 'connected' ? 'Подключённых интеграций пока нет' : 'Интеграция не найдена'}</Empty>}</div>;
 }

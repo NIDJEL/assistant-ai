@@ -1,0 +1,65 @@
+/* Keep side panels at the screen edges; bound content only in focus mode. */
+html { scrollbar-gutter: stable; }
+.app-shell { --nav-width: 238px; --widgets-width: 330px; --shell-gap: 16px; position: relative; width: 100%; max-width: none; gap: 0; grid-template-columns: var(--nav-width) var(--shell-gap) minmax(0, 1fr) var(--shell-gap) var(--widgets-width); }
+.app-shell > .sidebar { grid-column: 1; }.app-shell > .main-panel { grid-column: 3; }.app-shell > .widgets-region { grid-column: 5; }
+.app-shell.widgets-hidden { max-width: none; grid-template-columns: var(--nav-width) var(--shell-gap) minmax(0, 1fr) 0px 0px; }
+.app-shell.widgets-moving { transition: grid-template-columns var(--motion-normal) var(--motion-ease); }
+.widgets-region { position: sticky; top: 16px; min-width: 0; max-height: calc(100dvh - 32px); overflow: clip; border-radius: var(--radius); }
+.widgets-region > .widgets-panel { position: relative; top: 0; width: var(--widgets-width); }
+.widgets-region > .widgets-panel[data-open='false'] { pointer-events: none; }
+.widgets-heading { display: grid; grid-template-columns: minmax(0, 1fr) 27px 32px; gap: 5px 7px; }
+.widgets-heading.has-toggle { grid-template-columns: 32px minmax(0, 1fr) 27px 32px; }
+.widgets-heading > p { grid-column: 1 / -1; margin-top: 0; }
+.widgets-heading > .icon-button[aria-label='Добавить виджет'] { background: #edf5ff; color: var(--accent); border-radius: 10px; width: 32px; min-height: 34px; }
+.widgets-heading > .widget-panel-toggle { width: 32px; min-height: 34px; padding: 5px; background: #edf5ff; color: #324aa2; border: 1px solid #e4edfb; border-radius: 10px; }
+.widgets-hidden > .main-panel > .page { width: 100%; max-width: 1280px; margin-inline: 0 auto; }
+.sidebar-brand-row { display: flex; align-items: center; gap: 6px; }
+.sidebar-brand-row .brand { flex: 1; padding-inline: 4px; min-width: 0; }
+.sidebar-collapse { width: 28px; min-height: 32px; padding: 4px; border: 0; background: #edf5ff; }
+.app-shell.nav-collapsed { --nav-width: 76px; }
+.nav-collapsed > .sidebar .sidebar-inner { padding: 26px 9px 19px; align-items: center; }
+.nav-collapsed > .sidebar .sidebar-brand-row { flex-direction: column; gap: 10px; }
+.nav-collapsed > .sidebar .brand { padding: 0; }
+.nav-collapsed > .sidebar .brand span, .nav-collapsed > .sidebar .nav-link span, .nav-collapsed > .sidebar .profile-name { display: none; }
+.nav-collapsed > .sidebar nav { margin-top: 34px; }
+.nav-collapsed > .sidebar .nav-link { padding: 15px; gap: 0; }
+.nav-collapsed > .sidebar .sidebar-footer { flex-direction: column; gap: 13px; }
+.nav-collapsed > .sidebar .settings-link { margin: 0; }
+.dialog.drawer-left { margin: 0 auto 0 0; border-radius: 0 22px 22px 0; }
+.dialog.drawer-left[open] { animation-name: motion-drawer-left-in; }
+.dialog.drawer-left[open].closing { animation-name: motion-drawer-left-out; }
+@keyframes motion-drawer-left-in { from { opacity: 0; transform: translateX(-32px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes motion-drawer-left-out { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(-25px); } }
+.calendar-cell .day-number { --day-size: 31px; width: var(--day-size); height: var(--day-size); min-width: var(--day-size); min-height: var(--day-size); flex: 0 0 var(--day-size); aspect-ratio: 1; border-radius: 50%; }
+.calendar-cell .day-number { position: relative; isolation: isolate; transition: color 180ms ease; }
+.calendar-cell .day-number::before { content: ''; position: absolute; inset: 0; z-index: -1; border-radius: 50%; background: linear-gradient(135deg, #087bff, #0060f8); opacity: 0; transition: opacity 180ms ease; }
+.calendar-cell .day-number.today { background: none; }
+.calendar-cell.selected .day-number.today { color: white; }
+.calendar-cell .day-number.today::before { opacity: 1; }
+.mini-calendar button { width: 32px; height: 32px; min-width: 32px; min-height: 32px; aspect-ratio: 1; padding: 0; justify-self: center; border-radius: 50%; }
+.mini-calendar button { transition: color 180ms ease, background-color 180ms ease; }
+.motion-list { display: grid; gap: 5px; min-width: 0; }
+.motion-list > .motion-collapse { min-width: 0; overflow-anchor: none; }
+.motion-collapse[data-open='true']:has(.row-menu:not(.closing)) { overflow: visible !important; }
+.auto-height { overflow: clip; overflow-anchor: none; }
+.auto-height > div { display: flow-root; }
+.event-groups.motion-list { gap: 20px; }
+.reminder-groups.motion-list { gap: 18px; }
+.motion-list .task-card { margin-block: 0; }
+.archive-tabs { margin-bottom: 18px; }
+.restore-notice { display: flex; align-items: center; gap: 10px; padding: 12px 15px; margin-bottom: 16px; border: 1px solid #cdeedf; border-radius: 13px; color: #187b59; background: #f2fbf7; font-size: 14px; }
+.restore-notice > span { flex: 1; min-width: 0; }
+.restore-notice > svg { flex-shrink: 0; }
+.integration-detail { animation: motion-fade-in 240ms var(--motion-ease); }
+.archive-deleted { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; border: 1px solid var(--border); padding: 15px; border-radius: 12px; background: white; }
+.archive-deleted > div { flex: 1; min-width: 160px; }
+.archive-deleted strong { display: block; font-size: 15px; font-weight: 550; }
+.archive-deleted small { display: block; margin-top: 6px; color: var(--muted); }
+.archive-deleted .alert { flex-basis: 100%; }
+.action-notice { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: white; border: 1px solid #dbe8ff; border-radius: 15px; box-shadow: 0 8px 28px #2b5d8d20; }
+.reminder-title strong { transition: color 180ms ease; }
+.reminder-card:has(.check:checked) .reminder-title strong { color: var(--muted); text-decoration: line-through; }
+@media (min-width: 1180px) and (max-width: 1359px) { .app-shell { --nav-width: 198px; --widgets-width: 285px; --shell-gap: 12px; }.app-shell.nav-collapsed { --nav-width: 76px; }.mini-calendar button { width: 29px; height: 29px; min-width: 29px; min-height: 29px; } }
+@media (min-width: 1650px) { .app-shell { --nav-width: 260px; --widgets-width: 355px; }.app-shell.nav-collapsed { --nav-width: 76px; } }
+@media (max-width: 1179px) { .app-shell, .app-shell.widgets-hidden { max-width: none; gap: 12px; grid-template-columns: 76px minmax(0, 1fr); }.app-shell > .main-panel { grid-column: 2; }.widgets-region { display: none; }.sidebar-collapse { display: none; }.sidebar-brand-row .brand { flex: none; padding: 0; } }
+@media (max-width: 760px) { html { scrollbar-gutter: auto; }.app-shell, .app-shell.widgets-hidden { max-width: none; grid-template-columns: minmax(0, 1fr); }.app-shell > .main-panel { grid-column: 1; }.calendar-cell .day-number { --day-size: 27px; }.archive-deleted .button { width: 100%; }.action-notice { flex-wrap: wrap; font-size: 13px; } }

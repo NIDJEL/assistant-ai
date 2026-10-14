@@ -1,21 +1,25 @@
 import { useRef, useState, type FormEvent } from 'react';
 import { Dialog } from '../../components/Dialog';
-import { Alert, Button } from '../../components/UI';
+import { Alert, Button, IconButton } from '../../components/UI';
+import { Plus, X } from 'lucide-react';
 import { useData } from '../../app/DataContext';
 import { ApiError, errorMessage } from '../../api/client';
 import { dateLabel } from '../calendar/dates';
 import { kindLabels, priorityLabels } from './presentation';
 import type { EventInput, EventKind, RhythmEvent } from '../../types/api';
-export interface EditorSpec { kind: EventKind; event?: RhythmEvent; date?: string; time?: string; focusDate?: boolean; nonce: number }
+export interface EditorSpec { kind: EventKind; event?: RhythmEvent; date?: string; time?: string; title?: string; duration?: number; focusDate?: boolean; nonce: number }
 export function EventEditor({ spec, onClose }: { spec: EditorSpec; onClose: () => void }) {
   const data = useData(); const event = spec.event;
-  const [input, setInput] = useState<EventInput>({ kind: spec.kind, title: event?.title || '', description: event?.description || '', date: event ? event.date : spec.date || data.today, time: event ? event.time : spec.time || (spec.kind === 'task' ? null : '10:00'), duration_minutes: event?.duration_minutes || 60, priority: event?.priority || 'normal', status: event?.status || 'open', location: event?.location || '', meeting_url: event?.meeting_url || '' });
+  const [input, setInput] = useState<EventInput>({ kind: spec.kind, title: event?.title || spec.title || '', description: event?.description || '', date: event ? event.date : spec.date || data.today, time: event ? event.time : spec.time || (spec.kind === 'task' ? null : '10:00'), duration_minutes: event?.duration_minutes || spec.duration || 60, priority: event?.priority || 'normal', status: event?.status || 'open', location: event?.location || '', meeting_url: event?.meeting_url || '' });
   const [error, setError] = useState(''); const [conflicts, setConflicts] = useState<RhythmEvent[]>([]); const [busy, setBusy] = useState(false); const locked = useRef(false);
+  const [tags, setTags] = useState((event?.tags || []).join(', '));
+  const [subtasks, setSubtasks] = useState(event?.subtasks || []);
+  const [participants, setParticipants] = useState(event?.participants || []);
   const set = <K extends keyof EventInput>(key: K, value: EventInput[K]) => { setInput(current => ({ ...current, [key]: value, ...(key === 'date' && !value ? { time: null } : {}) })); setConflicts([]); setError(''); };
   async function save(force = false) {
     if (locked.current) return; locked.current = true; setBusy(true); setError('');
     try {
-      const payload = { ...input, title: input.title.trim(), force };
+      const payload = { ...input, title: input.title.trim(), tags: [...new Set(tags.split(',').map(tag => tag.trim()).filter(Boolean))], ...(spec.kind === 'task' ? { subtasks } : {}), ...(spec.kind === 'meeting' ? { participants } : {}), force };
       if (event) { const { kind: _kind, ...patch } = payload; await data.update(event.id, patch); }
       else await data.create(payload);
       onClose();
@@ -32,6 +36,9 @@ export function EventEditor({ spec, onClose }: { spec: EditorSpec; onClose: () =
       <label>Приоритет<select aria-label="Приоритет" name="priority" value={input.priority} onChange={e => set('priority', e.target.value as EventInput['priority'])} disabled={busy}>{Object.entries(priorityLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label></div>
     {spec.kind === 'meeting' && <><label>Место<input name="location" value={input.location} onChange={e => set('location', e.target.value)} maxLength={500} placeholder="Офис или переговорная" disabled={busy}/></label><label>Ссылка встречи<input name="meeting_url" type="url" value={input.meeting_url} onChange={e => set('meeting_url', e.target.value)} maxLength={2048} placeholder="https://…" disabled={busy}/></label></>}
     <label>Заметка<textarea name="description" value={input.description} onChange={e => set('description', e.target.value)} rows={3} maxLength={8000} placeholder="Необязательно" disabled={busy}/></label>
+    <label>Метки<input value={tags} onChange={e => setTags(e.target.value)} placeholder="Через запятую" maxLength={600} disabled={busy}/></label>
+    {spec.kind === 'task' && <fieldset className="collection-editor"><legend>Подзадачи</legend>{subtasks.map((task, i) => <div key={task.id}><input aria-label={`Подзадача ${i + 1}`} value={task.title} required maxLength={500} disabled={busy} onChange={e => setSubtasks(current => current.map(t => t.id === task.id ? { ...t, title: e.target.value } : t))}/><IconButton icon={X} label={`Удалить подзадачу ${i + 1}`} disabled={busy} onClick={() => setSubtasks(current => current.filter(t => t.id !== task.id))}/></div>)}<Button variant="ghost" disabled={busy || subtasks.length >= 50} onClick={() => setSubtasks(current => [...current, { id: crypto.randomUUID(), title: '', done: false }])}><Plus size={16}/>Добавить подзадачу</Button></fieldset>}
+    {spec.kind === 'meeting' && <fieldset className="collection-editor"><legend>Участники</legend>{participants.map((person, i) => <div key={i}><input aria-label={`Участник ${i + 1}`} placeholder="Имя" value={person.name} required maxLength={100} disabled={busy} onChange={e => setParticipants(current => current.map((p, n) => n === i ? { ...p, name: e.target.value } : p))}/><input aria-label={`Email участника ${i + 1}`} type="email" placeholder="Email (необязательно)" value={person.email || ''} maxLength={254} disabled={busy} onChange={e => setParticipants(current => current.map((p, n) => n === i ? { ...p, email: e.target.value } : p))}/><IconButton icon={X} label={`Удалить участника ${i + 1}`} disabled={busy} onClick={() => setParticipants(current => current.filter((_, n) => n !== i))}/></div>)}<Button variant="ghost" disabled={busy || participants.length >= 50} onClick={() => setParticipants(current => [...current, { name: '' }])}><Plus size={16}/>Добавить участника</Button></fieldset>}
     {error && <Alert>{error}</Alert>}
     {conflicts.length > 0 && <div className="conflict-list"><h3>Пересечение со встречами</h3>{conflicts.map(item => <p key={item.id}>{item.title} · {dateLabel(item.date, data.today)}, {item.time}</p>)}<Button variant="danger" onClick={() => void save(true)} disabled={busy}>Сохранить с пересечением</Button></div>}
     <footer className="dialog-actions"><Button variant="ghost" onClick={onClose}>Отмена</Button><Button type="submit" disabled={busy}>{busy ? 'Сохраняю…' : 'Сохранить'}</Button></footer>
