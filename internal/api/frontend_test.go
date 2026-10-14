@@ -20,6 +20,7 @@ func TestProductionSPARoutesAndAPI404(t *testing.T) {
 	}
 	_ = os.WriteFile(filepath.Join(root, "web/dist/index.html"), []byte("<html>React build</html>"), 0600)
 	_ = os.WriteFile(filepath.Join(dist, "app.js"), []byte("console.log('build')"), 0600)
+	_ = os.WriteFile(filepath.Join(root, "web/dist/notifications-sw.js"), []byte("self.addEventListener('notificationclick', () => {})"), 0600)
 	a := API{Config: config.Config{Root: root}, Logger: slog.New(slog.NewJSONHandler(io.Discard, nil))}
 	router := a.Router()
 	for _, path := range []string{"/", "/calendar", "/tasks", "/meetings", "/reminders", "/archive", "/integrations", "/settings"} {
@@ -33,6 +34,11 @@ func TestProductionSPARoutesAndAPI404(t *testing.T) {
 	router.ServeHTTP(w, httptest.NewRequest("GET", "/assets/app.js", nil))
 	if w.Code != 200 || !strings.Contains(w.Body.String(), "console.log") {
 		t.Fatal("build assets not served")
+	}
+	w = httptest.NewRecorder()
+	router.ServeHTTP(w, httptest.NewRequest("GET", "/notifications-sw.js", nil))
+	if w.Code != 200 || !strings.Contains(w.Body.String(), "notificationclick") || !strings.Contains(w.Header().Get("Content-Type"), "javascript") || w.Header().Get("Cache-Control") != "no-cache" {
+		t.Fatal("notification worker not served as an updatable script")
 	}
 	w = httptest.NewRecorder()
 	router.ServeHTTP(w, httptest.NewRequest("GET", "/api/unknown", nil))

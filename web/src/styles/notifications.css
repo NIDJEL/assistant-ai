@@ -1,0 +1,12 @@
+.reminder-settings { border: 1px solid var(--border); border-radius: 14px; padding: 13px 15px; margin: 4px 0; }
+.reminder-settings legend { display: flex; align-items: center; gap: 8px; padding: 0 6px; font-weight: 550; }
+.reminder-settings .form-grid { margin-top: 12px; }
+.reminder-settings p { font-size: 12px; line-height: 1.6; margin: 10px 0 0; }
+.reminder-notices { position: fixed; right: 24px; bottom: 24px; z-index: 1200; width: min(390px, calc(100vw - 32px)); display: grid; gap: 10px; pointer-events: none; }
+.reminder-notice { pointer-events: auto; display: flex; gap: 12px; align-items: flex-start; padding: 16px; border: 1px solid #c9dfff; border-radius: 17px; background: white; box-shadow: 0 12px 42px #234d8533; }
+.reminder-notice > svg { color: var(--accent); flex-shrink: 0; margin-top: 3px; }
+.reminder-notice > div { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.reminder-notice p { margin: 7px 0; color: var(--muted); font-size: 13px; }
+.reminder-notice .button { padding: 5px 0; font-size: 13px; min-height: 28px; }
+.reminder-notice > .icon-button { padding: 3px; min-height: 28px; width: 28px; flex-shrink: 0; }
+@media (max-width: 760px) { .reminder-notices { right: 16px; bottom: 16px; } }

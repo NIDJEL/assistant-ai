@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 import { ready, noOverflow } from './helpers';
 import { dayKey } from '../src/features/calendar/dates';
 import type { Health, RhythmEvent } from '../src/types/api';
@@ -84,7 +84,7 @@ test('explicit smooth mode overrides system reduced motion and persists after re
   await page.emulateMedia({ reducedMotion: 'reduce' }); await ready(page, '/settings');
   const setting = page.getByLabel('Анимации интерфейса', { exact: true }); await expect(setting).toHaveValue('system');
   await setting.selectOption('full');
-  const profile = await page.evaluate(() => localStorage.getItem('rhythm.profile.v1'));
+  const profile = (await (await request.get('/api/auth/me')).json()).user.id;
   await expect.poll(async () => (await (await request.get(`/api/preferences/${profile}`)).json()).motion).toBe('full');
   expect(await page.locator('.switch-row input').first().evaluate(node => getComputedStyle(node, '::after').transitionDuration)).toContain('0.44s');
   await page.reload(); await expect(setting).toHaveValue('full');

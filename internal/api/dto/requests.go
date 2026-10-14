@@ -68,6 +68,7 @@ type Patch struct {
 	Subtasks        *[]domain.Subtask     `json:"subtasks"`
 	Participants    *[]domain.Participant `json:"participants"`
 	ReminderEnabled *bool                 `json:"reminder_enabled"`
+	ReminderMinutes *int                  `json:"reminder_minutes"`
 	Title           *string               `json:"title"`
 	Description     *string               `json:"description"`
 	Location        *string               `json:"location"`
@@ -82,6 +83,7 @@ type Patch struct {
 
 func (p Patch) Domain() (calendar.Patch, error) {
 	result := calendar.Patch{Tags: p.Tags, Subtasks: p.Subtasks, Participants: p.Participants, ReminderEnabled: p.ReminderEnabled, Title: p.Title, Description: p.Description, Location: p.Location, MeetingURL: p.MeetingURL, Status: p.Status, Priority: p.Priority, Force: p.Force}
+	result.ReminderMinutes = p.ReminderMinutes
 	if p.DurationMinutes != nil {
 		if *p.DurationMinutes < 5 || *p.DurationMinutes > 1440 {
 			return result, fmt.Errorf("Длительность должна быть от 5 минут до 24 часов")
@@ -103,7 +105,7 @@ func (p Patch) Domain() (calendar.Patch, error) {
 		}
 		result.Time = &t
 	}
-	if result.Tags == nil && result.Subtasks == nil && result.Participants == nil && result.ReminderEnabled == nil && result.Title == nil && result.Description == nil && result.Location == nil && result.MeetingURL == nil && result.Date == nil && result.Time == nil && result.Duration == nil && result.Status == nil && result.Priority == nil {
+	if result.Tags == nil && result.Subtasks == nil && result.Participants == nil && result.ReminderEnabled == nil && result.ReminderMinutes == nil && result.Title == nil && result.Description == nil && result.Location == nil && result.MeetingURL == nil && result.Date == nil && result.Time == nil && result.Duration == nil && result.Status == nil && result.Priority == nil {
 		return result, fmt.Errorf("Не указаны поля для изменения")
 	}
 	return result, nil

@@ -25,11 +25,16 @@ func (a *API) frontendRoutes(r chi.Router) {
 		}
 		http.ServeFile(w, req, index)
 	}
-	for _, path := range []string{"/", "/calendar", "/tasks", "/meetings", "/reminders", "/archive", "/integrations", "/settings"} {
+	for _, path := range []string{"/auth", "/onboarding", "/terms", "/privacy", "/", "/calendar", "/tasks", "/meetings", "/reminders", "/archive", "/integrations", "/settings"} {
 		r.Get(path, serve)
 	}
 	r.Handle("/assets/*", http.StripPrefix("/assets/", http.FileServer(http.Dir(filepath.Join(root, "assets")))))
 	r.Get("/favicon.svg", func(w http.ResponseWriter, req *http.Request) {
 		http.ServeFile(w, req, filepath.Join(root, "favicon.svg"))
+	})
+	r.Get("/notifications-sw.js", func(w http.ResponseWriter, req *http.Request) {
+		w.Header().Set("Content-Type", "application/javascript; charset=utf-8")
+		w.Header().Set("Cache-Control", "no-cache")
+		http.ServeFile(w, req, filepath.Join(root, "notifications-sw.js"))
 	})
 }

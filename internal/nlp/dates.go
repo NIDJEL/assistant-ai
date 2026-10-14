@@ -214,6 +214,8 @@ func Extract(text string, now time.Time) Temporal {
 		hour, _ = strconv.Atoi(clock.Parts[1])
 		minute, _ = strconv.Atoi(clock.Parts[2])
 		meridiem = clock.Parts[3]
+	} else if spoken, h, m, period := spokenClock(text); spoken != nil && !result.covered(spoken.Start) && !result.covered(spoken.End-1) {
+		clock, hour, minute, meridiem = spoken, h, m, period
 	} else {
 		clock = first(`\b(?:в|к)\s+(`+numberPattern+`)(?:\s+(утра|вечера|дня|ночи))?\b`, text)
 		if clock != nil && (result.covered(clock.Start) || result.covered(clock.End-1)) {

@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Sunrise, Sun, Moon, Droplets, Dumbbell, BriefcaseBusiness, Mail, BookOpen, Bell, Clock3, Repeat2, Music2, ListPlus, type LucideIcon } from 'lucide-react';
 import { useData } from '../../app/DataContext';
 import { useEventActions } from '../../app/EventActionsContext';
@@ -11,6 +11,7 @@ import { dateLabel } from '../../features/calendar/dates';
 import type { RhythmEvent } from '../../types/api';
 import { AnimatedList } from '../../components/motion/AnimatedList';
 import { Collapsible } from '../../components/motion/Collapsible';
+import { ReminderSettings } from '../../features/events/ReminderSettings';
 function category(title: string): { icon: LucideIcon; title: string; tone: string } {
   if (/вод[ау]|пить/i.test(title)) return { icon: Droplets, title: 'Забота о себе', tone: 'blue' };
   if (/спорт|трениров|бег|зарядк/i.test(title)) return { icon: Dumbbell, title: 'Спорт и здоровье', tone: 'pink' };
@@ -20,9 +21,17 @@ function category(title: string): { icon: LucideIcon; title: string; tone: strin
   return { icon: Bell, title: 'Личное', tone: 'purple' };
 }
 function InlineEditor({ event, close }: { event: RhythmEvent; close: () => void }) {
+  const [reminderEnabled, setReminderEnabled] = useState(event.reminder_enabled !== false); const [reminderMinutes, setReminderMinutes] = useState(event.reminder_minutes || 0);
+  useEffect(() => setReminderEnabled(event.reminder_enabled !== false), [event.reminder_enabled]);
+  useEffect(() => setReminderMinutes(event.reminder_minutes || 0), [event.reminder_minutes]);
   const data = useData(); const [title, setTitle] = useState(event.title); const [date, setDate] = useState(event.date || ''); const [time, setTime] = useState(event.time || ''); const [note, setNote] = useState(event.description); const [showNote, setShowNote] = useState(!!note); const [busy, setBusy] = useState(false); const [error, setError] = useState(''); const lock = useRef(false);
-  async function save() { if (lock.current) return; lock.current = true; setBusy(true); try { await data.update(event.id, { title: title.trim(), date, time, description: note }); close(); } catch (e) { setError(errorMessage(e)); } finally { lock.current = false; setBusy(false); } }
-  return <form className="reminder-inline" aria-label={`Редактор: ${event.title}`} onSubmit={e => { e.preventDefault(); void save(); }}><input aria-label="Название напоминания" value={title} onChange={e => setTitle(e.target.value)} required maxLength={500}/><div className="inline-fields"><label><span className="sr-only">Дата напоминания</span><input type="date" value={date} onChange={e => setDate(e.target.value)} required/></label><label><Clock3 size={17}/><input aria-label="Время напоминания" type="time" value={time} onChange={e => setTime(e.target.value)} required/></label><label><Repeat2 size={18}/><select aria-label="Повтор напоминания" disabled value="once"><option value="once">Без повтора · Скоро</option></select></label><label><Music2 size={18}/><select aria-label="Звук напоминания" disabled value="none"><option value="none">Звук · Скоро</option></select></label></div>{showNote ? <textarea aria-label="Заметка напоминания" value={note} onChange={e => setNote(e.target.value)} maxLength={8000} placeholder="Добавить заметку..."/> : <button type="button" className="text-action" onClick={() => setShowNote(true)}><ListPlus size={18}/>Добавить заметку...</button>}{error && <Alert>{error}</Alert>}<footer><Button variant="ghost" onClick={close}>Отмена</Button><Button type="submit" disabled={busy}>{busy ? 'Сохраняю…' : 'Сохранить'}</Button></footer></form>;
+  async function save() { if (lock.current) return; lock.current = true; setBusy(true); try { await data.update(event.id, { title: title.trim(), date, time, description: note, reminder_enabled: reminderEnabled, reminder_minutes: reminderMinutes }); close(); } catch (e) { setError(errorMessage(e)); } finally { lock.current = false; setBusy(false); } }
+  return <form className="reminder-inline" aria-label={`Редактор: ${event.title}`} onSubmit={e => { e.preventDefault(); void save(); }}>
+    <input aria-label="Название напоминания" value={title} onChange={e => setTitle(e.target.value)} required maxLength={500}/>
+    <div className="inline-fields"><label><span className="sr-only">Дата напоминания</span><input type="date" value={date} onChange={e => setDate(e.target.value)} required/></label><label><Clock3 size={17}/><input aria-label="Время напоминания" type="time" value={time} onChange={e => setTime(e.target.value)} required/></label><label><Repeat2 size={18}/><select aria-label="Повтор напоминания" disabled value="once"><option value="once">Без повтора · Скоро</option></select></label><label><Music2 size={18}/><select aria-label="Звук напоминания" disabled value="none"><option value="none">Звук · Скоро</option></select></label></div>
+    <ReminderSettings enabled={reminderEnabled} minutes={reminderMinutes} disabled={busy} onChange={(enabled, minutes) => { setReminderEnabled(enabled); setReminderMinutes(minutes); }}/>
+    {showNote ? <textarea aria-label="Заметка напоминания" value={note} onChange={e => setNote(e.target.value)} maxLength={8000} placeholder="Добавить заметку..."/> : <button type="button" className="text-action" onClick={() => setShowNote(true)}><ListPlus size={18}/>Добавить заметку...</button>}{error && <Alert>{error}</Alert>}<footer><Button variant="ghost" onClick={close}>Отмена</Button><Button type="submit" disabled={busy}>{busy ? 'Сохраняю…' : 'Сохранить'}</Button></footer>
+  </form>;
 }
 function ReminderCard({ event, selected, select }: { event: RhythmEvent; selected: boolean; select: () => void }) {
   const data = useData(); const [busy, setBusy] = useState(false); const [error, setError] = useState(''); const [enabled, setEnabled] = useState<boolean | null>(null); const kind = category(event.title); const Icon = kind.icon;

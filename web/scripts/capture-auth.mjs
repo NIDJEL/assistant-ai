@@ -1,0 +1,32 @@
+import { chromium } from '@playwright/test';
+import { mkdir, copyFile, writeFile, rename } from 'node:fs/promises';
+import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+const directory = fileURLToPath(new URL('../../docs/screenshots/p1-2/', import.meta.url));
+await mkdir(directory, { recursive: true });
+if (process.env.AUTH_REFERENCE) await copyFile(process.env.AUTH_REFERENCE, resolve(directory, 'reference.png'));
+const browser = await chromium.launch();
+const page = await browser.newPage({ viewport: { width: 1536, height: 1024 }, locale: 'ru-RU', reducedMotion: 'reduce' });
+const base = process.env.P1_BASE_URL || 'http://127.0.0.1:8083';
+async function screenshot(name) {
+  await page.evaluate(async () => { await Promise.allSettled(document.getAnimations().filter(animation => animation.effect?.getComputedTiming().iterations !== Infinity).map(animation => animation.finished)); });
+  const temporary = resolve(directory, `.capture-${process.pid}-${name}`);
+  await writeFile(temporary, await page.screenshot({ type: 'png', fullPage: true }));
+  await rename(temporary, resolve(directory, name));
+}
+await page.goto(`${base}/auth`); await page.getByRole('heading', { name: 'Добро пожаловать в Ритм' }).waitFor();
+await screenshot('login-desktop.png');
+await page.getByRole('tab', { name: 'Создать аккаунт' }).click(); await page.getByLabel('Повторите пароль').waitFor();
+await screenshot('register-desktop.png');
+await page.setViewportSize({ width: 1366, height: 768 }); await page.getByRole('tab', { name: 'Войти', exact: true }).click();
+await page.getByRole('heading', { name: 'Добро пожаловать в Ритм' }).waitFor();
+await screenshot('login-compact-desktop.png');
+await page.getByRole('tab', { name: 'Создать аккаунт' }).click(); await page.getByLabel('Повторите пароль').waitFor();
+await screenshot('register-compact-desktop.png');
+await page.setViewportSize({ width: 390, height: 844 }); await page.getByRole('tab', { name: 'Войти', exact: true }).click();
+await page.getByRole('heading', { name: 'Добро пожаловать в Ритм' }).waitFor();
+await screenshot('login-mobile.png');
+await page.getByRole('tab', { name: 'Создать аккаунт' }).click(); await page.getByLabel('Повторите пароль').waitFor();
+await screenshot('register-mobile.png');
+await writeFile(resolve(directory, 'index.html'), `<!doctype html><html lang="ru"><meta charset="utf-8"><title>P1.2 · Auth comparison</title><style>body{font:16px system-ui;background:#eef5fc;margin:30px;color:#111b46}main{display:grid;grid-template-columns:1fr 1fr;gap:20px}img{width:100%;border-radius:12px}section{margin:20px 0}h1{font-size:24px}a{color:#1678ff}</style><h1>Ритм · утверждённый reference / React</h1><main><section><h2>REFERENCE</h2><img src="reference.png"></section><section><h2>ACTUAL · 1536 × 1024</h2><img src="login-desktop.png"></section></main><main><section><h2>Регистрация</h2><img src="register-desktop.png"></section><section><h2>Мобильный экран</h2><img style="max-width:390px" src="login-mobile.png"></section></main><main><section><h2>Вход · 1366 × 768 · без прокрутки</h2><img src="login-compact-desktop.png"></section><section><h2>Регистрация · 1366 × 768 · без прокрутки</h2><img src="register-compact-desktop.png"></section></main><section><h2>Регистрация на мобильном экране · 390 × 844</h2><img style="max-width:390px" src="register-mobile.png"></section></html>`);
+await browser.close();

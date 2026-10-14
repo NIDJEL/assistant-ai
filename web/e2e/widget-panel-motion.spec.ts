@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Page } from './fixtures';
 import { ready, noOverflow, screenshot } from './helpers';
 
 async function settle(page: Page) {
@@ -21,44 +21,49 @@ test('widget collapse button has its own space beside the title at every desktop
   }
 });
 
-for (const fallback of [false, true]) test(`whole widget panel slides with unchanged card dimensions${fallback ? ' without native snapshots and with explicit Smooth mode' : ''}`, async ({ page }, info) => {
+for (const fallback of [false, true]) test(`widget animation stays independent of the main panel${fallback ? ' without native snapshots and with explicit Smooth mode' : ''}`, async ({ page }, info) => {
   if (fallback) {
     await page.addInitScript(() => { Object.defineProperty(document, 'startViewTransition', { value: undefined, configurable: true }); });
     await page.emulateMedia({ reducedMotion: 'reduce' }); await ready(page, '/settings');
     await page.getByLabel('Анимации интерфейса', { exact: true }).selectOption('full');
   }
   await ready(page, '/calendar'); await settle(page);
-  const before = await page.locator('.widgets-panel').evaluate(node => ({ left: node.getBoundingClientRect().left, width: node.getBoundingClientRect().width, card: node.querySelector('.widget')!.getBoundingClientRect().width, navigation: document.querySelector('.sidebar')!.getBoundingClientRect().left }));
+  const before = await page.locator('.widgets-panel').evaluate(node => ({ left: node.getBoundingClientRect().left, width: node.getBoundingClientRect().width, card: node.querySelector('.widget')!.getBoundingClientRect().width, navigation: document.querySelector('.sidebar')!.getBoundingClientRect().left, mainLeft: document.querySelector('.main-panel')!.getBoundingClientRect().left }));
   const closing = await page.locator('.app-shell').evaluate(async shell => {
     (shell.querySelector('.widget-panel-toggle') as HTMLButtonElement).click();
     await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-    const animation = shell.getAnimations().find(animation => animation instanceof CSSTransition && animation.transitionProperty === 'grid-template-columns');
-    if (!animation) throw new Error('Widget region changed without a layout animation');
+    const panel = shell.querySelector<HTMLElement>('.widgets-panel')!;
+    const animation = panel.getAnimations().find(animation => animation.effect instanceof KeyframeEffect && animation.effect.target === panel);
+    if (!animation) throw new Error('Widget panel has no closing animation');
     animation.pause(); animation.currentTime = Number(animation.effect!.getTiming().duration) * .15;
     Object.assign(window, { panelAnimation: animation });
     await new Promise(resolve => requestAnimationFrame(resolve));
-    const panel = shell.querySelector<HTMLElement>('.widgets-panel')!; const region = shell.querySelector('.widgets-region')!;
-    return { left: panel.getBoundingClientRect().left, width: panel.getBoundingClientRect().width, card: panel.querySelector('.widget')!.getBoundingClientRect().width, viewport: region.getBoundingClientRect().width, opacity: getComputedStyle(panel).opacity, inert: panel.inert, navigation: shell.querySelector('.sidebar')!.getBoundingClientRect().left };
+    const region = shell.querySelector('.widgets-region')!;
+    return { left: panel.getBoundingClientRect().left, width: panel.getBoundingClientRect().width, card: panel.querySelector('.widget')!.getBoundingClientRect().width, viewport: region.getBoundingClientRect().width, opacity: Number(getComputedStyle(panel).opacity), inert: panel.inert, navigation: shell.querySelector('.sidebar')!.getBoundingClientRect().left, mainLeft: shell.querySelector('.main-panel')!.getBoundingClientRect().left, mainWidth: shell.querySelector('.main-panel')!.getBoundingClientRect().width, shellAnimations: shell.getAnimations().length };
   });
-  expect(closing.left).toBeGreaterThan(before.left + 10); expect(closing.viewport).toBeGreaterThan(10); expect(closing.viewport).toBeLessThan(before.width - 10);
-  expect(closing.width).toBe(before.width); expect(closing.card).toBe(before.card); expect(closing.opacity).toBe('1'); expect(closing.inert).toBe(true); expect(closing.navigation).toBe(before.navigation);
+  expect(closing.left).toBe(before.left); expect(closing.viewport).toBe(before.width);
+  expect(closing.width).toBe(before.width); expect(closing.card).toBe(before.card); expect(closing.opacity).toBeLessThan(1); expect(closing.inert).toBe(true); expect(closing.navigation).toBe(before.navigation);
+  expect(closing.mainLeft).toBe(before.mainLeft); expect(closing.shellAnimations).toBe(0);
   if (!fallback) { const path = info.outputPath('widgets-closing.png'); await page.screenshot({ path }); await info.attach('widgets-closing', { path, contentType: 'image/png' }); }
   await page.evaluate(() => (window as unknown as { panelAnimation: Animation }).panelAnimation.play());
   await expect(page.locator('.widgets-panel')).toHaveCount(0); await settle(page);
+  expect(await page.locator('.main-panel').evaluate(node => node.getBoundingClientRect().width)).toBe(closing.mainWidth);
   const opening = await page.getByRole('button', { name: 'Показать виджеты', exact: true }).evaluate(async button => {
     (button as HTMLButtonElement).click(); await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
     const shell = document.querySelector('.app-shell')!;
-    const animation = shell.getAnimations().find(animation => animation instanceof CSSTransition && animation.transitionProperty === 'grid-template-columns');
-    if (!animation) throw new Error('Widget region opened without a layout animation');
+    const panel = shell.querySelector<HTMLElement>('.widgets-panel')!;
+    const animation = panel.getAnimations().find(animation => animation.effect instanceof KeyframeEffect && animation.effect.target === panel);
+    if (!animation) throw new Error('Widget panel has no opening animation');
     animation.pause(); animation.currentTime = Number(animation.effect!.getTiming().duration) * .15;
     await new Promise(resolve => requestAnimationFrame(resolve));
-    const panel = shell.querySelector<HTMLElement>('.widgets-panel')!;
-    const geometry = { width: panel.getBoundingClientRect().width, viewport: shell.querySelector('.widgets-region')!.getBoundingClientRect().width, opacity: getComputedStyle(panel).opacity, inert: panel.inert };
+    const geometry = { width: panel.getBoundingClientRect().width, viewport: shell.querySelector('.widgets-region')!.getBoundingClientRect().width, opacity: Number(getComputedStyle(panel).opacity), inert: panel.inert, mainLeft: shell.querySelector('.main-panel')!.getBoundingClientRect().left, mainWidth: shell.querySelector('.main-panel')!.getBoundingClientRect().width, shellAnimations: shell.getAnimations().length };
     animation.play(); return geometry;
   });
-  expect(opening.viewport).toBeGreaterThan(10); expect(opening.viewport).toBeLessThan(before.width - 10); expect(opening.width).toBe(before.width); expect(opening.opacity).toBe('1'); expect(opening.inert).toBe(false);
+  expect(opening.viewport).toBe(before.width); expect(opening.width).toBe(before.width); expect(opening.opacity).toBeLessThan(1); expect(opening.inert).toBe(false);
+  expect(opening.mainLeft).toBe(before.mainLeft); expect(opening.shellAnimations).toBe(0);
   await settle(page);
   expect(await page.locator('.widgets-panel').evaluate(node => node.getBoundingClientRect().width)).toBe(before.width);
+  expect(await page.locator('.main-panel').evaluate(node => node.getBoundingClientRect().width)).toBe(opening.mainWidth);
   await noOverflow(page);
   // Reverse a closing panel before its retained content is removed.
   await page.locator('.app-shell').evaluate(async shell => {

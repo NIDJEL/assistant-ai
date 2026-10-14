@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 import { ready, noOverflow, screenshot } from './helpers';
 import { dayKey, addDays } from '../src/features/calendar/dates';
 import type { Health, RhythmEvent } from '../src/types/api';
@@ -41,13 +41,16 @@ test('calendar handles Go civil-date boundaries and invalid route queries', asyn
   await ready(page, '/calendar?date=0000-01-01'); await expect(page.locator('h1')).toHaveText('Календарь'); await expect(page.getByRole('button', { name: 'Новое событие' })).toBeVisible();
 });
 
-test('widget visibility and Settings persist in this browser without an account', async ({ page }) => {
+test('widget visibility and Settings persist for the authenticated account', async ({ page }) => {
   await ready(page); await page.getByRole('button', { name: 'Скрыть виджеты' }).click(); await expect(page.getByRole('complementary', { name: 'Виджеты', exact: true })).toHaveCount(0);
   await page.reload(); await expect(page.getByRole('button', { name: 'Показать виджеты' })).toBeVisible(); await page.getByRole('button', { name: 'Показать виджеты' }).click(); await expect(page.getByRole('complementary', { name: 'Виджеты', exact: true })).toBeVisible();
   await page.getByRole('link', { name: 'Настройки', exact: true }).click(); await page.getByLabel('Ваше имя').fill('Анна'); await page.getByRole('button', { name: 'Сохранить имя' }).click(); await page.reload(); await expect(page.getByLabel('Ваше имя')).toHaveValue('Анна');
 });
 
 test('responsive routes, drawers and desktop screenshots for all pages', async ({ page }, info) => {
+  // Eight page captures plus six viewport/drawer sweeps exceed the ordinary
+  // single-flow budget on hosted CI. Individual assertions keep their timeout.
+  test.setTimeout(90000);
   const pages = [{ path: '/', title: 'Чем помочь?', shot: 'today' }, { path: '/calendar', title: 'Календарь', shot: 'calendar' }, { path: '/tasks', title: 'Задачи', shot: 'tasks' }, { path: '/meetings', title: 'Встречи', shot: 'meetings' }, { path: '/reminders', title: 'Напоминания', shot: 'reminders' }, { path: '/archive', title: 'Архив', shot: 'archive' }, { path: '/integrations', title: 'Интеграции', shot: 'integrations' }, { path: '/settings', title: 'Настройки', shot: 'settings' }];
   for (const viewport of [{ width: 1920, height: 1080 }, { width: 1600, height: 900 }, { width: 1440, height: 900 }, { width: 1280, height: 800 }, { width: 834, height: 1112 }, { width: 390, height: 844 }]) {
     await page.setViewportSize(viewport);

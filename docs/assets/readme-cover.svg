@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="300" viewBox="0 0 1280 300" role="img" aria-labelledby="title desc">
+  <title id="title">Ритм — планы начинаются со слов</title>
+  <desc id="desc">Личный ассистент для задач, встреч и напоминаний. Голос, календарь и спокойный рабочий день.</desc>
+  <defs>
+    <linearGradient id="background" x2="1" y2="1"><stop stop-color="#eef6ff"/><stop offset="1" stop-color="#f8fbff"/></linearGradient>
+    <linearGradient id="wave"><stop stop-color="#0875ff"/><stop offset="1" stop-color="#90c8ff"/></linearGradient>
+  </defs>
+  <rect width="1280" height="300" rx="28" fill="url(#background)"/>
+  <circle cx="1150" cy="40" r="220" fill="#e4f0ff"/>
+  <circle cx="1190" cy="35" r="155" fill="#f2f8ff"/>
+  <path d="M66 83 Q88 43 96 67 T133 61" fill="none" stroke="#0875ff" stroke-width="10" stroke-linecap="round"/>
+  <g font-family="Inter, Segoe UI, Arial, sans-serif">
+    <text x="157" y="86" font-size="47" font-weight="750" fill="#121c46">Ритм</text>
+    <text x="65" y="153" font-size="34" font-weight="650" fill="#121c46">Планы начинаются со слов.</text>
+    <text x="67" y="192" font-size="21" fill="#627aa9">Задачи, встречи и напоминания — в вашем ритме.</text>
+    <g font-size="15" fill="#0875ff" font-weight="600">
+      <rect x="65" y="222" width="118" height="35" rx="17" fill="white"/><text x="88" y="245">Голос и текст</text>
+      <rect x="195" y="222" width="118" height="35" rx="17" fill="white"/><text x="216" y="245">Календарь</text>
+      <rect x="325" y="222" width="158" height="35" rx="17" fill="white"/><text x="347" y="245">Напоминания</text>
+    </g>
+  </g>
+  <path d="M874 181 Q936 58 966 126 T1124 106" fill="none" stroke="#c9e2ff" stroke-width="60" stroke-linecap="round"/>
+  <path d="M874 173 Q936 50 966 118 T1124 98" fill="none" stroke="url(#wave)" stroke-width="22" stroke-linecap="round"/>
+  <circle cx="1155" cy="215" r="8" fill="#0875ff" opacity=".35"/>
+  <circle cx="830" cy="73" r="5" fill="#0875ff" opacity=".2"/>
+</svg>

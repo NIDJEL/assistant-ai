@@ -13,7 +13,7 @@ import (
 const meetingPattern = `\b(?:встреч[ауи]|созвон\w*|совещан\w*|демо\b|интервью\b)`
 
 func inferKind(text string) domain.EventType {
-	if has(`\b(?:напомни\w*|напоминан\w*)`, text) {
+	if has(`\b(?:напомни\w*|напоминан\w*|уведомлен\w*|не\s+забудь)`, text) {
 		return domain.EventReminder
 	}
 	if has(`\bзадач\w*\s+и\s+встреч\w*`, text) {
@@ -37,6 +37,7 @@ func (Parser) Interpret(ctx context.Context, text string, now time.Time) (domain
 	return Parse(text, now), nil
 }
 func Parse(text string, now time.Time) domain.Command {
+	text = normalizeConversation(text)
 	low := strings.TrimSpace(strings.ReplaceAll(strings.ToLower(text), "ё", "е"))
 	t := Extract(low, now)
 	cleaned := t.Clean(text)
@@ -51,28 +52,21 @@ func Parse(text string, now time.Time) domain.Command {
 		}
 		cleaned = strings.TrimSpace(replace(`(?:#|номер\s*|№\s*)\d+`, cleaned, ""))
 	}
-	switch {
-	case has(`\b(?:удали\w*|удалить|отмени\w*|убери\w*)`, low):
-		cmd.Action = domain.ActionDelete
-	case has(`\b(?:выполнен\w*|выполнил\w*|сделан\w*|заверши\w*|закончи\w*)`, low):
-		cmd.Action = domain.ActionComplete
-	case has(`\b(?:перенеси\w*|перенести|перенос\w*|сдвинь|измени\w*)`, low):
-		cmd.Action = domain.ActionUpdate
-	case has(`\b(?:найди|найти|отыщи|поищи|поиск|когда|раньше|когда-то|была|были|истори\w*)`, low):
-		cmd.Action = domain.ActionSearch
-	case has(`\b(?:что|какие|покажи|показать|список|планы|запланировано|есть\s+ли|расписание)\b`, low):
-		cmd.Action = domain.ActionList
-	case has(`\b(?:напомни\w*|поставь|поставить|добавь|добавить|создай|создать|запиши|записать|нужно|надо|купить|подготовить|отправить|позвонить|проверить|запланируй\w*)\b`, low) || (kind == domain.EventMeeting && t.Date != nil):
+	var negated bool
+	cmd.Action, negated = actionFromSpeech(low)
+	if negated {
+		cmd.Error = "Понял: это действие выполнять не нужно. Сформулируйте, что нужно сделать."
+	} else if cmd.Action == domain.ActionHelp && (has(`\b(?:нужно|надо|купить|подготовить|отправить|позвонить|проверить)\b`, low) || (kind == domain.EventMeeting && t.Date != nil)) {
 		cmd.Action = domain.ActionCreate
 	}
 	if cmd.Action == domain.ActionCreate {
 		if kind == domain.EventUnknown {
 			cmd.Kind = domain.EventTask
 		}
-		cleaned = replace(`(?i)\b(?:напомни\w*|поставь|поставить|добавь|добавить|создай|создать|запиши|записать|запланируй\w*)\s*(?:мне\s*)?(?:(?:новую?\s+)?(?:задачу|напоминание)\s*)?(?:чтобы\s*)?`, cleaned, "")
-		cleaned = replace(`(?i)\b(?:мне|у меня|нужно|надо)\b`, cleaned, "")
-		cleaned = replace(`(?i)\b(?:до|на|в|во|к)\s*$`, cleaned, "")
-		cmd.Title = strings.Trim(spaces(cleaned), " ,.!?:;-")
+		plan := creationPlan(text, now)
+		cmd.Title, cmd.Date, cmd.Time = plan.Title, plan.Date, plan.Time
+		cmd.PeriodStart, cmd.PeriodEnd, cmd.Duration = plan.PeriodStart, plan.PeriodEnd, plan.Duration
+		cmd.ReminderMinutes, cmd.ReminderEnabled, cmd.Error = plan.ReminderMinutes, plan.ReminderEnabled, plan.Error
 		cmd.Title = replace(`(?i)^встречу\b`, cmd.Title, "Встреча")
 		runes := []rune(cmd.Title)
 		if len(runes) > 0 {
@@ -83,14 +77,33 @@ func Parse(text string, now time.Time) domain.Command {
 		cleaned = replace(`(?i)\b(?:найди|найти|отыщи|поищи|поиск|когда-то|когда|раньше|была|был|были|ставил|ставила|я|у меня|мои|мою|мне|задач\w*|напоминан\w*|событи\w*|выполнен\w*|выполнил\w*|сделан\w*|заверши\w*|закончи\w*|отметь|как|удали\w*|удалить|отмени\w*|убери\w*|перенеси\w*|перенести|измени\w*|а|ее|его|их|это|эту|этот|на|про|по|пожалуйста)\b`, cleaned, " ")
 		cmd.Query = strings.Trim(spaces(cleaned), " ,.!?:;-")
 	}
+	if cmd.Action == domain.ActionDelete || cmd.Action == domain.ActionUpdate || cmd.Action == domain.ActionComplete {
+		planSelection(&cmd, text, now)
+	}
 	fragment := strings.TrimSpace(t.Clean(low))
 	switch fragment {
 	case "в", "во", "на", "к", "до", "за":
 		fragment = ""
 	}
 	pureTemporal := (t.Date != nil || t.Time != nil) && fragment == ""
-	if cmd.Action != domain.ActionHelp || cmd.Error != "" || pureTemporal || full(`#?\d+|да(?:[, ]+(?:пожалуйста|конечно|удали|сохрани|все равно))?|все равно|сохранить|нет|отмена|подтверждаю|не надо|стоп`, low) {
+	_, _, reminderAnswer, _ := ReminderChoice(low)
+	if cmd.Action != domain.ActionHelp || cmd.Error != "" || pureTemporal || reminderAnswer || full(`#?\d+|да(?:[, ]+(?:пожалуйста|конечно|удали|сохрани|все равно))?|все равно|сохранить|нет|отмена|подтверждаю|не надо|стоп`, low) {
 		cmd.Confidence = .95
 	}
 	return cmd
+}
+
+// Conversational wrappers are removed only at the edges. Words such as
+// "привет" inside "передать привет маме" remain part of the actual task.
+func trimCourtesy(text string) string {
+	text = strings.Trim(strings.TrimSpace(text), " ,.!?:;-")
+	for {
+		next := replace(`(?i)^(?:привет|приветствую|здравствуй(?:те)?|доброе\s+утро|добрый\s+(?:день|вечер)|пожалуйста)\b[\s,.!?:;-]*`, text, "")
+		if next == text {
+			break
+		}
+		text = next
+	}
+	text = replace(`(?i)[\s,.!?:;-]+пожалуйста\b[\s,.!?:;-]*$`, text, "")
+	return strings.Trim(text, " ,.!?:;-")
 }

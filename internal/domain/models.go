@@ -123,20 +123,37 @@ type Command struct {
 	TargetID               *int64
 	Error, Provider        string
 	Confidence             float64
+	ReminderEnabled        *bool
+	ReminderMinutes        *int
+	Selector               *EventSelector
 }
+
+// EventSelector describes existing records. Command.Date/Time describe the
+// destination of a move, so the two must never be used interchangeably.
+type EventSelector struct {
+	All        bool       `json:"all,omitempty"`
+	ExactTitle bool       `json:"exact_title,omitempty"`
+	Start      *Date      `json:"start,omitempty"`
+	End        *Date      `json:"end,omitempty"`
+	Time       *TimeOfDay `json:"time,omitempty"`
+}
+
 type commandJSON struct {
-	Action          Action     `json:"action"`
-	Kind            EventType  `json:"kind"`
-	Title           string     `json:"title"`
-	Query           string     `json:"query"`
-	Date            *Date      `json:"date"`
-	Time            *TimeOfDay `json:"time"`
-	PeriodStart     *Date      `json:"period_start"`
-	PeriodEnd       *Date      `json:"period_end"`
-	DurationMinutes int        `json:"duration_minutes"`
-	TargetID        *int64     `json:"target_id"`
-	Error           *string    `json:"error"`
-	Provider        string     `json:"provider"`
+	Action          Action         `json:"action"`
+	Kind            EventType      `json:"kind"`
+	Title           string         `json:"title"`
+	Query           string         `json:"query"`
+	Date            *Date          `json:"date"`
+	Time            *TimeOfDay     `json:"time"`
+	PeriodStart     *Date          `json:"period_start"`
+	PeriodEnd       *Date          `json:"period_end"`
+	DurationMinutes int            `json:"duration_minutes"`
+	TargetID        *int64         `json:"target_id"`
+	Error           *string        `json:"error"`
+	Provider        string         `json:"provider"`
+	ReminderEnabled *bool          `json:"reminder_enabled,omitempty"`
+	ReminderMinutes *int           `json:"reminder_minutes,omitempty"`
+	Selector        *EventSelector `json:"selector,omitempty"`
 }
 
 func (c Command) MarshalJSON() ([]byte, error) {
@@ -145,7 +162,7 @@ func (c Command) MarshalJSON() ([]byte, error) {
 		s := c.Error
 		errText = &s
 	}
-	return json.Marshal(commandJSON{c.Action, c.Kind, c.Title, c.Query, c.Date, c.Time, c.PeriodStart, c.PeriodEnd, int(c.Duration / time.Minute), c.TargetID, errText, c.Provider})
+	return json.Marshal(commandJSON{Action: c.Action, Kind: c.Kind, Title: c.Title, Query: c.Query, Date: c.Date, Time: c.Time, PeriodStart: c.PeriodStart, PeriodEnd: c.PeriodEnd, DurationMinutes: int(c.Duration / time.Minute), TargetID: c.TargetID, Error: errText, Provider: c.Provider, ReminderEnabled: c.ReminderEnabled, ReminderMinutes: c.ReminderMinutes, Selector: c.Selector})
 }
 func (c *Command) UnmarshalJSON(b []byte) error {
 	v := commandJSON{Action: ActionHelp, DurationMinutes: 60, Provider: "rules"}
@@ -161,12 +178,17 @@ func (c *Command) UnmarshalJSON(b []byte) error {
 		return errors.New("invalid duration")
 	}
 	*c = Command{Action: v.Action, Kind: v.Kind, Title: v.Title, Query: v.Query, Date: v.Date, Time: v.Time, PeriodStart: v.PeriodStart, PeriodEnd: v.PeriodEnd, Duration: time.Duration(v.DurationMinutes) * time.Minute, TargetID: v.TargetID, Provider: v.Provider}
+	c.ReminderEnabled, c.ReminderMinutes = v.ReminderEnabled, v.ReminderMinutes
+	c.Selector = v.Selector
 	if v.Error != nil {
 		c.Error = *v.Error
 	}
 	return c.Validate()
 }
 func (c Command) Validate() error {
+	if err := (EventDetails{ReminderEnabled: c.ReminderEnabled, ReminderMinutes: c.ReminderMinutes}).Validate(); err != nil {
+		return err
+	}
 	if !c.Action.Interpretable() {
 		return errors.New("invalid interpreter action")
 	}
@@ -175,6 +197,14 @@ func (c Command) Validate() error {
 	}
 	if c.TargetID != nil && *c.TargetID < 1 {
 		return errors.New("invalid target ID")
+	}
+	if c.Selector != nil {
+		if c.Selector.Start != nil && c.Selector.End != nil && !c.Selector.Start.Before(c.Selector.End.Time) {
+			return errors.New("invalid selection period")
+		}
+		if t := c.Selector.Time; t != nil && (t.Hour < 0 || t.Hour > 23 || t.Minute < 0 || t.Minute > 59) {
+			return errors.New("invalid selection time")
+		}
 	}
 	if c.PeriodStart != nil && c.PeriodEnd != nil && !c.PeriodStart.Before(c.PeriodEnd.Time) {
 		return errors.New("invalid period")
@@ -208,17 +238,18 @@ func (s State) MarshalJSON() ([]byte, error) {
 }
 
 type Response struct {
-	Reply      string  `json:"reply"`
-	Action     Action  `json:"action"`
-	Events     []Event `json:"events"`
-	Candidates []Event `json:"candidates"`
-	Conflicts  []Event `json:"conflicts"`
-	Total      *int    `json:"total,omitempty"`
-	SessionID  string  `json:"session_id"`
-	RequestID  string  `json:"request_id"`
-	Provider   string  `json:"provider"`
-	Timezone   string  `json:"timezone"`
-	Pending    bool    `json:"pending"`
+	Reply       string   `json:"reply"`
+	Action      Action   `json:"action"`
+	Events      []Event  `json:"events"`
+	Candidates  []Event  `json:"candidates"`
+	Conflicts   []Event  `json:"conflicts"`
+	Total       *int     `json:"total,omitempty"`
+	SessionID   string   `json:"session_id"`
+	RequestID   string   `json:"request_id"`
+	Provider    string   `json:"provider"`
+	Timezone    string   `json:"timezone"`
+	Pending     bool     `json:"pending"`
+	Suggestions []string `json:"suggestions,omitempty"`
 }
 type Exchange struct {
 	Message   string    `json:"message"`

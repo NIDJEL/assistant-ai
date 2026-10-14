@@ -1,47 +1,190 @@
-# Ритм — личный ассистент для задач и встреч
+<div align="center">
 
-React / TypeScript / Vite + Go + SQLite. Голос или текст становятся редактируемым черновиком; сообщение отправляется **только по Send или Enter**. Пауза, onend и остановка microphone ничего не отправляют.
+<img src="docs/assets/readme-cover.svg" alt="Ритм — планы начинаются со слов" width="100%"/>
 
-![Ритм — Сегодня](docs/screenshots/p1/today.png)
+<p><strong>Личный веб-ассистент для задач, встреч и напоминаний на русском языке.</strong><br/>
+Говорите или пишите обычными словами — Ритм поможет превратить их в понятный план.</p>
 
-## Запуск
+[![CI](https://github.com/NIDJEL/assistant-ai/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/NIDJEL/assistant-ai/actions/workflows/ci.yml)
+![Go](https://img.shields.io/badge/Go-1.25%2B-00ADD8?logo=go&logoColor=white)
+![React](https://img.shields.io/badge/React-19-149ECA?logo=react&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-7-3178C6?logo=typescript&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
 
-Нужен Docker Engine / Docker Desktop и Compose v2:
+**[Возможности](#возможности) · [Запуск](#быстрый-запуск) · [Как это устроено](#как-это-устроено) · [Документация](#документация)**
+
+</div>
+
+![Диалог с Ритмом: событие на 12:50 и напоминание на 12:00](docs/screenshots/current/assistant.png)
+
+## Возможности
+
+| | Что умеет Ритм |
+| --- | --- |
+| **Разговорные команды** | Создание, поиск, перенос, завершение и удаление по названию, дате и времени. При неоднозначности — уточнение. |
+| **Голос под ваш контроль** | Диктовка остаётся редактируемым черновиком. Отправка только кнопкой или Enter; пауза ничего не отправляет. |
+| **Персональная адаптация** | Исправления похожих имён и слов запоминаются в контексте после успешной отправки отредактированной диктовки. |
+| **Единый план** | Календарь на месяц, неделю и день; задачи с приоритетами и подзадачами; встречи с участниками и местом. |
+| **Напоминания заранее** | Время события и время сигнала разделены. Если интервал не задан, ассистент спросит, за сколько напомнить. |
+| **Яндекс Календарь** | Автоматическая отправка дел с датой в отдельный календарь «Ритм», включая изменения, удаления и настройки напоминаний. |
+| **Ваше пространство** | Аккаунты, фото профиля, onboarding, виджеты с перетаскиванием и сохранением настроек, мобильная навигация. |
+| **Восстановление** | Удалённые записи доступны в архиве. Массовое удаление требует подтверждения конкретного списка. |
+
+### Скажите своими словами
+
+| Запрос | Результат |
+| --- | --- |
+| «Завтра пара в 12:50. Поставь уведомление на 12:00» | **Пара** в 12:50, напоминание за 50 минут. |
+| «Добавь встречу с Олей завтра в 15:00» | Уточнение, за сколько напомнить, затем создание встречи. |
+| «Перенеси завтрашнюю встречу с Олей на пятницу в 17:00» | Выбор исходной встречи и перенос на новую дату и время. |
+| «Удали напоминание позвонить маме завтра» | Выбор по названию и дате, затем подтверждение удаления. |
+| «Удали все записи на завтра» | Просмотр списка и подтверждение. При изменении записей потребуется проверить список заново. |
+
+Номера записей помнить не нужно. Если совпадений несколько, можно ответить «ту, что завтра в 15:00», «вторую» или выбрать кнопку с названием и датой.
+
+<details>
+<summary><strong>Посмотреть календарь, задачи и интеграции</strong></summary>
+
+| Календарь | Задачи |
+| --- | --- |
+| ![Календарь](docs/screenshots/current/calendar.png) | ![Задачи и подзадачи](docs/screenshots/current/tasks.png) |
+
+| Интеграции | Мобильный интерфейс |
+| --- | --- |
+| ![Яндекс Календарь, Google Calendar и Zoom](docs/screenshots/current/integrations.png) | <img src="docs/screenshots/current/mobile.png" alt="Задачи на мобильном экране" width="250"/> |
+
+Скриншоты актуальной версии сняты на демонстрационном аккаунте. Google Calendar и Zoom пока помечены «Скоро».
+
+</details>
+
+## Быстрый запуск
+
+Нужны **Docker Engine / Docker Desktop** и **Docker Compose v2**.
 
 ```bash
 git clone https://github.com/NIDJEL/assistant-ai.git
 cd assistant-ai
-docker compose up --build -d
+cp .env.example .env
 ```
 
-[Приложение — localhost:8081](http://localhost:8081), [OpenAPI](http://localhost:8081/docs), [блок-схемы](http://localhost:8081/architecture). Эти адреса работают на компьютере, где запущен сервер. Выбраны локальный запуск и Docker.
+В PowerShell вместо последней команды: `Copy-Item .env.example .env`.
+
+Заполните в `.env`:
+
+| Переменная | Что указать |
+| --- | --- |
+| `POSTGRES_PASSWORD` | Собственный случайный пароль базы. |
+| `SESSION_SECRET` | Случайный секрет длиной не менее 32 символов. Сохраните его для последующих запусков. |
+| `PUBLIC_URL` | Адрес приложения; для стандартного запуска — `http://localhost:8081`. |
 
 ```bash
-docker compose logs -f go-assistant
+docker compose up --build -d --wait
+```
+
+Откройте **[localhost:8081](http://localhost:8081)** и создайте аккаунт.
+
+**[OpenAPI](http://localhost:8081/docs)** · **[Схемы в приложении](http://localhost:8081/architecture)** — доступны после запуска на вашем компьютере.
+
+```bash
+docker compose logs -f app
 docker compose down
 ```
 
-События и история сохраняются в томе `rhythm-go-data`. Runtime работает без root, Node, Python и FastAPI. Node нужен только на стадии build. Старый `docker compose -f compose.go.yaml up --build -d` также работает с тем же Go-томом и портом.
+Данные сохраняются в PostgreSQL-томе `rhythm-postgres-data`. Обычный `down` сохраняет том; `down -v` удаляет данные. Новый аккаунт начинается с пустого плана. Демоданные из CSV импортируются только явным действием и только в текущий аккаунт.
 
-## Интерфейс
+### Подключение Яндекс Календаря
 
-Сегодня: assistant, история, уточнения и карточки событий. Календарь: month/week/day, выбор даты и CRUD. Задачи: сроки, priority, поиск, завершение/возобновление. Встречи: duration, место, URL, перенос и конфликты. Напоминания: дата/время, edit/delete/complete. Архив: история и удалённые записи с кнопкой «Восстановить», search/type/date/status filters. Удаление сохраняет запись в SQLite; восстановление возвращает прежние ID, дату, статус и детали. Записи, физически удалённые до schema v5, этим способом не восстановить. Настройки: имя, TTS, видимость виджетов и режим анимаций.
+Задайте `YANDEX_CLIENT_ID`, `YANDEX_CLIENT_SECRET`, `YANDEX_REDIRECT_URI`; в приложении Яндекс OAuth включите права профиля и `calendar:all`. Callback должен соответствовать `PUBLIC_URL`.
 
-Навигация расположена слева и сворачивается до иконок, виджеты — справа. При скрытых виджетах ширина центрального содержимого ограничена 1280 px, а оболочка занимает доступный экран. На мобильном экране меню открывается слева. Дни и фильтры меняют содержимое без движения заголовков; завершённые напоминания плавно сворачиваются с сообщением и кнопкой «Отменить».
+После настройки сервера: **Интеграции → Яндекс Календарь → Настроить → Подключить Яндекс Календарь**.
 
-Все даты и счётчики основаны на Go API. При первом старте импортируется предоставленный CSV из 1000 записей; повторный импорт не создаёт дубли. `AUTO_IMPORT_DEMO=false` отключает импорт для новой базы.
+[Подробная настройка, синхронизация и уведомления →](docs/YANDEX_CALENDAR.md)
 
-Яндекс Календарь показывает «Не подключён» и подготовленный UI P2. Google Calendar, Telegram, Zoom, Notion и Slack — «Скоро». Live CalDAV/OAuth остаются этапом P2. P1.1 добавляет визуальное выравнивание, подзадачи, участников встреч, inline-редактор напоминаний и draggable widgets с хранением настроек в SQLite. Приложение остаётся personal assistant.
+## Как это устроено
 
-## Голос
+### Архитектура
 
-Microphone расположен справа перед Send. Partial/final transcript объединяются в draft, который можно редактировать. После паузы диктовка продолжается; после редактирования можно снова нажать microphone. Send останавливает recognition и отправляет один запрос. Enter отправляет, Shift+Enter переносит строку. Ошибки STT не отправляют текст; при сетевой ошибке chat черновик сохраняется, а повтор использует тот же request_id. Озвучивание ответов управляется в Settings.
+```mermaid
+flowchart LR
+    Browser["Браузер<br/>React · TypeScript"]
+    Voice["Диктовка<br/>Web Speech API"]
+    API["Go API<br/>Аккаунты · сессии · проверка данных"]
+    Planner["Ассистент<br/>Команды · уточнения · поиск"]
+    DB[("PostgreSQL<br/>Дела · история · настройки")]
+    Queue["Очередь синхронизации<br/>Повторные попытки"]
+    Yandex["Яндекс Календарь<br/>CalDAV · iCalendar"]
+    Ollama["Ollama<br/>Необязательный LLM"]
 
-Web Speech API требует поддержки браузера, разрешения microphone и обычно соединения с сервисом распознавания. При отсутствии поддержки работает текстовый ввод. Browser E2E использует контролируемый Speech mock с настоящим Go API; он проверяет UX и количество HTTP-запросов, а не качество живого распознавания.
+    Voice -->|"Редактируемый черновик"| Browser
+    Browser -->|"HTTP · cookie сессии"| API
+    API --> Planner
+    API --> DB
+    Planner --> DB
+    Planner -.->|"Если включён"| Ollama
+    DB --> Queue
+    Queue --> Yandex
+
+    classDef ui fill:#edf5ff,stroke:#0875ff,color:#121c46;
+    classDef storage fill:#effbf7,stroke:#12a885,color:#123e35;
+    classDef external fill:#fff6eb,stroke:#ed9c3a,color:#634113;
+    class Browser,Voice,API,Planner ui;
+    class DB,Queue storage;
+    class Yandex,Ollama external;
+```
+
+Production-контейнер обслуживает Go API и собранный frontend. PostgreSQL обязателен; Node.js нужен на этапе сборки. Данные, история и настройки изолированы по аккаунтам. Изменение дела и постановка в очередь Яндекса записываются одной транзакцией.
+
+### От слов к действию
+
+```mermaid
+flowchart TD
+    Draft["Голос или текст<br/>Редактируемый черновик"]
+    Send["Нажатие «Отправить» или Enter"]
+    Parse["Разбор намерения<br/>Название · дата · время · напоминание"]
+    Clear{"Достаточно данных<br/>и понятен выбор?"}
+    Ask["Уточнение<br/>Название, дата, время или интервал"]
+    Delete{"Удаление?"}
+    Preview["Показ конкретных записей"]
+    Confirm{"Пользователь<br/>подтвердил?"}
+    Unchanged{"Выбранные записи<br/>не изменились?"}
+    Save["Транзакция PostgreSQL"]
+    Cancel["Отмена без удаления"]
+    Result["Ответ и карточки<br/>Обновление календаря и очередь Яндекса"]
+
+    Draft --> Send --> Parse --> Clear
+    Clear -->|"Нет"| Ask
+    Ask -->|"Ответ пользователя"| Parse
+    Clear -->|"Да"| Delete
+    Delete -->|"Нет"| Save
+    Delete -->|"Да"| Preview --> Confirm
+    Confirm -->|"Нет"| Cancel
+    Confirm -->|"Да"| Unchanged
+    Unchanged -->|"Нет — проверить заново"| Ask
+    Unchanged -->|"Да"| Save
+    Save --> Result
+
+    classDef action fill:#edf5ff,stroke:#0875ff,color:#121c46;
+    classDef question fill:#fff7e8,stroke:#e5a344,color:#634113;
+    class Draft,Send,Parse,Preview,Save,Result action;
+    class Clear,Delete,Confirm,Unchanged,Ask question;
+```
+
+Для группового удаления список ограничен 100 записями за один запрос. Новые записи не добавляются к уже подтверждаемому списку. Повтор одного запроса с тем же `request_id` возвращает сохранённый результат.
+
+### Что важно знать
+
+- **Речь.** Используется распознавание браузера; качество зависит от его сервиса и микрофона. Персональная адаптация исправляет текст в контексте, акустическая модель на голосе пользователя не обучается.
+- **Уведомления.** Ритм проверяет наступившие сигналы, пока приложение открыто. Системные уведомления включаются в настройках и требуют разрешения браузера; фонового Web Push при закрытом приложении пока нет.
+- **Яндекс.** Синхронизация направлена из Ритма в Яндекс. Изменения в самом Яндексе не импортируются. Каналы доставки push/почты разрешаются в настройках Яндекса.
+- **Планирование.** Поддерживаются разовые дела; повторяющиеся события и восстановление пароля по email пока не реализованы.
+- **LLM.** По умолчанию работает локальный разбор `rules`; Ollama можно подключить отдельно. Аккаунты и обычные команды работают без LLM.
+
+[Подробно о командах, адаптации речи и напоминаниях →](docs/ASSISTANT_BEHAVIOR.md)
 
 ## Разработка и проверки
 
-Go 1.25+, Node 24, pnpm 11.25:
+**Go 1.25+ · Node.js 24 · pnpm 11.25 · PostgreSQL 17**
 
 ```bash
 pnpm --dir web install --frozen-lockfile
@@ -49,42 +192,61 @@ pnpm --dir web build
 go run ./cmd/server
 ```
 
-По умолчанию Go использует отдельную `var/assistant-go.sqlite3`, порт 8081 и `.env`/переменные процесса. Для Vite hot reload Go запускается на 8082, затем `pnpm --dir web dev`. Подробная конфигурация и Windows-команды: [P1_UI.md](docs/P1_UI.md).
+Для запуска без Docker задайте `DATABASE_URL` и `SESSION_SECRET` в `.env`. Для hot reload Go слушает `127.0.0.1:8082`, Vite запускается командой `pnpm --dir web dev`; настройте `PUBLIC_URL` на фактический адрес браузера и соответствующие OAuth callback.
 
 ```bash
+# Тестовая PostgreSQL-база должна быть доступна по TEST_DATABASE_URL.
 go test ./...
 go vet ./...
 go test -race ./...
+
 pnpm --dir web test
 pnpm --dir web build
 pnpm --dir web exec playwright install chromium
 pnpm --dir web e2e
-```
 
-На Windows без C compiler race tests выполняются в Linux Docker, как описано в [Go parity](docs/GO_PARITY.md). E2E использует отдельный сервер/базу на 8083. CI проверяет Go race на 1.25/1.27, frontend tests/build/E2E, оба Docker runtime и неизменённый Python corpus.
-
-## Python reference и P0
-
-`app/`, 73 Python-теста, 6 legacy voice-тестов и corpus сохранены на прежних местах. Запуск reference: `docker compose -f compose.python.yaml up --build -d` на 8000, со старым Python-томом. [Историческая инструкция](docs/PYTHON_REFERENCE.md).
-
-```bash
+# Совместимость с исходной реализацией
 python -m pytest -q
 node --test tests/voice.test.js
 ```
 
-SQLite настроен на WAL, busy_timeout=5000 и foreign_keys=1. Миграции создают согласованный backup и сохраняют ID/history/pending. Schema v3 добавляет место и URL встречи; v4 — метки, подзадачи, участников, состояние напоминаний и preferences. LLM HTTP выполняется вне короткой write transaction. Hybrid NLP и исходный общий corpus P0 сохранены.
+CI проверяет Go, PostgreSQL, frontend, браузерные сценарии, Python reference и Docker-сборки. Без `TEST_DATABASE_URL` Go-тесты PostgreSQL пропускаются. На Windows для `-race` нужен C-компилятор; Linux-проверка описана в [Go parity](docs/GO_PARITY.md). Браузерные тесты создают отдельные аккаунты и используют управляемый Web Speech mock.
+
+### Структура проекта
+
+```text
+cmd/                 Запуск сервера и импорт старой SQLite
+internal/            Go API, ассистент, NLP, auth, хранилища и CalDAV
+web/                 React UI, диктовка, виджеты и браузерные тесты
+docs/                Схемы, инструкции и скриншоты
+tests/contract/      Контракты, PostgreSQL и интеграционные сценарии
+app/                 Исходная Python-реализация для проверок совместимости
+testdata/parity/     Общий корпус и миграционные фикстуры
+```
+
+Python reference, SQLite-импорт и исторические сравнения сохранены: они нужны для регрессий и миграции. Текущий runtime — Go + PostgreSQL.
 
 ## Документация
 
-- [P1.1: visual alignment, REFERENCE / ACTUAL и проверки](docs/P1_1_DESIGN_PARITY.md)
+| Раздел | Что внутри |
+| --- | --- |
+| [Команды, речь и уведомления](docs/ASSISTANT_BEHAVIOR.md) | Уточнения, безопасный выбор, персональная адаптация и доставка сигналов. |
+| [Яндекс Календарь](docs/YANDEX_CALENDAR.md) | OAuth, CalDAV, очередь, хранение токенов и ограничения. |
+| [Аккаунты и PostgreSQL](docs/P1_2_AUTH_POSTGRES.md) | Сессии, изоляция, OAuth и импорт прежних данных. |
+| [API](docs/API_CONTRACT_NEXT.md) | HTTP-контракты; живая OpenAPI-спецификация доступна по `/docs`. |
+| [Go parity](docs/GO_PARITY.md) | Корпус совместимости, SQLite-миграции и проверки. |
+| [История интерфейса](docs/P1_1_DESIGN_PARITY.md) | Сравнения с макетами и результаты предыдущих этапов. |
+| [Python reference](docs/PYTHON_REFERENCE.md) | Запуск исходной версии и историческая документация. |
 
-- [P1: модули, runtime, ограничения и проверки](docs/P1_UI.md)
-- [Desktop screenshots всех страниц, mobile и voice proof](docs/P1_SCREENSHOTS.md)
-- [Implementation plan и baseline](docs/P1_IMPLEMENTATION.md)
-- [Актуальный Go API](docs/API_CONTRACT_NEXT.md)
-- [Go foundation и parity](docs/GO_PARITY.md)
-- [Приоритеты P0–P4](docs/MIGRATION_PLAN.md)
+<details>
+<summary>Обновить скриншоты README</summary>
 
-![Архитектура P1](docs/diagrams/p1-architecture.svg)
+После сборки и запуска приложения:
 
-![Ручная отправка voice](docs/diagrams/p1-voice-flow.svg)
+```bash
+pnpm --dir web exec node scripts/capture-readme.mjs
+```
+
+По умолчанию используется `http://localhost:8081`; переменная `P1_BASE_URL` задаёт другой адрес. Скрипт создаёт новый демонстрационный аккаунт и снимает реальные страницы без пользовательских данных.
+
+</details>

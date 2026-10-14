@@ -19,7 +19,7 @@ RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /workspace/server ./cmd
 
 FROM gcr.io/distroless/static-debian12:nonroot
 WORKDIR /app
-ENV APP_ROOT=/app APP_ADDR=0.0.0.0:8000 DATABASE_PATH=/app/var/assistant.sqlite3
+ENV APP_ROOT=/app APP_ADDR=0.0.0.0:8000
 COPY --from=build /workspace/server /app/server
 COPY --chown=65532:65532 --from=build /workspace/var /app/var
 COPY --from=frontend /workspace/web/dist /app/web/dist
