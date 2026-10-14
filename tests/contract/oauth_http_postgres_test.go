@@ -88,13 +88,13 @@ func TestPostgresAuthRateLimitAndBodyLimit(t *testing.T) {
 	}
 	for i := 0; i < 19; i++ {
 		w = httptest.NewRecorder()
-		router.ServeHTTP(w, httptest.NewRequest("GET", "/api/auth/unavailable/start", nil))
+		router.ServeHTTP(w, httptest.NewRequest("GET", "/api/auth/yandex/start", nil))
 		if w.Code != 303 {
 			t.Fatal("unexpected pre-limit response", w.Code)
 		}
 	}
 	w = httptest.NewRecorder()
-	router.ServeHTTP(w, httptest.NewRequest("GET", "/api/auth/unavailable/start", nil))
+	router.ServeHTTP(w, httptest.NewRequest("GET", "/api/auth/yandex/start", nil))
 	if w.Code != 429 || w.Header().Get("Retry-After") != "60" {
 		t.Fatal("rate limit absent", w.Code)
 	}

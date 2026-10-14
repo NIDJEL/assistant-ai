@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ChevronUp, Pencil } from 'lucide-react';
 import { CompleteCheckbox } from './EventRow';
 import { EventMenu } from './EventMenu';
+import { recurrenceLabel } from './recurrence';
 import { priorityLabels } from './presentation';
 import { useData } from '../../app/DataContext';
 import { useEventActions } from '../../app/EventActionsContext';
@@ -19,7 +20,7 @@ export function TaskCard({ event, expanded, onSelect }: { event: RhythmEvent; ex
     catch (e) { setError(errorMessage(e)); } finally { setBusy(false); setPending({}); }
   }
   return <article className={`task-card ${expanded ? 'expanded' : ''} ${event.status === 'done' ? 'done' : ''}`}>
-    <div className="task-row"><CompleteCheckbox event={event}/><button className="task-title" onClick={onSelect} aria-expanded={expanded}>{event.title}</button><i className={`dot priority-${event.priority}`} title={`Приоритет: ${priorityLabels[event.priority]}`}/><Tags tags={event.tags}/><span className={`task-due ${event.status === 'open' && event.date && event.date <= data.today ? 'overdue' : ''}`}>{dateLabel(event.date, data.today)}{event.time && `, ${event.time}`}</span>{expanded ? <IconButton icon={ChevronUp} label={`Свернуть «${event.title}»`} onClick={onSelect}/> : <EventMenu event={event}/>}</div>
+    <div className="task-row"><CompleteCheckbox event={event}/><button className="task-title" onClick={onSelect} aria-expanded={expanded}>{event.title}</button><i className={`dot priority-${event.priority}`} title={`Приоритет: ${priorityLabels[event.priority]}`}/><Tags tags={event.tags}/><span className={`task-due ${event.status === 'open' && event.date && event.date <= data.today ? 'overdue' : ''}`}>{dateLabel(event.date, data.today)}{event.time && `, ${event.time}`}{event.recurrence && <small className="task-recurrence">{recurrenceLabel(event.recurrence)}</small>}</span>{expanded ? <IconButton icon={ChevronUp} label={`Свернуть «${event.title}»`} onClick={onSelect}/> : <EventMenu event={event}/>}</div>
     <Collapsible open={expanded}><div className="task-expanded">{event.description && <p>{event.description}</p>}<div className="subtasks">{event.subtasks?.map(task => <label key={task.id} className={task.done ? 'done' : ''}><input type="checkbox" checked={pending[task.id] ?? task.done} disabled={busy} onChange={() => void toggle(task.id)}/><span>{task.title}</span></label>)}</div>{!event.subtasks?.length && <p className="muted">Подзадач пока нет</p>}<button className="text-action" onClick={() => actions.edit(event)}><Pencil size={15}/>Редактировать задачу и подзадачи</button>{error && <Alert>{error}</Alert>}</div></Collapsible>
   </article>;
 }

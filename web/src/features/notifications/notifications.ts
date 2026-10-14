@@ -1,7 +1,9 @@
 import type { RhythmEvent } from '../../types/api';
 
 export function notificationKey(event: RhythmEvent) {
-  return `${event.id}:${event.date}:${event.time}:${event.reminder_minutes || 0}`;
+  const seconds = event.start_second ? `:${event.start_second}` : '';
+  const occurrence = event.occurrence_at ? `:${event.occurrence_at}` : '';
+  return `${event.id}:${event.date}:${event.time}${seconds}:${event.reminder_minutes || 0}${occurrence}`;
 }
 export function notificationSupport() { return typeof window !== 'undefined' && 'Notification' in window && window.isSecureContext; }
 export async function registerNotifications() {

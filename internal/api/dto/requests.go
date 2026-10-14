@@ -64,6 +64,7 @@ func (d Event) Domain() (domain.Event, error) {
 }
 
 type Patch struct {
+	Recurrence      json.RawMessage       `json:"recurrence"`
 	Tags            *[]string             `json:"tags"`
 	Subtasks        *[]domain.Subtask     `json:"subtasks"`
 	Participants    *[]domain.Participant `json:"participants"`
@@ -91,6 +92,13 @@ func (p Patch) Domain() (calendar.Patch, error) {
 		duration := time.Duration(*p.DurationMinutes) * time.Minute
 		result.Duration = &duration
 	}
+	if len(p.Recurrence) > 0 {
+		var r *domain.Recurrence
+		if err := json.Unmarshal(p.Recurrence, &r); err != nil {
+			return result, err
+		}
+		result.Recurrence = &r
+	}
 	if len(p.Date) > 0 {
 		var d *domain.Date
 		if err := json.Unmarshal(p.Date, &d); err != nil {
@@ -105,7 +113,7 @@ func (p Patch) Domain() (calendar.Patch, error) {
 		}
 		result.Time = &t
 	}
-	if result.Tags == nil && result.Subtasks == nil && result.Participants == nil && result.ReminderEnabled == nil && result.ReminderMinutes == nil && result.Title == nil && result.Description == nil && result.Location == nil && result.MeetingURL == nil && result.Date == nil && result.Time == nil && result.Duration == nil && result.Status == nil && result.Priority == nil {
+	if result.Recurrence == nil && result.Tags == nil && result.Subtasks == nil && result.Participants == nil && result.ReminderEnabled == nil && result.ReminderMinutes == nil && result.Title == nil && result.Description == nil && result.Location == nil && result.MeetingURL == nil && result.Date == nil && result.Time == nil && result.Duration == nil && result.Status == nil && result.Priority == nil {
 		return result, fmt.Errorf("Не указаны поля для изменения")
 	}
 	return result, nil

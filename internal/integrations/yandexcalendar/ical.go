@@ -35,7 +35,7 @@ func eventUID(userID string, id int64) string      { return eventName(userID, id
 func eventResource(userID string, id int64) string { return eventUID(userID, id) + ".ics" }
 
 func eventCalendar(e domain.Event, userID string, loc *time.Location) string {
-	lines := []string{"BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Rhythm//Yandex Calendar Sync//RU", "CALSCALE:GREGORIAN", "BEGIN:VEVENT", "UID:" + eventUID(userID, e.ID), "DTSTAMP:" + e.UpdatedAt.UTC().Format("20060102T150405Z"), "CREATED:" + e.CreatedAt.UTC().Format("20060102T150405Z"), "LAST-MODIFIED:" + e.UpdatedAt.UTC().Format("20060102T150405Z")}
+	lines := []string{"BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Ассистент Гена//Yandex Calendar Sync//RU", "CALSCALE:GREGORIAN", "BEGIN:VEVENT", "UID:" + eventUID(userID, e.ID), "DTSTAMP:" + e.UpdatedAt.UTC().Format("20060102T150405Z"), "CREATED:" + e.CreatedAt.UTC().Format("20060102T150405Z"), "LAST-MODIFIED:" + e.UpdatedAt.UTC().Format("20060102T150405Z")}
 	if e.StartTime == nil {
 		lines = append(lines, "DTSTART;VALUE=DATE:"+e.Date.Format("20060102"), "DTEND;VALUE=DATE:"+e.Date.AddDate(0, 0, 1).Format("20060102"))
 	} else {

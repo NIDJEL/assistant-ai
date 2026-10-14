@@ -16,9 +16,6 @@ services:
       YANDEX_CLIENT_ID: ${YANDEX_CLIENT_ID:-}
       YANDEX_CLIENT_SECRET: ${YANDEX_CLIENT_SECRET:-}
       YANDEX_REDIRECT_URI: ${YANDEX_REDIRECT_URI:-}
-      VK_CLIENT_ID: ${VK_CLIENT_ID:-}
-      VK_CLIENT_SECRET: ${VK_CLIENT_SECRET:-}
-      VK_REDIRECT_URI: ${VK_REDIRECT_URI:-}
     depends_on:
       postgres:
         condition: service_healthy

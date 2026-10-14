@@ -205,6 +205,15 @@ func (s *Service) sync(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	if len(changes) > 0 {
+		if branding, ok := s.Remote.(interface {
+			RefreshBrand(context.Context, string, string, string) error
+		}); ok {
+			if err := remoteCall(func() error { return branding.RefreshBrand(ctx, c.CalendarURL, c.Login, token.AccessToken) }); err != nil {
+				return err
+			}
+		}
+	}
 	for _, change := range changes {
 		var event *domain.Event
 		err = s.Events.Read(ctx, func(tx repository.Tx) error { var err error; event, err = tx.Get(ctx, change.EventID); return err })

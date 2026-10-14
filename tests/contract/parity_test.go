@@ -121,6 +121,9 @@ func currentDialogueCopy(value any) any {
 				if text == "Не нашёл запись для этого действия. Укажите название или номер, например #42." {
 					text = "Не нашёл подходящую запись. Укажите название и, если нужно, дату: например, «удали напоминание позвонить маме завтра»."
 				}
+				if strings.HasPrefix(text, "Я помогу с задачами") {
+					text = strings.Replace(text, "Я помогу", "Я Гена. Помогу", 1)
+				}
 				result[key] = text
 			} else {
 				result[key] = currentDialogueCopy(item)

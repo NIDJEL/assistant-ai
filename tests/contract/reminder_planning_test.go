@@ -136,11 +136,7 @@ func TestReminderAnswersCannotBecomeTheTitleOrReplaceTheEventClock(t *testing.T)
 	}
 	_, _ = s.Respond(context.Background(), "Напомни завтра позвонить маме", "no-clock", "first", now)
 	r, err = s.Respond(context.Background(), "15", "no-clock", "clock", now)
-	if err != nil || !r.Pending || len(r.Events) != 0 {
+	if err != nil || r.Pending || len(r.Events) != 1 || r.Events[0].StartTime.String() != "15:00" || r.Events[0].ReminderLead() != 0 {
 		t.Fatal("clock was mistaken for lead time", r, err)
-	}
-	r, err = s.Respond(context.Background(), "за 30 минут", "no-clock", "lead", now)
-	if err != nil || len(r.Events) != 1 || r.Events[0].StartTime.String() != "15:00" || *r.Events[0].ReminderMinutes != 30 {
-		t.Fatal(r, err)
 	}
 }

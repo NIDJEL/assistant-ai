@@ -6,12 +6,13 @@ import (
 	"github.com/NIDJEL/assistant-ai/internal/domain"
 )
 
-const createDirective = `\b(?:напомни\w*|поставь|поставить|добавь|добавить|создай|создать|запиши|записать|запланируй\w*|назначь|назначить|установи|не\s+забудь)\b`
+const createDirective = `\b(?:` + reminderDirective + `|` + createVerb + `)\b`
 
 // Repair only the planner construction. "Оставь посылку у двери" is content,
 // not a misspelled instruction to create an event.
 func normalizeConversation(text string) string {
 	text = trimCourtesy(text)
+	text = replace(`(?i)^гена[\s,.:;-]+`, text, "")
 	ms := matches(`(?i)\bоставь([\s,]+(?:(?:пожалуйста|мне)[\s,]+)*(?:напоминание|уведомление|задачу|событие|встречу|в\s+(?:(?:мой|наш)\s+)?календарь)\b)`, text)
 	for i := len(ms) - 1; i >= 0; i-- {
 		m := ms[i]
@@ -30,8 +31,9 @@ func actionFromSpeech(text string) (domain.Action, bool) {
 	}
 	patterns := []directive{
 		{createDirective, domain.ActionCreate},
+		{`\b(?:восстанови(?:ть)?|верни|вернуть)\b`, domain.ActionRestore},
 		{`\b(?:удали\w*|удалить|отмени\w*|убери\w*)\b`, domain.ActionDelete},
-		{`\b(?:выполнен\w*|выполнил\w*|сделан\w*|заверши\w*|закончи\w*)\b`, domain.ActionComplete},
+		{`\b(?:выполнен\w*|выполнил\w*|сделан\w*|заверши\w*|закончи\w*|отметь)\b`, domain.ActionComplete},
 		{`\b(?:перенеси\w*|перенести|перенос\w*|сдвинь|измени\w*)\b`, domain.ActionUpdate},
 		{`\b(?:найди|найти|отыщи|поищи|поиск|когда|раньше|когда-то|была|были|истори\w*)\b`, domain.ActionSearch},
 		{`\b(?:что|какие|покажи|показать|список|планы|запланировано|есть\s+ли|расписание)\b`, domain.ActionList},
@@ -41,6 +43,14 @@ func actionFromSpeech(text string) (domain.Action, bool) {
 	for _, d := range patterns {
 		if m := first(d.pattern, text); m != nil && m.Start < position {
 			position, action = m.Start, d.action
+		}
+	}
+	// Question words and infinitives may be the reminder's action text, even
+	// when "напомни" follows that content.
+	if m := first(createDirective, text); m != nil && action != domain.ActionCreate {
+		prefix := text[:m.Start]
+		if !has(`\b(?:удали\w*|отмени\w*|убери\w*|перенеси\w*|перенести|сдвинь|измени\w*|восстанови\w*|верни|заверши\w*|закончи\w*|отметь|найди|найти|отыщи|поищи|покажи|показать)\b`, prefix) {
+			position, action = m.Start, domain.ActionCreate
 		}
 	}
 	if m := first(`\bне\s+(?:добавляй|создавай|ставь|записывай|напоминай|удаляй|отменяй|переноси|меняй)\b`, text); m != nil && m.Start < position {
@@ -67,7 +77,7 @@ func createTitle(text string) string {
 		before, after := text[:m.Start], text[m.End:]
 		after = replace(`(?i)^[\s,.:;-]*(?:(?:пожалуйста|мне)[\s,.:;-]*)*`, after, "")
 		after = replace(`(?i)^в\s+(?:(?:мой|наш)\s+)?календарь\b[\s,.:;-]*`, after, "")
-		after = replace(`(?i)^(?:(?:новую|новое|новый)\s+)?(?:задачу|напоминание|уведомление|событие|дело)\b[\s,.:;-]*`, after, "")
+		after = replace(`(?i)^(?:(?:новую|новое|новый)\s+)?(?:задачу|напоминание|напоминалку|уведомление|событие|мероприятие|дело)\b[\s,.:;-]*`, after, "")
 		after = replace(`(?i)^в\s+(?:(?:мой|наш)\s+)?календарь\b[\s,.:;-]*`, after, "")
 		after = replace(`(?i)^(?:(?:о\s+том|про\s+то)[\s,]+)?(?:что|чтобы)\b[\s,.:;-]*`, after, "")
 		if strings.Trim(after, " ,.!?:;-") != "" {
@@ -76,8 +86,16 @@ func createTitle(text string) string {
 			text = before
 		}
 	}
-	text = replace(`(?i)^(?:(?:можешь|можете|мог\s+бы|могли\s+бы|давай|слушай|ритм)[\s,.:;-]+)+`, text, "")
-	text = replace(`(?i)\b(?:мне|у меня|нужно|надо)\b`, text, "")
+	text = replace(`(?i)^(?:(?:можешь|можете|мог\s+бы|могли\s+бы|давай|слушай|гена)[\s,.:;-]+)+`, text, "")
+	// Only introductory words are removed. "объяснить мне что нужно для
+	// визы" must retain its inner words.
+	for {
+		next := replace(`(?i)^[\s,.:;-]*(?:и|что|чтобы|мне|у\s+меня|я|нужно|надо|напоминание|напоминалку)\b[\s,.:;-]*`, text, "")
+		if next == text {
+			break
+		}
+		text = next
+	}
 	text = trimCourtesy(text)
 	text = replace(`(?i)\b(?:до|на|в|во|к)\s*$`, text, "")
 	return strings.Trim(spaces(text), " ,.!?:;-")

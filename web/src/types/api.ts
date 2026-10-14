@@ -1,11 +1,13 @@
 export type EventKind = 'task' | 'meeting' | 'reminder';
 export type EventStatus = 'open' | 'done';
 export type Priority = 'normal' | 'low' | 'high';
-export type Action = 'create' | 'list' | 'search' | 'update' | 'complete' | 'delete' | 'help' | 'clarify' | 'cancel';
+export type Action = 'create' | 'list' | 'search' | 'update' | 'complete' | 'delete' | 'help' | 'clarify' | 'cancel' | 'restore';
 export interface Subtask { id: string; title: string; done: boolean }
 export interface Participant { name: string; email?: string }
-export interface EventDetails { tags?: string[]; subtasks?: Subtask[]; participants?: Participant[]; reminder_enabled?: boolean; reminder_minutes?: number }
+export interface Recurrence { frequency: 'minute' | 'hour' | 'day' | 'week' | 'month' | 'year'; interval: number; weekdays?: number[]; day_of_month?: number; month?: number; local_time?: string; timezone: string; anchor?: string }
+export interface EventDetails { recurrence?: Recurrence | null; tags?: string[]; subtasks?: Subtask[]; participants?: Participant[]; reminder_enabled?: boolean; reminder_minutes?: number; start_second?: number }
 export interface RhythmEvent extends EventDetails {
+  occurrence_at?: string; last_notification_at?: string;
   id: number; kind: EventKind; title: string; description: string;
   date: string | null; time: string | null; duration_minutes: number;
   status: EventStatus; priority: Priority; location: string; meeting_url: string;

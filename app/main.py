@@ -31,7 +31,7 @@ def create_app(settings: Settings | None = None, clock=None):
             db.import_csv(ROOT / "data/voice_assistant_events_1000.csv", clock())
         yield
 
-    app = FastAPI(title="Ритм — голосовой планировщик", version="1.0.0", lifespan=lifespan, redoc_url=None)
+    app = FastAPI(title="Ассистент Гена — голосовой планировщик", version="1.0.0", lifespan=lifespan, redoc_url=None)
     app.state.database = db
 
     @app.middleware("http")

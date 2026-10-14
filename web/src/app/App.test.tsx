@@ -8,6 +8,12 @@ async function start(path = '/', options: Parameters<typeof mockServer>[0] = {})
   await screen.findByRole('heading', { level: 1 }); return { ...server, user: userEvent.setup() };
 }
 function deferred() { let resolve!: () => void; const promise = new Promise<void>(done => { resolve = done; }); return { promise, resolve }; }
+it('shows a recurring task rule from structured API data', async () => {
+  history.pushState({}, '', '/tasks'); const server = mockServer();
+  server.events()[0].recurrence = { frequency: 'day', interval: 1, local_time: '09:00', timezone: 'Europe/Moscow' };
+  render(<App/>); await screen.findByRole('heading', { level: 1, name: 'Задачи' });
+  expect(document.querySelector('.task-card .task-recurrence')).toHaveTextContent('Каждый день, 09:00');
+});
 it('navigates all eight pages and preserves explicit integration states', async () => {
   const { user } = await start();
   const nav = screen.getByRole('navigation', { name: 'Основная навигация' });
@@ -16,7 +22,7 @@ it('navigates all eight pages and preserves explicit integration states', async 
   }
   expect(screen.getAllByText('Скоро')).toHaveLength(2);
   expect(document.querySelectorAll('.integration-state')).toHaveLength(3);
-  await user.click(screen.getByRole('button', { name: 'Настроить' })); expect(screen.getByRole('complementary', { name: 'Интеграция' })).toHaveTextContent('Разрешите Ритму добавлять ваши дела в календарь.'); expect(screen.queryByRole('complementary', { name: 'Виджеты' })).not.toBeInTheDocument();
+  await user.click(screen.getByRole('button', { name: 'Настроить' })); expect(screen.getByRole('complementary', { name: 'Интеграция' })).toHaveTextContent('Разрешите Гене добавлять ваши дела в календарь.'); expect(screen.queryByRole('complementary', { name: 'Виджеты' })).not.toBeInTheDocument();
   await user.click(screen.getByRole('button', { name: 'Назад к виджетам' })); await user.click(screen.getByRole('link', { name: 'Настройки' })); expect(screen.getByRole('heading', { level: 1, name: 'Настройки' })).toBeInTheDocument();
 });
 it.each(['Send', 'Enter'])('%s sends exactly once while a request is in progress', async mode => {

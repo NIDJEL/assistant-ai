@@ -13,16 +13,16 @@ import (
 const meetingPattern = `\b(?:встреч[ауи]|созвон\w*|совещан\w*|демо\b|интервью\b)`
 
 func inferKind(text string) domain.EventType {
-	if has(`\b(?:напомни\w*|напоминан\w*|уведомлен\w*|не\s+забудь)`, text) {
+	if has(reminderCue, text) {
 		return domain.EventReminder
 	}
 	if has(`\bзадач\w*\s+и\s+встреч\w*`, text) {
 		return domain.EventUnknown
 	}
-	if has(`\bзадач\w*`, text) {
+	if has(`\b(?:задач\w*|дело)\b`, text) {
 		return domain.EventTask
 	}
-	if has(meetingPattern, text) {
+	if has(meetingPattern, text) || has(`\b(?:событи\w*|мероприят\w*)\b`, text) {
 		return domain.EventMeeting
 	}
 	return domain.EventUnknown
@@ -37,12 +37,16 @@ func (Parser) Interpret(ctx context.Context, text string, now time.Time) (domain
 	return Parse(text, now), nil
 }
 func Parse(text string, now time.Time) domain.Command {
+	return ParseCommand(text, now).Command
+}
+
+func parseCommand(text string, now time.Time) domain.Command {
 	text = normalizeConversation(text)
 	low := strings.TrimSpace(strings.ReplaceAll(strings.ToLower(text), "ё", "е"))
+	_, action, kind, negated := DetectIntent(text)
 	t := Extract(low, now)
 	cleaned := t.Clean(text)
-	kind := inferKind(low)
-	cmd := domain.Command{Action: domain.ActionHelp, Kind: kind, Date: t.Date, Time: t.Time, PeriodStart: t.Start, PeriodEnd: t.End, Duration: t.Duration, Error: t.Error, Provider: "rules", Confidence: .2}
+	cmd := domain.Command{Action: action, Kind: kind, Date: t.Date, Time: t.Time, StartSecond: t.StartSecond, PeriodStart: t.Start, PeriodEnd: t.End, Duration: t.Duration, Error: t.Error, Provider: "rules", Confidence: .2}
 	if target := first(`(?:#|номер\s*|№\s*)(\d+)`, low); target != nil {
 		id, err := strconv.ParseInt(target.Parts[1], 10, 64)
 		if err == nil && id > 0 {
@@ -52,21 +56,29 @@ func Parse(text string, now time.Time) domain.Command {
 		}
 		cleaned = strings.TrimSpace(replace(`(?:#|номер\s*|№\s*)\d+`, cleaned, ""))
 	}
-	var negated bool
-	cmd.Action, negated = actionFromSpeech(low)
 	if negated {
 		cmd.Error = "Понял: это действие выполнять не нужно. Сформулируйте, что нужно сделать."
 	} else if cmd.Action == domain.ActionHelp && (has(`\b(?:нужно|надо|купить|подготовить|отправить|позвонить|проверить)\b`, low) || (kind == domain.EventMeeting && t.Date != nil)) {
 		cmd.Action = domain.ActionCreate
 	}
 	if cmd.Action == domain.ActionCreate {
-		if kind == domain.EventUnknown {
+		if cmd.Kind == domain.EventUnknown {
 			cmd.Kind = domain.EventTask
 		}
 		plan := creationPlan(text, now)
 		cmd.Title, cmd.Date, cmd.Time = plan.Title, plan.Date, plan.Time
 		cmd.PeriodStart, cmd.PeriodEnd, cmd.Duration = plan.PeriodStart, plan.PeriodEnd, plan.Duration
 		cmd.ReminderMinutes, cmd.ReminderEnabled, cmd.Error = plan.ReminderMinutes, plan.ReminderEnabled, plan.Error
+		cmd.StartSecond = plan.StartSecond
+		cmd.NotificationContext = plan.NotificationContext
+		cmd.ExactAt = plan.ExactAt
+		cmd.Recurrence = plan.Recurrence
+		if cmd.Recurrence != nil {
+			if cmd.Kind == domain.EventMeeting {
+				cmd.Error = "Повторение поддерживается для задач и напоминаний"
+			}
+			ResolveRecurrence(&cmd, now)
+		}
 		cmd.Title = replace(`(?i)^встречу\b`, cmd.Title, "Встреча")
 		runes := []rune(cmd.Title)
 		if len(runes) > 0 {
@@ -77,7 +89,7 @@ func Parse(text string, now time.Time) domain.Command {
 		cleaned = replace(`(?i)\b(?:найди|найти|отыщи|поищи|поиск|когда-то|когда|раньше|была|был|были|ставил|ставила|я|у меня|мои|мою|мне|задач\w*|напоминан\w*|событи\w*|выполнен\w*|выполнил\w*|сделан\w*|заверши\w*|закончи\w*|отметь|как|удали\w*|удалить|отмени\w*|убери\w*|перенеси\w*|перенести|измени\w*|а|ее|его|их|это|эту|этот|на|про|по|пожалуйста)\b`, cleaned, " ")
 		cmd.Query = strings.Trim(spaces(cleaned), " ,.!?:;-")
 	}
-	if cmd.Action == domain.ActionDelete || cmd.Action == domain.ActionUpdate || cmd.Action == domain.ActionComplete {
+	if cmd.Action == domain.ActionDelete || cmd.Action == domain.ActionUpdate || cmd.Action == domain.ActionComplete || cmd.Action == domain.ActionRestore {
 		planSelection(&cmd, text, now)
 	}
 	fragment := strings.TrimSpace(t.Clean(low))

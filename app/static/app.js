@@ -238,7 +238,7 @@ function bubble(role, text, response = null) {
   label.textContent =
     role === "user"
       ? "Вы"
-      : "Ритм" +
+      : "Гена" +
         (response?.provider === "rules_fallback" ? " · локальный режим" : "");
   content.append(label);
   if (role === "assistant") {
@@ -266,7 +266,7 @@ async function send(message, requestId = crypto.randomUUID(), retry = false) {
   autoSize();
   const typing = document.createElement("div");
   typing.className = "typing";
-  typing.textContent = "Ритм разбирает ваш запрос…";
+  typing.textContent = "Гена разбирает ваш запрос…";
   $("#conversation").append(typing);
   try {
     const data = await api("/api/chat", {
@@ -436,7 +436,7 @@ async function pollReminders() {
       const key = "rhythm-notified:" + e.id + ":" + e.updated_at;
       if (localStorage.getItem(key)) continue;
       localStorage.setItem(key, "true");
-      new Notification("Ритм · Напоминание", {
+      new Notification("Гена · Напоминание", {
         body: e.title,
         icon: "/static/favicon.svg",
       });

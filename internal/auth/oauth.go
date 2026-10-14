@@ -15,11 +15,11 @@ import (
 
 type Provider interface {
 	AuthorizationURL(state, challenge string) string
-	Identity(context.Context, string, string, string, string) (repository.Identity, error)
+	Identity(context.Context, string, string, string) (repository.Identity, error)
 }
 type CalendarGrantProvider interface {
 	CalendarAuthorizationURL(state, challenge string) string
-	Grant(context.Context, string, string, string, string) (repository.OAuthGrant, error)
+	Grant(context.Context, string, string, string) (repository.OAuthGrant, error)
 }
 type CalendarConnector interface {
 	Connect(context.Context, repository.OAuthGrant, time.Time) error
@@ -103,17 +103,17 @@ func (s *Service) FinishOAuthFlow(ctx context.Context, provider, browser, curren
 		if !ok || provider != "yandex" || state.LinkUserID == "" || s.Calendar == nil {
 			return result, invalid
 		}
-		grant, err = cp.Grant(ctx, q.Get("code"), state.Verifier, q.Get("state"), q.Get("device_id"))
+		grant, err = cp.Grant(ctx, q.Get("code"), state.Verifier, q.Get("state"))
 		identity = grant.Identity
 	} else {
-		identity, err = p.Identity(ctx, q.Get("code"), state.Verifier, q.Get("state"), q.Get("device_id"))
+		identity, err = p.Identity(ctx, q.Get("code"), state.Verifier, q.Get("state"))
 	}
 	if err != nil || identity.Subject == "" || identity.Provider != provider {
 		return result, invalid
 	}
 	identity.Email, _ = NormalizeEmail(identity.Email)
 	if identity.Name == "" {
-		identity.Name = "Пользователь Ритм"
+		identity.Name = "Пользователь"
 	}
 	u, err := s.Users.ResolveIdentity(ctx, identity, state.LinkUserID)
 	if errors.Is(err, repository.ErrConflict) {

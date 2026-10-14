@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -95,6 +96,17 @@ func (s *Service) Create(ctx context.Context, e domain.Event, now time.Time, for
 	if e.Duration == 0 {
 		e.Duration = time.Hour
 	}
+	if e.Recurrence == nil {
+		e.OccurrenceAt = nil
+	}
+	if e.Recurrence != nil {
+		if e.StartTime == nil {
+			e.StartTime = e.Recurrence.LocalTime
+		}
+		if err := Rebase(&e, now, s.Location); err != nil {
+			return nil, domain.Validation(err.Error())
+		}
+	}
 	if err := e.Validate(); err != nil {
 		return nil, domain.Validation(err.Error())
 	}
@@ -114,6 +126,7 @@ func (s *Service) Create(ctx context.Context, e domain.Event, now time.Time, for
 }
 
 type Patch struct {
+	Recurrence           **domain.Recurrence
 	Tags                 *[]string
 	Subtasks             *[]domain.Subtask
 	Participants         *[]domain.Participant
@@ -138,6 +151,13 @@ func (s *Service) Update(ctx context.Context, id int64, p Patch, now time.Time) 
 		}
 		if e == nil {
 			return &domain.AppError{Code: "not_found", Message: "Запись не найдена", Status: 404}
+		}
+		old := *e
+		if p.Recurrence != nil {
+			e.Recurrence = *p.Recurrence
+			if e.Recurrence != nil && p.Time == nil && e.Recurrence.LocalTime != nil {
+				e.StartTime = e.Recurrence.LocalTime
+			}
 		}
 		if p.Tags != nil {
 			e.Tags = *p.Tags
@@ -168,18 +188,42 @@ func (s *Service) Update(ctx context.Context, id int64, p Patch, now time.Time) 
 		}
 		if p.Date != nil {
 			e.Date = *p.Date
+			if !reflect.DeepEqual(old.Date, e.Date) && p.Recurrence == nil {
+				if err := MoveSeriesDate(e); err != nil {
+					return domain.Validation(err.Error())
+				}
+			}
 		}
 		if p.Time != nil {
 			e.StartTime = *p.Time
+			if e.Recurrence == nil || !reflect.DeepEqual(old.StartTime, e.StartTime) {
+				e.StartSecond = 0
+			}
 		}
 		if p.Duration != nil {
 			e.Duration = *p.Duration
 		}
 		if p.Status != nil {
+			if e.Status == domain.StatusDone && *p.Status == domain.StatusOpen {
+				if err := Resume(e, now); err != nil {
+					return err
+				}
+			}
 			e.Status = *p.Status
 		}
 		if p.Priority != nil {
 			e.Priority = *p.Priority
+		}
+		if e.Recurrence != nil && (p.Recurrence != nil && !reflect.DeepEqual(old.Recurrence, e.Recurrence) || p.Date != nil && !reflect.DeepEqual(old.Date, e.Date) || p.Time != nil && !reflect.DeepEqual(old.StartTime, e.StartTime)) {
+			if err := Rebase(e, now, s.Location); err != nil {
+				return domain.Validation(err.Error())
+			}
+		}
+		if e.Recurrence == nil {
+			if p.Recurrence != nil || p.Date != nil || p.Time != nil {
+				e.OccurrenceAt = nil
+			}
+			e.LastNotificationAt = nil
 		}
 		if err = e.Validate(); err != nil {
 			return domain.Validation(err.Error())
@@ -230,30 +274,72 @@ func (s *Service) Restore(ctx context.Context, id int64, now time.Time, force bo
 			}
 		}
 		result, err = tx.Restore(ctx, id, now)
+		if err == nil && result != nil && result.Status == domain.StatusOpen && result.Recurrence != nil {
+			if err = Resume(result, now); err != nil {
+				return err
+			}
+			result, err = tx.Update(ctx, *result, now)
+		}
 		return err
 	})
 	return result, err
 }
+
+// Due advances and persists recurring records atomically. The last occurrence is
+// replayed during the normal five-minute polling window; browser delivery keys
+// deduplicate this replay across tabs/reloads. It is never scheduled twice.
 func (s *Service) Due(ctx context.Context, now time.Time) ([]domain.Event, error) {
-	now = now.In(s.Location)
-	var reminders []domain.Event
-	err := s.Store.Read(ctx, func(tx repository.Tx) error {
-		var err error
-		reminders, err = tx.Events(ctx, domain.Filter{Status: domain.StatusOpen, Start: domain.Day(now.AddDate(0, 0, -1)), End: domain.Day(now.AddDate(0, 0, 8))})
-		return err
-	})
 	result := []domain.Event{}
-	if err != nil {
-		return nil, err
-	}
-	for _, e := range reminders {
-		start, _, ok := e.Interval(s.Location)
-		age := now.Sub(start.Add(-time.Duration(e.ReminderLead()) * time.Minute))
-		if e.HasReminder() && ok && age >= 0 && age <= 5*time.Minute {
-			result = append(result, e)
+	err := s.Store.Write(ctx, func(tx repository.Tx) error {
+		events, err := tx.Events(ctx, domain.Filter{Status: domain.StatusOpen})
+		if err != nil {
+			return err
 		}
-	}
-	return result, nil
+		for _, e := range events {
+			if err := ctx.Err(); err != nil {
+				return err
+			}
+			start, _, ok := e.Interval(s.Location)
+			if !ok {
+				continue
+			}
+			lead := time.Duration(e.ReminderLead()) * time.Minute
+			age := now.Sub(start.Add(-lead))
+			if e.Recurrence == nil {
+				if e.HasReminder() && age >= 0 && age <= 5*time.Minute {
+					result = append(result, e)
+				}
+				continue
+			}
+			if age >= 0 {
+				if e.HasReminder() && age <= 5*time.Minute {
+					stamp := start.UTC()
+					e.LastNotificationAt = &stamp
+					e.LastNotificationLead = e.ReminderLead()
+				}
+				next, err := e.Recurrence.Next(now.Add(lead))
+				if err != nil {
+					return err
+				}
+				e.SetOccurrence(next)
+				if _, err = tx.Update(ctx, e, now); err != nil {
+					return err
+				}
+			}
+			if e.HasReminder() && e.LastNotificationAt != nil {
+				age = now.Sub(e.LastNotificationAt.Add(-time.Duration(e.LastNotificationLead) * time.Minute))
+				if age >= 0 && age <= 5*time.Minute {
+					snapshot := e
+					snapshot.SetOccurrence(*e.LastNotificationAt)
+					n := e.LastNotificationLead
+					snapshot.ReminderMinutes = &n
+					result = append(result, snapshot)
+				}
+			}
+		}
+		return nil
+	})
+	return result, err
 }
 func (s *Service) Count(ctx context.Context) (int, error) {
 	var count int

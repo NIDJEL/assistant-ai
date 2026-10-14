@@ -61,6 +61,7 @@ func (s *Service) sessionLock(ctx context.Context, id string) (func(), error) {
 	}
 }
 func (s *Service) Respond(ctx context.Context, message, sid, rid string, now time.Time) (domain.Response, error) {
+	now = now.In(s.Calendar.Location)
 	var response domain.Response
 	unlock, err := s.sessionLock(ctx, sid)
 	if err != nil {
@@ -116,7 +117,7 @@ func (s *Service) Respond(ctx context.Context, message, sid, rid string, now tim
 	return response, err
 }
 
-const help = "Я помогу с задачами, встречами и напоминаниями. Например: «Напомни завтра в 10 утра позвонить Ивану», «В пятницу нужно отправить отчёт», «Что у меня на эту неделю?» или «Найди задачу по договору»."
+const help = "Я Гена. Помогу с задачами, встречами и напоминаниями. Например: «Напомни завтра в 10 утра позвонить Ивану», «В пятницу нужно отправить отчёт», «Что у меня на эту неделю?» или «Найди задачу по договору»."
 
 func answer(text string, action domain.Action, events ...domain.Event) domain.Response {
 	if events == nil {
@@ -223,7 +224,7 @@ func (s *Service) execute(ctx context.Context, tx repository.Tx, state *domain.S
 			cmd.Query, cmd.Selector = "", nil
 			state.Pending = nil
 		case in(p.Expectation, "fields", "conflict") && (cmd.Action == domain.ActionHelp || (p.Expectation == "fields" && previous.Title == "" && cmd.Action == domain.ActionCreate && !hasNewDirective(low))):
-			t := nlp.Extract(message, now)
+			t := nlp.ParseDateTimeReply(message, now, previous)
 			if extra := nlp.Extract(t.Clean(message), now); t.Time != nil && t.Clean(message) != strings.Trim(strings.Join(strings.Fields(message), " "), " ,.!?;:-") && extra.Time != nil {
 				return answer("Вижу несколько времён. Уточните одно время события.", domain.ActionClarify), nil
 			}
@@ -231,6 +232,9 @@ func (s *Service) execute(ctx context.Context, tx repository.Tx, state *domain.S
 				return answer(t.Error, domain.ActionClarify), nil
 			}
 			cmd = previous
+			if t.Recurrence != nil {
+				cmd.Recurrence = t.Recurrence
+			}
 			reminderOnly := false
 			if minutes, enabled, recognized, question := nlp.ReminderChoice(message); recognized && t.Date == nil && t.Time == nil {
 				if question != "" {
@@ -245,9 +249,17 @@ func (s *Service) execute(ctx context.Context, tx repository.Tx, state *domain.S
 			if t.Date != nil {
 				cmd.Date = t.Date
 			}
+			if t.Date != nil || t.Time != nil {
+				cmd.ExactAt = nil
+				if t.Relative {
+					cmd.ExactAt = t.At
+				}
+			}
 			if t.Time != nil {
 				cmd.Time = t.Time
+				cmd.StartSecond = t.StartSecond
 			}
+			nlp.ResolveRecurrence(&cmd, now)
 			state.Pending = nil
 		case cmd.Action != domain.ActionHelp:
 			state.Pending = nil
@@ -269,41 +281,33 @@ func (s *Service) execute(ctx context.Context, tx repository.Tx, state *domain.S
 		return answer(help, domain.ActionHelp), nil
 	}
 	if cmd.Action == domain.ActionCreate {
-		if cmd.Title == "" || in(strings.ToLower(cmd.Title), "встреча", "задача", "напоминание") {
-			cmd.Title = ""
-			return ask(state, cmd, "Что нужно сделать или с кем провести встречу?", now, "fields", nil), nil
+		if question := creationQuestion(cmd); question != "" {
+			return ask(state, cmd, question, now, "fields", nil), nil
 		}
 		if utf8.RuneCountInString(cmd.Title) > 500 {
 			return answer("Сократите название до 500 символов.", domain.ActionClarify), nil
 		}
-		if cmd.PeriodStart != nil && cmd.Date == nil {
-			return ask(state, cmd, "На какой день в указанном периоде поставить событие?", now, "fields", nil), nil
-		}
-		if cmd.Kind == domain.EventMeeting || cmd.Kind == domain.EventReminder {
-			if cmd.Date == nil {
-				return ask(state, cmd, "На какую дату запланировать событие?", now, "fields", nil), nil
-			}
-			if cmd.Time == nil {
-				return ask(state, cmd, "На какое время поставить событие? Например, в 15:00.", now, "fields", nil), nil
-			}
-		}
-		if cmd.Time != nil && cmd.Date == nil {
-			return ask(state, cmd, "На какую дату поставить задачу с указанным временем?", now, "fields", nil), nil
-		}
-		if s.AskReminderSettings && cmd.Date != nil && cmd.Time != nil && cmd.ReminderMinutes == nil && (cmd.ReminderEnabled == nil || *cmd.ReminderEnabled) {
+		if s.AskReminderSettings && cmd.Recurrence == nil && (cmd.Kind != domain.EventReminder || cmd.NotificationContext) && cmd.Date != nil && cmd.Time != nil && cmd.ReminderMinutes == nil && (cmd.ReminderEnabled == nil || *cmd.ReminderEnabled) {
 			return ask(state, cmd, "За сколько минут или часов напомнить о «"+cmd.Title+"»? Например: «за 15 минут», «за час», «в момент события» или «без уведомлений».", now, "reminder", nil), nil
 		}
 		kind := cmd.Kind
 		if kind == domain.EventUnknown {
 			kind = domain.EventTask
 		}
-		e := domain.Event{EventDetails: domain.EventDetails{ReminderMinutes: cmd.ReminderMinutes, ReminderEnabled: cmd.ReminderEnabled}, Kind: kind, Title: cmd.Title, Date: cmd.Date, StartTime: cmd.Time, Duration: cmd.Duration, Status: domain.StatusOpen, Priority: domain.PriorityNormal}
+		e := domain.Event{EventDetails: domain.EventDetails{ReminderMinutes: cmd.ReminderMinutes, ReminderEnabled: cmd.ReminderEnabled, StartSecond: cmd.StartSecond, Recurrence: cmd.Recurrence, OccurrenceAt: cmd.ExactAt}, Kind: kind, Title: cmd.Title, Date: cmd.Date, StartTime: cmd.Time, Duration: cmd.Duration, Status: domain.StatusOpen, Priority: domain.PriorityNormal}
 		conflicts, err := s.Calendar.Conflicts(ctx, tx, e, 0)
 		if err != nil {
 			return domain.Response{}, err
 		}
 		if len(conflicts) > 0 && !force {
 			return ask(state, cmd, "Это время пересекается с другой встречей: "+joinEvents(conflicts, 3, "; ")+". Укажите другое время или ответьте «да», чтобы сохранить пересечение.", now, "conflict", conflicts), nil
+		}
+		if e.Recurrence != nil {
+			next, err := e.Recurrence.Next(now)
+			if err != nil {
+				return domain.Response{}, err
+			}
+			e.SetOccurrence(next)
 		}
 		event, err := tx.Create(ctx, e, now)
 		if err != nil {
@@ -402,6 +406,32 @@ func (s *Service) execute(ctx context.Context, tx repository.Tx, state *domain.S
 	event := candidates[0]
 	id := event.ID
 	cmd.TargetID = &id
+	if cmd.Action == domain.ActionRestore {
+		if event.Status == domain.StatusOpen {
+			conflicts, err := s.Calendar.Conflicts(ctx, tx, event, id)
+			if err != nil {
+				return domain.Response{}, err
+			}
+			if len(conflicts) > 0 && !force {
+				return ask(state, cmd, "Восстановление пересекается с встречей: "+joinEvents(conflicts, 3, "; ")+". Ответьте «да», чтобы восстановить пересечение.", now, "conflict", conflicts), nil
+			}
+		}
+		e, err := tx.Restore(ctx, id, now)
+		if err != nil {
+			return domain.Response{}, err
+		}
+		if e.Recurrence != nil && e.Status == domain.StatusOpen {
+			if err := calendar.Resume(e, now); err != nil {
+				return domain.Response{}, err
+			}
+			e, err = tx.Update(ctx, *e, now)
+			if err != nil {
+				return domain.Response{}, err
+			}
+		}
+		state.LastIDs = []int64{id}
+		return answer("Восстановлено: "+describe(*e)+".", domain.ActionRestore, *e), nil
+	}
 	if cmd.Action == domain.ActionDelete {
 		return askDeletion(state, cmd, candidates, now), nil
 	}
@@ -417,14 +447,26 @@ func (s *Service) execute(ctx context.Context, tx repository.Tx, state *domain.S
 	if cmd.Date == nil && cmd.Time == nil {
 		return ask(state, cmd, "На какую дату или время перенести событие?", now, "fields", nil), nil
 	}
+	if cmd.Date != nil || cmd.Time != nil {
+		event.OccurrenceAt = cmd.ExactAt
+	}
 	if cmd.Date != nil {
 		event.Date = cmd.Date
+		if err := calendar.MoveSeriesDate(&event); err != nil {
+			return answer(err.Error(), domain.ActionClarify), nil
+		}
 	}
 	if cmd.Time != nil {
 		event.StartTime = cmd.Time
+		event.StartSecond = cmd.StartSecond
 	}
 	if event.StartTime != nil && event.Date == nil {
 		return ask(state, cmd, "Уточните дату переноса.", now, "fields", nil), nil
+	}
+	if event.Recurrence != nil {
+		if err := calendar.Rebase(&event, now, s.Calendar.Location); err != nil {
+			return answer(err.Error(), domain.ActionClarify), nil
+		}
 	}
 	conflicts, err := s.Calendar.Conflicts(ctx, tx, event, id)
 	if err != nil {
@@ -443,12 +485,7 @@ func (s *Service) execute(ctx context.Context, tx repository.Tx, state *domain.S
 	return result, nil
 }
 func hasNewDirective(text string) bool {
-	for _, word := range strings.FieldsFunc(text, func(r rune) bool { return r == ' ' || r == ',' || r == '.' || r == '!' }) {
-		if in(word, "напомни", "напомнить", "добавь", "добавить", "создай", "создать", "поставь", "поставить", "запиши", "записать", "запланируй", "назначь", "назначить", "установи", "забудь") {
-			return true
-		}
-	}
-	return false
+	return nlp.HasDirective(text)
 }
 func (s *Service) History(ctx context.Context, id string) ([]domain.Exchange, domain.State, error) {
 	var history []domain.Exchange

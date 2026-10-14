@@ -49,7 +49,11 @@ func hasSelectionScope(cmd domain.Command) bool {
 func (s *Service) mutationCandidates(ctx context.Context, tx repository.Tx, state *domain.State, cmd domain.Command) ([]domain.Event, bool, error) {
 	pool := []domain.Event{}
 	if cmd.TargetID != nil {
-		e, err := tx.Get(ctx, *cmd.TargetID)
+		get := tx.Get
+		if cmd.Action == domain.ActionRestore {
+			get = tx.GetDeleted
+		}
+		e, err := get(ctx, *cmd.TargetID)
 		if err != nil {
 			return nil, false, err
 		}
@@ -58,7 +62,7 @@ func (s *Service) mutationCandidates(ctx context.Context, tx repository.Tx, stat
 		}
 	} else if cmd.Query != "" || hasSelectionScope(cmd) {
 		var err error
-		f := domain.Filter{Kind: cmd.Kind}
+		f := domain.Filter{Kind: cmd.Kind, Deleted: cmd.Action == domain.ActionRestore}
 		if cmd.Selector != nil {
 			f.Start, f.End = cmd.Selector.Start, cmd.Selector.End
 		}
@@ -68,7 +72,11 @@ func (s *Service) mutationCandidates(ctx context.Context, tx repository.Tx, stat
 		}
 	} else {
 		for _, id := range state.LastIDs {
-			e, err := tx.Get(ctx, id)
+			get := tx.Get
+			if cmd.Action == domain.ActionRestore {
+				get = tx.GetDeleted
+			}
+			e, err := get(ctx, id)
 			if err != nil {
 				return nil, false, err
 			}
@@ -230,7 +238,11 @@ func (s *Service) choosePending(ctx context.Context, tx repository.Tx, state *do
 		result.Candidates = p.Candidates[:min(len(p.Candidates), 10)]
 		return nil, &result, nil
 	}
-	e, err := tx.Get(ctx, selected[0].ID)
+	get := tx.Get
+	if p.Command.Action == domain.ActionRestore {
+		get = tx.GetDeleted
+	}
+	e, err := get(ctx, selected[0].ID)
 	if err != nil {
 		return nil, nil, err
 	}

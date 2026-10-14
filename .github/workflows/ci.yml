@@ -53,9 +53,10 @@ jobs:
           --health-interval 5s --health-timeout 3s --health-retries 12
     env:
       TEST_DATABASE_URL: postgres://rhythm:ci-only-password@127.0.0.1:5432/rhythm_test?sslmode=disable
+      GOTOOLCHAIN: local
     strategy:
       matrix:
-        go: ['1.25.x', '1.27.1']
+        go: ['1.26.x', '1.27.2']
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -116,7 +117,7 @@ jobs:
           cache-dependency-path: web/pnpm-lock.yaml
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.27.1'
+          go-version: '1.27.2'
           cache: true
       - run: pnpm --dir web install --frozen-lockfile
       - run: pnpm --dir web test

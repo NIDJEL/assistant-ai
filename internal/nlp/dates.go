@@ -10,7 +10,7 @@ import (
 	"github.com/NIDJEL/assistant-ai/internal/domain"
 )
 
-var numbers = map[string]float64{"один": 1, "одну": 1, "одна": 1, "два": 2, "две": 2, "три": 3, "четыре": 4, "пять": 5, "шесть": 6, "семь": 7, "восемь": 8, "девять": 9, "десять": 10, "одиннадцать": 11, "двенадцать": 12, "тринадцать": 13, "четырнадцать": 14, "пятнадцать": 15, "шестнадцать": 16, "семнадцать": 17, "восемнадцать": 18, "девятнадцать": 19, "двадцать": 20, "полчаса": .5}
+var numbers = map[string]float64{"один": 1, "одну": 1, "одна": 1, "два": 2, "две": 2, "три": 3, "четыре": 4, "пять": 5, "шесть": 6, "семь": 7, "восемь": 8, "девять": 9, "десять": 10, "одиннадцать": 11, "двенадцать": 12, "тринадцать": 13, "четырнадцать": 14, "пятнадцать": 15, "шестнадцать": 16, "семнадцать": 17, "восемнадцать": 18, "девятнадцать": 19, "двадцать": 20, "полчаса": .5, "пару": 2, "пара": 2}
 
 const numberPattern = `(?:\d+|двадцать\s+(?:один|два|три)|одиннадцать|двенадцать|тринадцать|четырнадцать|пятнадцать|шестнадцать|семнадцать|восемнадцать|девятнадцать|двадцать|полчаса|один|одну|одна|два|две|три|четыре|пять|шесть|семь|восемь|девять|десять)`
 
@@ -19,12 +19,17 @@ var monthNames = []string{"января", "февраля", "марта", "ап�
 
 type span struct{ start, end int }
 type Temporal struct {
-	Date       *domain.Date
-	Time       *domain.TimeOfDay
-	Start, End *domain.Date
-	Duration   time.Duration
-	Error      string
-	spans      []span
+	Recurrence  *domain.Recurrence
+	Date        *domain.Date
+	Time        *domain.TimeOfDay
+	Start, End  *domain.Date
+	Duration    time.Duration
+	Error       string
+	At          *time.Time
+	StartSecond int
+	Relative    bool
+	spans       []span
+	weekday     bool
 }
 
 func number(value string) float64 {
@@ -61,30 +66,18 @@ func Extract(text string, now time.Time) Temporal {
 	day := domain.Day(now)
 	dates := []*domain.Date{}
 	remember := func(m *match, date *domain.Date) {
+		if result.covered(m.Start) {
+			return
+		}
 		dates = append(dates, date)
 		result.spans = append(result.spans, span{m.Start, m.End})
 	}
-	if m := first(`через\s+(`+numberPattern+`)\s*(час\w*|минут\w*|дн\w*|день|недел\w*)`, text); m != nil {
-		count, unit := number(m.Parts[1]), m.Parts[2]
-		if count <= 0 || count > 366 {
-			result.Error = "Укажите интервал от 1 до 366 дней (или часов/минут)."
-		} else {
-			delta := time.Duration(count * float64(24*time.Hour))
-			if strings.HasPrefix(unit, "час") {
-				delta = time.Duration(count * float64(time.Hour))
-			} else if strings.HasPrefix(unit, "мин") {
-				delta = time.Duration(count * float64(time.Minute))
-			} else if strings.HasPrefix(unit, "нед") {
-				delta *= 7
-			}
-			target := now.Add(delta)
-			remember(m, domain.Day(target))
-			if strings.HasPrefix(unit, "час") || strings.HasPrefix(unit, "мин") {
-				result.Time = &domain.TimeOfDay{Hour: target.Hour(), Minute: target.Minute()}
-			}
-		}
-	}
+	extractRecurrence(text, now, &result)
+	dates = append(dates, extractRelative(text, now, &result)...)
 	for _, m := range matches(`\b(\d{4}-\d{2}-\d{2}|\d{1,2}\.\d{1,2}(?:\.\d{4})?)\b`, text) {
+		if result.covered(m.Start) {
+			continue
+		}
 		raw := m.Parts[1]
 		var date *domain.Date
 		var err error
@@ -111,6 +104,9 @@ func Extract(text string, now time.Time) Temporal {
 		}
 	}
 	for _, m := range matches(`\b(\d{1,2})\s+(`+strings.Join(monthNames, "|")+`)(?:\s+(\d{4})(?:\s+года)?)?\b`, text) {
+		if result.covered(m.Start) {
+			continue
+		}
 		d, _ := strconv.Atoi(m.Parts[1])
 		month := 0
 		for i, n := range monthNames {
@@ -139,15 +135,16 @@ func Extract(text string, now time.Time) Temporal {
 	}
 	weekday := (int(now.Weekday()) + 6) % 7
 	for target, pattern := range weekdays {
-		if m := first(`\b(?:(?:в|во|до)\s+)?(?:(следующ\w*|эт\w*)\s+)?(`+pattern+`)\b`, text); m != nil {
+		if m := first(`\b(?:(?:в|во|на|до)\s+)?(?:(следующ\w*|эт\w*)\s+)?(`+pattern+`)\b`, text); m != nil {
 			offset := (target - weekday + 7) % 7
 			if strings.HasPrefix(m.Parts[1], "следующ") {
 				offset = 7 - weekday + target
 			}
 			remember(m, day.AddDays(offset))
+			result.weekday = m.Parts[1] == ""
 		}
 	}
-	if m := first(`\b(?:(?:на|за|до конца)\s+)?(?:(следующ\w*|эт\w*|текущ\w*|прошл\w*)\s+)?недел[юие]\b`, text); m != nil {
+	if m := first(`\b(?:(?:на|за|до конца)\s+)?(?:(следующ\w*|эт\w*|текущ\w*|прошл\w*)\s+)?недел[юие]\b`, text); m != nil && !result.covered(m.Start) {
 		monday := day.AddDays(-weekday)
 		shift := 0
 		if strings.HasPrefix(m.Parts[1], "следующ") {
@@ -161,7 +158,7 @@ func Extract(text string, now time.Time) Temporal {
 			dates = append(dates, monday.AddDays(6))
 		}
 	}
-	if m := first(`\b(?:(?:на|за)\s+)?выходны[ех]\b`, text); m != nil {
+	if m := first(`\b(?:(?:на|за)\s+)?выходны[ех]\b`, text); m != nil && !result.covered(m.Start) {
 		offset := (5 - weekday + 7) % 7
 		if weekday == 6 {
 			offset = -1
@@ -178,6 +175,17 @@ func Extract(text string, now time.Time) Temporal {
 			result.spans = append(result.spans, span{m.Start, m.End})
 		}
 	}
+	for _, m := range matches(`\b(`+relativeAmount+`)\s+числа\s+следующего\s+месяца\b`, text) {
+		d := int(reminderNumber(m.Parts[1]))
+		base := domain.ShiftCalendar(now, 1, 0)
+		date, err := domain.ParseDate(fmt.Sprintf("%04d-%02d-%02d", base.Year(), base.Month(), d))
+		if err != nil {
+			result.Error = "Такой даты нет в следующем месяце."
+			result.spans = append(result.spans, span{m.Start, m.End})
+		} else {
+			remember(&m, date)
+		}
+	}
 	unique := map[string]bool{}
 	for _, date := range dates {
 		unique[date.String()] = true
@@ -191,7 +199,7 @@ func Extract(text string, now time.Time) Temporal {
 			result.Start, result.End = result.Date, result.Date.AddDays(1)
 		}
 	}
-	if m := first(`\b(?:на|длительностью)\s+(?:(`+numberPattern+`)\s*)?(час\w*|минут\w*)\b`, text); m != nil {
+	if m := first(`\b(?:на|длительностью)\s+(?:(`+numberPattern+`)\s*)?(час\w*|минут\w*)\b`, text); m != nil && !result.covered(m.Start) {
 		raw := m.Parts[1]
 		if raw == "" {
 			raw = "один"
@@ -207,17 +215,18 @@ func Extract(text string, now time.Time) Temporal {
 			result.Duration = time.Hour
 		}
 	}
-	clock := first(`\b(?:(?:в|к)\s+)?(\d{1,2}):(\d{2})(?:\s*(утра|вечера|дня|ночи))?\b`, text)
+	clockText := result.mask(text)
+	clock := first(`\b(?:(?:примерно\s+)?(?:в|к|около)\s+)?(\d{1,2}):(\d{2})(?:\s*(утра|вечера|дня|ночи))?\b`, clockText)
 	hour, minute := 0, 0
 	meridiem := ""
 	if clock != nil {
 		hour, _ = strconv.Atoi(clock.Parts[1])
 		minute, _ = strconv.Atoi(clock.Parts[2])
 		meridiem = clock.Parts[3]
-	} else if spoken, h, m, period := spokenClock(text); spoken != nil && !result.covered(spoken.Start) && !result.covered(spoken.End-1) {
+	} else if spoken, h, m, period := spokenClock(clockText); spoken != nil && !result.covered(spoken.Start) && !result.covered(spoken.End-1) {
 		clock, hour, minute, meridiem = spoken, h, m, period
 	} else {
-		clock = first(`\b(?:в|к)\s+(`+numberPattern+`)(?:\s+(утра|вечера|дня|ночи))?\b`, text)
+		clock = first(`\b(?:примерно\s+)?(?:в|к|около)\s+(`+numberPattern+`)(?:\s+(утра|вечера|дня|ночи))?\b`, clockText)
 		if clock != nil && (result.covered(clock.Start) || result.covered(clock.End-1)) {
 			clock = nil
 		}
@@ -229,19 +238,51 @@ func Extract(text string, now time.Time) Temporal {
 	if clock != nil {
 		if (meridiem == "вечера" || meridiem == "дня") && hour < 12 {
 			hour += 12
-		} else if meridiem == "ночи" && hour == 12 {
+		} else if (meridiem == "ночи" || meridiem == "утра") && hour == 12 {
 			hour = 0
+		}
+		if part := first(`\b(?:утром|днем|вечером|ночью)\b`, clockText); part != nil {
+			if meridiem == "" && (part.Parts[0] == "вечером" || part.Parts[0] == "днем") && hour < 12 {
+				hour += 12
+			}
+			result.spans = append(result.spans, span{part.Start, part.End})
 		}
 		result.spans = append(result.spans, span{clock.Start, clock.End})
 		if hour > 23 || minute > 59 {
 			result.Error = "Время должно быть от 00:00 до 23:59. Уточните время."
 		} else {
 			result.Time = &domain.TimeOfDay{Hour: hour, Minute: minute}
+			result.StartSecond = 0
+		}
+	}
+	if clock == nil {
+		if part := first(`\b(?:утром|днем|вечером|ночью)\b`, clockText); part != nil {
+			hours := map[string]int{"утром": 9, "днем": 14, "вечером": 18, "ночью": 23}
+			result.Time = &domain.TimeOfDay{Hour: hours[part.Parts[0]]}
+			result.StartSecond = 0
+			result.spans = append(result.spans, span{part.Start, part.End})
 		}
 	}
 	if clock == nil && full(numberPattern+`(?:\s*(утра|вечера|дня|ночи))?[.!]?`, strings.TrimSpace(text)) {
 		bare := Extract("в "+strings.TrimSpace(text), now)
 		result.Time, result.Error = bare.Time, bare.Error
 	}
+	if result.Date != nil && result.Time != nil && !(result.Relative && clock == nil && result.At != nil && result.Time.Hour == result.At.Hour() && result.Time.Minute == result.At.Minute() && result.StartSecond == result.At.Second()) {
+		at := result.Date.At(*result.Time, now.Location()).Add(time.Duration(result.StartSecond) * time.Second)
+		if result.Relative {
+			at = domain.LocalInstant(result.Date.Year(), result.Date.Month(), result.Date.Day(), result.Time.Hour, result.Time.Minute, result.StartSecond, now.Location())
+		}
+		result.At = &at
+	}
 	return result
+}
+
+// Mask consumed spans without changing offsets or matching nested dates/times.
+func (t Temporal) mask(text string) string {
+	for _, s := range t.spans {
+		if s.end <= len(text) {
+			text = text[:s.start] + strings.Repeat(" ", s.end-s.start) + text[s.end:]
+		}
+	}
+	return text
 }

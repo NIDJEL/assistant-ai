@@ -46,10 +46,24 @@ func (e Event) Interval(loc *time.Location) (time.Time, time.Time, bool) {
 	if e.Date == nil || e.StartTime == nil {
 		return time.Time{}, time.Time{}, false
 	}
-	start := e.Date.At(*e.StartTime, loc)
+	start := e.Date.At(*e.StartTime, loc).Add(time.Duration(e.StartSecond) * time.Second)
+	if e.OccurrenceAt != nil {
+		start = *e.OccurrenceAt
+	}
 	return start, start.Add(e.Duration), true
 }
 func (e Event) Validate() error {
+	if e.Recurrence != nil {
+		if err := e.Recurrence.Validate(true); err != nil {
+			return err
+		}
+		if e.Kind == EventMeeting {
+			return errors.New("Повторение поддерживается для задач и напоминаний")
+		}
+		if e.Date == nil || e.StartTime == nil {
+			return errors.New("Для повторения нужны дата и время")
+		}
+	}
 	if err := e.EventDetails.Validate(); err != nil {
 		return err
 	}
@@ -113,6 +127,8 @@ func (e *Event) UnmarshalJSON(b []byte) error {
 }
 
 type Command struct {
+	ExactAt                *time.Time
+	Recurrence             *Recurrence
 	Action                 Action
 	Kind                   EventType
 	Title, Query           string
@@ -125,6 +141,8 @@ type Command struct {
 	Confidence             float64
 	ReminderEnabled        *bool
 	ReminderMinutes        *int
+	StartSecond            int
+	NotificationContext    bool
 	Selector               *EventSelector
 }
 
@@ -139,21 +157,25 @@ type EventSelector struct {
 }
 
 type commandJSON struct {
-	Action          Action         `json:"action"`
-	Kind            EventType      `json:"kind"`
-	Title           string         `json:"title"`
-	Query           string         `json:"query"`
-	Date            *Date          `json:"date"`
-	Time            *TimeOfDay     `json:"time"`
-	PeriodStart     *Date          `json:"period_start"`
-	PeriodEnd       *Date          `json:"period_end"`
-	DurationMinutes int            `json:"duration_minutes"`
-	TargetID        *int64         `json:"target_id"`
-	Error           *string        `json:"error"`
-	Provider        string         `json:"provider"`
-	ReminderEnabled *bool          `json:"reminder_enabled,omitempty"`
-	ReminderMinutes *int           `json:"reminder_minutes,omitempty"`
-	Selector        *EventSelector `json:"selector,omitempty"`
+	ExactAt             *time.Time     `json:"exact_at,omitempty"`
+	Recurrence          *Recurrence    `json:"recurrence,omitempty"`
+	Action              Action         `json:"action"`
+	Kind                EventType      `json:"kind"`
+	Title               string         `json:"title"`
+	Query               string         `json:"query"`
+	Date                *Date          `json:"date"`
+	Time                *TimeOfDay     `json:"time"`
+	PeriodStart         *Date          `json:"period_start"`
+	PeriodEnd           *Date          `json:"period_end"`
+	DurationMinutes     int            `json:"duration_minutes"`
+	TargetID            *int64         `json:"target_id"`
+	Error               *string        `json:"error"`
+	Provider            string         `json:"provider"`
+	ReminderEnabled     *bool          `json:"reminder_enabled,omitempty"`
+	ReminderMinutes     *int           `json:"reminder_minutes,omitempty"`
+	StartSecond         int            `json:"start_second,omitempty"`
+	NotificationContext bool           `json:"notification_context,omitempty"`
+	Selector            *EventSelector `json:"selector,omitempty"`
 }
 
 func (c Command) MarshalJSON() ([]byte, error) {
@@ -162,7 +184,7 @@ func (c Command) MarshalJSON() ([]byte, error) {
 		s := c.Error
 		errText = &s
 	}
-	return json.Marshal(commandJSON{Action: c.Action, Kind: c.Kind, Title: c.Title, Query: c.Query, Date: c.Date, Time: c.Time, PeriodStart: c.PeriodStart, PeriodEnd: c.PeriodEnd, DurationMinutes: int(c.Duration / time.Minute), TargetID: c.TargetID, Error: errText, Provider: c.Provider, ReminderEnabled: c.ReminderEnabled, ReminderMinutes: c.ReminderMinutes, Selector: c.Selector})
+	return json.Marshal(commandJSON{ExactAt: c.ExactAt, Recurrence: c.Recurrence, Action: c.Action, Kind: c.Kind, Title: c.Title, Query: c.Query, Date: c.Date, Time: c.Time, PeriodStart: c.PeriodStart, PeriodEnd: c.PeriodEnd, DurationMinutes: int(c.Duration / time.Minute), TargetID: c.TargetID, Error: errText, Provider: c.Provider, ReminderEnabled: c.ReminderEnabled, ReminderMinutes: c.ReminderMinutes, StartSecond: c.StartSecond, NotificationContext: c.NotificationContext, Selector: c.Selector})
 }
 func (c *Command) UnmarshalJSON(b []byte) error {
 	v := commandJSON{Action: ActionHelp, DurationMinutes: 60, Provider: "rules"}
@@ -177,8 +199,10 @@ func (c *Command) UnmarshalJSON(b []byte) error {
 	if v.DurationMinutes < 5 || v.DurationMinutes > 1440 {
 		return errors.New("invalid duration")
 	}
-	*c = Command{Action: v.Action, Kind: v.Kind, Title: v.Title, Query: v.Query, Date: v.Date, Time: v.Time, PeriodStart: v.PeriodStart, PeriodEnd: v.PeriodEnd, Duration: time.Duration(v.DurationMinutes) * time.Minute, TargetID: v.TargetID, Provider: v.Provider}
+	*c = Command{ExactAt: v.ExactAt, Recurrence: v.Recurrence, Action: v.Action, Kind: v.Kind, Title: v.Title, Query: v.Query, Date: v.Date, Time: v.Time, PeriodStart: v.PeriodStart, PeriodEnd: v.PeriodEnd, Duration: time.Duration(v.DurationMinutes) * time.Minute, TargetID: v.TargetID, Provider: v.Provider}
 	c.ReminderEnabled, c.ReminderMinutes = v.ReminderEnabled, v.ReminderMinutes
+	c.StartSecond = v.StartSecond
+	c.NotificationContext = v.NotificationContext
 	c.Selector = v.Selector
 	if v.Error != nil {
 		c.Error = *v.Error
@@ -186,7 +210,7 @@ func (c *Command) UnmarshalJSON(b []byte) error {
 	return c.Validate()
 }
 func (c Command) Validate() error {
-	if err := (EventDetails{ReminderEnabled: c.ReminderEnabled, ReminderMinutes: c.ReminderMinutes}).Validate(); err != nil {
+	if err := (EventDetails{ReminderEnabled: c.ReminderEnabled, ReminderMinutes: c.ReminderMinutes, StartSecond: c.StartSecond, Recurrence: c.Recurrence}).Validate(); err != nil {
 		return err
 	}
 	if !c.Action.Interpretable() {

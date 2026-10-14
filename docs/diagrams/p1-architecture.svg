@@ -1,8 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 740" role="img" aria-label="Ритм / P1: React → Go → SQLite">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 740" role="img" aria-label="Ассистент Гена: React → Go → PostgreSQL">
 <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10Z" fill="#6286cd"/></marker></defs>
 <rect width="1200" height="740" rx="22" fill="#f2f7ff"/>
 <g font-family="Segoe UI,Arial,sans-serif" fill="#182653">
-<text x="32" y="46" font-size="27" font-weight="700">Ритм / P1: React → Go → SQLite</text>
+<text x="32" y="46" font-size="27" font-weight="700">Ассистент Гена: React → Go → PostgreSQL</text>
 <text x="32" y="78" font-size="15" fill="#6076a5">Реальные события из API. Python reference остаётся в репозитории.</text>
 <rect x="30" y="140" width="200" height="120" rx="16" fill="#ffffff" stroke="#dce8fc"/>
 <text x="130.0" y="171" text-anchor="middle" font-size="17" font-weight="650" fill="#172755">React в браузере</text>
@@ -21,8 +21,8 @@
 <text x="835.0" y="199" text-anchor="middle" font-size="13" fill="#ffffff">Диалог и idempotency</text>
 <text x="835.0" y="222" text-anchor="middle" font-size="13" fill="#ffffff">Конфликты и поиск</text>
 <rect x="970" y="140" width="200" height="120" rx="16" fill="#ffffff" stroke="#dce8fc"/>
-<text x="1070.0" y="171" text-anchor="middle" font-size="17" font-weight="650" fill="#172755">SQLite</text>
-<text x="1070.0" y="199" text-anchor="middle" font-size="13" fill="#6076a5">WAL / FK / timeout</text>
+<text x="1070.0" y="171" text-anchor="middle" font-size="17" font-weight="650" fill="#172755">PostgreSQL</text>
+<text x="1070.0" y="199" text-anchor="middle" font-size="13" fill="#6076a5">User scope / advisory lock</text>
 <text x="1070.0" y="222" text-anchor="middle" font-size="13" fill="#6076a5">Event + state + history</text>
 <polyline points="230,200 265,200" fill="none" stroke="#6286cd" stroke-width="2" marker-end="url(#arrow)"/>
 <polyline points="465,200 500,200" fill="none" stroke="#6286cd" stroke-width="2" marker-end="url(#arrow)"/>
@@ -31,7 +31,7 @@
 <rect x="630" y="350" width="300" height="112" rx="16" fill="#ffffff" stroke="#dce8fc"/>
 <text x="780.0" y="381" text-anchor="middle" font-size="17" font-weight="650" fill="#172755">Hybrid interpreter</text>
 <text x="780.0" y="409" text-anchor="middle" font-size="13" fill="#6076a5">Parser → confidence → validation</text>
-<text x="780.0" y="432" text-anchor="middle" font-size="13" fill="#6076a5">До BEGIN IMMEDIATE</text>
+<text x="780.0" y="432" text-anchor="middle" font-size="13" fill="#6076a5">До domain write transaction</text>
 <rect x="260" y="350" width="290" height="112" rx="16" fill="#ffffff" stroke="#dce8fc"/>
 <text x="405.0" y="381" text-anchor="middle" font-size="17" font-weight="650" fill="#172755">Ollama · опционально</text>
 <text x="405.0" y="409" text-anchor="middle" font-size="13" fill="#6076a5">HTTP → structured Command</text>
@@ -54,5 +54,5 @@
 <text x="1000.0" y="646" text-anchor="middle" font-size="13" fill="#ffffff">Без Node / Python / FastAPI</text>
 <polyline points="330,618 395,618 395,530 1000,530 1000,564" fill="none" stroke="#6286cd" stroke-width="2" marker-end="url(#arrow)"/>
 <polyline points="690,618 850,618" fill="none" stroke="#6286cd" stroke-width="2" marker-end="url(#arrow)"/>
-<text x="32" y="711" font-size="14" fill="#6076a5">LLM и будущие calendar HTTP requests выполняются вне SQLite write transaction.</text>
+<text x="32" y="711" font-size="14" fill="#6076a5">LLM и calendar HTTP requests выполняются вне domain write transaction.</text>
 </g></svg>

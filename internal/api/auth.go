@@ -71,6 +71,25 @@ type rateWindow struct {
 	until time.Time
 }
 
+// Only a configured proxy may supply X-Real-IP. The proxy must overwrite this
+// header with the socket peer address, rather than forward a client-supplied value.
+func (a *API) authClientIP(r *http.Request) string {
+	host, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		return r.RemoteAddr
+	}
+	peer := net.ParseIP(host)
+	for _, network := range a.Config.TrustedProxyCIDRs {
+		if network.Contains(peer) {
+			if client := net.ParseIP(r.Header.Get("X-Real-IP")); client != nil {
+				return client.String()
+			}
+			break
+		}
+	}
+	return host
+}
+
 func (a *API) authLimiter() func(http.Handler) http.Handler {
 	var mu sync.Mutex
 	windows := map[string]rateWindow{}
@@ -80,7 +99,7 @@ func (a *API) authLimiter() func(http.Handler) http.Handler {
 				next.ServeHTTP(w, r)
 				return
 			}
-			host, _, _ := net.SplitHostPort(r.RemoteAddr)
+			host := a.authClientIP(r)
 			now := time.Now()
 			mu.Lock()
 			for key, value := range windows {
@@ -122,14 +141,14 @@ func (a *API) authRoutes(r chi.Router) {
 		r.Get("/me", a.me)
 		r.With(a.requireUser).Patch("/me", a.updateProfile)
 		r.With(a.requireUser).Post("/onboarding", a.completeOnboarding)
-		r.Get("/{provider}/start", a.oauthStart)
-		r.Get("/{provider}/callback", a.oauthCallback)
+		r.Get("/yandex/start", a.oauthStart)
+		r.Get("/yandex/callback", a.oauthCallback)
 	})
 	// Preserve an already registered Yandex callback containing a double slash.
 	if callback, err := url.Parse(a.Config.YandexRedirectURI); err == nil && callback.Path == "//api/auth/yandex/callback" {
 		r.Group(func(r chi.Router) {
 			r.Use(a.authLimiter())
-			r.Get("//api/auth/{provider}/callback", a.oauthCallback)
+			r.Get("//api/auth/yandex/callback", a.oauthCallback)
 		})
 	}
 }
@@ -233,7 +252,7 @@ func (a *API) completeOnboarding(w http.ResponseWriter, r *http.Request) {
 	write(w, 200, map[string]any{"user": u})
 }
 func (a *API) oauthStart(w http.ResponseWriter, r *http.Request) {
-	provider := chi.URLParam(r, "provider")
+	provider := "yandex"
 	link := ""
 	calendarFlow := provider == "yandex" && r.URL.Query().Get("calendar") == "1"
 	if r.URL.Query().Get("link") == "1" || calendarFlow {
@@ -273,11 +292,7 @@ func (a *API) oauthStart(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, redirect, 303)
 }
 func (a *API) oauthCallback(w http.ResponseWriter, r *http.Request) {
-	provider := chi.URLParam(r, "provider")
-	if provider != "yandex" && provider != "vk" {
-		http.Redirect(w, r, "/auth?error=oauth_invalid", 303)
-		return
-	}
+	provider := "yandex"
 	browser := ""
 	if c, err := r.Cookie("rhythm_oauth_" + provider); err == nil {
 		browser = c.Value

@@ -39,19 +39,19 @@ def save(parts, filename):
 
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
-    parts = canvas(1200, 740, "Ритм / P1: React → Go → SQLite", "Реальные события из API. Python reference остаётся в репозитории.")
+    parts = canvas(1200, 740, "Ассистент Гена: React → Go → PostgreSQL", "Реальные события из API. Python reference остаётся в репозитории.")
     nodes = [
         (30, "React в браузере", ["8 страниц + widgets", "Draft, STT и TTS"]),
         (265, "Typed API client", ["Chat / history / CRUD", "Понятные ошибки"]),
         (500, "Go HTTP API", ["DTO и validation", "SPA routes + assets"]),
         (735, "Go use cases", ["Диалог и idempotency", "Конфликты и поиск"]),
-        (970, "SQLite", ["WAL / FK / timeout", "Event + state + history"]),
+        (970, "PostgreSQL", ["User scope / advisory lock", "Event + state + history"]),
     ]
     for x, title, lines in nodes:
         box(parts, x, 140, 200, 120, title, lines, accent=title == "Go use cases")
     for i in range(4):
         arrow(parts, [(nodes[i][0] + 200, 200), (nodes[i + 1][0], 200)])
-    box(parts, 630, 350, 300, 112, "Hybrid interpreter", ["Parser → confidence → validation", "До BEGIN IMMEDIATE"])
+    box(parts, 630, 350, 300, 112, "Hybrid interpreter", ["Parser → confidence → validation", "До domain write transaction"])
     box(parts, 260, 350, 290, 112, "Ollama · опционально", ["HTTP → structured Command", "Низкая confidence / fallback"])
     arrow(parts, [(550, 402), (630, 402)], "JSON", 571, 390, True)
     arrow(parts, [(835, 350), (835, 260)])
@@ -61,10 +61,10 @@ def main():
     box(parts, 850, 564, 300, 105, "Production runtime", ["Go binary + React static assets", "Без Node / Python / FastAPI"], True)
     arrow(parts, [(330, 618), (395, 618), (395, 530), (1000, 530), (1000, 564)])
     arrow(parts, [(690, 618), (850, 618)])
-    parts.append('<text x="32" y="711" font-size="14" fill="#6076a5">LLM и будущие calendar HTTP requests выполняются вне SQLite write transaction.</text>')
+    parts.append('<text x="32" y="711" font-size="14" fill="#6076a5">LLM и calendar HTTP requests выполняются вне domain write transaction.</text>')
     save(parts, "p1-architecture.svg")
 
-    parts = canvas(1000, 1070, "Ритм / P1: диктовка остаётся черновиком", "Только явный Send или Enter вызывает POST /api/chat.")
+    parts = canvas(1000, 1070, "Гена / P1: диктовка остаётся черновиком", "Только явный Send или Enter вызывает POST /api/chat.")
     box(parts, 310, 115, 430, 93, "Нажать microphone", ["Включить recognition: ru-RU"])
     box(parts, 310, 265, 430, 93, "recognition.onresult", ["Partial/final объединяются без дублей"])
     box(parts, 310, 420, 430, 110, "Редактируемый draft", ["Можно изменить текст клавиатурой", "Можно продолжить диктовку"])

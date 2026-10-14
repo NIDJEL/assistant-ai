@@ -29,7 +29,9 @@ func OpenAPI() map[string]any {
 			"error": map[string]any{"type": "object", "required": []string{"code", "message"}, "properties": map[string]any{"code": text(), "message": text()}}, "request_id": text(), "detail": text()}},
 	}
 
+	schemas["Recurrence"] = map[string]any{"type": "object", "nullable": true, "additionalProperties": false, "required": []string{"frequency", "interval", "timezone"}, "description": "Calendar rules use local wall time; elapsed minute/hour rules use anchor. Missing monthly dates are skipped. DST gap shifts forward, fold fires once at the first instant.", "properties": map[string]any{"frequency": enum("minute", "hour", "day", "week", "month", "year"), "interval": map[string]any{"type": "integer", "minimum": 1, "maximum": 366}, "weekdays": map[string]any{"type": "array", "uniqueItems": true, "items": map[string]any{"type": "integer", "minimum": 0, "maximum": 6}}, "day_of_month": map[string]any{"type": "integer", "minimum": 1, "maximum": 31}, "month": map[string]any{"type": "integer", "minimum": 1, "maximum": 12}, "local_time": clock, "timezone": map[string]any{"type": "string", "description": "IANA timezone"}, "anchor": map[string]any{"type": "string", "format": "date-time"}}}
 	metadata := map[string]any{
+		"recurrence":       ref("Recurrence"),
 		"tags":             map[string]any{"type": "array", "maxItems": 12, "items": map[string]any{"type": "string", "minLength": 1, "maxLength": 50}},
 		"subtasks":         map[string]any{"type": "array", "maxItems": 50, "items": map[string]any{"type": "object", "required": []string{"id", "title", "done"}, "properties": map[string]any{"id": map[string]any{"type": "string", "maxLength": 80}, "title": map[string]any{"type": "string", "maxLength": 500}, "done": map[string]any{"type": "boolean"}}}},
 		"participants":     map[string]any{"type": "array", "maxItems": 50, "items": map[string]any{"type": "object", "required": []string{"name"}, "properties": map[string]any{"name": map[string]any{"type": "string", "maxLength": 100}, "email": map[string]any{"type": "string", "maxLength": 254}}}},
@@ -43,6 +45,10 @@ func OpenAPI() map[string]any {
 		}
 	}
 	schemas["Event"].(map[string]any)["properties"].(map[string]any)["deleted_at"] = map[string]any{"type": "string", "format": "date-time", "description": "Present only for deleted events"}
+	schemas["Event"].(map[string]any)["properties"].(map[string]any)["start_second"] = map[string]any{"type": "integer", "minimum": 0, "maximum": 59, "readOnly": true, "description": "Optional seconds component for relative commands; omitted means 0."}
+	for _, field := range []string{"occurrence_at", "last_notification_at"} {
+		schemas["Event"].(map[string]any)["properties"].(map[string]any)[field] = map[string]any{"type": "string", "format": "date-time", "readOnly": true}
+	}
 	content := func(schema map[string]any) map[string]any {
 		return map[string]any{"application/json": map[string]any{"schema": schema}}
 	}
@@ -113,9 +119,9 @@ func OpenAPI() map[string]any {
 	authOpenAPI(paths, schemas)
 	integrationsOpenAPI(paths, schemas)
 	paths["/health"].(map[string]any)["get"].(map[string]any)["security"] = []any{}
-	return map[string]any{"openapi": "3.0.3", "info": map[string]string{"title": "Ритм — multi-user API", "version": "0.4.0"}, "paths": paths, "security": []map[string]any{{"sessionCookie": []string{}}}, "components": map[string]any{"schemas": schemas, "securitySchemes": map[string]any{"sessionCookie": map[string]any{"type": "apiKey", "in": "cookie", "name": sessionCookie}}}}
+	return map[string]any{"openapi": "3.0.3", "info": map[string]string{"title": "Ассистент Гена — multi-user API", "version": "0.4.0"}, "paths": paths, "security": []map[string]any{{"sessionCookie": []string{}}}, "components": map[string]any{"schemas": schemas, "securitySchemes": map[string]any{"sessionCookie": map[string]any{"type": "apiKey", "in": "cookie", "name": sessionCookie}}}}
 }
 func (a *API) docs(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	_, _ = io.WriteString(w, `<!doctype html><html lang="ru"><head><meta charset="utf-8"><title>Ритм — Go API</title><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui.css"></head><body><div id="swagger-ui"></div><script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js"></script><script>SwaggerUIBundle({url:'/openapi.json',dom_id:'#swagger-ui'});</script></body></html>`)
+	_, _ = io.WriteString(w, `<!doctype html><html lang="ru"><head><meta charset="utf-8"><title>Ассистент Гена — Go API</title><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui.css"></head><body><div id="swagger-ui"></div><script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js"></script><script>SwaggerUIBundle({url:'/openapi.json',dom_id:'#swagger-ui'});</script></body></html>`)
 }

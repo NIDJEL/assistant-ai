@@ -131,10 +131,11 @@ func withoutReminderSettings(text string) string {
 	return text
 }
 
-const notificationClause = `(?i)\b(?:напомни\w*|не\s+забудь|(?:поставь|поставить|добавь|добавить|создай|создать|установи|включи)[\s,]+(?:(?:пожалуйста|мне)[\s,]+)*(?:напоминание|напоминалку|уведомление|оповещение))\b`
+const notificationClause = `(?i)\b(?:` + reminderDirective + `|(?:поставь|поставить|добавь|добавить|создай|создать|установи|включи)[\s,]+(?:(?:пожалуйста|мне)[\s,]+)*(?:напоминание|напоминалку|уведомление|оповещение))\b`
 
 func creationPlan(text string, now time.Time) domain.Command {
 	low := strings.ReplaceAll(strings.ToLower(scheduleOnly(text)), "ё", "е")
+	recurrenceTemporal := ParseDateTime(low, now)
 	var minutes *int
 	var enabled *bool
 	leadError := ""
@@ -159,13 +160,15 @@ func creationPlan(text string, now time.Time) domain.Command {
 			}
 		}
 	}
-	mt, nt := Extract(scheduleOnly(main), now), Extract(scheduleOnly(notification), now)
+	mt, nt := ParseDateTime(scheduleOnly(main), now), ParseDateTime(scheduleOnly(notification), now)
 	if strings.Trim(main, " ,.!?:;-") == "" {
 		mt.Duration = nt.Duration
 	}
 	// A clause containing no event content cannot define a separate event time.
 	if mt.Time == nil {
 		mt.Time = nt.Time
+		mt.StartSecond = nt.StartSecond
+		mt.At, mt.Relative = nt.At, nt.Relative
 		nt.Time = nil
 	}
 	if mt.Date == nil {
@@ -180,6 +183,12 @@ func creationPlan(text string, now time.Time) domain.Command {
 	errText := mt.Error
 	if errText == "" {
 		errText = nt.Error
+	}
+	if recurrenceTemporal.Recurrence != nil && recurrenceTemporal.Date != nil {
+		errText = "Укажите повторение или отдельный срок; совместный старт пока требует отдельного редактирования."
+	}
+	if recurrenceTemporal.Error != "" && (recurrenceTemporal.Recurrence != nil || has(recurrenceMarker, low)) {
+		errText = recurrenceTemporal.Error
 	}
 	if leadError != "" {
 		errText = leadError
@@ -210,8 +219,13 @@ func creationPlan(text string, now time.Time) domain.Command {
 			enabled = &b
 		}
 	}
-	mainTitle := cleanCreationTitle(main, now)
-	contentTitle := cleanCreationTitle(notification, now)
+	mainTitle := ExtractActionText(main, now)
+	contentTitle := ExtractActionText(notification, now)
+	// "У меня собеседование в 15, поставь напоминание" asks to configure
+	// an alert for an appointment. A relative command whose directive follows
+	// the action is already fully specified and must execute immediately.
+	nominalSubject := has(`(?i)^(?:встреч[ауи]|созвон\w*|совещан\w*|собеседован\w*|пара|лекци\w*|экзамен\w*|прием\w*|тренировк\w*)\b`, mainTitle)
+	notificationContext := separate && nominalSubject && contentTitle == "" && mt.Time != nil && !mt.Relative
 	title := mainTitle
 	if separate && contentTitle != "" && !purposeOnly(notification) {
 		// A concrete reminder subject is stronger than a conversational preface.
@@ -228,7 +242,11 @@ func creationPlan(text string, now time.Time) domain.Command {
 	if !usefulTitle(title) {
 		title = ""
 	}
-	return domain.Command{Title: title, Date: mt.Date, Time: mt.Time, PeriodStart: mt.Start, PeriodEnd: mt.End, Duration: mt.Duration, ReminderMinutes: minutes, ReminderEnabled: enabled, Error: errText}
+	var exact *time.Time
+	if mt.Relative {
+		exact = mt.At
+	}
+	return domain.Command{ExactAt: exact, Recurrence: recurrenceTemporal.Recurrence, Title: title, Date: mt.Date, Time: mt.Time, StartSecond: mt.StartSecond, NotificationContext: notificationContext, PeriodStart: mt.Start, PeriodEnd: mt.End, Duration: mt.Duration, ReminderMinutes: minutes, ReminderEnabled: enabled, Error: errText}
 }
 
 func purposeOnly(text string) bool {
@@ -258,7 +276,9 @@ func cleanCreationTitle(text string, now time.Time) string {
 	text = replace(`(?i)^\s*(?:о\s+том|про\s+то)\s*,?\s*что\s+`, text, "")
 	text = replace(`(?i)^\s*(?:что|чтобы|о|об|про)\b[\s,.:;-]*`, text, "")
 	text = replace(`(?i)^\s*(?:у\s+меня|мне|я)\b[\s,.:;-]*`, text, "")
-	text = replace(`(?i)\s+чтобы\s+.*$`, text, "")
+	if purposeOnly(text) {
+		text = replace(`(?i)\s+чтобы\s+(?:я\s+)?не\s+(?:опозда\w*|забы\w*|пропусти\w*).*$`, text, "")
+	}
 	text = replace(`(?i)\b(?:и|на|в|во|к|до)\s*$`, text, "")
 	text = replace(`(?i)^\s*(?:на|в|во|к)\s*[,.:;-]+\s*`, text, "")
 	text = strings.Trim(spaces(text), " ,.!?:;-")
@@ -266,6 +286,10 @@ func cleanCreationTitle(text string, now time.Time) string {
 		text = replace(`(?i)^`+pair[0]+`\b`, text, pair[1])
 	}
 	return text
+}
+
+func ExtractActionText(text string, now time.Time) string {
+	return cleanCreationTitle(text, now)
 }
 
 func scheduleOnly(text string) string {

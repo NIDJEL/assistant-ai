@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useData } from '../../app/DataContext';
 import { useEventActions } from '../../app/EventActionsContext';
 import { dateLabel, durationLabel } from '../calendar/dates';
+import { recurrenceLabel } from './recurrence';
 import { priorityLabels } from './presentation';
 import { IconButton } from '../../components/UI';
 import type { RhythmEvent } from '../../types/api';
@@ -18,7 +19,7 @@ export function EventRow({ event, compact = false }: { event: RhythmEvent; compa
     {event.kind !== 'meeting' ? <CompleteCheckbox event={event}/> : <span className="event-symbol"><Icon size={21} aria-hidden="true"/></span>}
     <button type="button" className="event-body" onClick={() => actions.edit(event)}><span className="event-title">{event.title}</span>{!compact && event.description && <span className="event-note">{event.description}</span>}</button>
     {!compact && event.priority !== 'normal' && <span className={`priority ${event.priority}`}>{priorityLabels[event.priority]}</span>}
-    <span className={`event-date ${event.date && event.date < today && event.status === 'open' ? 'overdue' : ''}`}>{dateLabel(event.date, today)}{event.time && <><br/>{event.time}</>}{event.kind === 'meeting' && !compact && <small>{durationLabel(event.duration_minutes)}</small>}</span>
+    <span className={`event-date ${event.date && event.date < today && event.status === 'open' ? 'overdue' : ''}`}>{dateLabel(event.date, today)}{event.time && <><br/>{event.time}</>}{event.recurrence && <small>{recurrenceLabel(event.recurrence)}</small>}{event.kind === 'meeting' && !compact && <small>{durationLabel(event.duration_minutes)}</small>}</span>
     {!compact && <div className="row-actions"><IconButton icon={Pencil} label={`Редактировать «${event.title}»`} onClick={() => actions.edit(event)}/><IconButton icon={Trash2} label={`Удалить «${event.title}»`} onClick={() => actions.remove(event)}/></div>}
   </article>;
 }

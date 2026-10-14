@@ -106,7 +106,7 @@ func TestPostgresYandexCalendarOAuthAndDurableSync(t *testing.T) {
 			w.WriteHeader(207)
 			body := `<d:multistatus xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav"><d:response><d:href>` + r.URL.Path + `</d:href><d:propstat><d:prop>` + prop + `</d:prop><d:status>HTTP/1.1 200 OK</d:status></d:propstat></d:response>`
 			if r.URL.Path == "/calendars/" && calendarCreated {
-				body += `<d:response><d:href>` + canonicalCalendar + `</d:href><d:propstat><d:prop><d:displayname>Ритм</d:displayname><d:resourcetype><c:calendar/></d:resourcetype></d:prop><d:status>HTTP/1.1 200 OK</d:status></d:propstat></d:response>`
+				body += `<d:response><d:href>` + canonicalCalendar + `</d:href><d:propstat><d:prop><d:displayname>Ассистент Гена</d:displayname><d:resourcetype><c:calendar/></d:resourcetype></d:prop><d:status>HTTP/1.1 200 OK</d:status></d:propstat></d:response>`
 			}
 			_, _ = io.WriteString(w, body+`</d:multistatus>`)
 		case "MKCALENDAR":
@@ -319,8 +319,8 @@ type calendarGrantFake struct{ *oauthFake }
 func (p *calendarGrantFake) CalendarAuthorizationURL(state, challenge string) string {
 	return p.AuthorizationURL(state, challenge)
 }
-func (p *calendarGrantFake) Grant(ctx context.Context, code, verifier, state, device string) (repository.OAuthGrant, error) {
-	i, err := p.Identity(ctx, code, verifier, state, device)
+func (p *calendarGrantFake) Grant(ctx context.Context, code, verifier, state string) (repository.OAuthGrant, error) {
+	i, err := p.Identity(ctx, code, verifier, state)
 	return repository.OAuthGrant{Identity: i, Login: "alice@yandex.ru", Token: repository.OAuthToken{AccessToken: "access", Scope: "calendar:all"}}, err
 }
 

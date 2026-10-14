@@ -8,9 +8,9 @@ import { disconnectYandex, syncYandex, type CalendarConnection } from '../../api
 import { errorMessage } from '../../api/client';
 import { refreshIntegrations, useYandexIntegration } from './useYandexIntegration';
 export const services = [
-  { id: 'yandex', title: 'Яндекс Календарь', description: 'Ваши задачи, встречи и напоминания из Ритма в Яндекс Календаре.' },
+  { id: 'yandex', title: 'Яндекс Календарь', description: 'Ваши задачи, встречи и напоминания из приложения в Яндекс Календаре.' },
   { id: 'google', title: 'Google Calendar', description: 'Синхронизация событий с Google Календарём.' },
-  { id: 'zoom', title: 'Zoom', description: 'Создавайте встречи в Zoom из Ритм.' },
+  { id: 'zoom', title: 'Zoom', description: 'Создавайте встречи в Zoom из Гена.' },
 ];
 export function ServiceLogo({ id }: { id: string }) {
   return <span className={`service-logo service-${id}`} aria-hidden="true">{id === 'zoom' ? <Video size={32} fill="white"/> : id === 'google' ? <span className="google-calendar-logo"><b>31</b></span> : <span className="yandex-logo">Я</span>}</span>;
@@ -42,7 +42,7 @@ function YandexDetail({ onBack }: { onBack: () => void }) {
   const callbackErrors: Record<string, string> = {
     oauth_cancelled: 'Подключение отменено. Вы можете попробовать снова.',
     oauth_invalid: 'Не удалось завершить подключение. Попробуйте снова.',
-    oauth_account_exists: 'Этот аккаунт Яндекса уже связан с другим аккаунтом Ритм.',
+    oauth_account_exists: 'Этот аккаунт Яндекса уже связан с другим аккаунтом Гена.',
     calendar_permission: 'Разрешите доступ к календарю на странице Яндекса.',
     calendar_unavailable: 'Подключение Яндекс Календаря не настроено на сервере.',
   };
@@ -56,16 +56,16 @@ function YandexDetail({ onBack }: { onBack: () => void }) {
   return <div className="integration-detail"><div className="integration-detail-toolbar"><IconButton icon={ArrowLeft} label="Назад к виджетам" onClick={onBack}/></div>
     <header><ServiceLogo id="yandex"/><div><h2>Яндекс Календарь</h2><YandexConnectionStatus connection={connection} loaded={loaded}/><p>{services[0].description}</p></div></header>
     {(error || loadError || callbackError) && <p className="integration-error" role="alert">{error || loadError || callbackError}</p>}
-    <section className="sync-card"><h3>Статус синхронизации</h3><div className="sync-state"><span className="sync-icon"><RefreshCw size={29}/></span><div><strong>{connection?.status === 'connected' ? 'Автоматическая синхронизация' : linked ? 'Подключение календаря' : 'Требуется подключение'}</strong><p>{connection?.last_error || (authorized ? 'Изменения отправляются автоматически.' : 'Разрешите Ритму добавлять ваши дела в календарь.')}</p></div></div>
+    <section className="sync-card"><h3>Статус синхронизации</h3><div className="sync-state"><span className="sync-icon"><RefreshCw size={29}/></span><div><strong>{connection?.status === 'connected' ? 'Автоматическая синхронизация' : linked ? 'Подключение календаря' : 'Требуется подключение'}</strong><p>{connection?.last_error || (authorized ? 'Изменения отправляются автоматически.' : 'Разрешите Гене добавлять ваши дела в календарь.')}</p></div></div>
       {connection?.last_sync && <p className="integration-footnote">Последняя синхронизация: {new Date(connection.last_sync).toLocaleString('ru-RU')}</p>}
       {!!connection?.pending_events && <p className="integration-footnote">Ожидают отправки: {connection.pending_events}</p>}
     </section>
     {loaded && configured && (!authorized || connection?.status === 'error') && <a className="button soft" href="/api/auth/yandex/start?calendar=1"><CalendarDays size={19}/>{linked ? 'Подключить заново' : 'Подключить Яндекс Календарь'}</a>}
     {loaded && !configured && <p className="integration-footnote">Для подключения настройте приложение Яндекс ID на сервере с доступом к календарю.</p>}
-    <section className="sync-card"><h3>Что появится в Яндексе</h3>{[{ icon: CalendarDays, title: 'Календарь «Ритм»', subtitle: 'Отдельный календарь для ваших дел' }, { icon: CheckSquare, title: 'Задачи и встречи', subtitle: 'Все дела с датой, включая уже созданные' }, { icon: Bell, title: 'Напоминания', subtitle: 'С датой, временем и уведомлением' }, { icon: RefreshCw, title: 'Изменения и удаления', subtitle: 'Переносы и завершения обновляют запись' }].map(({ icon: Icon, title, subtitle }) => <div className="sync-setting" key={title}><Icon size={22}/><span><strong>{title}</strong><small>{subtitle}</small></span></div>)}</section>
+    <section className="sync-card"><h3>Что появится в Яндексе</h3>{[{ icon: CalendarDays, title: 'Календарь «Гена»', subtitle: 'Отдельный календарь для ваших дел' }, { icon: CheckSquare, title: 'Задачи и встречи', subtitle: 'Все дела с датой, включая уже созданные' }, { icon: Bell, title: 'Напоминания', subtitle: 'С датой, временем и уведомлением' }, { icon: RefreshCw, title: 'Изменения и удаления', subtitle: 'Переносы и завершения обновляют запись' }].map(({ icon: Icon, title, subtitle }) => <div className="sync-setting" key={title}><Icon size={22}/><span><strong>{title}</strong><small>{subtitle}</small></span></div>)}</section>
     <Button variant="soft" disabled={!authorized || busy} onClick={() => void run()}><RefreshCw size={19}/>{busy ? 'Подождите…' : 'Синхронизировать сейчас'}</Button>
     <Button variant="danger" disabled={!linked || busy} onClick={() => void run(true)}><Trash2 size={19}/>Отключить интеграцию</Button>
-    <p className="integration-footnote">Дела без даты останутся в Ритме. После отключения созданные события сохранятся в Яндексе.</p>
+    <p className="integration-footnote">Дела без даты останутся в приложении. После отключения созданные события сохранятся в Яндексе.</p>
   </div>;
 }
 export function IntegrationsPage() {

@@ -134,6 +134,53 @@ func (d *DAV) properties(ctx context.Context, target, login, token, props, depth
 }
 func successful(p string) bool { return strings.Contains(p, " 200 ") }
 
+// Rename only the system collection already recorded by this integration.
+// User event titles and user-renamed calendars are never touched.
+func (d *DAV) RefreshBrand(ctx context.Context, target, login, token string) error {
+	responses, err := d.properties(ctx, target, login, token, `<d:displayname/>`, "0")
+	if err != nil {
+		return err
+	}
+	legacy := false
+	for _, r := range responses {
+		href, err := d.resolve(r.Href)
+		if err != nil {
+			return err
+		}
+		if strings.TrimRight(href, "/") != strings.TrimRight(target, "/") {
+			continue
+		}
+		for _, p := range r.Props {
+			if successful(p.Status) && p.Property.Name == "Ритм" {
+				legacy = true
+			}
+		}
+	}
+	if !legacy {
+		return nil
+	}
+	body := `<?xml version="1.0" encoding="UTF-8"?><d:propertyupdate xmlns:d="DAV:"><d:set><d:prop><d:displayname>Ассистент Гена</d:displayname></d:prop></d:set></d:propertyupdate>`
+	raw, status, err := d.request(ctx, "PROPPATCH", target, login, token, body, "")
+	if err != nil {
+		return err
+	}
+	if status != 207 {
+		return &HTTPError{Operation: "PROPPATCH", Status: status}
+	}
+	var result multiStatus
+	if xml.Unmarshal(raw, &result) != nil {
+		return errors.New("invalid calendar property response")
+	}
+	for _, r := range result.Responses {
+		for _, p := range r.Props {
+			if successful(p.Status) {
+				return nil
+			}
+		}
+	}
+	return errors.New("calendar name update rejected")
+}
+
 func (d *DAV) findCalendar(responses []davResponse, requested string) (string, error) {
 	appCalendars := []string{}
 	for _, r := range responses {
@@ -157,7 +204,8 @@ func (d *DAV) findCalendar(responses []davResponse, requested string) (string, e
 		if strings.TrimRight(href, "/") == strings.TrimRight(requested, "/") {
 			return strings.TrimRight(href, "/") + "/", nil
 		}
-		if name == "Ритм" {
+		// Legacy generated calendar discovery preserves existing remote IDs.
+		if name == "Ритм" || name == "Ассистент Гена" || name == "Гена" {
 			appCalendars = append(appCalendars, strings.TrimRight(href, "/")+"/")
 		}
 	}
@@ -165,7 +213,7 @@ func (d *DAV) findCalendar(responses []davResponse, requested string) (string, e
 		return appCalendars[0], nil
 	}
 	if len(appCalendars) > 1 {
-		return "", errors.New("multiple Rhythm calendars found")
+		return "", errors.New("multiple assistant calendars found")
 	}
 	return "", nil
 }
@@ -216,7 +264,7 @@ func (d *DAV) EnsureCalendar(ctx context.Context, login, token, userID string) (
 	if found, err := d.findCalendar(responses, target); err != nil || found != "" {
 		return found, err
 	}
-	body := `<?xml version="1.0" encoding="UTF-8"?><c:mkcalendar xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav"><d:set><d:prop><d:displayname>Ритм</d:displayname><c:supported-calendar-component-set><c:comp name="VEVENT"/></c:supported-calendar-component-set></d:prop></d:set></c:mkcalendar>`
+	body := `<?xml version="1.0" encoding="UTF-8"?><c:mkcalendar xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav"><d:set><d:prop><d:displayname>Ассистент Гена</d:displayname><c:supported-calendar-component-set><c:comp name="VEVENT"/></c:supported-calendar-component-set></d:prop></d:set></c:mkcalendar>`
 	_, status, location, err := d.requestWithLocation(ctx, "MKCALENDAR", target, login, token, body, "")
 	if err != nil {
 		return "", err

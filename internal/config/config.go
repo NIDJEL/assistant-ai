@@ -3,10 +3,12 @@ package config
 import (
 	"errors"
 	"fmt"
+	"net"
 	"net/url"
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 	_ "time/tzdata"
 
@@ -16,9 +18,9 @@ import (
 type Config struct {
 	ImportUserEmail, ImportUserName, ImportUserPassword                        string
 	AuthRateLimit                                                              int
+	TrustedProxyCIDRs                                                          []*net.IPNet
 	DatabaseURL, SessionSecret, PublicURL, Environment                         string
 	YandexClientID, YandexClientSecret, YandexRedirectURI                      string
-	VKClientID, VKClientSecret, VKRedirectURI                                  string
 	Address, Root, DatabasePath, Timezone, NLPProvider, OllamaURL, OllamaModel string
 	AutoImport                                                                 bool
 	OllamaTimeout                                                              time.Duration
@@ -54,7 +56,6 @@ func Load() (Config, error) {
 		DatabaseURL: value("DATABASE_URL", ""), SessionSecret: value("SESSION_SECRET", ""),
 		PublicURL: value("PUBLIC_URL", "http://localhost:8081"), Environment: value("APP_ENV", "development"),
 		YandexClientID: value("YANDEX_CLIENT_ID", ""), YandexClientSecret: value("YANDEX_CLIENT_SECRET", ""), YandexRedirectURI: value("YANDEX_REDIRECT_URI", ""),
-		VKClientID: value("VK_CLIENT_ID", ""), VKClientSecret: value("VK_CLIENT_SECRET", ""), VKRedirectURI: value("VK_REDIRECT_URI", ""),
 		Address: value("APP_ADDR", "127.0.0.1:8081"), Root: root,
 		DatabasePath: value("DATABASE_PATH", filepath.Join(root, "var/assistant-go.sqlite3")),
 		Timezone:     value("APP_TIMEZONE", "Europe/Moscow"), NLPProvider: value("NLP_PROVIDER", "rules"),
@@ -63,6 +64,17 @@ func Load() (Config, error) {
 	if c.AuthRateLimit, err = strconv.Atoi(value("AUTH_RATE_LIMIT", "20")); err != nil || c.AuthRateLimit < 1 || c.AuthRateLimit > 300 {
 		return c, errors.New("AUTH_RATE_LIMIT must be between 1 and 300")
 	}
+	for _, cidr := range strings.Split(value("TRUSTED_PROXY_CIDRS", ""), ",") {
+		cidr = strings.TrimSpace(cidr)
+		if cidr == "" {
+			continue
+		}
+		_, network, err := net.ParseCIDR(cidr)
+		if err != nil {
+			return c, fmt.Errorf("TRUSTED_PROXY_CIDRS: %w", err)
+		}
+		c.TrustedProxyCIDRs = append(c.TrustedProxyCIDRs, network)
+	}
 	public, err := url.Parse(c.PublicURL)
 	if err != nil || public.Host == "" || public.User != nil || public.RawQuery != "" || public.Fragment != "" || (public.Path != "" && public.Path != "/") || (public.Scheme != "http" && public.Scheme != "https") {
 		return c, errors.New("PUBLIC_URL must be an HTTP(S) origin")
@@ -70,7 +82,7 @@ func Load() (Config, error) {
 	if c.Environment == "production" && public.Scheme != "https" {
 		return c, errors.New("production requires HTTPS PUBLIC_URL")
 	}
-	for provider, redirect := range map[string]string{"yandex": c.YandexRedirectURI, "vk": c.VKRedirectURI} {
+	for provider, redirect := range map[string]string{"yandex": c.YandexRedirectURI} {
 		if redirect == "" {
 			continue
 		}

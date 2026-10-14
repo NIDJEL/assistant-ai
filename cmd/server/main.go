@@ -19,7 +19,6 @@ import (
 	"github.com/NIDJEL/assistant-ai/internal/calendar"
 	"github.com/NIDJEL/assistant-ai/internal/clock"
 	"github.com/NIDJEL/assistant-ai/internal/config"
-	"github.com/NIDJEL/assistant-ai/internal/integrations/vk"
 	"github.com/NIDJEL/assistant-ai/internal/integrations/yandex"
 	"github.com/NIDJEL/assistant-ai/internal/integrations/yandexcalendar"
 	"github.com/NIDJEL/assistant-ai/internal/llm"
@@ -67,9 +66,6 @@ func run(log *slog.Logger) error {
 	providers := map[string]auth.Provider{}
 	if cfg.YandexClientID != "" && cfg.YandexClientSecret != "" && cfg.YandexRedirectURI != "" {
 		providers["yandex"] = yandex.New(cfg.YandexClientID, cfg.YandexClientSecret, cfg.YandexRedirectURI)
-	}
-	if cfg.VKClientID != "" && cfg.VKRedirectURI != "" {
-		providers["vk"] = vk.New(cfg.VKClientID, cfg.VKClientSecret, cfg.VKRedirectURI)
 	}
 	authService, err := auth.New(store, cfg.SessionSecret, providers)
 	if err != nil {

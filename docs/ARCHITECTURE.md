@@ -1,8 +1,14 @@
-# Блок-схемы и архитектура Ритм
+# Блок-схемы и архитектура Гена
 
 Схемы доступны в браузере по `/architecture` и как SVG без внешних зависимостей. Их можно увеличить, распечатать или включить в презентацию. Mermaid ниже отображается непосредственно на GitHub. Генератор SVG: `python scripts/build_diagrams.py`.
 
-## 1. Архитектура
+## Актуальный runtime
+
+React/TypeScript → Go HTTP/typed DTO → deterministic NLU → assistant/calendar services → repository → PostgreSQL. Email/Яндекс ID используют server-side sessions и PKCE. SQLite и Python ниже — сохранённый reference/parity слой, а не production runtime. Calendar outbox синхронизируется существующим worker вне domain write transaction.
+
+Structured recurrence находится в events.details и Command/pending. Due выполняет короткую транзакцию пользователя, сохраняет следующий occurrence и replay последнего сигнала. UI polling остаётся транспортом уведомлений; отдельного reminder worker нет. Подробности: [RUSSIAN_NLU.md](RUSSIAN_NLU.md), [auth](P1_2_AUTH_POSTGRES.md). Новая migration 003 удаляет retired OAuth provider; прежние migrations не менялись.
+
+## 1. Reference-архитектура
 
 ![Архитектура](diagrams/architecture.svg)
 

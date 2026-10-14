@@ -37,7 +37,7 @@ type oauthFake struct{ subject, email string }
 func (p *oauthFake) AuthorizationURL(state, challenge string) string {
 	return "https://provider.test/authorize?state=" + state + "&code_challenge=" + challenge
 }
-func (p *oauthFake) Identity(ctx context.Context, code, verifier, state, device string) (repository.Identity, error) {
+func (p *oauthFake) Identity(ctx context.Context, code, verifier, state string) (repository.Identity, error) {
 	if code != "valid" || len(verifier) != 43 {
 		return repository.Identity{}, fmt.Errorf("bad code")
 	}

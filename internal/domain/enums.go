@@ -18,9 +18,10 @@ const (
 	ActionHelp
 	ActionClarify
 	ActionCancel
+	ActionRestore
 )
 
-var actions = [...]string{"", "create", "list", "search", "update", "complete", "delete", "help", "clarify", "cancel"}
+var actions = [...]string{"", "create", "list", "search", "update", "complete", "delete", "help", "clarify", "cancel", "restore"}
 
 func (v Action) String() string {
 	if int(v) < len(actions) {
@@ -28,7 +29,9 @@ func (v Action) String() string {
 	}
 	return ""
 }
-func (v Action) Interpretable() bool          { return v >= ActionCreate && v <= ActionHelp }
+func (v Action) Interpretable() bool {
+	return v >= ActionCreate && v <= ActionHelp || v == ActionRestore
+}
 func (v Action) MarshalJSON() ([]byte, error) { return json.Marshal(v.String()) }
 func (v *Action) UnmarshalJSON(b []byte) error {
 	var s string

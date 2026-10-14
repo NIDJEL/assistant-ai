@@ -3,6 +3,7 @@ package yandexcalendar
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -13,6 +14,42 @@ import (
 	"github.com/NIDJEL/assistant-ai/internal/domain"
 	"github.com/NIDJEL/assistant-ai/internal/repository"
 )
+
+func TestRenameOnlyKnownSystemCalendar(t *testing.T) {
+	for _, name := range []string{"Ритм", "Мой Ритм", "Ассистент Гена"} {
+		t.Run(name, func(t *testing.T) {
+			patches := 0
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(207)
+				if r.Method == "PROPFIND" {
+					fmt.Fprintf(w, `<d:multistatus xmlns:d="DAV:"><d:response><d:href>/owned/</d:href><d:propstat><d:status>HTTP/1.1 200 OK</d:status><d:prop><d:displayname>%s</d:displayname></d:prop></d:propstat></d:response></d:multistatus>`, name)
+					return
+				}
+				if r.Method != "PROPPATCH" || r.URL.Path != "/owned/" {
+					t.Error("wrong target", r.URL.Path)
+				}
+				patches++
+				raw, _ := io.ReadAll(r.Body)
+				if !strings.Contains(string(raw), "Ассистент Гена") {
+					t.Error(string(raw))
+				}
+				fmt.Fprint(w, `<d:multistatus xmlns:d="DAV:"><d:response><d:href>/owned/</d:href><d:propstat><d:status>HTTP/1.1 200 OK</d:status><d:prop><d:displayname/></d:prop></d:propstat></d:response></d:multistatus>`)
+			}))
+			defer server.Close()
+			d := DAV{BaseURL: server.URL + "/", Client: server.Client()}
+			if err := d.RefreshBrand(t.Context(), server.URL+"/owned/", "login", "token"); err != nil {
+				t.Fatal(err)
+			}
+			want := 0
+			if name == "Ритм" {
+				want = 1
+			}
+			if patches != want {
+				t.Fatal(patches, want)
+			}
+		})
+	}
+}
 
 func TestEnsureCalendarUsesCanonicalAddress(t *testing.T) {
 	for _, tc := range []struct {

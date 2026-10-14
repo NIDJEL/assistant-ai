@@ -45,23 +45,19 @@ Cookies: HttpOnly, SameSite=Lax, Path=/, no Domain, Secure in production or on H
 
 ## Yandex ID
 
-Register an authorization application in [Yandex OAuth](https://oauth.yandex.ru/). Set `YANDEX_CLIENT_ID`, `YANDEX_CLIENT_SECRET`, `YANDEX_REDIRECT_URI`; grant `login:info login:email login:avatar`.
+Use the formal application name **Ассистент Гена**. Register an authorization application in [Yandex OAuth](https://oauth.yandex.ru/). Set `YANDEX_CLIENT_ID`, `YANDEX_CLIENT_SECRET`, `YANDEX_REDIRECT_URI`; grant `login:info login:email login:avatar`.
 
 Routes: `/api/auth/yandex/start`, `/api/auth/yandex/callback`. Authorization code with S256 PKCE, fixed redirect, browser-bound one-use state, server token exchange, Authorization-header profile request. The stable Yandex ID is the identity key. References: [Yandex code/PKCE](https://yandex.ru/dev/id/doc/ru/codes/code-url), [profile API](https://yandex.ru/dev/id/doc/ru/user-information).
-
-## VK ID
-
-Register a web app in the [VK ID console](https://id.vk.ru/). Set `VK_CLIENT_ID`, `VK_REDIRECT_URI`, and `VK_CLIENT_SECRET` if issued. Register the exact callback and site origin.
-
-Routes: `/api/auth/vk/start`, `/api/auth/vk/callback`. Authorization code, PKCE (`s256` as used by VK's SDK), one-use browser-bound state and callback `device_id`. The server validates the token response state and gets a stable user ID through `oauth2/user_info`; a supplied token subject must match. Provider tokens are transient and never reach React. References: [official VK SDK exchange/user-info](https://github.com/VKCOM/vkid-web-sdk/blob/master/src/auth/auth.ts), [current domain constants](https://github.com/VKCOM/vkid-web-sdk/blob/master/src/constants.ts).
 
 These are OAuth profile flows. ID tokens are not accepted as identity evidence, so this flow does not use an OIDC nonce/JWT path. A future OIDC path must implement nonce, issuer, audience and signature verification.
 
 ## Linking, onboarding and calendars
 
+Only email and Yandex identities remain supported. Migration `003_remove_vk.sql` removes retired provider identities and pending states, preserving users, sessions, events and shared OAuth infrastructure. Accounts with only the retired provider need an email/Yandex identity before production migration to retain a login method.
+
 Provider contact email never signs into an existing account. A new identity with a conflicting email is rejected, avoiding automatic takeover and duplicates. Sign into the existing account and use **Settings → Account → Connect**. `?link=1` starts explicit linking; callback requires the same current user. Identities cannot transfer between accounts.
 
-Yandex/VK login never creates a calendar connection. Onboarding separately offers Yandex Calendar or allows skipping. Connect opens the existing P2 setup, which remains **not connected**. Live CalDAV is outside P1.2; there is no VK Calendar.
+Yandex login never creates a calendar connection. Onboarding separately offers Yandex Calendar or allows skipping. The live CalDAV integration is documented in [YANDEX_CALENDAR.md](YANDEX_CALENDAR.md).
 
 ## Migrations and SQLite import
 
@@ -96,4 +92,4 @@ Local testing can use a PostgreSQL container with `POSTGRES_HOST_AUTH_METHOD=tru
 
 CI provisions PostgreSQL and runs Go/race, frontend tests/build/E2E, Python/voice parity and Compose smoke, verifying session and data across a server restart.
 
-Live Yandex/VK login requires configured applications and real-account verification. Protocol mocks do not confirm credentials, provider moderation or live consent screens. Password recovery mail is a later feature; the UI states its availability without claiming to send mail. Public legal pages describe runtime handling and must be completed by the deployment operator.
+Live Yandex login requires configured applications and real-account verification. Protocol mocks do not confirm credentials, provider moderation or live consent screens. Password recovery mail is a later feature; the UI states its availability without claiming to send mail. Public legal pages describe runtime handling and must be completed by the deployment operator.

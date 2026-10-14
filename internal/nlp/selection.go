@@ -10,7 +10,7 @@ import (
 
 func HasDirective(text string) bool {
 	text = strings.ReplaceAll(strings.ToLower(scheduleOnly(text)), "ё", "е")
-	return has(`^\s*(?:а\s+)?(?:что|какие|есть\s+ли|список|планы|расписание|когда)\b`, text) || has(`\b(?:напомни|напомнить|поставь|поставить|добавь|добавить|создай|создать|запиши|записать|запланируй|назначь|установи|удали\w*|удалить|отмени\w*|убери\w*|перенеси\w*|перенести|сдвинь|измени\w*|заверши\w*|закончи\w*|выполнил\w*|отметь|найди|найти|отыщи|поищи|покажи|показать)\b`, text)
+	return has(`^\s*(?:а\s+)?(?:что|какие|есть\s+ли|список|планы|расписание|когда)\b`, text) || has(createDirective, text) || has(`\b(?:восстанови(?:ть)?|верни|вернуть|удали\w*|удалить|отмени\w*|убери\w*|перенеси\w*|перенести|сдвинь|измени\w*|заверши\w*|закончи\w*|выполнил\w*|отметь|найди|найти|отыщи|поищи|покажи|показать)\b`, text)
 }
 
 // SelectionReply parses a name/date supplied while choosing an existing record.
@@ -67,10 +67,20 @@ func planSelection(cmd *domain.Command, text string, now time.Time) {
 		if destination == "" {
 			t := selectionTemporal(outside, now)
 			cmd.Date, cmd.Time, cmd.PeriodStart, cmd.PeriodEnd, cmd.Error = t.Date, t.Time, t.Start, t.End, t.Error
+			cmd.StartSecond = t.StartSecond
+			cmd.ExactAt = nil
+			if t.Relative {
+				cmd.ExactAt = t.At
+			}
 			source = t.Clean(outside)
 		} else {
 			t := selectionTemporal(destination, now)
 			cmd.Date, cmd.Time, cmd.PeriodStart, cmd.PeriodEnd, cmd.Error = t.Date, t.Time, t.Start, t.End, t.Error
+			cmd.StartSecond = t.StartSecond
+			cmd.ExactAt = nil
+			if t.Relative {
+				cmd.ExactAt = t.At
+			}
 			if t.Start != nil && t.Date == nil && cmd.Error == "" {
 				cmd.Error = "На какой день в указанном периоде перенести запись?"
 			}
@@ -88,13 +98,13 @@ func planSelection(cmd *domain.Command, text string, now time.Time) {
 	query = replace(`(?i)(?:#|номер\s*|№\s*)\d+`, query, " ")
 	// Remove the outer instruction once. Another verb can be the actual name:
 	// "удали дело удалить временные файлы" must retain "удалить".
-	if m := first(`(?i)^\s*(?:(?:а|пожалуйста|можешь|можете|ритм)\s+)*(?:удали\w*|удалить|отмени\w*|убери\w*|перенеси\w*|перенести|сдвинь|измени\w*|выполнил\w*|выполнен\w*|сделан\w*|заверши\w*|закончи\w*|отметь)\b`, query); m != nil {
+	if m := first(`(?i)^\s*(?:(?:а|пожалуйста|можешь|можете|гена)\s+)*(?:восстанови(?:ть)?|верни|вернуть|удали\w*|удалить|отмени\w*|убери\w*|перенеси\w*|перенести|сдвинь|измени\w*|выполнил\w*|выполнен\w*|сделан\w*|заверши\w*|закончи\w*|отметь)\b`, query); m != nil {
 		query = query[m.End:]
 	}
 	if cmd.Action == domain.ActionComplete {
 		query = replace(`(?i)\b(?:как\s+)?(?:выполнен\w*|сделан\w*)\s*$`, query, " ")
 	}
-	query = replace(`(?i)\b(?:по\s+названию|с\s+названием|под\s+названием|которая|который|которые|которую|которое|что|ту|тот|те|это|эту|этот|ее|его|их|у\s+меня|мои|мою|мой|мое|мне|пожалуйста|все|всех|весь|целиком|полностью|запис[ьи]|записей|запись|дело|дела|дел|задач\w*|напоминан\w*|уведомлен\w*|событи\w*|встреч[ауи]|встреч|как|а)\b`, query, " ")
+	query = replace(`(?i)\b(?:из\s+(?:архива|корзины)|удаленн\w*|по\s+названию|с\s+названием|под\s+названием|которая|который|которые|которую|которое|что|ту|тот|те|это|эту|этот|ее|его|их|у\s+меня|мои|мою|мой|мое|мне|пожалуйста|все|всех|весь|целиком|полностью|запис[ьи]|записей|запись|дело|дела|дел|задач\w*|напоминан\w*|уведомлен\w*|событи\w*|встреч[ауи]|встреч|как|а)\b`, query, " ")
 	query = strings.Trim(spaces(query), " ,.!?:;-«»\"")
 	for {
 		next := replace(`(?i)^(?:на|в|во|к|за|с|со|о|об|про|по|от|для)\b\s*|\s*\b(?:на|в|во|к|за|с|со|о|об|про|по|от|для)$`, query, "")

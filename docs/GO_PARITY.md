@@ -8,7 +8,7 @@
 
 ```mermaid
 flowchart TD
-    UI["Существующий интерфейс Ритм"] --> API["Go HTTP API: DTO и validation"]
+    UI["Существующий интерфейс Гена"] --> API["Go HTTP API: DTO и validation"]
     API --> Chat["Assistant: диалог и idempotency"]
     API --> Calendar["Calendar: CRUD, конфликты, due, CSV"]
     Chat --> NLP["Deterministic parser → confidence"]
@@ -49,7 +49,7 @@ sequenceDiagram
 
 ## Запуск Go
 
-Go 1.25+:
+Go 1.26+ (production toolchain: Go 1.27.2):
 
 ```powershell
 # Отдельная база для сравнения с Python
@@ -137,7 +137,7 @@ node --test tests/voice.test.js
 Для Windows без C compiler race detector запускается в Linux Docker:
 
 ```powershell
-docker run --rm --mount "type=bind,source=$($PWD.Path),target=/workspace" --workdir /workspace golang:1.27.1-bookworm go test -race ./...
+docker run --rm --mount "type=bind,source=$($PWD.Path),target=/workspace" --workdir /workspace golang:1.27.2-bookworm go test -race ./...
 ```
 
 Дополнительные тесты проверяют PRAGMA на каждом соединении, foreign keys, rollback/cancellation, backup и миграцию v1, ошибку миграции, concurrent create/idempotency/search, HTTP CRUD/error DTO, LLM schema validation/cancellation и доступность SQLite writer во время заблокированного реального HTTP-запроса к тестовой Ollama.

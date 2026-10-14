@@ -30,7 +30,7 @@ test('avatar menu opens settings and logs out, while account persists names and 
   await page.keyboard.press('Escape'); await expect(menu).toHaveCount(0); await expect(trigger).toBeFocused();
   await trigger.click(); await menu.getByRole('menuitem', { name: 'Настройки' }).click();
   await expect(page.locator('h1')).toHaveText('Настройки'); await expect(page.getByRole('heading', { name: 'Общие', exact: true })).toHaveCount(0);
-  await expect(page.locator('.account-card')).toContainText('VK ID');
+  await expect(page.locator('.account-card')).not.toContainText('VK ID');
   const other = await context.newPage();
   try {
     await ready(other, '/');

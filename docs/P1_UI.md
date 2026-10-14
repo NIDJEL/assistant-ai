@@ -1,4 +1,4 @@
-# P1: новый Ритм и ручная отправка диктовки
+# Ассистент Гена: интерфейс и ручная отправка диктовки
 
 React 19 / TypeScript 7 / Vite 8 в `web/`, production build обслуживается Go. Все 8 страниц работают с реальными данными. Макеты задают visual language, а не события, даты или счётчики.
 
@@ -11,7 +11,7 @@ docker compose up --build -d
 
 `compose.go.yaml` сохраняет прежнюю команду Go-запуска и тот же том `rhythm-go-data`. Python reference запускается через `docker compose -f compose.python.yaml up --build -d` на порту 8000, со своим прежним томом. `app/` и Python-тесты остаются на месте.
 
-Для разработки нужны Go 1.25+, Node 24 и pnpm 11.25:
+Для разработки нужны Go 1.26+ (production: 1.27.2), Node 24 и pnpm 11.25:
 
 ```bash
 pnpm --dir web install --frozen-lockfile

@@ -12,12 +12,8 @@ test('conversational диктовка creates a reminder despite оставь an
   const input = page.getByRole('textbox', { name: 'Сообщение ассистенту' });
   await expect(input).toHaveValue('мне сегодня надо в универ к 12:50 на пару поставь пожалуйста уведомление в календарь что у меня пара');
   const sent = page.waitForResponse(r => r.url().endsWith('/api/chat') && r.request().method() === 'POST');
-  await input.press('Enter'); const question = await (await sent).json() as ChatResponse;
-  expect(question.action).toBe('clarify'); expect(question.events).toHaveLength(0);
-  await expect(page.getByRole('button', { name: 'В момент события', exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'В момент события', exact: true }).click();
-  const saved = page.waitForResponse(r => r.url().endsWith('/api/chat') && r.request().method() === 'POST');
-  await input.press('Enter'); const response = await (await saved).json() as ChatResponse;
+  await input.press('Enter'); const response = await (await sent).json() as ChatResponse;
+  expect(response.pending).toBe(false);
   expect(response.action).toBe('create'); expect(response.events).toHaveLength(1);
   expect(response.events[0]).toMatchObject({ kind: 'reminder', title: 'Пара', time: '12:50' });
 });

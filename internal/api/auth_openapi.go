@@ -48,7 +48,7 @@ func authOpenAPI(paths, schemas map[string]any) {
 		}
 		paths[path] = ops
 	}
-	for _, provider := range []string{"yandex", "vk"} {
+	for _, provider := range []string{"yandex"} {
 		for _, suffix := range []string{"start", "callback"} {
 			paths["/api/auth/"+provider+"/"+suffix] = map[string]any{"get": map[string]any{"security": []any{}, "tags": []string{"Authentication"}, "description": "Authorization code with browser-bound state and PKCE. Start accepts link=1 only for an active user; callback consumes one-use state.", "responses": map[string]any{"303": map[string]any{"description": "Redirect to provider, app or inline auth error"}, "429": map[string]any{"description": "Rate limited"}}}}
 		}
