@@ -13,6 +13,7 @@ import (
 	"github.com/NIDJEL/assistant-ai/internal/domain"
 	"github.com/NIDJEL/assistant-ai/internal/repository"
 	"github.com/NIDJEL/assistant-ai/internal/storage/sqlite"
+	"github.com/NIDJEL/assistant-ai/migrations"
 )
 
 func open(t *testing.T) *sqlite.Database {
@@ -149,7 +150,7 @@ func TestMigrateV1PreservesIDsHistoryAndPending(t *testing.T) {
 	var version, backupVersion int
 	_ = db.DB.QueryRow("PRAGMA user_version").Scan(&version)
 	_ = backup.QueryRow("PRAGMA user_version").Scan(&backupVersion)
-	if version != 2 || backupVersion != 1 {
+	if version != migrations.LatestVersion || backupVersion != 1 {
 		t.Fatalf("versions new=%d backup=%d", version, backupVersion)
 	}
 	err = db.Read(context.Background(), func(tx repository.Tx) error {

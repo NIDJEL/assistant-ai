@@ -52,7 +52,16 @@ func TestHTTPCRUDAndTypedErrors(t *testing.T) {
 	}
 	request("PATCH", "/api/events/1", `{"date":"2026-10-13","time":"10:00","status":"done"}`, 200)
 	request("GET", "/api/events/1", "", 200)
-	request("POST", "/api/events", `{"kind":"meeting","title":"Встреча с Иваном","date":"2026-10-13","time":"15:00"}`, 201)
+	meeting := request("POST", "/api/events", `{"kind":"meeting","title":"Встреча с Иваном","date":"2026-10-13","time":"15:00","location":"Переговорная","meeting_url":"https://example.org/meeting"}`, 201)
+	if meeting["location"] != "Переговорная" || meeting["meeting_url"] != "https://example.org/meeting" {
+		t.Fatal("meeting details not stored", meeting)
+	}
+	request("PATCH", "/api/events/2", `{"location":"Офис","meeting_url":""}`, 200)
+	meeting = request("GET", "/api/events/2", "", 200)
+	if meeting["location"] != "Офис" || meeting["meeting_url"] != "" {
+		t.Fatal("meeting details not updated", meeting)
+	}
+	request("PATCH", "/api/events/2", `{"meeting_url":"javascript:alert(1)"}`, 422)
 	request("POST", "/api/events", `{"kind":"meeting","title":"Встреча с Ольгой","date":"2026-10-13","time":"15:30"}`, 409)
 	request("POST", "/api/events", `{"kind":"meeting","title":"Встреча с Ольгой","date":"2026-10-13","time":"15:30","force":true}`, 201)
 	request("DELETE", "/api/events/1", "", 204)

@@ -1,8 +1,8 @@
 services:
-  assistant:
+  go-assistant:
     build: .
     ports:
-      - "127.0.0.1:8000:8000"
+      - "127.0.0.1:8081:8000"
     environment:
       APP_TIMEZONE: ${APP_TIMEZONE:-Europe/Moscow}
       AUTO_IMPORT_DEMO: ${AUTO_IMPORT_DEMO:-true}
@@ -13,7 +13,7 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
-      - rhythm-data:/app/var
+      - rhythm-go-data:/app/var
     restart: unless-stopped
 volumes:
-  rhythm-data:
+  rhythm-go-data:

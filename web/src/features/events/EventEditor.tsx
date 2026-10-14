@@ -1,0 +1,39 @@
+import { useRef, useState, type FormEvent } from 'react';
+import { Dialog } from '../../components/Dialog';
+import { Alert, Button } from '../../components/UI';
+import { useData } from '../../app/DataContext';
+import { ApiError, errorMessage } from '../../api/client';
+import { dateLabel } from '../calendar/dates';
+import { kindLabels, priorityLabels } from './presentation';
+import type { EventInput, EventKind, RhythmEvent } from '../../types/api';
+export interface EditorSpec { kind: EventKind; event?: RhythmEvent; date?: string; time?: string; focusDate?: boolean; nonce: number }
+export function EventEditor({ spec, onClose }: { spec: EditorSpec; onClose: () => void }) {
+  const data = useData(); const event = spec.event;
+  const [input, setInput] = useState<EventInput>({ kind: spec.kind, title: event?.title || '', description: event?.description || '', date: event ? event.date : spec.date || data.today, time: event ? event.time : spec.time || (spec.kind === 'task' ? null : '10:00'), duration_minutes: event?.duration_minutes || 60, priority: event?.priority || 'normal', status: event?.status || 'open', location: event?.location || '', meeting_url: event?.meeting_url || '' });
+  const [error, setError] = useState(''); const [conflicts, setConflicts] = useState<RhythmEvent[]>([]); const [busy, setBusy] = useState(false); const locked = useRef(false);
+  const set = <K extends keyof EventInput>(key: K, value: EventInput[K]) => { setInput(current => ({ ...current, [key]: value, ...(key === 'date' && !value ? { time: null } : {}) })); setConflicts([]); setError(''); };
+  async function save(force = false) {
+    if (locked.current) return; locked.current = true; setBusy(true); setError('');
+    try {
+      const payload = { ...input, title: input.title.trim(), force };
+      if (event) { const { kind: _kind, ...patch } = payload; await data.update(event.id, patch); }
+      else await data.create(payload);
+      onClose();
+    } catch (e) { setError(errorMessage(e)); setConflicts(e instanceof ApiError && e.code === 'meeting_conflict' ? e.conflicts : []); }
+    finally { setBusy(false); locked.current = false; }
+  }
+  const submit = (e: FormEvent) => { e.preventDefault(); void save(); };
+  const title = spec.focusDate ? 'Перенести встречу' : event ? `Редактировать: ${kindLabels[spec.kind].toLowerCase()}` : spec.kind === 'task' ? 'Новая задача' : spec.kind === 'meeting' ? 'Новая встреча' : 'Новое напоминание';
+  return <Dialog title={title} onClose={onClose}><form onSubmit={submit} className="event-form">
+    <label>Название<input data-autofocus={!spec.focusDate || undefined} name="title" value={input.title} onChange={e => set('title', e.target.value)} required maxLength={500} placeholder="Что запланируем?" disabled={busy}/></label>
+    <div className="form-grid"><label>{spec.kind === 'task' ? 'Срок' : 'Дата'}<input data-autofocus={spec.focusDate || undefined} type="date" name="date" value={input.date || ''} onChange={e => set('date', e.target.value || null)} required={spec.kind !== 'task'} disabled={busy}/></label>
+      <label>Время<input type="time" name="time" value={input.time || ''} onChange={e => set('time', e.target.value || null)} required={spec.kind !== 'task'} disabled={busy || !input.date}/></label>
+      <label>Длительность, мин<input type="number" name="duration" min={5} max={1440} value={input.duration_minutes} onChange={e => set('duration_minutes', Number(e.target.value))} required disabled={busy}/></label>
+      <label>Приоритет<select aria-label="Приоритет" name="priority" value={input.priority} onChange={e => set('priority', e.target.value as EventInput['priority'])} disabled={busy}>{Object.entries(priorityLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label></div>
+    {spec.kind === 'meeting' && <><label>Место<input name="location" value={input.location} onChange={e => set('location', e.target.value)} maxLength={500} placeholder="Офис или переговорная" disabled={busy}/></label><label>Ссылка встречи<input name="meeting_url" type="url" value={input.meeting_url} onChange={e => set('meeting_url', e.target.value)} maxLength={2048} placeholder="https://…" disabled={busy}/></label></>}
+    <label>Заметка<textarea name="description" value={input.description} onChange={e => set('description', e.target.value)} rows={3} maxLength={8000} placeholder="Необязательно" disabled={busy}/></label>
+    {error && <Alert>{error}</Alert>}
+    {conflicts.length > 0 && <div className="conflict-list"><h3>Пересечение со встречами</h3>{conflicts.map(item => <p key={item.id}>{item.title} · {dateLabel(item.date, data.today)}, {item.time}</p>)}<Button variant="danger" onClick={() => void save(true)} disabled={busy}>Сохранить с пересечением</Button></div>}
+    <footer className="dialog-actions"><Button variant="ghost" onClick={onClose}>Отмена</Button><Button type="submit" disabled={busy}>{busy ? 'Сохраняю…' : 'Сохранить'}</Button></footer>
+  </form></Dialog>;
+}

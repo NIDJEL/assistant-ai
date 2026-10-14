@@ -1,9 +1,9 @@
-# P0 uses an isolated volume/port so it cannot race the reference Python database.
+# Compatibility command for Go; the primary runtime is now compose.yaml.
 services:
   go-assistant:
     build:
       context: .
-      dockerfile: Dockerfile.golang
+      dockerfile: Dockerfile
     ports:
       - "127.0.0.1:8081:8000"
     environment:

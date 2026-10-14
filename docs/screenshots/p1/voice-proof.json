@@ -1,0 +1,10 @@
+{
+  "recognition": "Controlled Web Speech API mock; real React UI and Go HTTP",
+  "pause_wait_ms": 700,
+  "posts_after_pause": 0,
+  "continued_draft": "Поставь задачу проверить голосовую диктовку",
+  "posts_before_send": 0,
+  "posts_after_send_and_late_onend": 1,
+  "response_action": "create",
+  "recognition_abort_calls": 1
+}
