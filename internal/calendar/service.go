@@ -118,6 +118,7 @@ type Patch struct {
 	Subtasks             *[]domain.Subtask
 	Participants         *[]domain.Participant
 	ReminderEnabled      *bool
+	ReminderMinutes      *int
 	Title, Description   *string
 	Location, MeetingURL *string
 	Date                 **domain.Date
@@ -149,6 +150,9 @@ func (s *Service) Update(ctx context.Context, id int64, p Patch, now time.Time) 
 		}
 		if p.ReminderEnabled != nil {
 			e.ReminderEnabled = p.ReminderEnabled
+		}
+		if p.ReminderMinutes != nil {
+			e.ReminderMinutes = p.ReminderMinutes
 		}
 		if p.Title != nil {
 			e.Title = *p.Title
@@ -235,7 +239,7 @@ func (s *Service) Due(ctx context.Context, now time.Time) ([]domain.Event, error
 	var reminders []domain.Event
 	err := s.Store.Read(ctx, func(tx repository.Tx) error {
 		var err error
-		reminders, err = tx.Events(ctx, domain.Filter{Kind: domain.EventReminder, Status: domain.StatusOpen, Start: domain.Day(now.AddDate(0, 0, -1)), End: domain.Day(now.AddDate(0, 0, 1))})
+		reminders, err = tx.Events(ctx, domain.Filter{Status: domain.StatusOpen, Start: domain.Day(now.AddDate(0, 0, -1)), End: domain.Day(now.AddDate(0, 0, 8))})
 		return err
 	})
 	result := []domain.Event{}
@@ -244,8 +248,8 @@ func (s *Service) Due(ctx context.Context, now time.Time) ([]domain.Event, error
 	}
 	for _, e := range reminders {
 		start, _, ok := e.Interval(s.Location)
-		age := now.Sub(start)
-		if (e.ReminderEnabled == nil || *e.ReminderEnabled) && ok && age >= 0 && age <= 5*time.Minute {
+		age := now.Sub(start.Add(-time.Duration(e.ReminderLead()) * time.Minute))
+		if e.HasReminder() && ok && age >= 0 && age <= 5*time.Minute {
 			result = append(result, e)
 		}
 	}

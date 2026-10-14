@@ -32,4 +32,9 @@ func (a *API) frontendRoutes(r chi.Router) {
 	r.Get("/favicon.svg", func(w http.ResponseWriter, req *http.Request) {
 		http.ServeFile(w, req, filepath.Join(root, "favicon.svg"))
 	})
+	r.Get("/notifications-sw.js", func(w http.ResponseWriter, req *http.Request) {
+		w.Header().Set("Content-Type", "application/javascript; charset=utf-8")
+		w.Header().Set("Cache-Control", "no-cache")
+		http.ServeFile(w, req, filepath.Join(root, "notifications-sw.js"))
+	})
 }

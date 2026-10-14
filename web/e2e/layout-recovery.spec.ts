@@ -8,7 +8,7 @@ async function settle(page: import('@playwright/test').Page) {
 }
 
 test('side panels stay at screen edges, hidden widgets do not stretch content and navigation collapse persists', async ({ page }, info) => {
-  await page.setViewportSize({ width: 2560, height: 1080 }); await ready(page, '/calendar');
+  await page.setViewportSize({ width: 2560, height: 1080 }); await ready(page, '/calendar'); await settle(page);
   const edges = await page.evaluate(() => ({ viewport: document.documentElement.getBoundingClientRect().width, shell: document.querySelector('.app-shell')!.getBoundingClientRect().width, navigation: document.querySelector('.sidebar')!.getBoundingClientRect().left, widgets: document.querySelector('.widgets-panel')!.getBoundingClientRect().right }));
   expect(Math.abs(edges.shell - edges.viewport)).toBeLessThan(1); expect(edges.navigation).toBe(16); expect(edges.widgets).toBe(edges.viewport - 16);
   await screenshot(page, 'wide-calendar', info);
@@ -20,6 +20,7 @@ test('side panels stay at screen edges, hidden widgets do not stretch content an
   await screenshot(page, 'collapsed-navigation', info);
   await page.getByRole('button', { name: 'Скрыть виджеты' }).click(); await settle(page);
   expect(await page.locator('.main-panel > .page').evaluate(node => node.getBoundingClientRect().width)).toBeLessThanOrEqual(1280);
+  expect(await page.locator('.main-panel > .page').evaluate(node => { const page = node.getBoundingClientRect(); const main = node.parentElement!.getBoundingClientRect(); return Math.abs(page.left + page.width / 2 - main.left - main.width / 2); })).toBeLessThan(1);
   expect(await page.locator('.sidebar').evaluate(node => node.getBoundingClientRect().left)).toBe(16);
   await noOverflow(page); await page.getByRole('button', { name: 'Развернуть навигацию' }).click(); await settle(page);
   await expect(page.locator('.sidebar .nav-link span').first()).toBeVisible(); await noOverflow(page);

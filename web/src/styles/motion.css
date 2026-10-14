@@ -77,6 +77,11 @@ input[type='checkbox']:not([role='switch']):checked::after { opacity: 1; transfo
 }
 
 @keyframes motion-fade-in { from { opacity: 0; } to { opacity: 1; } }
+.integration-state.is-connected .dot { animation: integration-connected-pulse 2.8s ease-in-out infinite; }
+@keyframes integration-connected-pulse {
+  0%, 100% { opacity: .55; transform: scale(.9); box-shadow: 0 0 0 0 rgb(25 180 123 / .04); }
+  50% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 4px rgb(25 180 123 / .14); }
+}
 @keyframes motion-fade-out { from { opacity: 1; } to { opacity: 0; } }
 @keyframes motion-content-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes motion-panel-in { from { opacity: 0; transform: translateX(16px); } to { opacity: 1; transform: translateX(0); } }
@@ -89,9 +94,11 @@ input[type='checkbox']:not([role='switch']):checked::after { opacity: 1; transfo
 @keyframes motion-message-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
 @media (prefers-reduced-motion: reduce) {
+  html:not([data-motion='full']) .integration-state.is-connected .dot { animation: none; }
   html:not([data-motion='full'])::view-transition-group(*), html:not([data-motion='full'])::view-transition-old(*), html:not([data-motion='full'])::view-transition-new(*) { animation: none !important; }
   html:not([data-motion='full']) .button:hover, html:not([data-motion='full']) .quick-actions button:hover { transform: none; }
 }
+html[data-motion='reduced'] .integration-state.is-connected .dot { animation: none; }
 html[data-motion='reduced']::view-transition-group(*), html[data-motion='reduced']::view-transition-old(*), html[data-motion='reduced']::view-transition-new(*) { animation: none !important; }
 .motion-setting { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-top: 18px; font-size: 14px; }
 .motion-setting select { max-width: 100%; font-size: 13px; padding: 9px 12px; }

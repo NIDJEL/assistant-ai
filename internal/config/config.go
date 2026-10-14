@@ -75,7 +75,8 @@ func Load() (Config, error) {
 			continue
 		}
 		u, err := url.Parse(redirect)
-		if err != nil || u.Scheme != public.Scheme || u.Host != public.Host || u.Path != "/api/auth/"+provider+"/callback" || u.RawQuery != "" || u.Fragment != "" || u.User != nil {
+		validPath := err == nil && (u.Path == "/api/auth/"+provider+"/callback" || (provider == "yandex" && u.Path == "//api/auth/yandex/callback"))
+		if !validPath || u.Scheme != public.Scheme || u.Host != public.Host || u.RawQuery != "" || u.Fragment != "" || u.User != nil {
 			return c, fmt.Errorf("%s redirect URI must match PUBLIC_URL and callback path", provider)
 		}
 	}

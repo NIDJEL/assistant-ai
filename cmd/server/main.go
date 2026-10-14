@@ -21,6 +21,7 @@ import (
 	"github.com/NIDJEL/assistant-ai/internal/config"
 	"github.com/NIDJEL/assistant-ai/internal/integrations/vk"
 	"github.com/NIDJEL/assistant-ai/internal/integrations/yandex"
+	"github.com/NIDJEL/assistant-ai/internal/integrations/yandexcalendar"
 	"github.com/NIDJEL/assistant-ai/internal/llm"
 	"github.com/NIDJEL/assistant-ai/internal/nlp"
 	"github.com/NIDJEL/assistant-ai/internal/search"
@@ -74,6 +75,15 @@ func run(log *slog.Logger) error {
 	if err != nil {
 		return err
 	}
+	calendarSync, err := yandexcalendar.New(store, store, &yandexcalendar.DAV{}, yandex.New(cfg.YandexClientID, cfg.YandexClientSecret, cfg.YandexRedirectURI), cfg.SessionSecret, cfg.Location, log)
+	if err != nil {
+		return err
+	}
+	authService.Calendar = calendarSync
+	workerCtx, workerStop := context.WithCancel(ctx)
+	workerDone := make(chan struct{})
+	go func() { defer close(workerDone); calendarSync.Run(workerCtx) }()
+	defer func() { workerStop(); <-workerDone }()
 	engine, err := search.New()
 	if err != nil {
 		return err
@@ -85,7 +95,8 @@ func run(log *slog.Logger) error {
 		interpreter.Fallback = &llm.Ollama{URL: cfg.OllamaURL, Model: cfg.OllamaModel, Timezone: cfg.Timezone, Client: &http.Client{Timeout: cfg.OllamaTimeout}}
 	}
 	service := assistant.New(store, interpreter, cal)
-	app := &api.API{Config: cfg, Clock: now, Calendar: cal, Assistant: service, Auth: authService, Logger: log}
+	service.AskReminderSettings = true
+	app := &api.API{Config: cfg, Clock: now, Calendar: cal, CalendarSync: calendarSync, Assistant: service, Auth: authService, Logger: log}
 	server := &http.Server{Addr: cfg.Address, Handler: app.Router(), ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 10 * time.Second, WriteTimeout: 50 * time.Second, IdleTimeout: 60 * time.Second,
 		BaseContext: func(net.Listener) context.Context { return ctx }, ErrorLog: slog.NewLogLogger(log.Handler(), slog.LevelError)}
 	done := make(chan error, 1)

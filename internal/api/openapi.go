@@ -34,6 +34,7 @@ func OpenAPI() map[string]any {
 		"subtasks":         map[string]any{"type": "array", "maxItems": 50, "items": map[string]any{"type": "object", "required": []string{"id", "title", "done"}, "properties": map[string]any{"id": map[string]any{"type": "string", "maxLength": 80}, "title": map[string]any{"type": "string", "maxLength": 500}, "done": map[string]any{"type": "boolean"}}}},
 		"participants":     map[string]any{"type": "array", "maxItems": 50, "items": map[string]any{"type": "object", "required": []string{"name"}, "properties": map[string]any{"name": map[string]any{"type": "string", "maxLength": 100}, "email": map[string]any{"type": "string", "maxLength": 254}}}},
 		"reminder_enabled": map[string]any{"type": "boolean", "default": true},
+		"reminder_minutes": map[string]any{"type": "integer", "minimum": 0, "maximum": 10080, "description": "Minutes before the event to notify; 0 means at the event time. Enable/disable with reminder_enabled."},
 	}
 	for name, value := range metadata {
 		eventProperties[name] = value
@@ -110,6 +111,7 @@ func OpenAPI() map[string]any {
 		paths[path] = ops
 	}
 	authOpenAPI(paths, schemas)
+	integrationsOpenAPI(paths, schemas)
 	paths["/health"].(map[string]any)["get"].(map[string]any)["security"] = []any{}
 	return map[string]any{"openapi": "3.0.3", "info": map[string]string{"title": "Ритм — multi-user API", "version": "0.4.0"}, "paths": paths, "security": []map[string]any{{"sessionCookie": []string{}}}, "components": map[string]any{"schemas": schemas, "securitySchemes": map[string]any{"sessionCookie": map[string]any{"type": "apiKey", "in": "cookie", "name": sessionCookie}}}}
 }

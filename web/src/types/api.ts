@@ -4,7 +4,7 @@ export type Priority = 'normal' | 'low' | 'high';
 export type Action = 'create' | 'list' | 'search' | 'update' | 'complete' | 'delete' | 'help' | 'clarify' | 'cancel';
 export interface Subtask { id: string; title: string; done: boolean }
 export interface Participant { name: string; email?: string }
-export interface EventDetails { tags?: string[]; subtasks?: Subtask[]; participants?: Participant[]; reminder_enabled?: boolean }
+export interface EventDetails { tags?: string[]; subtasks?: Subtask[]; participants?: Participant[]; reminder_enabled?: boolean; reminder_minutes?: number }
 export interface RhythmEvent extends EventDetails {
   id: number; kind: EventKind; title: string; description: string;
   date: string | null; time: string | null; duration_minutes: number;
@@ -27,6 +27,7 @@ export interface ChatResponse {
   reply: string; action: Action; events: RhythmEvent[]; candidates: RhythmEvent[] | null;
   conflicts: RhythmEvent[] | null; total?: number; session_id: string;
   request_id: string; provider: string; timezone: string; pending: boolean;
+  suggestions?: string[];
 }
 export interface Exchange { message: string; response: ChatResponse; created_at: string }
 export interface History { exchanges: Exchange[]; state: { pending?: unknown; last_ids?: number[] } }

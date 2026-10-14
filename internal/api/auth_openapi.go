@@ -39,7 +39,7 @@ func authOpenAPI(paths, schemas map[string]any) {
 				op["requestBody"] = map[string]any{"required": true, "content": map[string]any{"application/json": map[string]any{"schema": map[string]any{"$ref": "#/components/schemas/" + schema}}}}
 			}
 			if method == "patch" {
-				op["requestBody"] = map[string]any{"required": true, "content": map[string]any{"application/json": map[string]any{"schema": map[string]any{"type": "object", "required": []string{"name"}, "properties": map[string]any{"name": text()}}}}}
+				op["requestBody"] = map[string]any{"required": true, "content": map[string]any{"application/json": map[string]any{"schema": map[string]any{"type": "object", "additionalProperties": false, "minProperties": 1, "properties": map[string]any{"name": map[string]any{"type": "string", "minLength": 1, "maxLength": 100}, "avatar_url": map[string]any{"type": "string", "description": "JPEG/PNG data URL up to 256 x 256 and 40 KiB, or an empty string to remove the photo"}}}}}}
 			}
 			if path == "/api/auth/onboarding" || path == "/api/auth/logout" {
 				op["requestBody"] = map[string]any{"required": true, "description": "Send an empty JSON object for same-origin CSRF protection", "content": map[string]any{"application/json": map[string]any{"schema": map[string]any{"type": "object"}}}}

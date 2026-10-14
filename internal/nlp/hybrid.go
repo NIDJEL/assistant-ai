@@ -41,6 +41,12 @@ func (h Hybrid) Interpret(ctx context.Context, text string, now time.Time) (doma
 	if base.Time != nil {
 		cmd.Time = base.Time
 	}
+	if base.ReminderMinutes != nil {
+		cmd.ReminderMinutes = base.ReminderMinutes
+	}
+	if base.ReminderEnabled != nil {
+		cmd.ReminderEnabled = base.ReminderEnabled
+	}
 	cmd.Provider = "ollama"
 	return cmd, nil
 }

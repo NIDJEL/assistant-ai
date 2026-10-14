@@ -25,6 +25,7 @@ type Service struct {
 	Users         *user.Service
 	Secret        []byte
 	Providers     map[string]Provider
+	Calendar      CalendarConnector
 	passwordSlots chan struct{}
 	dummyHash     string
 }
@@ -136,5 +137,5 @@ func (s *Service) Update(ctx context.Context, uid, name string, complete bool) (
 	if utf8.RuneCountInString(name) > 100 {
 		return nil, domain.Validation("Имя должно быть до 100 символов")
 	}
-	return s.Users.Update(ctx, uid, name, complete)
+	return s.Users.Update(ctx, uid, name, nil, complete)
 }

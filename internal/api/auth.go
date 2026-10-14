@@ -9,6 +9,7 @@ import (
 	"mime"
 	"net"
 	"net/http"
+	"net/url"
 	"strings"
 	"sync"
 	"time"
@@ -124,6 +125,13 @@ func (a *API) authRoutes(r chi.Router) {
 		r.Get("/{provider}/start", a.oauthStart)
 		r.Get("/{provider}/callback", a.oauthCallback)
 	})
+	// Preserve an already registered Yandex callback containing a double slash.
+	if callback, err := url.Parse(a.Config.YandexRedirectURI); err == nil && callback.Path == "//api/auth/yandex/callback" {
+		r.Group(func(r chi.Router) {
+			r.Use(a.authLimiter())
+			r.Get("//api/auth/{provider}/callback", a.oauthCallback)
+		})
+	}
 }
 func (a *API) signIn(w http.ResponseWriter, r *http.Request, u *user.User, status int) {
 	token, err := a.Auth.NewSession(r.Context(), u.ID, a.Clock.Now())
@@ -202,17 +210,14 @@ func (a *API) me(w http.ResponseWriter, r *http.Request) {
 }
 func (a *API) updateProfile(w http.ResponseWriter, r *http.Request) {
 	var body struct {
-		Name string `json:"name"`
+		Name   *string `json:"name"`
+		Avatar *string `json:"avatar_url"`
 	}
 	if err := decode(w, r, &body); err != nil {
 		a.fail(w, r, err)
 		return
 	}
-	if strings.TrimSpace(body.Name) == "" {
-		a.fail(w, r, domain.Validation("Укажите имя"))
-		return
-	}
-	u, err := a.Auth.Update(r.Context(), repository.UserID(r.Context()), body.Name, false)
+	u, err := a.Auth.UpdateProfile(r.Context(), repository.UserID(r.Context()), body.Name, body.Avatar)
 	if err != nil {
 		a.fail(w, r, err)
 		return
@@ -230,7 +235,8 @@ func (a *API) completeOnboarding(w http.ResponseWriter, r *http.Request) {
 func (a *API) oauthStart(w http.ResponseWriter, r *http.Request) {
 	provider := chi.URLParam(r, "provider")
 	link := ""
-	if r.URL.Query().Get("link") == "1" {
+	calendarFlow := provider == "yandex" && r.URL.Query().Get("calendar") == "1"
+	if r.URL.Query().Get("link") == "1" || calendarFlow {
 		u, err := a.currentUser(r)
 		if err != nil || u == nil {
 			http.Redirect(w, r, "/auth?error=session", 303)
@@ -242,16 +248,27 @@ func (a *API) oauthStart(w http.ResponseWriter, r *http.Request) {
 		}
 		link = u.ID
 	}
-	redirect, browser, err := a.Auth.StartOAuth(r.Context(), provider, link, a.Clock.Now())
+	var redirect, browser string
+	var err error
+	if calendarFlow {
+		redirect, browser, err = a.Auth.StartCalendarOAuth(r.Context(), link, a.Clock.Now())
+	} else {
+		redirect, browser, err = a.Auth.StartOAuth(r.Context(), provider, link, a.Clock.Now())
+	}
 	if err != nil {
 		destination := "/auth"
 		if link != "" {
 			destination = "/settings"
 		}
-		http.Redirect(w, r, destination+"?error=oauth_unavailable", 303)
+		if calendarFlow {
+			destination = "/integrations?service=yandex&error=calendar_unavailable"
+		} else {
+			destination += "?error=oauth_unavailable"
+		}
+		http.Redirect(w, r, destination, 303)
 		return
 	}
-	a.cookie(w, "rhythm_oauth_"+provider, browser, "/api/auth/"+provider, 600)
+	a.cookie(w, "rhythm_oauth_"+provider, browser, a.oauthCookiePath(provider), 600)
 	w.Header().Set("Cache-Control", "no-store")
 	http.Redirect(w, r, redirect, 303)
 }
@@ -265,7 +282,7 @@ func (a *API) oauthCallback(w http.ResponseWriter, r *http.Request) {
 	if c, err := r.Cookie("rhythm_oauth_" + provider); err == nil {
 		browser = c.Value
 	}
-	a.cookie(w, "rhythm_oauth_"+provider, "", "/api/auth/"+provider, -1)
+	a.cookie(w, "rhythm_oauth_"+provider, "", a.oauthCookiePath(provider), -1)
 	current := ""
 	u, err := a.currentUser(r)
 	if err != nil {
@@ -275,7 +292,7 @@ func (a *API) oauthCallback(w http.ResponseWriter, r *http.Request) {
 	if u != nil {
 		current = u.ID
 	}
-	u, linked, err := a.Auth.FinishOAuth(r.Context(), provider, browser, current, r.URL.Query(), a.Clock.Now())
+	result, err := a.Auth.FinishOAuthFlow(r.Context(), provider, browser, current, r.URL.Query(), a.Clock.Now())
 	if err != nil {
 		code := "oauth_invalid"
 		if app, ok := err.(*domain.AppError); ok {
@@ -285,10 +302,19 @@ func (a *API) oauthCallback(w http.ResponseWriter, r *http.Request) {
 		if current != "" {
 			destination = "/settings"
 		}
+		if result.Calendar {
+			http.Redirect(w, r, "/integrations?service=yandex&error="+code, 303)
+			return
+		}
 		http.Redirect(w, r, destination+"?error="+code, 303)
 		return
 	}
-	if linked {
+	if result.Calendar {
+		http.Redirect(w, r, "/integrations?service=yandex&connected=1", 303)
+		return
+	}
+	u = result.User
+	if result.Linked {
 		http.Redirect(w, r, "/settings?linked="+provider, 303)
 		return
 	}
@@ -309,4 +335,13 @@ func (a *API) oauthCallback(w http.ResponseWriter, r *http.Request) {
 		destination = "/onboarding"
 	}
 	http.Redirect(w, r, destination, 303)
+}
+
+func (a *API) oauthCookiePath(provider string) string {
+	if provider == "yandex" {
+		if callback, err := url.Parse(a.Config.YandexRedirectURI); err == nil && callback.Path == "//api/auth/yandex/callback" {
+			return "//api/auth/yandex"
+		}
+	}
+	return "/api/auth/" + provider
 }

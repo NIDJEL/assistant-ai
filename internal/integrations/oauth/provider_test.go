@@ -3,8 +3,10 @@ package oauth
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strings"
 	"testing"
 )
@@ -62,6 +64,25 @@ func TestProviderExchanges(t *testing.T) {
 				t.Fatal("PKCE missing")
 			}
 		})
+	}
+}
+
+func TestYandexCalendarScopesAndRejectedRefresh(t *testing.T) {
+	p := &Provider{Name: "yandex", AuthorizeEndpoint: "https://oauth.yandex.ru/authorize"}
+	login, _ := url.Parse(p.AuthorizationURL("state", "challenge"))
+	calendar, _ := url.Parse(p.CalendarAuthorizationURL("state", "challenge"))
+	if strings.Contains(login.Query().Get("scope"), "calendar:all") || !strings.Contains(calendar.Query().Get("scope"), "calendar:all") {
+		t.Fatal("login and calendar permissions mixed")
+	}
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(400)
+		_, _ = w.Write([]byte(`{"error":"invalid_grant","error_description":"refresh-secret"}`))
+	}))
+	defer server.Close()
+	p.TokenEndpoint = server.URL
+	_, err := p.Refresh(context.Background(), "refresh-secret")
+	if !errors.Is(err, ErrTokenRejected) || strings.Contains(err.Error(), "refresh-secret") {
+		t.Fatal("refresh rejection not sanitized")
 	}
 }
 func TestVKRejectsTokenStateMismatch(t *testing.T) {

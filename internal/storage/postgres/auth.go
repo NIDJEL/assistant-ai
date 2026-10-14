@@ -110,6 +110,12 @@ func (d *Database) OAuthUser(ctx context.Context, i repository.Identity, link st
 			return nil, err
 		}
 	}
+	if i.AvatarURL != "" && u != nil && u.AvatarURL == "" {
+		u, err = scanUser(tx.QueryRowContext(ctx, "UPDATE users u SET avatar_url=CASE WHEN avatar_url='' THEN $2 ELSE avatar_url END,updated_at=now() WHERE id=$1 RETURNING "+userColumns, u.ID, i.AvatarURL))
+		if err != nil {
+			return nil, err
+		}
+	}
 	if err = tx.Commit(); err != nil {
 		return nil, err
 	}
@@ -144,21 +150,21 @@ func (d *Database) SaveOAuthState(ctx context.Context, s repository.OAuthState) 
 	if _, err = tx.ExecContext(ctx, "DELETE FROM oauth_states WHERE expires_at<now()"); err != nil {
 		return err
 	}
-	if _, err = tx.ExecContext(ctx, "INSERT INTO oauth_states(id,provider,browser_hash,verifier,link_user_id,expires_at) VALUES($1,$2,$3,$4,nullif($5,'')::uuid,$6)", s.ID, s.Provider, s.BrowserHash, s.Verifier, s.LinkUserID, s.ExpiresAt); err != nil {
+	if _, err = tx.ExecContext(ctx, "INSERT INTO oauth_states(id,provider,browser_hash,verifier,link_user_id,expires_at,purpose) VALUES($1,$2,$3,$4,nullif($5,'')::uuid,$6,$7)", s.ID, s.Provider, s.BrowserHash, s.Verifier, s.LinkUserID, s.ExpiresAt, s.Purpose); err != nil {
 		return err
 	}
 	return tx.Commit()
 }
 func (d *Database) ConsumeOAuthState(ctx context.Context, id, provider, browser string, now time.Time) (*repository.OAuthState, error) {
 	var s repository.OAuthState
-	err := d.DB.QueryRowContext(ctx, "DELETE FROM oauth_states WHERE id=$1 AND provider=$2 AND browser_hash=$3 AND expires_at>$4 RETURNING id,provider,browser_hash,verifier,coalesce(link_user_id::text,''),expires_at", id, provider, browser, now).Scan(&s.ID, &s.Provider, &s.BrowserHash, &s.Verifier, &s.LinkUserID, &s.ExpiresAt)
+	err := d.DB.QueryRowContext(ctx, "DELETE FROM oauth_states WHERE id=$1 AND provider=$2 AND browser_hash=$3 AND expires_at>$4 RETURNING id,provider,browser_hash,verifier,coalesce(link_user_id::text,''),expires_at,purpose", id, provider, browser, now).Scan(&s.ID, &s.Provider, &s.BrowserHash, &s.Verifier, &s.LinkUserID, &s.ExpiresAt, &s.Purpose)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil
 	}
 	return &s, err
 }
-func (d *Database) UpdateUser(ctx context.Context, id, name string, complete bool) (*user.User, error) {
-	u, err := scanUser(d.DB.QueryRowContext(ctx, "UPDATE users u SET display_name=CASE WHEN $2='' THEN display_name ELSE $2 END,onboarding_completed=onboarding_completed OR $3,updated_at=now() WHERE id=$1 RETURNING "+userColumns, id, name, complete))
+func (d *Database) UpdateUser(ctx context.Context, id, name string, avatar *string, complete bool) (*user.User, error) {
+	u, err := scanUser(d.DB.QueryRowContext(ctx, "UPDATE users u SET display_name=CASE WHEN $2='' THEN display_name ELSE $2 END,avatar_url=coalesce($4::text,avatar_url),onboarding_completed=onboarding_completed OR $3,updated_at=now() WHERE id=$1 RETURNING "+userColumns, id, name, complete, avatar))
 	if err != nil {
 		return nil, err
 	}

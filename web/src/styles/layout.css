@@ -3,16 +3,19 @@ html { scrollbar-gutter: stable; }
 .app-shell { --nav-width: 238px; --widgets-width: 330px; --shell-gap: 16px; position: relative; width: 100%; max-width: none; gap: 0; grid-template-columns: var(--nav-width) var(--shell-gap) minmax(0, 1fr) var(--shell-gap) var(--widgets-width); }
 .app-shell > .sidebar { grid-column: 1; }.app-shell > .main-panel { grid-column: 3; }.app-shell > .widgets-region { grid-column: 5; }
 .app-shell.widgets-hidden { max-width: none; grid-template-columns: var(--nav-width) var(--shell-gap) minmax(0, 1fr) 0px 0px; }
-.app-shell.widgets-moving { transition: grid-template-columns var(--motion-normal) var(--motion-ease); }
 .widgets-region { position: sticky; top: 16px; min-width: 0; max-height: calc(100dvh - 32px); overflow: clip; border-radius: var(--radius); }
 .widgets-region > .widgets-panel { position: relative; top: 0; width: var(--widgets-width); }
 .widgets-region > .widgets-panel[data-open='false'] { pointer-events: none; }
+.app-shell.widgets-hidden > .widgets-region { position: fixed; right: 16px; width: var(--widgets-width); pointer-events: none; }
 .widgets-heading { display: grid; grid-template-columns: minmax(0, 1fr) 27px 32px; gap: 5px 7px; }
 .widgets-heading.has-toggle { grid-template-columns: 32px minmax(0, 1fr) 27px 32px; }
 .widgets-heading > p { grid-column: 1 / -1; margin-top: 0; }
 .widgets-heading > .icon-button[aria-label='Добавить виджет'] { background: #edf5ff; color: var(--accent); border-radius: 10px; width: 32px; min-height: 34px; }
 .widgets-heading > .widget-panel-toggle { width: 32px; min-height: 34px; padding: 5px; background: #edf5ff; color: #324aa2; border: 1px solid #e4edfb; border-radius: 10px; }
-.widgets-hidden > .main-panel > .page { width: 100%; max-width: 1280px; margin-inline: 0 auto; }
+.main-panel > .page { width: 100%; max-width: 1280px; margin-inline: auto; }
+.main-panel > .today-page { max-width: 1100px; }
+.widgets-region > .widgets-panel[data-open='true'] { animation: motion-panel-in var(--motion-normal) var(--motion-ease) both; }
+.widgets-region > .widgets-panel[data-open='false'] { animation: motion-fade-out var(--motion-exit) ease both; }
 .sidebar-brand-row { display: flex; align-items: center; gap: 6px; }
 .sidebar-brand-row .brand { flex: 1; padding-inline: 4px; min-width: 0; }
 .sidebar-collapse { width: 28px; min-height: 32px; padding: 4px; border: 0; background: #edf5ff; }
@@ -24,7 +27,7 @@ html { scrollbar-gutter: stable; }
 .nav-collapsed > .sidebar nav { margin-top: 34px; }
 .nav-collapsed > .sidebar .nav-link { padding: 15px; gap: 0; }
 .nav-collapsed > .sidebar .sidebar-footer { flex-direction: column; gap: 13px; }
-.nav-collapsed > .sidebar .settings-link { margin: 0; }
+.nav-collapsed > .sidebar .settings-link { display: none; }
 .dialog.drawer-left { margin: 0 auto 0 0; border-radius: 0 22px 22px 0; }
 .dialog.drawer-left[open] { animation-name: motion-drawer-left-in; }
 .dialog.drawer-left[open].closing { animation-name: motion-drawer-left-out; }
@@ -61,5 +64,5 @@ html { scrollbar-gutter: stable; }
 .reminder-card:has(.check:checked) .reminder-title strong { color: var(--muted); text-decoration: line-through; }
 @media (min-width: 1180px) and (max-width: 1359px) { .app-shell { --nav-width: 198px; --widgets-width: 285px; --shell-gap: 12px; }.app-shell.nav-collapsed { --nav-width: 76px; }.mini-calendar button { width: 29px; height: 29px; min-width: 29px; min-height: 29px; } }
 @media (min-width: 1650px) { .app-shell { --nav-width: 260px; --widgets-width: 355px; }.app-shell.nav-collapsed { --nav-width: 76px; } }
-@media (max-width: 1179px) { .app-shell, .app-shell.widgets-hidden { max-width: none; gap: 12px; grid-template-columns: 76px minmax(0, 1fr); }.app-shell > .main-panel { grid-column: 2; }.widgets-region { display: none; }.sidebar-collapse { display: none; }.sidebar-brand-row .brand { flex: none; padding: 0; } }
+@media (max-width: 1179px) { .app-shell, .app-shell.widgets-hidden { max-width: none; gap: 12px; grid-template-columns: 76px minmax(0, 1fr); }.app-shell > .main-panel { grid-column: 2; }.widgets-region { display: none; }.sidebar-collapse { display: none; }.sidebar-brand-row .brand { flex: none; padding: 0; }.sidebar .settings-link { display: none; } }
 @media (max-width: 760px) { html { scrollbar-gutter: auto; }.app-shell, .app-shell.widgets-hidden { max-width: none; grid-template-columns: minmax(0, 1fr); }.app-shell > .main-panel { grid-column: 1; }.calendar-cell .day-number { --day-size: 27px; }.archive-deleted .button { width: 100%; }.action-notice { flex-wrap: wrap; font-size: 13px; } }

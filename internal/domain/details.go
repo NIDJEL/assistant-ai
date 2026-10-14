@@ -18,9 +18,13 @@ type EventDetails struct {
 	Subtasks        []Subtask     `json:"subtasks,omitempty"`
 	Participants    []Participant `json:"participants,omitempty"`
 	ReminderEnabled *bool         `json:"reminder_enabled,omitempty"`
+	ReminderMinutes *int          `json:"reminder_minutes,omitempty"`
 }
 
 func (d EventDetails) Validate() error {
+	if d.ReminderMinutes != nil && (*d.ReminderMinutes < 0 || *d.ReminderMinutes > 10080) {
+		return errors.New("Напоминание можно поставить от 0 минут до 7 дней до события")
+	}
 	if len(d.Tags) > 12 || len(d.Subtasks) > 50 || len(d.Participants) > 50 {
 		return errors.New("Слишком много меток, подзадач или участников")
 	}
@@ -42,4 +46,19 @@ func (d EventDetails) Validate() error {
 		}
 	}
 	return nil
+}
+
+// Legacy reminders without an explicit offset still fire at the event time.
+func (e Event) HasReminder() bool {
+	if e.ReminderEnabled != nil {
+		return *e.ReminderEnabled
+	}
+	return e.Kind == EventReminder || e.ReminderMinutes != nil
+}
+
+func (e Event) ReminderLead() int {
+	if e.ReminderMinutes != nil {
+		return *e.ReminderMinutes
+	}
+	return 0
 }

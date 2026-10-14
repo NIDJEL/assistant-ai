@@ -19,8 +19,8 @@ import (
 	"github.com/NIDJEL/assistant-ai/internal/clock"
 	"github.com/NIDJEL/assistant-ai/internal/config"
 	"github.com/NIDJEL/assistant-ai/internal/domain"
+	"github.com/NIDJEL/assistant-ai/internal/integrations/yandexcalendar"
 	"github.com/NIDJEL/assistant-ai/internal/repository"
-	"github.com/NIDJEL/assistant-ai/internal/storage/postgres"
 	"github.com/NIDJEL/assistant-ai/migrations"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -28,12 +28,13 @@ import (
 )
 
 type API struct {
-	Auth      *auth.Service
-	Config    config.Config
-	Clock     clock.Clock
-	Calendar  *calendar.Service
-	Assistant *assistant.Service
-	Logger    *slog.Logger
+	Auth         *auth.Service
+	CalendarSync *yandexcalendar.Service
+	Config       config.Config
+	Clock        clock.Clock
+	Calendar     *calendar.Service
+	Assistant    *assistant.Service
+	Logger       *slog.Logger
 }
 
 func (a *API) Router() http.Handler {
@@ -68,18 +69,9 @@ func (a *API) Router() http.Handler {
 			r.URL.RawQuery = q.Encode()
 			a.events(domain.EventUnknown)(w, r)
 		})
-		r.Get("/api/integrations", func(w http.ResponseWriter, r *http.Request) {
-			if db, ok := a.Calendar.Store.(*postgres.Database); ok {
-				connections, err := db.Connections(r.Context())
-				if err != nil {
-					a.fail(w, r, err)
-					return
-				}
-				write(w, 200, map[string]any{"connections": connections})
-				return
-			}
-			write(w, 200, map[string]any{"connections": []any{}})
-		})
+		r.Get("/api/integrations", a.integrations)
+		r.Post("/api/integrations/yandex/sync", a.syncYandexCalendar)
+		r.Delete("/api/integrations/yandex", a.disconnectYandexCalendar)
 		r.Get("/api/events/{id}", a.get)
 		r.Post("/api/events", a.create)
 		r.Patch("/api/events/{id}", a.update)

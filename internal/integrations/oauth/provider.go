@@ -17,6 +17,12 @@ type Provider struct {
 	Client                                                                                    *http.Client
 }
 
+var ErrTokenRejected = errors.New("provider rejected token refresh")
+
+type requestError struct{ status int }
+
+func (e *requestError) Error() string { return "provider rejected request" }
+
 func (p *Provider) AuthorizationURL(state, challenge string) string {
 	q := url.Values{"client_id": {p.ClientID}, "response_type": {"code"}, "redirect_uri": {p.RedirectURI}, "state": {state}, "code_challenge": {challenge}, "code_challenge_method": {"S256"}}
 	if p.Name == "yandex" {
@@ -26,6 +32,27 @@ func (p *Provider) AuthorizationURL(state, challenge string) string {
 		q.Set("code_challenge_method", "s256")
 	}
 	return p.AuthorizeEndpoint + "?" + q.Encode()
+}
+func (p *Provider) CalendarAuthorizationURL(state, challenge string) string {
+	u, _ := url.Parse(p.AuthorizationURL(state, challenge))
+	q := u.Query()
+	q.Set("scope", "login:info login:email login:avatar calendar:all")
+	q.Set("force_confirm", "yes")
+	u.RawQuery = q.Encode()
+	return u.String()
+}
+
+func (p *Provider) Refresh(ctx context.Context, refresh string) (repository.OAuthToken, error) {
+	var token repository.OAuthToken
+	err := p.request(ctx, "POST", p.TokenEndpoint, url.Values{"grant_type": {"refresh_token"}, "refresh_token": {refresh}, "client_id": {p.ClientID}, "client_secret": {p.ClientSecret}}, "", &token)
+	var rejected *requestError
+	if errors.As(err, &rejected) && (rejected.status == 400 || rejected.status == 401 || rejected.status == 403) {
+		return token, ErrTokenRejected
+	}
+	if err == nil && (token.AccessToken == "" || token.ExpiresIn < 0) {
+		err = errors.New("invalid token response")
+	}
+	return token, err
 }
 func (p *Provider) request(ctx context.Context, method, endpoint string, form url.Values, authorization string, out any) error {
 	var body io.Reader
@@ -53,7 +80,7 @@ func (p *Provider) request(ctx context.Context, method, endpoint string, form ur
 	}
 	defer res.Body.Close()
 	if res.StatusCode != 200 {
-		return errors.New("provider rejected request")
+		return &requestError{status: res.StatusCode}
 	}
 	if err = json.NewDecoder(io.LimitReader(res.Body, 1<<20)).Decode(out); err != nil {
 		return errors.New("invalid provider response")
@@ -61,6 +88,10 @@ func (p *Provider) request(ctx context.Context, method, endpoint string, form ur
 	return nil
 }
 func (p *Provider) Identity(ctx context.Context, code, verifier, state, device string) (repository.Identity, error) {
+	grant, err := p.Grant(ctx, code, verifier, state, device)
+	return grant.Identity, err
+}
+func (p *Provider) Grant(ctx context.Context, code, verifier, state, device string) (grant repository.OAuthGrant, err error) {
 	i := repository.Identity{Provider: p.Name}
 	form := url.Values{"grant_type": {"authorization_code"}, "code": {code}, "client_id": {p.ClientID}, "redirect_uri": {p.RedirectURI}, "code_verifier": {verifier}}
 	if p.ClientSecret != "" {
@@ -68,28 +99,29 @@ func (p *Provider) Identity(ctx context.Context, code, verifier, state, device s
 	}
 	if p.Name == "vk" {
 		if device == "" || len(device) > 1024 {
-			return i, errors.New("device id required")
+			return grant, errors.New("device id required")
 		}
 		form.Set("device_id", device)
 		form.Set("state", state)
 	}
 	var token struct {
-		AccessToken string          `json:"access_token"`
-		State       string          `json:"state"`
-		UserID      json.Number     `json:"user_id"`
-		Error       json.RawMessage `json:"error"`
+		repository.OAuthToken
+		State  string          `json:"state"`
+		UserID json.Number     `json:"user_id"`
+		Error  json.RawMessage `json:"error"`
 	}
 	if err := p.request(ctx, "POST", p.TokenEndpoint, form, "", &token); err != nil {
-		return i, err
+		return grant, err
 	}
-	if token.AccessToken == "" || len(token.Error) > 0 {
-		return i, errors.New("invalid token response")
+	if token.AccessToken == "" || token.ExpiresIn < 0 || len(token.Error) > 0 {
+		return grant, errors.New("invalid token response")
 	}
 	if p.Name == "vk" && token.State != state {
-		return i, errors.New("token state mismatch")
+		return grant, errors.New("token state mismatch")
 	}
 	if p.Name == "yandex" {
 		var raw struct {
+			Login    string `json:"login"`
 			ID       string `json:"id"`
 			Email    string `json:"default_email"`
 			Name     string `json:"display_name"`
@@ -98,9 +130,13 @@ func (p *Provider) Identity(ctx context.Context, code, verifier, state, device s
 			Empty    bool   `json:"is_avatar_empty"`
 		}
 		if err := p.request(ctx, "GET", p.UserEndpoint+"?format=json", nil, "OAuth "+token.AccessToken, &raw); err != nil {
-			return i, err
+			return grant, err
 		}
 		i.Subject = raw.ID
+		grant.Login = raw.Email
+		if grant.Login == "" {
+			grant.Login = raw.Login
+		}
 		i.Email = raw.Email
 		i.Name = raw.RealName
 		if i.Name == "" {
@@ -120,18 +156,18 @@ func (p *Provider) Identity(ctx context.Context, code, verifier, state, device s
 			} `json:"user"`
 		}
 		if err := p.request(ctx, "POST", p.UserEndpoint, url.Values{"client_id": {p.ClientID}, "access_token": {token.AccessToken}}, "", &profile); err != nil {
-			return i, err
+			return grant, err
 		}
 		i.Subject = profile.User.ID.String()
 		if token.UserID.String() != "" && token.UserID.String() != i.Subject {
-			return i, errors.New("subject mismatch")
+			return grant, errors.New("subject mismatch")
 		}
 		i.Email = profile.User.Email
 		i.Name = strings.TrimSpace(profile.User.First + " " + profile.User.Last)
 		i.AvatarURL = profile.User.Avatar
 	}
 	if i.Subject == "" {
-		return i, errors.New("missing provider subject")
+		return grant, errors.New("missing provider subject")
 	}
 	if len(i.Name) > 100 {
 		i.Name = string([]rune(i.Name)[:min(100, len([]rune(i.Name)))])
@@ -142,5 +178,6 @@ func (p *Provider) Identity(ctx context.Context, code, verifier, state, device s
 			i.AvatarURL = ""
 		}
 	}
-	return i, nil
+	grant.Identity, grant.Token = i, token.OAuthToken
+	return grant, nil
 }

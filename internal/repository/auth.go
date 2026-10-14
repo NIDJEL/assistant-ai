@@ -12,6 +12,7 @@ var ErrConflict = errors.New("identity conflict")
 type Identity = user.Identity
 type OAuthState struct {
 	ID, Provider, BrowserHash, Verifier, LinkUserID string
+	Purpose                                         string
 	ExpiresAt                                       time.Time
 }
 type AuthStore interface {
@@ -23,5 +24,5 @@ type AuthStore interface {
 	RevokeSession(context.Context, string) error
 	SaveOAuthState(context.Context, OAuthState) error
 	ConsumeOAuthState(context.Context, string, string, string, time.Time) (*OAuthState, error)
-	UpdateUser(context.Context, string, string, bool) (*user.User, error)
+	UpdateUser(context.Context, string, string, *string, bool) (*user.User, error)
 }

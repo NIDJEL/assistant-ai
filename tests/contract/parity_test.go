@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"runtime"
+	"strings"
 	"testing"
 	"time"
 
@@ -106,6 +107,35 @@ func compare(t *testing.T, path string, expected, actual any) {
 		}
 	}
 }
+
+// Keep the Python corpus immutable while explicitly tracking the two Go copy
+// changes: selecting by name/date and no longer asking users to remember IDs.
+// All other fields, history entries and reply text are still compared exactly.
+func currentDialogueCopy(value any) any {
+	switch v := value.(type) {
+	case map[string]any:
+		result := make(map[string]any, len(v))
+		for key, item := range v {
+			if text, ok := item.(string); key == "reply" && ok {
+				text = strings.Replace(text, "Уточните номер записи:\n", "Подходят несколько записей. Уточните название, дату или время:\n", 1)
+				if text == "Не нашёл запись для этого действия. Укажите название или номер, например #42." {
+					text = "Не нашёл подходящую запись. Укажите название и, если нужно, дату: например, «удали напоминание позвонить маме завтра»."
+				}
+				result[key] = text
+			} else {
+				result[key] = currentDialogueCopy(item)
+			}
+		}
+		return result
+	case []any:
+		result := make([]any, len(v))
+		for i, item := range v {
+			result[i] = currentDialogueCopy(item)
+		}
+		return result
+	}
+	return value
+}
 func TestSharedCorpusDates(t *testing.T) {
 	corpus := load(t)
 	now, err := time.Parse(time.RFC3339, corpus.Clock)
@@ -183,7 +213,7 @@ func TestSharedCorpusHTTP(t *testing.T) {
 					t.Fatal(err)
 				}
 				if step.Expected != nil {
-					compare(t, fmt.Sprintf("step%d", i), step.Expected, actual)
+					compare(t, fmt.Sprintf("step%d", i), currentDialogueCopy(step.Expected), actual)
 				}
 				if step.ExpectedDetail != "" {
 					compare(t, "detail", step.ExpectedDetail, actual["detail"])
