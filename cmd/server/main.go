@@ -95,9 +95,29 @@ func run(log *slog.Logger) error {
 	}
 	cal := &calendar.Service{Store: store, Search: engine, Location: cfg.Location, DemoPath: filepath.Join(cfg.Root, "data/voice_assistant_events_1000.csv")}
 	now := clock.System{Location: cfg.Location}
-	interpreter := nlp.Hybrid{}
-	if cfg.NLPProvider != "rules" {
-		interpreter.Fallback = &llm.Ollama{URL: cfg.OllamaURL, Model: cfg.OllamaModel, Timezone: cfg.Timezone, Client: &http.Client{Timeout: cfg.OllamaTimeout}}
+	var interpreter assistant.Interpreter
+	switch cfg.SemanticProvider {
+	case "gigachat":
+		provider, err := llm.NewGigaChat(cfg.GigaChat)
+		if err != nil {
+			return err
+		}
+		defer provider.Close()
+		interpreter = &llm.Semantic{Provider: provider, FastPath: true}
+	case "ollama":
+		provider, err := llm.NewOllamaSemantic(cfg.OllamaURL, cfg.OllamaModel, cfg.OllamaTimeout)
+		if err != nil {
+			return err
+		}
+		interpreter = &llm.Semantic{Provider: provider, FastPath: true}
+	case "rules":
+		interpreter = nlp.Parser{}
+	default:
+		legacy := nlp.Hybrid{}
+		if cfg.NLPProvider != "rules" {
+			legacy.Fallback = &llm.Ollama{URL: cfg.OllamaURL, Model: cfg.OllamaModel, Timezone: cfg.Timezone, Client: &http.Client{Timeout: cfg.OllamaTimeout}}
+		}
+		interpreter = legacy
 	}
 	service := assistant.New(store, interpreter, cal)
 	service.AskReminderSettings = true

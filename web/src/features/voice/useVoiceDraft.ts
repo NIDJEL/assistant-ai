@@ -19,5 +19,5 @@ export function useVoiceDraft() {
     const rule = learnCorrection(pair.original, pair.edited);
     if (rule) update({ speechCorrections: rememberCorrection(context.current.preferences.speechCorrections, rule) });
   }
-  return { ...state, setDraft: (value: string) => controller.setDraft(value), editDraft: (value: string) => controller.setDraft(value, true), commit, toggle: () => state.listening ? controller.stop() : controller.start(), stop: () => controller.stop(), currentDraft: () => controller.snapshot().draft };
+  return { ...state, setDraft: (value: string) => controller.setDraft(value), editDraft: (value: string) => controller.setDraft(value, true), commit, toggle: () => state.listening ? controller.stop() : controller.start(), stop: () => controller.stop(), currentDraft: () => controller.snapshot().draft, currentSource: (): 'text' | 'voice' => controller.correctionCandidate() ? 'voice' : 'text' };
 }

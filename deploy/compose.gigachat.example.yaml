@@ -1,0 +1,15 @@
+# Optional override. Not applied by the default production compose file.
+# Supply credentials through the deployment environment; never commit values.
+services:
+  app:
+    environment:
+      GENA_SEMANTIC_PROVIDER: gigachat
+      GIGACHAT_AUTHORIZATION_KEY: ${GIGACHAT_AUTHORIZATION_KEY:?Set GIGACHAT_AUTHORIZATION_KEY}
+      GIGACHAT_SCOPE: ${GIGACHAT_SCOPE:-GIGACHAT_API_PERS}
+      GIGACHAT_BASE_URL: https://api.giga.chat
+      GIGACHAT_MODEL: ${GIGACHAT_MODEL:-GigaChat-3-Ultra}
+      GIGACHAT_MAX_CONCURRENT: "1"
+      GIGACHAT_TIMEOUT: ${GIGACHAT_TIMEOUT:-30s}
+      GIGACHAT_CA_FILE: /etc/gigachat/ca.pem
+    volumes:
+      - ${GIGACHAT_CA_FILE_HOST:?Set path to a verified GigaChat CA bundle}:/etc/gigachat/ca.pem:ro

@@ -1,0 +1,8 @@
+{
+  "internal/integrations/oauth/provider_test.go": [
+    "f2939678ac70cc3c6223ed05ffd6ce4791ddec52b3e7b05389e527c0de22ef00"
+  ],
+  "tests/contract/yandex_calendar_postgres_test.go": [
+    "8a1914992d43ca2225bb7ea93ab149b4c455750da5bf8e987f391b935a11722b"
+  ]
+}

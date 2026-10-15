@@ -113,3 +113,13 @@ Compose project `rhythm`, постоянный том `rhythm-postgres-productio
 Старые релизы упаковываются в `/var/backups/rhythm/source-archive-*` и удаляются из `/opt/rhythm/releases` после проверки активного приложения.
 Для отката распакуйте нужный каталог, восстановите `RELEASE_TAG` и `/opt/rhythm/current`, затем обновите только сервис `app` через `docker compose up -d --no-deps --wait app`.
 Постоянный том `rhythm-postgres-production`, секреты и VAPID-ключи сохраняются между обновлениями.
+
+## GigaChat Ultra release
+
+Текущая версия исходников — `20261015-gigachat-ultra-01`. В production используется hardened `deploy/compose.production.yaml` вместе с `deploy/compose.gigachat.example.yaml`; systemd unit включает оба файла. Runtime использует только Authorization Key из root-owned `/etc/rhythm/production.env` (0600), Ultra, scope PERS, timeout 30s и concurrency 1. Дополнительный CA находится по Linux-пути из `GIGACHAT_CA_FILE_HOST` и монтируется read-only. Windows-пути и credentials TXT на VPS не переносятся.
+
+Перед выпуском: локальный audit tracked/untracked/index/history/artifacts/logs, один opt-in live check, тесты, один commit и обычный push. На VPS сначала read-only audit, затем штатный backup с проверкой `pg_restore --list`, сохранение предыдущего release/config и загрузка `git archive` pushed commit. Только после этого приватный JSON со значением нового ключа передаётся через SSH stdin; не через argv, YAML или image layer. При включённом sudo input logging перенос секретов блокируется.
+
+`deploy/gigachat_ops.py` реализует audit/backup/prepare/build/activate/check/giga/rollback; stdout содержит только metadata/counts. Новые production env/config записываются атомарно с сохранением permissions. Перед сборкой всегда выполняется `config --quiet`. Обновляется только app через `up -d --no-deps --wait`, PostgreSQL и volumes не пересоздаются. На ошибке health/GigaChat/mandatory smoke выполняется rollback предыдущего release/config без возврата скомпрометированного GigaChat ключа и без отката пользовательских данных.
+
+После выпуска проверяются HTTPS/SPA/API, отдельный test account, 13 mandatory и короткие bonus-сценарии, logout/login persistence, redacted logs и повторный secret audit. Frozen held-out не запускается. Реальный microphone input не считается проверенным, пока не пройден manual browser test.

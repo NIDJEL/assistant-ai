@@ -12,11 +12,14 @@ import (
 	"time"
 	_ "time/tzdata"
 
+	"github.com/NIDJEL/assistant-ai/internal/llm"
 	"github.com/NIDJEL/assistant-ai/internal/notifications"
 	"github.com/joho/godotenv"
 )
 
 type Config struct {
+	SemanticProvider                                                           string
+	GigaChat                                                                   llm.GigaChatConfig
 	WebPush                                                                    notifications.Config
 	ImportUserEmail, ImportUserName, ImportUserPassword                        string
 	AuthRateLimit                                                              int
@@ -35,6 +38,14 @@ func env(name, fallback string) string {
 	}
 	return fallback
 }
+
+func (c Config) EffectiveNLPProvider() string {
+	if c.SemanticProvider != "" {
+		return c.SemanticProvider
+	}
+	return c.NLPProvider
+}
+
 func Load() (Config, error) {
 	root, err := filepath.Abs(env("APP_ROOT", "."))
 	if err != nil {
@@ -42,7 +53,7 @@ func Load() (Config, error) {
 	}
 	fileEnv, err := godotenv.Read(filepath.Join(root, ".env"))
 	if err != nil && !os.IsNotExist(err) {
-		return Config{}, fmt.Errorf(".env: %w", err)
+		return Config{}, errors.New(".env: invalid configuration format")
 	}
 	value := func(name, fallback string) string {
 		if v, ok := os.LookupEnv(name); ok {
@@ -54,8 +65,10 @@ func Load() (Config, error) {
 		return fallback
 	}
 	c := Config{
-		WebPush:         notifications.Config{PublicKey: value("WEB_PUSH_VAPID_PUBLIC_KEY", ""), PrivateKey: value("WEB_PUSH_VAPID_PRIVATE_KEY", ""), Subject: value("WEB_PUSH_SUBJECT", "")},
-		ImportUserEmail: value("IMPORT_USER_EMAIL", "dev@rhythm.local"), ImportUserName: value("IMPORT_USER_NAME", "Разработчик"), ImportUserPassword: value("IMPORT_USER_PASSWORD", ""),
+		SemanticProvider: value("GENA_SEMANTIC_PROVIDER", ""),
+		GigaChat:         llm.GigaChatConfig{AuthorizationKey: value("GIGACHAT_AUTHORIZATION_KEY", ""), Scope: value("GIGACHAT_SCOPE", "GIGACHAT_API_PERS"), BaseURL: value("GIGACHAT_BASE_URL", "https://api.giga.chat"), Model: value("GIGACHAT_MODEL", "GigaChat-3-Ultra"), CAFile: value("GIGACHAT_CA_FILE", "")},
+		WebPush:          notifications.Config{PublicKey: value("WEB_PUSH_VAPID_PUBLIC_KEY", ""), PrivateKey: value("WEB_PUSH_VAPID_PRIVATE_KEY", ""), Subject: value("WEB_PUSH_SUBJECT", "")},
+		ImportUserEmail:  value("IMPORT_USER_EMAIL", "dev@rhythm.local"), ImportUserName: value("IMPORT_USER_NAME", "Разработчик"), ImportUserPassword: value("IMPORT_USER_PASSWORD", ""),
 		DatabaseURL: value("DATABASE_URL", ""), SessionSecret: value("SESSION_SECRET", ""),
 		PublicURL: value("PUBLIC_URL", "http://localhost:8081"), Environment: value("APP_ENV", "development"),
 		YandexClientID: value("YANDEX_CLIENT_ID", ""), YandexClientSecret: value("YANDEX_CLIENT_SECRET", ""), YandexRedirectURI: value("YANDEX_REDIRECT_URI", ""),
@@ -66,6 +79,15 @@ func Load() (Config, error) {
 	}
 	if err := c.WebPush.Validate(); err != nil {
 		return c, err
+	}
+	if c.SemanticProvider != "" && c.SemanticProvider != "rules" && c.SemanticProvider != "ollama" && c.SemanticProvider != "gigachat" {
+		return c, errors.New("GENA_SEMANTIC_PROVIDER must be rules, ollama or gigachat")
+	}
+	if c.GigaChat.Timeout, err = time.ParseDuration(value("GIGACHAT_TIMEOUT", "30s")); err != nil || c.GigaChat.Timeout <= 0 || c.GigaChat.Timeout > 2*time.Minute {
+		return c, errors.New("GIGACHAT_TIMEOUT must be a duration between 0 and 2m")
+	}
+	if c.GigaChat.MaxConcurrent, err = strconv.Atoi(value("GIGACHAT_MAX_CONCURRENT", "1")); err != nil || c.GigaChat.MaxConcurrent < 1 || c.GigaChat.MaxConcurrent > 16 {
+		return c, errors.New("GIGACHAT_MAX_CONCURRENT must be between 1 and 16")
 	}
 	if c.AuthRateLimit, err = strconv.Atoi(value("AUTH_RATE_LIMIT", "20")); err != nil || c.AuthRateLimit < 1 || c.AuthRateLimit > 300 {
 		return c, errors.New("AUTH_RATE_LIMIT must be between 1 and 300")

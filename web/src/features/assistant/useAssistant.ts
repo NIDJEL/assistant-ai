@@ -25,10 +25,10 @@ export function useAssistant() {
     }).catch(e => { if (!controller.signal.aborted) setHistoryError(errorMessage(e)); }).finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => { controller.abort(); stopSpeaking(); };
   }, [session]);
-  async function send(text: string): Promise<boolean> {
+  async function send(text: string, source: 'text' | 'voice' = 'text'): Promise<boolean> {
     const message = text.trim(); if (!message || locked.current || [...message].length > 2000) return false;
     locked.current = true; interacted.current = true; setBusy(true); stopSpeaking();
-    const input = pending.current?.message === message ? pending.current : { message, session_id: session, request_id: crypto.randomUUID() };
+    const input = pending.current?.message === message ? pending.current : { message, source, session_id: session, request_id: crypto.randomUUID() };
     pending.current = input;
     setItems(current => [...current.filter(item => item.id !== input.request_id), { id: input.request_id, message, created: new Date().toISOString() }]);
     try {

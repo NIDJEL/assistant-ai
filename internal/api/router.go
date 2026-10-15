@@ -20,6 +20,7 @@ import (
 	"github.com/NIDJEL/assistant-ai/internal/config"
 	"github.com/NIDJEL/assistant-ai/internal/domain"
 	"github.com/NIDJEL/assistant-ai/internal/integrations/yandexcalendar"
+	"github.com/NIDJEL/assistant-ai/internal/llm"
 	"github.com/NIDJEL/assistant-ai/internal/repository"
 	"github.com/NIDJEL/assistant-ai/migrations"
 	"github.com/go-chi/chi/v5"
@@ -173,7 +174,7 @@ func (a *API) health(w http.ResponseWriter, r *http.Request) {
 		a.fail(w, r, err)
 		return
 	}
-	write(w, 200, map[string]any{"status": "ok", "events": count, "timezone": a.Config.Timezone, "nlp_provider": a.Config.NLPProvider, "now": a.Clock.Now(), "backend": "go", "schema_version": migrations.LatestVersion})
+	write(w, 200, map[string]any{"status": "ok", "events": count, "timezone": a.Config.Timezone, "nlp_provider": a.Config.EffectiveNLPProvider(), "now": a.Clock.Now(), "backend": "go", "schema_version": migrations.LatestVersion})
 }
 func (a *API) chat(w http.ResponseWriter, r *http.Request) {
 	var body dto.Chat
@@ -185,7 +186,7 @@ func (a *API) chat(w http.ResponseWriter, r *http.Request) {
 		a.fail(w, r, err)
 		return
 	}
-	result, err := a.Assistant.Respond(r.Context(), body.Message, body.SessionID, body.RequestID, a.Clock.Now())
+	result, err := a.Assistant.Respond(llm.WithSource(r.Context(), body.Source), body.Message, body.SessionID, body.RequestID, a.Clock.Now())
 	if err != nil {
 		a.fail(w, r, err)
 		return

@@ -16,6 +16,7 @@ type relativeUnit struct {
 }
 
 var relativeUnits = []relativeUnit{
+	{`четверть\s+часа`, 15 * time.Minute, 0, 0},
 	{`пол\s*часа`, 30 * time.Minute, 0, 0}, {`полгода`, 0, 0, 6},
 	{`секунд(?:а|у|ы)?`, time.Second, 0, 0}, {`минут(?:а|у|ы)?`, time.Minute, 0, 0},
 	{`час(?:а|ов|ик)?`, time.Hour, 0, 0}, {`сутки|суток|день|дня|дней`, 0, 1, 0},

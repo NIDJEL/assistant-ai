@@ -219,7 +219,13 @@ func Extract(text string, now time.Time) Temporal {
 	clock := first(`\b(?:(?:примерно\s+)?(?:в|к|около)\s+)?(\d{1,2}):(\d{2})(?:\s*(утра|вечера|дня|ночи))?\b`, clockText)
 	hour, minute := 0, 0
 	meridiem := ""
-	if clock != nil {
+	if named := first(`\b(?:(?:в|к|около)\s+)?(полдень|полночь)\b`, clockText); clock == nil && named != nil {
+		clock = named
+		hour = 12
+		if named.Parts[1] == "полночь" {
+			hour = 0
+		}
+	} else if clock != nil {
 		hour, _ = strconv.Atoi(clock.Parts[1])
 		minute, _ = strconv.Atoi(clock.Parts[2])
 		meridiem = clock.Parts[3]

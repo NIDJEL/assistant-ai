@@ -24,7 +24,7 @@ export type EventPatch = Partial<Omit<EventInput, 'kind'>>;
 export interface EventList { events: RhythmEvent[]; total: number; offset: number; limit: number }
 export interface EventQuery { start?: string; end?: string; kind?: EventKind; status?: EventStatus; q?: string; deleted?: string }
 export interface Health { status: string; backend: string; events: number; timezone: string; now: string; nlp_provider: string; schema_version: number }
-export interface ChatInput { message: string; session_id: string; request_id: string }
+export interface ChatInput { message: string; session_id: string; request_id: string; source?: 'text' | 'voice' }
 export interface ChatResponse {
   reply: string; action: Action; events: RhythmEvent[]; candidates: RhythmEvent[] | null;
   conflicts: RhythmEvent[] | null; total?: number; session_id: string;

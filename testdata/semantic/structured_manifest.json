@@ -1,0 +1,20 @@
+{
+  "train": 0,
+  "historical_dev": 572,
+  "regression": 13,
+  "heldout": 208,
+  "method": "hand-authored synthetic gold; no model outputs; no fine-tuning; freeze before held-out inference",
+  "files": [
+    {
+      "file": "testdata/semantic/structured_regressions.jsonl",
+      "count": 13,
+      "sha256": "5c1f04f3b5adaa768a050914e52ba41e085fd272ac750b656cb1c41989995d9d"
+    },
+    {
+      "file": "testdata/semantic/structured_heldout.jsonl",
+      "count": 208,
+      "sha256": "704b0c5324dab12bf5673afeab92df1c7507d7555f1761e619456eb8ab093b1e"
+    }
+  ],
+  "source": "Restored local SemanticCommand baseline; corpus bytes unchanged"
+}

@@ -2,3 +2,5 @@
 *.jpg binary
 *.png binary
 *.sqlite3 binary
+# Frozen semantic corpora retain their original bytes and checksums.
+testdata/semantic/*.jsonl -text whitespace=cr-at-eol

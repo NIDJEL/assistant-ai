@@ -12,7 +12,7 @@
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
 
-Актуальная версия: **`20261015-production-sync-01`**, основана на рабочем VPS-релизе `20261014-reminder-fix-03`.
+Актуальная версия: **`20261015-gigachat-ultra-01`**. [Публичный прототип](https://meinangelplatz.top).
 Исходники в ветке `main` — единственная поддерживаемая версия. [Состав и синхронизация](docs/RELEASE.md).
 
 **[Возможности](#возможности) · [Запуск](#быстрый-запуск) · [Как это устроено](#как-это-устроено) · [Документация](#документация)**
@@ -189,9 +189,16 @@ flowchart TD
 - **Уведомления.** Серверный worker обрабатывает сроки и повторения. Web Push доставляет сигналы на подписанные устройства при закрытой странице; нужны настройка VAPID, HTTPS и разрешение браузера. iPhone/iPad используют установленную PWA. Без подписки доступны уведомления внутри открытого приложения.
 - **Яндекс.** Синхронизация направлена из приложения в Яндекс. Изменения в самом Яндексе не импортируются. Каналы доставки push/почты разрешаются в настройках Яндекса.
 - **Планирование.** Поддерживаются разовые дела и повторяющиеся задачи/напоминания, включая будни, месяцы и годы. Повторяющиеся встречи и восстановление пароля по email пока не реализованы.
-- **LLM.** По умолчанию работает локальный разбор `rules`; Ollama можно подключить отдельно. Аккаунты и обычные команды работают без LLM.
+- **LLM.** По умолчанию работает локальный разбор `rules`. `GENA_SEMANTIC_PROVIDER=gigachat` подключает GigaChat через общий `SemanticCommand` contract; `ollama` использует тот же контракт. Аккаунты и обычные команды работают без LLM.
 
 [Подробно о командах, адаптации речи и напоминаниях →](docs/ASSISTANT_BEHAVIOR.md)
+
+[GigaChat: локальная настройка и production configuration →](docs/GIGACHAT_CONFIGURATION.md) · [Результаты semantic evaluation →](docs/GIGACHAT_SEMANTIC_REPORT.md)
+
+GigaChat pipeline: `Voice/Text → Go fast path → GigaChat → SemanticCommand → Go validation → executor → PostgreSQL`.
+Для проверенного baseline рекомендован `GigaChat-3-Ultra`: CORE `domain.Command` 133/136 (97,79%), CORE action/title/query 100%, unsafe accepted mutations 0. Без явной настройки default — rules; production service подключает GigaChat override.
+
+Ограничения: браузерная диктовка зависит от SpeechRecognition и требует ручной проверки микрофона на устройстве; baseline измерен на синтетических текстах. BONUS-сценарии распознаны хуже CORE. Следующие шаги — улучшения BONUS на DEV с новым fresh held-out, распределённая очередь для нескольких backend replicas и дополнительные проверки мобильной диктовки.
 
 ## Разработка и проверки
 

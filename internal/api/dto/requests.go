@@ -13,12 +13,19 @@ import (
 )
 
 type Chat struct {
+	Source    string `json:"source,omitempty"`
 	Message   string `json:"message"`
 	SessionID string `json:"session_id"`
 	RequestID string `json:"request_id"`
 }
 
 func (c *Chat) Validate() error {
+	if c.Source == "" {
+		c.Source = "text"
+	}
+	if c.Source != "text" && c.Source != "voice" {
+		return domain.Validation("Некорректный источник сообщения")
+	}
 	c.Message = strings.TrimSpace(c.Message)
 	if c.Message == "" || utf8.RuneCountInString(c.Message) > 2000 {
 		return domain.Validation("Сообщение должно содержать от 1 до 2000 символов")

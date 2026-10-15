@@ -69,7 +69,19 @@ func (s *Service) Respond(ctx context.Context, message, sid, rid string, now tim
 	}
 	defer unlock()
 	var cached *domain.Exchange
-	err = s.Store.Read(ctx, func(tx repository.Tx) error { var err error; cached, err = tx.Cached(ctx, sid, rid); return err })
+	pendingExpectation := ""
+	err = s.Store.Read(ctx, func(tx repository.Tx) error {
+		var err error
+		cached, err = tx.Cached(ctx, sid, rid)
+		if err != nil || cached != nil {
+			return err
+		}
+		state, err := tx.State(ctx, sid)
+		if err == nil && state.Pending != nil && now.Sub(state.Pending.At) <= 30*time.Minute {
+			pendingExpectation = state.Pending.Expectation
+		}
+		return err
+	})
 	if err != nil {
 		return response, err
 	}
@@ -80,7 +92,7 @@ func (s *Service) Respond(ctx context.Context, message, sid, rid string, now tim
 		return cached.Response, nil
 	}
 	// Both deterministic interpretation and external LLM HTTP happen before BEGIN IMMEDIATE.
-	cmd, err := s.Interpreter.Interpret(ctx, message, now)
+	cmd, err := s.Interpreter.Interpret(nlp.WithPendingExpectation(ctx, pendingExpectation), message, now)
 	if err != nil {
 		return response, err
 	}
@@ -444,8 +456,14 @@ func (s *Service) execute(ctx context.Context, tx repository.Tx, state *domain.S
 		state.LastIDs = []int64{id}
 		return answer("Отмечено выполненным: "+describe(*e)+".", domain.ActionComplete, *e), nil
 	}
-	if cmd.Date == nil && cmd.Time == nil {
+	if cmd.Action != domain.ActionUpdate {
+		return answer("Уточните действие. Ничего не изменено.", domain.ActionClarify), nil
+	}
+	if cmd.Date == nil && cmd.Time == nil && strings.TrimSpace(cmd.Title) == "" {
 		return ask(state, cmd, "На какую дату или время перенести событие?", now, "fields", nil), nil
+	}
+	if cmd.Title != "" {
+		event.Title = strings.TrimSpace(cmd.Title)
 	}
 	if cmd.Date != nil || cmd.Time != nil {
 		event.OccurrenceAt = cmd.ExactAt
@@ -468,6 +486,9 @@ func (s *Service) execute(ctx context.Context, tx repository.Tx, state *domain.S
 			return answer(err.Error(), domain.ActionClarify), nil
 		}
 	}
+	if err := event.Validate(); err != nil {
+		return answer(err.Error(), domain.ActionClarify), nil
+	}
 	conflicts, err := s.Calendar.Conflicts(ctx, tx, event, id)
 	if err != nil {
 		return domain.Response{}, err
@@ -480,7 +501,11 @@ func (s *Service) execute(ctx context.Context, tx repository.Tx, state *domain.S
 		return domain.Response{}, err
 	}
 	state.LastIDs = []int64{id}
-	result := answer("Перенесено: "+describe(*e)+".", domain.ActionUpdate, *e)
+	label := "Перенесено: "
+	if cmd.Title != "" {
+		label = "Изменено: "
+	}
+	result := answer(label+describe(*e)+".", domain.ActionUpdate, *e)
 	result.Conflicts = conflicts
 	return result, nil
 }
