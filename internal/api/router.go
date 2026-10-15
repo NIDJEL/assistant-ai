@@ -166,7 +166,7 @@ func (a *API) health(w http.ResponseWriter, r *http.Request) {
 			a.fail(w, r, err)
 			return
 		}
-		write(w, 200, map[string]any{"status": "ok", "events": count, "timezone": a.Config.Timezone, "nlp_provider": a.Config.NLPProvider, "now": a.Clock.Now(), "backend": "go", "storage": "postgresql", "schema_version": 1})
+		write(w, 200, map[string]any{"status": "ok", "events": count, "timezone": a.Config.Timezone, "nlp_provider": a.Config.EffectiveNLPProvider(), "now": a.Clock.Now(), "backend": "go", "storage": "postgresql", "schema_version": 1})
 		return
 	}
 	count, err := a.Calendar.Count(r.Context())
