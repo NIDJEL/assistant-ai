@@ -62,7 +62,7 @@ ALTER TABLE auth_identities ADD CONSTRAINT auth_identities_provider_check CHECK(
 }
 
 func TestCurrentBrandMetadataAndConfiguration(t *testing.T) {
-	for _, file := range []string{"web/index.html", "app/static/index.html"} {
+	for _, file := range []string{"web/index.html"} {
 		raw, err := os.ReadFile(filepath.Join(root(), file))
 		if err != nil {
 			t.Fatal(err)
@@ -71,7 +71,7 @@ func TestCurrentBrandMetadataAndConfiguration(t *testing.T) {
 			t.Fatal(file, string(raw))
 		}
 	}
-	for _, file := range []string{".env.example", ".env.go.example", "compose.yaml", "compose.go.yaml", "deploy/compose.production.yaml", "internal/config/config.go", "cmd/server/main.go"} {
+	for _, file := range []string{".env.example", "compose.yaml", "deploy/compose.production.yaml", "internal/config/config.go", "cmd/server/main.go"} {
 		raw, err := os.ReadFile(filepath.Join(root(), file))
 		if err != nil {
 			t.Fatal(err)

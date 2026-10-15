@@ -24,7 +24,7 @@ COPY --from=build /workspace/server /app/server
 COPY --chown=65532:65532 --from=build /workspace/var /app/var
 COPY --from=frontend /workspace/web/dist /app/web/dist
 COPY docs/diagrams ./docs/diagrams
-COPY docs/p1-architecture.html ./docs/p1-architecture.html
+COPY docs/architecture.html ./docs/architecture.html
 COPY data ./data
 USER 65532:65532
 EXPOSE 8000

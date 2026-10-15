@@ -285,10 +285,13 @@ func (s *Service) Restore(ctx context.Context, id int64, now time.Time, force bo
 	return result, err
 }
 
-// Due advances and persists recurring records atomically. The last occurrence is
-// replayed during the normal five-minute polling window; browser delivery keys
-// deduplicate this replay across tabs/reloads. It is never scheduled twice.
+// Due reads persisted notifications in the PostgreSQL runtime. Only the server
+// worker schedules/advances them. The legacy SQLite processor below is retained
+// for reference/parity consumers; it is never used by the production server.
 func (s *Service) Due(ctx context.Context, now time.Time) ([]domain.Event, error) {
+	if reader, ok := s.Store.(repository.NotificationReader); ok {
+		return reader.DueNotifications(ctx, now)
+	}
 	result := []domain.Event{}
 	err := s.Store.Write(ctx, func(tx repository.Tx) error {
 		events, err := tx.Events(ctx, domain.Filter{Status: domain.StatusOpen})

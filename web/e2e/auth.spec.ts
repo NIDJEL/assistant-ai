@@ -7,13 +7,14 @@ async function settle(page: Page) { await page.evaluate(async () => { await Prom
 test('onboarding mascot keeps its proportions on all steps and pixel densities', async ({ browser, baseURL }) => {
  const directory = resolve('../docs/screenshots/p1-2'); await mkdir(directory, { recursive: true });
  for (const display of [{ width: 913, height: 809, density: 1 }, { width: 913, height: 809, density: 2 }, { width: 390, height: 844, density: 2 }, { width: 360, height: 740, density: 2 }]) {
-  const context = await browser.newContext({ baseURL, viewport: { width: display.width, height: display.height }, deviceScaleFactor: display.density, reducedMotion: 'reduce', locale: 'ru-RU' });
+  const context = await browser.newContext({ baseURL, viewport: { width: display.width, height: display.height }, deviceScaleFactor: display.density, reducedMotion: 'reduce', locale: 'ru-RU', serviceWorkers:'block' });
   try {
    const page = await context.newPage();
+   await page.route('**/api/integrations',route=>route.fulfill({json:{connections:[],yandex_configured:true}}));
    await page.route('**/api/auth/me', route => route.fulfill({ json: { user: { id: '11111111-1111-4111-8111-111111111111', name: 'Мария', email: 'onboarding@example.test', avatar_url: '', providers: [], onboarding_completed: false } } }));
    await page.goto('/onboarding');
-   for (let step = 0; step < 3; step++) {
-    await expect(page.locator('.onboarding-dots')).toHaveAttribute('aria-label', `Шаг ${step + 1} из 3`); await settle(page);
+   for (let step = 0; step < 2; step++) {
+    await expect(page.locator('.onboarding-dots')).toHaveAttribute('aria-label', `Шаг ${step + 1} из 2`); await settle(page);
     const scale = await page.locator('.onboarding-card .auth-wave-face').evaluate(element => {
      const matrix = (element as SVGGraphicsElement).getScreenCTM()!;
      return { x: Math.hypot(matrix.a, matrix.b), y: Math.hypot(matrix.c, matrix.d) };
@@ -25,7 +26,6 @@ test('onboarding mascot keeps its proportions on all steps and pixel densities',
     if (step > 0 && display.width === 913) await page.screenshot({ path: resolve(directory, `onboarding-${step === 1 ? 'calendar' : 'ready'}${display.density === 2 ? '@2x' : ''}.png`), animations: 'disabled' });
     if (step === 1 && display.width === 390) await page.screenshot({ path: resolve(directory, 'onboarding-mobile@2x.png'), animations: 'disabled' });
     if (step === 0) await page.getByRole('button', { name: 'Начать', exact: true }).click();
-    else if (step === 1) await page.getByRole('button', { name: 'Сделать позже' }).click();
    }
   } finally { await context.close(); }
  }
@@ -93,7 +93,7 @@ test('approved auth experience, registration, onboarding, session refresh, accou
  await page.getByLabel('Повторите пароль').fill(password); await page.getByRole('button', { name: 'Создать аккаунт', exact: true }).click(); await expect(page.getByRole('heading', { name: 'Добро пожаловать! Я Гена' })).toBeVisible();
  await page.getByRole('button', { name: 'Начать', exact: true }).click(); await expect(page.getByRole('heading', { name: 'Подключить Яндекс Календарь?' })).toBeVisible();
  const directory = resolve('../docs/screenshots/p1-2'); await mkdir(directory, { recursive: true }); await settle(page); await page.screenshot({ path: resolve(directory, 'onboarding.png'), animations: 'disabled' });
- expect((await (await context.request.get('/api/integrations')).json()).connections).toEqual([]); await page.getByRole('button', { name: 'Сделать позже' }).click(); await page.getByRole('button', { name: 'Перейти к Гене' }).click(); await expect(page.locator('h1')).toHaveText('Чем помочь?');
+ expect((await (await context.request.get('/api/integrations')).json()).connections).toEqual([]); await page.getByRole('button', { name: 'Сделать позже' }).click(); await expect(page.locator('h1')).toHaveText('Чем помочь?');
  await page.reload(); await expect(page.locator('.profile-name')).toHaveText('Мария Гена');
  const cookies = await context.cookies(); expect(cookies.find(cookie => cookie.name === 'rhythm_session')?.httpOnly).toBe(true); expect(await page.evaluate(() => document.cookie)).not.toContain('rhythm_session');
  await page.getByRole('link', { name: 'Настройки', exact: true }).click(); await expect(page.getByRole('heading', { level: 1, name: 'Настройки' })).toBeVisible(); await expect(page.locator('.account-card')).toContainText('Мария Гена'); await settle(page); await page.screenshot({ path: resolve(directory, 'account.png'), animations: 'disabled' });

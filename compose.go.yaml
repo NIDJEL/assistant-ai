@@ -1,3 +1,0 @@
-# Compatibility entrypoint; PostgreSQL is the primary runtime for both files.
-include:
-  - compose.yaml

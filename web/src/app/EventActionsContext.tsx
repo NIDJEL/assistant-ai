@@ -6,6 +6,8 @@ import { Alert, Button, IconButton } from '../components/UI';
 import { MotionLink } from '../components/motion/MotionNavLink';
 import { useData } from './DataContext';
 import { errorMessage } from '../api/client';
+import { request } from '../api/client';
+import { useSearchParams } from 'react-router-dom';
 import type { EventKind, RhythmEvent } from '../types/api';
 import { Presence } from '../components/motion/Presence';
 interface Actions {
@@ -15,6 +17,17 @@ interface Actions {
 const Context = createContext<Actions | null>(null);
 export function EventActionsProvider({ children }: { children: ReactNode }) {
   const data = useData(); const [editor, setEditor] = useState<EditorSpec | null>(null); const [deleting, setDeleting] = useState<RhythmEvent | null>(null);
+  const [params,setParams] = useSearchParams(); const deepLink = params.get('event');
+  useEffect(() => {
+    if (!data.health || !deepLink || !/^\d+$/.test(deepLink)) return;
+    const controller = new AbortController();
+    void request<RhythmEvent>(`/api/events/${deepLink}`, { signal: controller.signal }).then(event => {
+      if (controller.signal.aborted) return;
+      setEditor({ kind: event.kind, event, nonce: Date.now() });
+      setParams(current => { const next = new URLSearchParams(current); next.delete('event'); return next; }, { replace: true });
+    }).catch(e => { if (!controller.signal.aborted) setError(errorMessage(e)); });
+    return () => controller.abort();
+  }, [deepLink, data.health?.timezone]);
   const [error, setError] = useState(''); const [busy, setBusy] = useState(false); const locked = useRef(false); const pendingIds = useRef(new Set<number>());
   const [notice, setNotice] = useState<{ event: RhythmEvent; deleted: boolean } | null>(null); const undoLock = useRef(false); const [undoBusy, setUndoBusy] = useState(false);
   useEffect(() => { if (!notice) return; const timer = window.setTimeout(() => setNotice(null), 8000); return () => window.clearTimeout(timer); }, [notice]);

@@ -16,10 +16,6 @@ func (a *API) frontendRoutes(r chi.Router) {
 	serve := func(w http.ResponseWriter, req *http.Request) {
 		w.Header().Set("Cache-Control", "no-cache")
 		if _, err := os.Stat(index); err != nil {
-			if req.URL.Path == "/" {
-				http.ServeFile(w, req, filepath.Join(a.Config.Root, "app/static/index.html"))
-				return
-			}
 			a.fail(w, req, &domain.AppError{Code: "frontend_unavailable", Message: "Сначала соберите frontend: pnpm --dir web build", Status: 404})
 			return
 		}
@@ -32,6 +28,12 @@ func (a *API) frontendRoutes(r chi.Router) {
 	r.Get("/favicon.svg", func(w http.ResponseWriter, req *http.Request) {
 		http.ServeFile(w, req, filepath.Join(root, "favicon.svg"))
 	})
+	r.Get("/manifest.webmanifest", func(w http.ResponseWriter, req *http.Request) {
+		w.Header().Set("Content-Type", "application/manifest+json")
+		w.Header().Set("Cache-Control", "no-cache")
+		http.ServeFile(w, req, filepath.Join(root, "manifest.webmanifest"))
+	})
+	r.Handle("/icons/*", http.StripPrefix("/icons/", http.FileServer(http.Dir(filepath.Join(root, "icons")))))
 	r.Get("/notifications-sw.js", func(w http.ResponseWriter, req *http.Request) {
 		w.Header().Set("Content-Type", "application/javascript; charset=utf-8")
 		w.Header().Set("Cache-Control", "no-cache")

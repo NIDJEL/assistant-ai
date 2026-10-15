@@ -15,3 +15,8 @@ htmlcov/
 web/dist/
 web/test-results/
 web/playwright-report/
+
+# Historical visual-test output is generated locally, never part of a release.
+docs/screenshots/p1/
+docs/screenshots/p1-1/
+docs/screenshots/p1-2/

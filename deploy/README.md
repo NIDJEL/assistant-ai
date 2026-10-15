@@ -33,6 +33,12 @@ SSH-ключ: `C:\Users\nidjel\.ssh\rhythm_server_ed25519`.
 
 ## Проверка и обслуживание
 
+### Web Push
+
+14 октября 2026 Web Push настроен и развернут в production: релиз `20261014-web-push-01`. Постоянная VAPID-пара уже создана существующим генератором и сохранена в `/etc/rhythm/production.env`, root:root, 0600. Subject — `mailto:nikkruglov16@gmail.com`. Reminder worker работает внутри Go process. Сохраняйте эту пару при обновлениях и на всех экземплярах; повторно генерировать production keys не требуется.
+
+Production compose передаёт эти значения backend. После backup применены migrations 003 и 004; subscriptions/outbox включены в PostgreSQL backup. Manifest/icons/notifications-sw.js доступны через существующий HTTPS proxy. Проверены backend health, worker startup, public key API, подписки, успешная зашифрованная доставка на synthetic receiver, retry/dead logic и отсутствие дублей из polling. [Production отчёт](../docs/WEB_PUSH.md), [настройка и device checklist](../docs/WEB_PUSH.md).
+
 ```sh
 sudo systemctl status rhythm nginx certbot.timer fail2ban
 sudo docker ps
@@ -88,7 +94,7 @@ Compose project `rhythm`, постоянный том `rhythm-postgres-productio
 `https://meinangelplatz.top/api/auth/yandex/callback`
 
 Для календаря требуется право `calendar:all`. До настройки callback используйте регистрацию и вход по email/паролю.
-Восстановление пароля по email и фоновые Web Push при закрытом браузере пока отсутствуют в самом приложении.
+Фоновые Web Push реализованы и настроены. Восстановление пароля по email пока отсутствует.
 
 ## Границы защиты
 
@@ -96,4 +102,14 @@ Compose project `rhythm`, постоянный том `rhythm-postgres-productio
 
 ## Обновление «Ассистент Гена»
 
-Технические пути `/opt/rhythm`, systemd units, имя Compose и постоянные тома сохранены. Публичный бренд — Гена / Ассистент Гена. Настроек VK больше нет. При следующем запуске нового Go backend применяется migration `003_remove_vk.sql`: только старые provider identities/state, без удаления аккаунтов или событий. Recurrence использует существующие JSON metadata, отдельной migration для branding/повторений нет. Аккаунтам с единственным удаляемым способом входа нужен email/Яндекс identity перед production-обновлением. Яндекс OAuth application name остаётся «Ассистент Гена». Этот этап изменяет рабочую копию; удалённый production deploy не выполнялся.
+Технические пути `/opt/rhythm`, systemd units, имя Compose и постоянные тома сохранены. Публичный бренд — Гена / Ассистент Гена. Настроек VK больше нет. Migration `003_remove_vk.sql` применена в production вместе с 004: только старые provider identities/state, без удаления аккаунтов или событий. До deployment проверено отсутствие пользователей с единственным VK identity. Recurrence использует существующие JSON metadata, отдельной migration для branding/повторений нет. Яндекс OAuth application name остаётся «Ассистент Гена».
+
+## Единственная актуальная версия
+
+Поддерживаемая версия указана в `VERSION`, исходники — в GitHub `main`.
+Основа синхронизации 15 октября 2026: работавший релиз `20261014-reminder-fix-03`.
+Новый каталог релиза содержит `REVISION` с полным SHA Git-коммита. Сверяйте его с `git rev-parse origin/main`.
+Загружайте исходники через `git archive` зафиксированного коммита; локальные незакоммиченные файлы не входят в deployment.
+Старые релизы упаковываются в `/var/backups/rhythm/source-archive-*` и удаляются из `/opt/rhythm/releases` после проверки активного приложения.
+Для отката распакуйте нужный каталог, восстановите `RELEASE_TAG` и `/opt/rhythm/current`, затем обновите только сервис `app` через `docker compose up -d --no-deps --wait app`.
+Постоянный том `rhythm-postgres-production`, секреты и VAPID-ключи сохраняются между обновлениями.

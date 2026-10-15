@@ -1,6 +1,6 @@
 # Russian normalization data
 
-`russian.json` contains dictionary-backed word forms and top lemmas exported by `scripts/export_parity.py` from the existing reference implementation.
+`russian.json` contains dictionary-backed word forms and top lemmas exported from the original reference implementation (retained in Git history and the pre-cleanup backup).
 
 Sources: the supplied 1000-event CSV, the shared parity corpus, pymorphy3 and `pymorphy3-dicts-ru` 2.4.417150.4580142 (OpenCorpora source revision 417150). Lexeme inflections are expanded using the reference analyzer; they are not inferred using lowercase alone.
 

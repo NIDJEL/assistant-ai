@@ -5,38 +5,6 @@ on:
 permissions:
   contents: read
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-          cache: pip
-      - run: pip install -r requirements.lock -r requirements-dev.txt
-      - run: ruff check .
-      - run: python -m pytest -q
-      - name: Check shared corpus against unchanged Python reference
-        run: |
-          python -m scripts.export_parity
-          git diff --exit-code -- testdata/parity/corpus.json internal/search/data/russian.json
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-      - run: node --test tests/voice.test.js
-      - run: docker compose -f compose.python.yaml config --quiet
-      - run: docker build -f Dockerfile.python -t rhythm-assistant:test .
-      - name: Container smoke test
-        run: |
-          docker run -d --name rhythm-smoke -p 8000:8000 rhythm-assistant:test
-          for attempt in $(seq 1 30); do
-            if curl --fail http://localhost:8000/health; then break; fi
-            sleep 2
-          done
-          curl --fail http://localhost:8000/health
-          curl --fail http://localhost:8000/
-          docker logs rhythm-smoke
-          docker rm -f rhythm-smoke
   go-parity:
     runs-on: ubuntu-latest
     services:
@@ -74,7 +42,7 @@ jobs:
         run: |
           export POSTGRES_PASSWORD=$(openssl rand -hex 24)
           export SESSION_SECRET=$(openssl rand -hex 32)
-          docker compose -f compose.go.yaml config --quiet
+          docker compose config --quiet
           docker compose up --build -d --wait
           curl --fail http://localhost:8081/health
           curl --fail http://localhost:8081/auth | grep '<div id="root">'
@@ -131,4 +99,3 @@ jobs:
           path: |
             web/playwright-report
             web/test-results
-            docs/screenshots/p1-2

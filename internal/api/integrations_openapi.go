@@ -31,4 +31,5 @@ func integrationsOpenAPI(paths, schemas map[string]any) {
 	start := paths["/api/auth/yandex/start"].(map[string]any)["get"].(map[string]any)
 	start["description"] = "Browser-bound OAuth with PKCE. calendar=1 requires an active session and requests calendar:all; normal login requests only the profile. The existing callback URI is reused."
 	start["parameters"] = []any{map[string]any{"name": "calendar", "in": "query", "schema": map[string]any{"type": "string", "enum": []string{"1"}}}, map[string]any{"name": "link", "in": "query", "schema": map[string]any{"type": "string", "enum": []string{"1"}}}}
+	start["parameters"] = append(start["parameters"].([]any), map[string]any{"name": "source", "in": "query", "schema": map[string]any{"type": "string", "enum": []string{"onboarding", "integrations"}}, "description": "Stored in one-use state; onboarding success completes onboarding and redirects to chat. No arbitrary return URL."})
 }

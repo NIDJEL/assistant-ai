@@ -5,7 +5,7 @@ test('Yandex calendar offers explicit permission and handles connected filters',
   await page.route('**/api/integrations', route => route.fulfill({ json: { connections: [], yandex_configured: true } }));
   await ready(page, '/integrations?service=yandex');
   const detail = page.getByRole('complementary', { name: 'Интеграция', exact: true });
-  await expect(detail.getByRole('link', { name: 'Подключить Яндекс Календарь' })).toHaveAttribute('href', '/api/auth/yandex/start?calendar=1');
+  await expect(detail.getByRole('link', { name: 'Подключить Яндекс Календарь' })).toHaveAttribute('href', '/api/auth/yandex/start?calendar=1&source=integrations');
   await expect(detail.getByRole('button', { name: 'Синхронизировать сейчас' })).toBeDisabled();
   await expect(detail).toContainText('Все дела с датой, включая уже созданные');
   await page.getByRole('group', { name: 'Фильтр интеграций' }).getByRole('button', { name: 'Подключено', exact: true }).click();

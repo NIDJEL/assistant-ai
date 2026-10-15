@@ -121,6 +121,9 @@ func TestPostgresRussianNLURetainsSecondPrecision(t *testing.T) {
 	if err != nil || len(due) != 0 {
 		t.Fatal("early PostgreSQL reminder", due, err)
 	}
+	if _, err := db.ProcessDue(ctx, start, cal.Location); err != nil {
+		t.Fatal(err)
+	}
 	due, err = cal.Due(ctx, start)
 	if err != nil || len(due) != 1 {
 		t.Fatal("missing PostgreSQL reminder", due, err)

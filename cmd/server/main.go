@@ -23,6 +23,7 @@ import (
 	"github.com/NIDJEL/assistant-ai/internal/integrations/yandexcalendar"
 	"github.com/NIDJEL/assistant-ai/internal/llm"
 	"github.com/NIDJEL/assistant-ai/internal/nlp"
+	"github.com/NIDJEL/assistant-ai/internal/notifications"
 	"github.com/NIDJEL/assistant-ai/internal/search"
 	"github.com/NIDJEL/assistant-ai/internal/storage/postgres"
 )
@@ -80,6 +81,14 @@ func run(log *slog.Logger) error {
 	workerDone := make(chan struct{})
 	go func() { defer close(workerDone); calendarSync.Run(workerCtx) }()
 	defer func() { workerStop(); <-workerDone }()
+	var pushSender notifications.Sender
+	if cfg.WebPush.Enabled() {
+		pushSender = notifications.NewSender(cfg.WebPush)
+	}
+	reminderWorker := &notifications.Worker{Store: store, Sender: pushSender, Location: cfg.Location, Logger: log}
+	pushDone := make(chan struct{})
+	go func() { defer close(pushDone); reminderWorker.Run(workerCtx) }()
+	defer func() { workerStop(); <-pushDone }()
 	engine, err := search.New()
 	if err != nil {
 		return err

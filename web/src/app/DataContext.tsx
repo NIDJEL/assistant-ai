@@ -26,7 +26,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
     } catch (e) { if (!controller.signal.aborted) setError(errorMessage(e)); }
     finally { if (!controller.signal.aborted) setLoading(false); }
   }, []);
-  useEffect(() => { void refresh(); const timer = setInterval(() => void refresh(), 60000); return () => { clearInterval(timer); current.current?.abort(); }; }, [refresh]);
+  useEffect(() => {
+    const onFocus = () => { if (document.visibilityState !== 'hidden') void refresh(); };
+    void refresh(); const timer = setInterval(() => void refresh(), 60000);
+    window.addEventListener('focus', onFocus); document.addEventListener('visibilitychange', onFocus);
+    return () => { clearInterval(timer); current.current?.abort(); window.removeEventListener('focus', onFocus); document.removeEventListener('visibilitychange', onFocus); };
+  }, [refresh]);
   const create = async (input: EventInput) => { const item = await eventsAPI.createEvent(input); setEvents(current => [...current, item]); await refresh(); return item; };
   const update = async (id: number, input: EventPatch) => { const item = await eventsAPI.updateEvent(id, input); setEvents(current => current.map(event => event.id === id ? item : event)); await refresh(); return item; };
   const remove = async (id: number) => { await eventsAPI.deleteEvent(id); setEvents(current => current.filter(event => event.id !== id)); await refresh(); };

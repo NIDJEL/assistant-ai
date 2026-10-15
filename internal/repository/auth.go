@@ -13,6 +13,7 @@ type Identity = user.Identity
 type OAuthState struct {
 	ID, Provider, BrowserHash, Verifier, LinkUserID string
 	Purpose                                         string
+	Source                                          string
 	ExpiresAt                                       time.Time
 }
 type AuthStore interface {

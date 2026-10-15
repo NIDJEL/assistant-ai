@@ -27,18 +27,25 @@ type CalendarConnector interface {
 type OAuthResult struct {
 	User             *user.User
 	Linked, Calendar bool
+	Source           string
 }
 
 func (s *Service) StartOAuth(ctx context.Context, provider, link string, now time.Time) (string, string, error) {
-	return s.startOAuth(ctx, provider, link, "", now)
+	return s.startOAuth(ctx, provider, link, "", "", now)
 }
 func (s *Service) StartCalendarOAuth(ctx context.Context, userID string, now time.Time) (string, string, error) {
+	return s.StartCalendarOAuthFrom(ctx, userID, "integrations", now)
+}
+func (s *Service) StartCalendarOAuthFrom(ctx context.Context, userID, source string, now time.Time) (string, string, error) {
+	if source != "onboarding" && source != "integrations" {
+		return "", "", domain.Validation("Некорректный источник подключения")
+	}
 	if userID == "" || s.Calendar == nil {
 		return "", "", &domain.AppError{Code: "calendar_unavailable", Message: "Подключение календаря не настроено", Status: 503}
 	}
-	return s.startOAuth(ctx, "yandex", userID, "calendar", now)
+	return s.startOAuth(ctx, "yandex", userID, "calendar", source, now)
 }
-func (s *Service) startOAuth(ctx context.Context, provider, link, purpose string, now time.Time) (redirect, browser string, err error) {
+func (s *Service) startOAuth(ctx context.Context, provider, link, purpose, source string, now time.Time) (redirect, browser string, err error) {
 	p := s.Providers[provider]
 	if p == nil {
 		return "", "", &domain.AppError{Code: "oauth_unavailable", Message: "Этот способ входа ещё не настроен. Используйте почту.", Status: 503}
@@ -66,7 +73,7 @@ func (s *Service) startOAuth(ctx context.Context, provider, link, purpose string
 	} else {
 		redirect = p.AuthorizationURL(state, encoded)
 	}
-	err = s.Store.SaveOAuthState(ctx, repository.OAuthState{ID: s.digest(state), Provider: provider, BrowserHash: s.digest(browser), Verifier: verifier, LinkUserID: link, Purpose: purpose, ExpiresAt: now.Add(10 * time.Minute)})
+	err = s.Store.SaveOAuthState(ctx, repository.OAuthState{ID: s.digest(state), Provider: provider, BrowserHash: s.digest(browser), Verifier: verifier, LinkUserID: link, Purpose: purpose, Source: source, ExpiresAt: now.Add(10 * time.Minute)})
 	return redirect, browser, err
 }
 func (s *Service) FinishOAuth(ctx context.Context, provider, browser, currentUser string, q url.Values, now time.Time) (*user.User, bool, error) {
@@ -86,6 +93,7 @@ func (s *Service) FinishOAuthFlow(ctx context.Context, provider, browser, curren
 		return result, invalid
 	}
 	result.Calendar = state.Purpose == "calendar"
+	result.Source = state.Source
 	if q.Get("error") != "" {
 		return result, &domain.AppError{Code: "oauth_cancelled", Message: "Авторизация была отменена", Status: 400}
 	}

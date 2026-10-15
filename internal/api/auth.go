@@ -255,6 +255,10 @@ func (a *API) oauthStart(w http.ResponseWriter, r *http.Request) {
 	provider := "yandex"
 	link := ""
 	calendarFlow := provider == "yandex" && r.URL.Query().Get("calendar") == "1"
+	source := "integrations"
+	if r.URL.Query().Get("source") == "onboarding" {
+		source = "onboarding"
+	}
 	if r.URL.Query().Get("link") == "1" || calendarFlow {
 		u, err := a.currentUser(r)
 		if err != nil || u == nil {
@@ -270,7 +274,7 @@ func (a *API) oauthStart(w http.ResponseWriter, r *http.Request) {
 	var redirect, browser string
 	var err error
 	if calendarFlow {
-		redirect, browser, err = a.Auth.StartCalendarOAuth(r.Context(), link, a.Clock.Now())
+		redirect, browser, err = a.Auth.StartCalendarOAuthFrom(r.Context(), link, source, a.Clock.Now())
 	} else {
 		redirect, browser, err = a.Auth.StartOAuth(r.Context(), provider, link, a.Clock.Now())
 	}
@@ -281,6 +285,9 @@ func (a *API) oauthStart(w http.ResponseWriter, r *http.Request) {
 		}
 		if calendarFlow {
 			destination = "/integrations?service=yandex&error=calendar_unavailable"
+			if source == "onboarding" {
+				destination = "/onboarding?error=calendar_unavailable"
+			}
 		} else {
 			destination += "?error=oauth_unavailable"
 		}
@@ -316,8 +323,15 @@ func (a *API) oauthCallback(w http.ResponseWriter, r *http.Request) {
 		destination := "/auth"
 		if current != "" {
 			destination = "/settings"
+			if u != nil && !u.OnboardingCompleted {
+				destination = "/onboarding"
+			}
 		}
 		if result.Calendar {
+			if result.Source == "onboarding" {
+				http.Redirect(w, r, "/onboarding?error="+url.QueryEscape(code), 303)
+				return
+			}
 			http.Redirect(w, r, "/integrations?service=yandex&error="+code, 303)
 			return
 		}
@@ -325,6 +339,14 @@ func (a *API) oauthCallback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if result.Calendar {
+		if result.Source == "onboarding" {
+			if _, err := a.Auth.Update(r.Context(), result.User.ID, "", true); err != nil {
+				http.Redirect(w, r, "/onboarding?error=calendar_completion", 303)
+				return
+			}
+			http.Redirect(w, r, "/?calendar=connected", 303)
+			return
+		}
 		http.Redirect(w, r, "/integrations?service=yandex&connected=1", 303)
 		return
 	}

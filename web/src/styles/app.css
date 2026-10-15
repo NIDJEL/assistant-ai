@@ -245,8 +245,8 @@
 .dialog-heading { display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-bottom: 22px; }
 .dialog-heading h2 { font-size: 23px; overflow-wrap: anywhere; }
 .event-form { display: grid; gap: 18px; }
-.event-form label { display: grid; gap: 8px; font-size: 13px; color: #5f729d; }
-.event-form input, .event-form textarea, .event-form select { width: 100%; font-size: 15px; }
+.event-form label:not(.switch-row) { display: grid; gap: 8px; font-size: 13px; color: #5f729d; }
+.event-form input:not([role='switch']), .event-form textarea, .event-form select { width: 100%; font-size: 15px; }
 .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 15px; }
 .dialog-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
 .conflict-list { border: 1px solid #ffcdda; border-radius: 13px; padding: 15px; background: #fff9fb; display: grid; gap: 10px; font-size: 13px; color: #9c4c67; }

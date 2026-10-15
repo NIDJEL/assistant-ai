@@ -46,3 +46,15 @@ func TestProductionSPARoutesAndAPI404(t *testing.T) {
 		t.Fatal("API 404 became an HTML fallback")
 	}
 }
+
+func TestMissingBuildReturnsActionableError(t *testing.T) {
+	a := API{Config: config.Config{Root: t.TempDir()}, Logger: slog.New(slog.NewJSONHandler(io.Discard, nil))}
+	router := a.Router()
+	for _, path := range []string{"/", "/auth", "/calendar"} {
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, httptest.NewRequest("GET", path, nil))
+		if w.Code != 404 || !strings.Contains(w.Body.String(), `"frontend_unavailable"`) {
+			t.Fatalf("missing build %s: %d %s", path, w.Code, w.Body.String())
+		}
+	}
+}

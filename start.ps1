@@ -1,11 +1,10 @@
-param([int]$Port = 8000)
+param()
 $ErrorActionPreference = 'Stop'
 Set-Location -LiteralPath $PSScriptRoot
-if (-not (Test-Path -LiteralPath '.venv\Scripts\python.exe')) {
-    python -m venv .venv
-    if ($LASTEXITCODE -ne 0) { throw 'Не удалось создать окружение. Установите Python 3.12 или новее.' }
+if (-not (Test-Path -LiteralPath '.env')) {
+    Copy-Item -LiteralPath '.env.example' -Destination '.env'
+    throw 'Создан .env. Заполните POSTGRES_PASSWORD, SESSION_SECRET и PUBLIC_URL, затем повторите запуск.'
 }
-& '.\.venv\Scripts\python.exe' -m pip install -r requirements.lock
-if ($LASTEXITCODE -ne 0) { throw 'Не удалось установить зависимости.' }
-Write-Host "Ассистент Гена: http://localhost:$Port"
-& '.\.venv\Scripts\python.exe' -m uvicorn app.main:app --host 127.0.0.1 --port $Port
+docker compose up --build -d --wait
+if ($LASTEXITCODE -ne 0) { throw 'Не удалось запустить приложение. Проверьте Docker и настройки .env.' }
+Write-Host 'Ассистент Гена: http://localhost:8081'

@@ -118,6 +118,7 @@ func OpenAPI() map[string]any {
 	}
 	authOpenAPI(paths, schemas)
 	integrationsOpenAPI(paths, schemas)
+	notificationsOpenAPI(paths, schemas)
 	paths["/health"].(map[string]any)["get"].(map[string]any)["security"] = []any{}
 	return map[string]any{"openapi": "3.0.3", "info": map[string]string{"title": "Ассистент Гена — multi-user API", "version": "0.4.0"}, "paths": paths, "security": []map[string]any{{"sessionCookie": []string{}}}, "components": map[string]any{"schemas": schemas, "securitySchemes": map[string]any{"sessionCookie": map[string]any{"type": "apiKey", "in": "cookie", "name": sessionCookie}}}}
 }

@@ -12,10 +12,12 @@ import (
 	"time"
 	_ "time/tzdata"
 
+	"github.com/NIDJEL/assistant-ai/internal/notifications"
 	"github.com/joho/godotenv"
 )
 
 type Config struct {
+	WebPush                                                                    notifications.Config
 	ImportUserEmail, ImportUserName, ImportUserPassword                        string
 	AuthRateLimit                                                              int
 	TrustedProxyCIDRs                                                          []*net.IPNet
@@ -52,6 +54,7 @@ func Load() (Config, error) {
 		return fallback
 	}
 	c := Config{
+		WebPush:         notifications.Config{PublicKey: value("WEB_PUSH_VAPID_PUBLIC_KEY", ""), PrivateKey: value("WEB_PUSH_VAPID_PRIVATE_KEY", ""), Subject: value("WEB_PUSH_SUBJECT", "")},
 		ImportUserEmail: value("IMPORT_USER_EMAIL", "dev@rhythm.local"), ImportUserName: value("IMPORT_USER_NAME", "Разработчик"), ImportUserPassword: value("IMPORT_USER_PASSWORD", ""),
 		DatabaseURL: value("DATABASE_URL", ""), SessionSecret: value("SESSION_SECRET", ""),
 		PublicURL: value("PUBLIC_URL", "http://localhost:8081"), Environment: value("APP_ENV", "development"),
@@ -60,6 +63,9 @@ func Load() (Config, error) {
 		DatabasePath: value("DATABASE_PATH", filepath.Join(root, "var/assistant-go.sqlite3")),
 		Timezone:     value("APP_TIMEZONE", "Europe/Moscow"), NLPProvider: value("NLP_PROVIDER", "rules"),
 		OllamaURL: value("OLLAMA_BASE_URL", "http://127.0.0.1:11434"), OllamaModel: value("OLLAMA_MODEL", "qwen2.5:7b"),
+	}
+	if err := c.WebPush.Validate(); err != nil {
+		return c, err
 	}
 	if c.AuthRateLimit, err = strconv.Atoi(value("AUTH_RATE_LIMIT", "20")); err != nil || c.AuthRateLimit < 1 || c.AuthRateLimit > 300 {
 		return c, errors.New("AUTH_RATE_LIMIT must be between 1 and 300")

@@ -1,0 +1,15 @@
+{
+  "id": "/",
+  "name": "Ассистент Гена",
+  "short_name": "Гена",
+  "lang": "ru",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "theme_color": "#edf6ff",
+  "background_color": "#edf6ff",
+  "icons": [
+    { "src": "/icons/gena-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/gena-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

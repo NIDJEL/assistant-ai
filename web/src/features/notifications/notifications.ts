@@ -7,9 +7,9 @@ export function notificationKey(event: RhythmEvent) {
 }
 export function notificationSupport() { return typeof window !== 'undefined' && 'Notification' in window && window.isSecureContext; }
 export async function registerNotifications() {
-  if (!('serviceWorker' in navigator)) return undefined;
+  if (!navigator.serviceWorker) return undefined;
   await navigator.serviceWorker.register('/notifications-sw.js');
-  const registration = await navigator.serviceWorker.ready;
+  const registration = await Promise.race([navigator.serviceWorker.ready, new Promise<never>((_, reject) => { const timer = setTimeout(() => reject(new Error('Notifications unavailable')), 10000); navigator.serviceWorker.ready.finally(() => clearTimeout(timer)); })]);
   const worker = registration.active;
   if (!worker) throw new Error('Notification worker is unavailable');
   if (worker.state !== 'activated') await new Promise<void>((resolve, reject) => {
@@ -23,19 +23,6 @@ export async function registerNotifications() {
   });
   return registration;
 }
-export async function showSystemNotification(event: RhythmEvent, userId: string, body: string, active: () => boolean = () => true) {
-  if (!active() || !notificationSupport() || Notification.permission !== 'granted') return;
-  const options: NotificationOptions = { body, tag: `rhythm-${userId}-${notificationKey(event)}`, data: { userId, url: `/calendar?date=${event.date}` } };
-  try {
-    const registration = await registerNotifications();
-    if (!active()) return;
-    if (registration) { await registration.showNotification(event.title, options); return; }
-  } catch { /* Desktop constructor remains available if service workers fail. */ }
-  if (!active()) return;
-  try { const notice = new Notification(event.title, options); notice.onclick = () => { window.focus(); window.location.assign(options.data.url); notice.close(); }; }
-  catch { /* The in-app notification is still visible on unsupported devices. */ }
-}
-
 // Locks serialize simultaneous polling tabs. Storage makes a delivery survive
 // reloads while a moved event receives a new key and can notify again.
 export async function claimNotification(userId: string, event: RhythmEvent, seen: Set<string>): Promise<boolean> {

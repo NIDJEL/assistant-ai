@@ -62,6 +62,11 @@ func (a *API) Router() http.Handler {
 		r.Get("/api/meetings", a.events(domain.EventMeeting))
 		r.Get("/api/reminders", a.events(domain.EventReminder))
 		r.Get("/api/reminders/due", a.due)
+		r.Get("/api/notifications/push/config", a.pushConfig)
+		r.Get("/api/notifications/push/subscriptions", a.pushSubscriptions)
+		r.Post("/api/notifications/push/subscriptions", a.pushSubscriptions)
+		r.Delete("/api/notifications/push/subscriptions/{id}", a.deletePushSubscription)
+		r.Post("/api/notifications/push/test", a.testPush)
 		r.Get("/api/calendar", a.events(domain.EventUnknown))
 		r.Get("/api/archive", func(w http.ResponseWriter, r *http.Request) {
 			q := r.URL.Query()
@@ -81,10 +86,9 @@ func (a *API) Router() http.Handler {
 	})
 	r.Get("/openapi.json", func(w http.ResponseWriter, r *http.Request) { write(w, 200, OpenAPI()) })
 	r.Get("/docs", a.docs)
-	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.Dir(filepath.Join(a.Config.Root, "app/static")))))
 	r.Handle("/diagrams/*", http.StripPrefix("/diagrams/", http.FileServer(http.Dir(filepath.Join(a.Config.Root, "docs/diagrams")))))
 	r.Get("/architecture", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, filepath.Join(a.Config.Root, "docs/p1-architecture.html"))
+		http.ServeFile(w, r, filepath.Join(a.Config.Root, "docs/architecture.html"))
 	})
 	a.frontendRoutes(r)
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {

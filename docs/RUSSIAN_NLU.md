@@ -185,14 +185,14 @@ poll не накапливает drift. Календарные правила с
 срабатывает в этом повторном часе один раз. Elapsed правило может пройти
 оба одинаковых локальных часа, поскольку это разные UTC-моменты.
 
-`calendar.Service.Due` использует существующий polling (каждые 30 секунд),
-но в транзакции продвигает recurring запись и сохраняет `occurrence_at`,
-`last_notification_at` и lead последнего сигнала. PostgreSQL advisory lock
-одного пользователя / SQLite writer сериализуют параллельные polls.
-Последний сигнал replay-ится в прежнем пятиминутном окне доставки; это
-повтор ответа API, а не повтор продвижения ряда. Browser delivery key
-включает UTC instant и сохраняется между вкладками/перезагрузками.
-Просроченные occurrences старше окна пропускаются, без лавины уведомлений.
+В PostgreSQL `calendar.Service.Due` только читает снимки последнего сигнала;
+polling не продвигает ряд. Серверный reminder worker под user advisory lock
+атомарно сохраняет уникальный occurrence, доставки на устройства и следующий
+момент recurrence. `occurrence_at`, anchor и timezone переживают restart.
+Просроченные occurrences старше пяти минут пропускаются без лавины уведомлений.
+Web Push использует стабильный notification ID и IndexedDB для подавления
+повторного показа; in-app polling отдельно подавляет повтор карточки.
+Legacy SQLite Due сохранён для reference/parity. [Web Push](WEB_PUSH.md).
 
 Delete/complete относятся ко всей записи: удалённая/завершённая серия не
 сигналит. Restore/reopen сохраняют правило и anchor, выбирают ближайший
@@ -227,11 +227,12 @@ DST-семантика `time.Date`; новая явная DST-политика �
 сдвигам и recurrence. В приложении пока один настраиваемый APP_TIMEZONE;
 каждое правило сохраняет собственную IANA timezone.
 
-Фонового Web Push / отдельного reminder worker нет. Продвижение ряда работает,
-пока приложение опрашивает due. CalDAV экспортирует текущий occurrence,
-без внешнего RRULE и без независимого продвижения при закрытом приложении.
-Due просматривает открытые записи текущего пользователя; модель рассчитана
-на личный планировщик, а не очередь миллионов уведомлений.
+Продвижение ряда работает в серверном worker без браузера. CalDAV экспортирует
+текущий occurrence без внешнего RRULE; его обновления идут через прежнюю очередь.
+Системные уведомления требуют активной Web Push подписки и настроенных VAPID.
+SQL выбирает наступившие записи, а очередь хранится в PostgreSQL. Модель пока
+рассчитана на личный планировщик; retention и большой distributed throughput
+остаются направлениями дальнейшего развития.
 
 ## Проверки
 
@@ -244,4 +245,4 @@ Contract tests: `tests/contract/recurrence_test.go` — SQLite/PostgreSQL, API,
 read-back, restart, pending, concurrent polls, lifecycle, precision и DST.
 Browser tests: `web/e2e/recurrence.spec.ts` — семь команд и lifecycle.
 Результаты всех текущих checks и inventory изменений:
-[отчёт этапа](GENA_NLU_REPORT.md).
+[проверки](VALIDATION.md).

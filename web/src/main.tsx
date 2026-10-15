@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './app/App';
+import { registerNotifications } from './features/notifications/notifications';
 import './styles/tokens.css';
 import './styles/app.css';
 import './styles/parity.css';
@@ -10,3 +11,4 @@ import './styles/auth.css';
 import './styles/notifications.css';
 if (typeof document.startViewTransition === 'function') document.documentElement.dataset.nativeMotion = 'true';
 createRoot(document.getElementById('root')!).render(<StrictMode><App/></StrictMode>);
+if (window.isSecureContext && navigator.serviceWorker) void registerNotifications().catch(() => {});

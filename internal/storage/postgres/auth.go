@@ -150,14 +150,14 @@ func (d *Database) SaveOAuthState(ctx context.Context, s repository.OAuthState) 
 	if _, err = tx.ExecContext(ctx, "DELETE FROM oauth_states WHERE expires_at<now()"); err != nil {
 		return err
 	}
-	if _, err = tx.ExecContext(ctx, "INSERT INTO oauth_states(id,provider,browser_hash,verifier,link_user_id,expires_at,purpose) VALUES($1,$2,$3,$4,nullif($5,'')::uuid,$6,$7)", s.ID, s.Provider, s.BrowserHash, s.Verifier, s.LinkUserID, s.ExpiresAt, s.Purpose); err != nil {
+	if _, err = tx.ExecContext(ctx, "INSERT INTO oauth_states(id,provider,browser_hash,verifier,link_user_id,expires_at,purpose,source) VALUES($1,$2,$3,$4,nullif($5,'')::uuid,$6,$7,$8)", s.ID, s.Provider, s.BrowserHash, s.Verifier, s.LinkUserID, s.ExpiresAt, s.Purpose, s.Source); err != nil {
 		return err
 	}
 	return tx.Commit()
 }
 func (d *Database) ConsumeOAuthState(ctx context.Context, id, provider, browser string, now time.Time) (*repository.OAuthState, error) {
 	var s repository.OAuthState
-	err := d.DB.QueryRowContext(ctx, "DELETE FROM oauth_states WHERE id=$1 AND provider=$2 AND browser_hash=$3 AND expires_at>$4 RETURNING id,provider,browser_hash,verifier,coalesce(link_user_id::text,''),expires_at,purpose", id, provider, browser, now).Scan(&s.ID, &s.Provider, &s.BrowserHash, &s.Verifier, &s.LinkUserID, &s.ExpiresAt, &s.Purpose)
+	err := d.DB.QueryRowContext(ctx, "DELETE FROM oauth_states WHERE id=$1 AND provider=$2 AND browser_hash=$3 AND expires_at>$4 RETURNING id,provider,browser_hash,verifier,coalesce(link_user_id::text,''),expires_at,purpose,source", id, provider, browser, now).Scan(&s.ID, &s.Provider, &s.BrowserHash, &s.Verifier, &s.LinkUserID, &s.ExpiresAt, &s.Purpose, &s.Source)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil
 	}

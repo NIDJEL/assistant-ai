@@ -10,3 +10,5 @@ export interface IntegrationState { connections: CalendarConnection[]; yandex_co
 export const getIntegrations = (signal?: AbortSignal) => request<IntegrationState>('/api/integrations', { signal });
 export const syncYandex = () => request<IntegrationState>('/api/integrations/yandex/sync', { method: 'POST', body: '{}' }, 45000);
 export const disconnectYandex = () => request<void>('/api/integrations/yandex', { method: 'DELETE' });
+export const calendarOAuthURL = (source: 'onboarding' | 'integrations') => `/api/auth/yandex/start?calendar=1&source=${source}`;
+export const startCalendarConnection = (source: 'onboarding' | 'integrations') => window.location.assign(calendarOAuthURL(source));

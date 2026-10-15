@@ -53,6 +53,11 @@ func assertStoredOccurrence(t *testing.T, cal *calendar.Service, ctxID string, e
 	if err != nil || len(due) != 0 {
 		t.Fatal("early signal", due, err)
 	}
+	if db, ok := cal.Store.(*postgres.Database); ok {
+		if _, err := db.ProcessDue(ctx, start, cal.Location); err != nil {
+			t.Fatal(err)
+		}
+	}
 	due, err = cal.Due(ctx, start)
 	if err != nil || len(due) != 1 || due[0].ID != e.ID {
 		t.Fatal("missing signal", due, err)
