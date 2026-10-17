@@ -1,6 +1,8 @@
 import { test, expect } from './fixtures';
 import { ready } from './helpers';
 import type { Page } from '@playwright/test';
+import type { Health } from '../src/types/api';
+import { addDays, dayKey } from '../src/features/calendar/dates';
 
 // Controlled capture/STT checks UI behavior only. Real microphone/Groq quality
 // must be checked separately with a human; this mock is never quality evidence.
@@ -21,7 +23,11 @@ async function installCaptureMock(page: Page) {
 
 test('MediaRecorder inserts transcript; only manual Send creates a task', async ({ page }) => {
   await installCaptureMock(page);
-  const text = 'Мне нужно сделать задание по VK Education до 20 числа';
+  // CI uses the deterministic rules provider. Use a shared calendar phrase for
+  // this capture/manual-send test; simple_llm deadlines have separate coverage.
+  const text = 'Создай задачу проверить договор завтра';
+  const health = await (await page.request.get('/health')).json() as Health;
+  const tomorrow = addDays(dayKey(health.now, health.timezone), 1);
   let finish!: () => void; const release = new Promise<void>(resolve => { finish = resolve; });
   let uploads = 0, chats = 0;
   page.on('request', r => { if (r.url().endsWith('/api/chat') && r.method() === 'POST') chats++; });
@@ -40,7 +46,12 @@ test('MediaRecorder inserts transcript; only manual Send creates a task', async 
   const sent = page.waitForResponse(r => r.url().endsWith('/api/chat') && r.request().method() === 'POST');
   await page.getByRole('button', { name: 'Отправить сообщение' }).click();
   const result = await (await sent).json();
-  expect(result.action).toBe('create'); expect(result.pending).toBe(false); expect(result.events[0]).toMatchObject({ kind: 'task', date: '2026-10-20', time: null });
+  expect((await sent).request().postDataJSON()).toMatchObject({ message: text, source: 'voice' });
+  expect(result.action).toBe('create'); expect(result.pending).toBe(false); expect(result.events).toHaveLength(1);
+  expect(result.events[0]).toMatchObject({ kind: 'task', title: 'Проверить договор', date: tomorrow, time: null });
+  const persisted = await page.request.get(`/api/events/${result.events[0].id}`);
+  expect(persisted.status()).toBe(200);
+  expect(await persisted.json()).toMatchObject({ kind: 'task', title: 'Проверить договор', date: tomorrow, time: null });
   await expect(input).toHaveValue(''); expect(chats).toBe(1);
 });
 
