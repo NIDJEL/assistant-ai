@@ -1,58 +1,35 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 740" role="img" aria-label="Ассистент Гена: React → Go → PostgreSQL">
-<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10Z" fill="#6286cd"/></marker></defs>
-<rect width="1200" height="740" rx="22" fill="#f2f7ff"/>
-<g font-family="Segoe UI,Arial,sans-serif" fill="#182653">
-<text x="32" y="46" font-size="27" font-weight="700">Ассистент Гена: React → Go → PostgreSQL</text>
-<text x="32" y="78" font-size="15" fill="#6076a5">Реальные события из API. Сервер обслуживает актуальный React build.</text>
-<rect x="30" y="140" width="200" height="120" rx="16" fill="#ffffff" stroke="#dce8fc"/>
-<text x="130.0" y="171" text-anchor="middle" font-size="17" font-weight="650" fill="#172755">React в браузере</text>
-<text x="130.0" y="199" text-anchor="middle" font-size="13" fill="#6076a5">8 страниц + widgets</text>
-<text x="130.0" y="222" text-anchor="middle" font-size="13" fill="#6076a5">Draft, STT и TTS</text>
-<rect x="265" y="140" width="200" height="120" rx="16" fill="#ffffff" stroke="#dce8fc"/>
-<text x="365.0" y="171" text-anchor="middle" font-size="17" font-weight="650" fill="#172755">Typed API client</text>
-<text x="365.0" y="199" text-anchor="middle" font-size="13" fill="#6076a5">Chat / history / CRUD</text>
-<text x="365.0" y="222" text-anchor="middle" font-size="13" fill="#6076a5">Понятные ошибки</text>
-<rect x="500" y="140" width="200" height="120" rx="16" fill="#ffffff" stroke="#dce8fc"/>
-<text x="600.0" y="171" text-anchor="middle" font-size="17" font-weight="650" fill="#172755">Go HTTP API</text>
-<text x="600.0" y="199" text-anchor="middle" font-size="13" fill="#6076a5">DTO и validation</text>
-<text x="600.0" y="222" text-anchor="middle" font-size="13" fill="#6076a5">SPA routes + assets</text>
-<rect x="735" y="140" width="200" height="120" rx="16" fill="#0875ff" stroke="#dce8fc"/>
-<text x="835.0" y="171" text-anchor="middle" font-size="17" font-weight="650" fill="#ffffff">Go use cases</text>
-<text x="835.0" y="199" text-anchor="middle" font-size="13" fill="#ffffff">Диалог и idempotency</text>
-<text x="835.0" y="222" text-anchor="middle" font-size="13" fill="#ffffff">Конфликты и поиск</text>
-<rect x="970" y="140" width="200" height="120" rx="16" fill="#ffffff" stroke="#dce8fc"/>
-<text x="1070.0" y="171" text-anchor="middle" font-size="17" font-weight="650" fill="#172755">PostgreSQL</text>
-<text x="1070.0" y="199" text-anchor="middle" font-size="13" fill="#6076a5">User scope / advisory lock</text>
-<text x="1070.0" y="222" text-anchor="middle" font-size="13" fill="#6076a5">Event + state + history</text>
-<polyline points="230,200 265,200" fill="none" stroke="#6286cd" stroke-width="2" marker-end="url(#arrow)"/>
-<polyline points="465,200 500,200" fill="none" stroke="#6286cd" stroke-width="2" marker-end="url(#arrow)"/>
-<polyline points="700,200 735,200" fill="none" stroke="#6286cd" stroke-width="2" marker-end="url(#arrow)"/>
-<polyline points="935,200 970,200" fill="none" stroke="#6286cd" stroke-width="2" marker-end="url(#arrow)"/>
-<rect x="630" y="350" width="300" height="112" rx="16" fill="#ffffff" stroke="#dce8fc"/>
-<text x="780.0" y="381" text-anchor="middle" font-size="17" font-weight="650" fill="#172755">Hybrid interpreter</text>
-<text x="780.0" y="409" text-anchor="middle" font-size="13" fill="#6076a5">Parser → confidence → validation</text>
-<text x="780.0" y="432" text-anchor="middle" font-size="13" fill="#6076a5">До domain write transaction</text>
-<rect x="260" y="350" width="290" height="112" rx="16" fill="#ffffff" stroke="#dce8fc"/>
-<text x="405.0" y="381" text-anchor="middle" font-size="17" font-weight="650" fill="#172755">Ollama · опционально</text>
-<text x="405.0" y="409" text-anchor="middle" font-size="13" fill="#6076a5">HTTP → structured Command</text>
-<text x="405.0" y="432" text-anchor="middle" font-size="13" fill="#6076a5">Низкая confidence / fallback</text>
-<polyline points="550,402 630,402" fill="none" stroke="#6286cd" stroke-width="2" marker-end="url(#arrow)" stroke-dasharray="7 5"/>
-<text x="571" y="390" font-size="13" fill="#496baa">JSON</text>
-<polyline points="835,350 835,260" fill="none" stroke="#6286cd" stroke-width="2" marker-end="url(#arrow)"/>
-<polyline points="1085,140 1085,112 130,112 130,140" fill="none" stroke="#6286cd" stroke-width="2" marker-end="url(#arrow)"/>
-<text x="412" y="105" font-size="13" fill="#496baa">Ответ, события и состояние → React → TTS</text>
-<rect x="50" y="564" width="280" height="105" rx="16" fill="#ffffff" stroke="#dce8fc"/>
-<text x="190.0" y="595" text-anchor="middle" font-size="17" font-weight="650" fill="#172755">Node build stage</text>
-<text x="190.0" y="623" text-anchor="middle" font-size="13" fill="#6076a5">TypeScript + Vite → web/dist</text>
-<text x="190.0" y="646" text-anchor="middle" font-size="13" fill="#6076a5">Node нужен только при сборке</text>
-<rect x="450" y="564" width="240" height="105" rx="16" fill="#ffffff" stroke="#dce8fc"/>
-<text x="570.0" y="595" text-anchor="middle" font-size="17" font-weight="650" fill="#172755">Go build stage</text>
-<text x="570.0" y="623" text-anchor="middle" font-size="13" fill="#6076a5">go build → server binary</text>
-<rect x="850" y="564" width="300" height="105" rx="16" fill="#0875ff" stroke="#dce8fc"/>
-<text x="1000.0" y="595" text-anchor="middle" font-size="17" font-weight="650" fill="#ffffff">Production runtime</text>
-<text x="1000.0" y="623" text-anchor="middle" font-size="13" fill="#ffffff">Go binary + React static assets</text>
-<text x="1000.0" y="646" text-anchor="middle" font-size="13" fill="#ffffff">Без Node / Python / FastAPI</text>
-<polyline points="330,618 395,618 395,530 1000,530 1000,564" fill="none" stroke="#6286cd" stroke-width="2" marker-end="url(#arrow)"/>
-<polyline points="690,618 850,618" fill="none" stroke="#6286cd" stroke-width="2" marker-end="url(#arrow)"/>
-<text x="32" y="711" font-size="14" fill="#6076a5">LLM и calendar HTTP requests выполняются вне domain write transaction.</text>
-</g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 740" role="img" aria-label="Архитектура Ассистента Гены">
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10Z" fill="#8298bf"/></marker></defs>
+<rect width="1200" height="740" rx="24" fill="#f2f7ff"/>
+<g font-family="Segoe UI,Arial,sans-serif" fill="#172755"><text x="40" y="52" font-size="30" font-weight="700">Гена: от слов к действию</text>
+<text x="40" y="84" font-size="16" fill="#6076a5">React + Go + PostgreSQL · один backend, отдельные провайдеры и устойчивые очереди</text><rect x="40" y="135" width="235" height="112" rx="16" fill="#fff" stroke="#dce8fc"/>
+<text x="157.5" y="169" text-anchor="middle" font-size="19" font-weight="700" fill="#172755">React / TypeScript</text>
+<text x="157.5" y="199" text-anchor="middle" font-size="14" fill="#6076a5">Чат, календарь, PWA</text>
+<text x="157.5" y="223" text-anchor="middle" font-size="14" fill="#6076a5">Запись и проверка черновика</text><rect x="330" y="135" width="235" height="112" rx="16" fill="#fff" stroke="#dce8fc"/>
+<text x="447.5" y="169" text-anchor="middle" font-size="19" font-weight="700" fill="#172755">Go HTTP API</text>
+<text x="447.5" y="199" text-anchor="middle" font-size="14" fill="#6076a5">Сессии, CSRF, validation</text>
+<text x="447.5" y="223" text-anchor="middle" font-size="14" fill="#6076a5">Frontend + API</text><rect x="620" y="135" width="235" height="112" rx="16" fill="#0875ff" stroke="#dce8fc"/>
+<text x="737.5" y="169" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Ассистент</text>
+<text x="737.5" y="199" text-anchor="middle" font-size="14" fill="#fff">Выбор, даты, подтверждение</text>
+<text x="737.5" y="223" text-anchor="middle" font-size="14" fill="#fff">Транзакция и request_id</text><rect x="910" y="135" width="250" height="112" rx="16" fill="#fff" stroke="#dce8fc"/>
+<text x="1035" y="169" text-anchor="middle" font-size="19" font-weight="700" fill="#172755">PostgreSQL</text>
+<text x="1035" y="199" text-anchor="middle" font-size="14" fill="#6076a5">Дела, диалоги, настройки</text>
+<text x="1035" y="223" text-anchor="middle" font-size="14" fill="#6076a5">Сессии и outbox</text><polyline points="275,191 330,191" fill="none" stroke="#8298bf" stroke-width="2"  marker-end="url(#arrow)"/><polyline points="565,191 620,191" fill="none" stroke="#8298bf" stroke-width="2"  marker-end="url(#arrow)"/><polyline points="855,191 910,191" fill="none" stroke="#8298bf" stroke-width="2"  marker-end="url(#arrow)"/><rect x="40" y="340" width="235" height="112" rx="16" fill="#fff" stroke="#dce8fc"/>
+<text x="157.5" y="374" text-anchor="middle" font-size="19" font-weight="700" fill="#172755">Groq STT</text>
+<text x="157.5" y="404" text-anchor="middle" font-size="14" fill="#6076a5">Аудио → текст</text>
+<text x="157.5" y="428" text-anchor="middle" font-size="14" fill="#6076a5">Только черновик</text><rect x="620" y="340" width="235" height="112" rx="16" fill="#fff" stroke="#dce8fc"/>
+<text x="737.5" y="374" text-anchor="middle" font-size="19" font-weight="700" fill="#172755">GigaChat / Ollama</text>
+<text x="737.5" y="404" text-anchor="middle" font-size="14" fill="#6076a5">Текст + компактный контекст</text>
+<text x="737.5" y="428" text-anchor="middle" font-size="14" fill="#6076a5">Intent + arguments</text><rect x="910" y="340" width="250" height="112" rx="16" fill="#fff" stroke="#dce8fc"/>
+<text x="1035" y="374" text-anchor="middle" font-size="19" font-weight="700" fill="#172755">Фоновые workers</text>
+<text x="1035" y="404" text-anchor="middle" font-size="14" fill="#6076a5">Сроки и повторения</text>
+<text x="1035" y="428" text-anchor="middle" font-size="14" fill="#6076a5">CalDAV и push delivery</text><polyline points="447,247 447,290 157,290 157,340" fill="none" stroke="#8298bf" stroke-width="2"  marker-end="url(#arrow)"/><polyline points="157,340 157,315 447,315 447,247" fill="none" stroke="#8298bf" stroke-width="2" stroke-dasharray="6 5" marker-end="url(#arrow)"/><polyline points="737,247 737,340" marker-start="url(#arrow)" fill="none" stroke="#8298bf" stroke-width="2" stroke-dasharray="6 5" marker-end="url(#arrow)"/><polyline points="1035,247 1035,340" fill="none" stroke="#8298bf" stroke-width="2"  marker-end="url(#arrow)"/><rect x="620" y="545" width="235" height="112" rx="16" fill="#fff" stroke="#dce8fc"/>
+<text x="737.5" y="579" text-anchor="middle" font-size="19" font-weight="700" fill="#172755">Яндекс Календарь</text>
+<text x="737.5" y="609" text-anchor="middle" font-size="14" fill="#6076a5">Односторонняя синхронизация</text>
+<text x="737.5" y="633" text-anchor="middle" font-size="14" fill="#6076a5">Из Гены через CalDAV</text><rect x="910" y="545" width="250" height="112" rx="16" fill="#fff" stroke="#dce8fc"/>
+<text x="1035" y="579" text-anchor="middle" font-size="19" font-weight="700" fill="#172755">Web Push</text>
+<text x="1035" y="609" text-anchor="middle" font-size="14" fill="#6076a5">Служба браузера → устройство</text>
+<text x="1035" y="633" text-anchor="middle" font-size="14" fill="#6076a5">VAPID + service worker</text><polyline points="1035,452 1035,495 737,495 737,545" fill="none" stroke="#8298bf" stroke-width="2"  marker-end="url(#arrow)"/><polyline points="1035,452 1035,545" fill="none" stroke="#8298bf" stroke-width="2"  marker-end="url(#arrow)"/><text x="40" y="584" font-size="17" font-weight="700">Production runtime</text>
+<text x="40" y="615" font-size="15" fill="#6076a5">Go binary + собранный React</text>
+<text x="40" y="641" font-size="15" fill="#6076a5">Node.js нужен при сборке</text>
+<text x="40" y="702" font-size="14" fill="#6076a5">LLM и CalDAV выполняются вне транзакции изменения дела. Режим правил выбирается явно.</text></g></svg>
