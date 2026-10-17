@@ -1,6 +1,6 @@
 import { test, expect } from './fixtures';
 import { ready, noOverflow } from './helpers';
-import { dayKey } from '../src/features/calendar/dates';
+import { addDays, dayKey } from '../src/features/calendar/dates';
 import type { Health, RhythmEvent } from '../src/types/api';
 
 test('animated navigation captures the destination and rapid navigation settles on the final route', async ({ page }) => {
@@ -40,7 +40,7 @@ test('animated navigation captures the destination and rapid navigation settles 
 
 test('reminder close can be reversed without losing the draft, and an exiting dialog cannot submit', async ({ page, request }) => {
   const health = await (await request.get('/health')).json() as Health;
-  const response = await request.post('/api/events', { data: { kind: 'reminder', title: `Плавный переход ${Date.now()}`, date: dayKey(health.now, health.timezone), time: '09:00' } });
+  const response = await request.post('/api/events', { data: { kind: 'reminder', title: `Плавный переход ${Date.now()}`, date: addDays(dayKey(health.now, health.timezone), 1), time: '09:00' } });
   expect(response.status()).toBe(201); const event = await response.json() as RhythmEvent;
   try {
     await ready(page, '/reminders'); await page.getByRole('textbox', { name: 'Поиск напоминаний' }).fill(event.title);

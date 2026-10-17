@@ -61,7 +61,7 @@ test('expanded task, meeting selection, selected calendar day, inline reminder a
     await page.locator('.meeting-tile').filter({ hasText: one.title }).click(); await expect(page.locator('.meeting-details')).toContainText('Тестовый участник');
     await ready(page, '/calendar'); await page.locator(`.calendar-cell[aria-label^="${formatDay(next)},"]`).click();
     await expect(page.getByRole('region', { name: 'События выбранного дня' })).toContainText(two.title);
-    const reminder = await create({ kind: 'reminder', title: `Напомнить о проверке ${token}`, date: today, time: '09:00' });
+    const reminder = await create({ kind: 'reminder', title: `Напомнить о проверке ${token}`, date: next, time: '09:00' });
     await ready(page, '/reminders'); await page.getByRole('textbox', { name: 'Поиск напоминаний' }).fill(reminder.title); await page.locator('.reminder-title').filter({ hasText: reminder.title }).click();
     const inline = page.getByRole('form', { name: `Редактор: ${reminder.title}` }); await inline.getByLabel('Время напоминания').fill('09:45'); await inline.getByRole('button', { name: 'Сохранить', exact: true }).click();
     await expect.poll(async () => (await (await request.get(`/api/events/${reminder.id}`)).json()).time).toBe('09:45');
