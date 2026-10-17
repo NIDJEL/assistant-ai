@@ -443,5 +443,10 @@ func MapSemantic(s SemanticCommand, original string, now time.Time) (domain.Comm
 	if c.Action == domain.ActionCreate && c.Error == "" {
 		c.Error = validateSemanticCreationSource(original, now)
 	}
+	// A fully scheduled meeting with an explicit duration is usable even when
+	// the user gives no subject beyond "встреча". Never invent participants.
+	if c.Action == domain.ActionCreate && c.Kind == domain.EventMeeting && c.Title == "" && s.DurationExpression != nil && c.Date != nil && c.Time != nil && has(`(?i)\bвстреч[ау]\b`, original) {
+		c.Title = "Встреча"
+	}
 	return c, c.Validate()
 }

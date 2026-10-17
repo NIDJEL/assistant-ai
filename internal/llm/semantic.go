@@ -58,6 +58,7 @@ kind задаётся и при list/search: «задачу/задачи» -> ta
 create: title=содержание новой записи; query ОБЯЗАТЕЛЬНО null, target ОБЯЗАТЕЛЬНО null, changes ОБЯЗАТЕЛЬНО null.
 list: title ОБЯЗАТЕЛЬНО null, query ОБЯЗАТЕЛЬНО null, target ОБЯЗАТЕЛЬНО null, changes ОБЯЗАТЕЛЬНО null; только kind и period_expression при наличии.
 search: query=тема поиска, title ОБЯЗАТЕЛЬНО null, target ОБЯЗАТЕЛЬНО null, changes ОБЯЗАТЕЛЬНО null.
+Поиск встреч с человеком — обычный search, даже если имя незнакомое, редкое, иностранное или склонено. В конструкции «найди встречи с <участник>» action=search, kind=meeting, query содержит только дословное имя/описание участника, без «встречи с». Не исправляй имя и не заменяй его известным. Не возвращай unknown только из-за незнакомого имени.
 update/delete/complete: title ОБЯЗАТЕЛЬНО null, query ОБЯЗАТЕЛЬНО null; target={query старой записи,...}; changes=null для delete/complete и объект только для update.
 Пустой target НЕ объект с null-полями, а именно null. Никогда не дублируй title или target.query в top-level query. Top-level query для create/update/delete/complete/list ВСЕГДА null.
 title новой записи — смысловой предмет или действие в инфинитиве, с заглавной буквы. Сохраняй имена, участников, важные предлоги и явное название в кавычках. Убирай только внешние «напомни, добавь, поставь, мне, пожалуйста, нужно, надо, можешь». «духовку проверить» -> «Проверить духовку». «Назначь обсуждение проекта с Алисой» -> «Обсуждение проекта с Алисой» kind=meeting.
@@ -71,11 +72,14 @@ title новой записи — смысловой предмет или де�
 «напомнишь что мне нужно передать Матвею документы сегодня через 30 секунд» -> action=create, kind=reminder, title="Передать Матвею документы", relative_time_expression="через 30 секунд", query=null, target=null, changes=null. НЕ «Передача документов Матвею».
 «Напомни удалить файлы» -> create reminder с title «Удалить файлы», НЕ delete. В search query — только тема: «я когда-то ставил задачу по договору найди ее» -> query «договор».
 reminder_expression — исходные «за 15 минут», «без уведомлений», «в момент начала»; reminder_time_expression — отдельные часы уведомления, не начало события.
-Не придумывай данные. Если несколько действий, неопределённая/опасная цель или исключения — ambiguous.`
+Не придумывай данные. Если несколько действий, неопределённая/опасная цель или исключения — ambiguous.
+КРИТИЧНО ДЛЯ SEARCH ПО УЧАСТНИКУ: query копируется из current_message дословно, как непрерывный фрагмент после «встречи с/встречу с». Сохраняй написание и падеж; НЕ приводи имя к именительному падежу и НЕ выполняй лемматизацию. Поиск и склонения обрабатывает Go. Новое незнакомое имя само по себе никогда не является причиной unknown.`
 
 // Few-shot examples are part of the versioned system prompt/cache contract.
 const semanticExamples = `
 Примеры (каждое отсутствующее temporal поле = null):
+Ввод: «Найди встречи с Филаретом»
+{"status":"ok","action":"search","kind":"meeting","title":null,"query":"Филаретом","date_expression":null,"time_expression":null,"relative_time_expression":null,"period_expression":null,"duration_expression":null,"recurrence_expression":null,"reminder_expression":null,"reminder_time_expression":null,"notification_context":false,"target":null,"changes":null,"clarification":null}
 Ввод: «Напомни завтра в 9 проверить почту»
 {"status":"ok","action":"create","kind":"reminder","title":"Проверить почту","query":null,"date_expression":"завтра","time_expression":"в 9","relative_time_expression":null,"period_expression":null,"duration_expression":null,"recurrence_expression":null,"reminder_expression":null,"reminder_time_expression":null,"notification_context":false,"target":null,"changes":null,"clarification":null}
 Ввод: «найди задачу про презентацию»
@@ -113,6 +117,17 @@ func (s *Semantic) Interpret(ctx context.Context, text string, now time.Time) (d
 	}
 	if expectation := nlp.PendingExpectation(ctx); (expectation == "fields" || expectation == "choose" || expectation == "reminder") && !nlp.HasDirective(text) {
 		return unknownCommand("semantic_dialogue"), nil
+	}
+	// A complete, explicit participant search is read-only and has no missing
+	// semantics. Keep arbitrary names verbatim; filters and compound directives
+	// still go through the semantic provider. The search engine is unchanged.
+	if s.FastPath && reply.Error == "" && reply.Date == nil && reply.Time == nil && reply.Start == nil && reply.Recurrence == nil && !nonCommandSafety.MatchString(text) {
+		if match := participantSearchFast.FindStringSubmatch(strings.TrimSpace(text)); match != nil {
+			query := strings.TrimSpace(match[1])
+			if len(strings.Fields(query)) <= 5 && !nlp.HasDirective(query) && !participantFilterCue.MatchString(query) {
+				return domain.Command{Action: domain.ActionSearch, Kind: domain.EventMeeting, Query: query, Duration: time.Hour, Provider: "rules"}, nil
+			}
+		}
 	}
 	if s.FastPath && fastList.MatchString(strings.TrimSpace(text)) {
 		base := nlp.Parse(text, now)
@@ -266,7 +281,7 @@ func semanticSafety(s nlp.SemanticCommand, text, source string) string {
 		return "negated or non-command mutation"
 	}
 	if action == "create" {
-		if !createEvidence.MatchString(text) && !(source == "voice" && voiceCreateEvidence.MatchString(text)) {
+		if !createEvidence.MatchString(text) && !nlp.IsTimerRequest(text) && !(source == "voice" && voiceCreateEvidence.MatchString(text)) {
 			return "no creation evidence"
 		}
 		return ""
@@ -300,6 +315,8 @@ func semanticSafety(s nlp.SemanticCommand, text, source string) string {
 }
 
 var fastList = regexp.MustCompile(`(?i)^(?:что у меня|какие у меня (?:встречи|задачи|напоминания))\s+(?:сегодня|завтра|послезавтра|на этой неделе|на следующей неделе)[?.! ]*$`)
+var participantSearchFast = regexp.MustCompile(`(?i)^(?:(?:гена|пожалуйста)[, ]+)*(?:найди|отыщи|поищи)\s+встреч[иу]\s+со?\s+([\p{L}][\p{L} -]*?)[?.! ]*$`)
+var participantFilterCue = regexp.MustCompile(`(?i)(?:^|[^\p{L}])(?:за|на|до|после|только|кроме|или|и|а|не|без|пожалуйста|все|прошл[\p{L}]*|следующ[\p{L}]*)(?:$|[^\p{L}])`)
 var scheduledMeetingDeclaration = regexp.MustCompile(`(?i)^(?:в|на)\s+[^.!?«»"\n]{1,100}\s+у\s+меня\s+(?:встреча|созвон|совещание)(?:$|[^\p{L}])[^.!?«»"\n]*$`)
 var contentWord = regexp.MustCompile(`[\p{L}\p{N}]+`)
 

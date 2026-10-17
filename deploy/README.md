@@ -123,3 +123,11 @@ Compose project `rhythm`, постоянный том `rhythm-postgres-productio
 `deploy/gigachat_ops.py` реализует audit/backup/prepare/build/activate/check/giga/rollback; stdout содержит только metadata/counts. Новые production env/config записываются атомарно с сохранением permissions. Перед сборкой всегда выполняется `config --quiet`. Обновляется только app через `up -d --no-deps --wait`, PostgreSQL и volumes не пересоздаются. На ошибке health/GigaChat/mandatory smoke выполняется rollback предыдущего release/config без возврата скомпрометированного GigaChat ключа и без отката пользовательских данных.
 
 После выпуска проверяются HTTPS/SPA/API, отдельный test account, 13 mandatory и короткие bonus-сценарии, logout/login persistence, redacted logs и повторный secret audit. Frozen held-out не запускается. Реальный microphone input не считается проверенным, пока не пройден manual browser test.
+
+## Simple LLM release
+
+Версия `20261017-simple-llm-01` использует ту же схему выпуска: backup, `git archive` pushed commit, отдельный release, build и обновление только app. Production override передаёт `GENA_NLU_MODE=${GENA_NLU_MODE:-simple_llm}`; legacy выбирается явно через `semantic_plan_legacy`. Модель Ultra и concurrency 1 сохранены.
+
+Для повторного выпуска с действующими production credentials передайте `preserve_credentials: true` в prepare и rollback у `gigachat_ops.py`; ключ и CA остаются в существующем secret storage. При activate передайте `nlu_mode: simple_llm`; check проверяет режим контейнера. Backup включает проверенный PostgreSQL dump, предыдущую revision, env, systemd unit, compose snapshot и схему env без значений. Compose snapshot содержит секреты и хранится только в root-only backup каталоге.
+
+Rollback восстанавливает сохранённые config, release symlink и предыдущий image, обновляет только app и сохраняет PostgreSQL volume. При использовании preserve_credentials возвращается исходная рабочая конфигурация; режим для ротации скомпрометированного ключа сохраняет прежнее поведение. SQL migrations этого релиза не меняются. После activate обязательны HTTPS/auth/API и небольшой smoke на отдельном тестовом аккаунте; при критической ошибке выполните rollback. Физический микрофон проверяется вручную на устройстве.

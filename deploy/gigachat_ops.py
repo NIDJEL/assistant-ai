@@ -148,6 +148,9 @@ def backup(payload):
     if verified.returncode:raise RuntimeError('database backup validation failed')
     shutil.copy2(ENV,folder/'production.env');os.chmod(folder/'production.env',0o600)
     shutil.copy2(UNIT,folder/'rhythm.service')
+    (folder/'compose.json').write_bytes(run(compose(previous)+['config','--format','json']));os.chmod(folder/'compose.json',0o600)
+    (folder/'containers.json').write_text(json.dumps(container_summary(containers())))
+    (folder/'env-schema.json').write_text(json.dumps(sorted(env_values())))
     state={'previous_release':str(previous),'previous_revision':(previous/'REVISION').read_text().strip(),'previous_tag':env_values().get('RELEASE_TAG','current'),'database_dump':str(dumps[-1]),'database_dump_bytes':dumps[-1].stat().st_size,'backup_dir':str(folder)}
     (folder/'state.json').write_text(json.dumps(state));os.chmod(folder/'state.json',0o600)
     return state
@@ -174,6 +177,11 @@ def prepare(payload):
             if not path.is_relative_to(release) or member.issym() or member.islnk():raise RuntimeError('unsafe archive member')
         data.extractall(release,filter='data')
     (release/'REVISION').write_text(sha+'\n')
+    if payload.get('preserve_credentials'):
+        config=env_values()
+        if not config.get('GIGACHAT_AUTHORIZATION_KEY') or not pathlib.Path(config.get('GIGACHAT_CA_FILE_HOST','')).is_file():raise RuntimeError('existing GigaChat configuration missing')
+        run(compose(release)+['config','--quiet'])
+        return {'release':str(release),'revision':sha,'existing_credentials_preserved':True,'compose_config':'PASS'}
     key=payload['authorization_key']
     if not key or re.search(r'\s',key):raise RuntimeError('invalid authorization configuration')
     CA.parent.mkdir(parents=True,exist_ok=True,mode=0o755)
@@ -191,7 +199,7 @@ def build(payload):
 def activate(payload):
     saved=state(payload);release=RELEASES/payload['release']
     if not release.is_dir() or (release/'REVISION').read_text().strip()!=payload['revision']:raise RuntimeError('release revision mismatch')
-    write_env({'RELEASE_TAG':payload['release']})
+    write_env({'RELEASE_TAG':payload['release'],'GENA_NLU_MODE':payload.get('nlu_mode','simple_llm')})
     temporary=CURRENT.with_name('.current-gigachat-new')
     temporary.symlink_to(release,target_is_directory=True);os.replace(temporary,CURRENT)
     shutil.copy2(release/'deploy/rhythm.service',UNIT);run(['systemctl','daemon-reload'])
@@ -210,7 +218,8 @@ def check(payload):
     matches=runtime.get('GIGACHAT_AUTHORIZATION_KEY')==config.get('GIGACHAT_AUTHORIZATION_KEY') and bool(runtime.get('GIGACHAT_AUTHORIZATION_KEY'))
     mount=any(m['Destination']=='/etc/gigachat/ca.pem' and not m['RW'] for m in app['Mounts'])
     if not nginx or health.get('nlp_provider')!='gigachat' or not matches or not mount or 'id="root"' not in html:raise RuntimeError('public/provider health failed')
-    return {'revision':(CURRENT/'REVISION').read_text().strip(),'containers':summary,'nginx':True,'https':True,'frontend_html':True,'provider':health['nlp_provider'],'runtime_key_matches_secret_env':True,'ca_mount_read_only':True,'public_url':config['PUBLIC_URL']}
+    if payload.get('nlu_mode') and runtime.get('GENA_NLU_MODE')!=payload['nlu_mode']:raise RuntimeError('runtime mode mismatch')
+    return {'nlu_mode':runtime.get('GENA_NLU_MODE','semantic_plan_legacy'),'model':runtime.get('GIGACHAT_MODEL'),'concurrency':runtime.get('GIGACHAT_MAX_CONCURRENT'),'revision':(CURRENT/'REVISION').read_text().strip(),'containers':summary,'nginx':True,'https':True,'frontend_html':True,'provider':health['nlp_provider'],'runtime_key_matches_secret_env':True,'ca_mount_read_only':True,'public_url':config['PUBLIC_URL']}
 
 def strict(value,schema):
     if value is None:
@@ -251,10 +260,11 @@ def rollback(payload):
     saved=state(payload);previous=pathlib.Path(saved['previous_release'])
     shutil.copy2(pathlib.Path(saved['backup_dir'])/'production.env',ENV);os.chmod(ENV,0o600)
     # The retired GigaChat key must never be reinstated during rollback.
-    write_env({'GIGACHAT_AUTHORIZATION_KEY':None,'GIGACHAT_CLIENT_ID':None,'GIGACHAT_CLIENT_SECRET':None,'GENA_SEMANTIC_PROVIDER':'rules'})
+    if not payload.get('preserve_credentials'):
+        write_env({'GIGACHAT_AUTHORIZATION_KEY':None,'GIGACHAT_CLIENT_ID':None,'GIGACHAT_CLIENT_SECRET':None,'GENA_SEMANTIC_PROVIDER':'rules'})
     shutil.copy2(pathlib.Path(saved['backup_dir'])/'rhythm.service',UNIT)
     temporary=CURRENT.with_name('.current-gigachat-rollback');temporary.symlink_to(previous,target_is_directory=True);os.replace(temporary,CURRENT)
-    run(['systemctl','daemon-reload']);run(compose(previous,False)+['up','-d','--no-deps','--wait','--wait-timeout','180','app'],timeout=240)
+    run(['systemctl','daemon-reload']);run(compose(previous,bool(payload.get('preserve_credentials')))+['up','-d','--no-deps','--wait','--wait-timeout','180','app'],timeout=240)
     return {'rollback':'PASS','revision':saved['previous_revision'],'containers':container_summary(containers()),'database_restored':False}
 
 def main():

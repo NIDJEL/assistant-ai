@@ -96,31 +96,58 @@ func run(log *slog.Logger) error {
 	cal := &calendar.Service{Store: store, Search: engine, Location: cfg.Location, DemoPath: filepath.Join(cfg.Root, "data/voice_assistant_events_1000.csv")}
 	now := clock.System{Location: cfg.Location}
 	var interpreter assistant.Interpreter
-	switch cfg.SemanticProvider {
-	case "gigachat":
-		provider, err := llm.NewGigaChat(cfg.GigaChat)
-		if err != nil {
-			return err
+	if cfg.NLUMode == "simple_llm" {
+		switch cfg.SemanticProvider {
+		case "", "gigachat":
+			provider, err := llm.NewGigaChat(cfg.GigaChat)
+			if err != nil {
+				return err
+			}
+			defer provider.Close()
+			interpreter = &llm.Simple{Provider: provider}
+		case "ollama":
+			provider, err := llm.NewOllamaSemantic(cfg.OllamaURL, cfg.OllamaModel, cfg.OllamaTimeout)
+			if err != nil {
+				return err
+			}
+			interpreter = &llm.Simple{Provider: provider}
+		default:
+			return errors.New("simple_llm requires gigachat or ollama; use semantic_plan_legacy for rules")
 		}
-		defer provider.Close()
-		interpreter = &llm.Semantic{Provider: provider, FastPath: true}
-	case "ollama":
-		provider, err := llm.NewOllamaSemantic(cfg.OllamaURL, cfg.OllamaModel, cfg.OllamaTimeout)
-		if err != nil {
-			return err
+	} else {
+		switch cfg.SemanticProvider {
+		case "gigachat":
+			provider, err := llm.NewGigaChat(cfg.GigaChat)
+			if err != nil {
+				return err
+			}
+			defer provider.Close()
+			interpreter = &llm.Planner{Provider: provider}
+		case "ollama":
+			provider, err := llm.NewOllamaSemantic(cfg.OllamaURL, cfg.OllamaModel, cfg.OllamaTimeout)
+			if err != nil {
+				return err
+			}
+			interpreter = &llm.Planner{Provider: provider}
+		case "rules":
+			interpreter = nlp.Parser{}
+		default:
+			legacy := nlp.Hybrid{}
+			if cfg.NLPProvider != "rules" {
+				legacy.Fallback = &llm.Ollama{URL: cfg.OllamaURL, Model: cfg.OllamaModel, Timezone: cfg.Timezone, Client: &http.Client{Timeout: cfg.OllamaTimeout}}
+			}
+			interpreter = legacy
 		}
-		interpreter = &llm.Semantic{Provider: provider, FastPath: true}
-	case "rules":
-		interpreter = nlp.Parser{}
-	default:
-		legacy := nlp.Hybrid{}
-		if cfg.NLPProvider != "rules" {
-			legacy.Fallback = &llm.Ollama{URL: cfg.OllamaURL, Model: cfg.OllamaModel, Timezone: cfg.Timezone, Client: &http.Client{Timeout: cfg.OllamaTimeout}}
-		}
-		interpreter = legacy
 	}
 	service := assistant.New(store, interpreter, cal)
-	service.AskReminderSettings = true
+	service.AskReminderSettings = cfg.NLUMode != "simple_llm"
+	if cfg.Environment != "production" {
+		service.ObserveTurn = func(o assistant.DialogueObservation) {
+			if o.Route.Path != "" {
+				log.Info("nlu_route", "route", o.Route.Path, "reason", o.Route.Reason, "semantic_calls", o.SemanticCalls, "plan_valid", o.PlanValid, "evidence_field", o.EvidenceField, "evidence_reason", o.EvidenceReason, "latency_ms", float64(o.InterpretationLatency.Microseconds())/1000)
+			}
+		}
+	}
 	app := &api.API{Config: cfg, Clock: now, Calendar: cal, CalendarSync: calendarSync, Assistant: service, Auth: authService, Logger: log}
 	server := &http.Server{Addr: cfg.Address, Handler: app.Router(), ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 10 * time.Second, WriteTimeout: 50 * time.Second, IdleTimeout: 60 * time.Second,
 		BaseContext: func(net.Listener) context.Context { return ctx }, ErrorLog: slog.NewLogLogger(log.Handler(), slog.LevelError)}

@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 )
@@ -35,7 +36,7 @@ func TestSemanticProviderDefaultsAndGigaChatConfig(t *testing.T) {
 }
 
 func TestInvalidSemanticConfiguration(t *testing.T) {
-	for key, value := range map[string]string{"GENA_SEMANTIC_PROVIDER": "bad", "GIGACHAT_TIMEOUT": "secret-invalid-duration", "GIGACHAT_MAX_CONCURRENT": "0"} {
+	for key, value := range map[string]string{"GENA_NLU_MODE": "bad", "GENA_SEMANTIC_PROVIDER": "bad", "GIGACHAT_TIMEOUT": "secret-invalid-duration", "GIGACHAT_MAX_CONCURRENT": "0"} {
 		t.Run(key, func(t *testing.T) {
 			t.Setenv("APP_ROOT", t.TempDir())
 			t.Setenv(key, value)
@@ -43,5 +44,28 @@ func TestInvalidSemanticConfiguration(t *testing.T) {
 				t.Fatal("invalid config accepted")
 			}
 		})
+	}
+}
+
+func TestSimpleLocalDefaultAndExplicitLegacy(t *testing.T) {
+	t.Setenv("APP_ROOT", t.TempDir())
+	t.Setenv("GENA_NLU_MODE", "")
+	t.Setenv("APP_ENV", "development")
+	c, err := Load()
+	if err != nil || c.NLUMode != "simple_llm" || c.EffectiveNLPProvider() != "gigachat" {
+		t.Fatal(c.NLUMode, err)
+	}
+	t.Setenv("APP_ENV", "production")
+	t.Setenv("PUBLIC_URL", "https://example.test")
+	t.Setenv("SESSION_SECRET", strings.Repeat("a", 40))
+	c, err = Load()
+	if err != nil || c.NLUMode != "semantic_plan_legacy" {
+		t.Fatal(c.NLUMode, err)
+	}
+	t.Setenv("APP_ENV", "development")
+	t.Setenv("GENA_NLU_MODE", "semantic_plan_legacy")
+	c, err = Load()
+	if err != nil || c.NLUMode != "semantic_plan_legacy" {
+		t.Fatal(c.NLUMode, err)
 	}
 }

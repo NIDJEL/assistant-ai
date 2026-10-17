@@ -25,3 +25,17 @@ web/playwright-report/
 docs/screenshots/p1/
 docs/screenshots/p1-1/
 docs/screenshots/p1-2/
+
+# Local runtime, evaluation and build output.
+.env.*
+!.env.example
+*.log
+*.db
+*.sqlite
+*.sqlite3
+!testdata/parity/legacy_v1.sqlite3
+*.exe
+*.test
+*.out
+.vscode/
+.idea/

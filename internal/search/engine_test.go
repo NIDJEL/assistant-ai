@@ -40,3 +40,16 @@ func TestInflectionsDescriptionAndConcurrentNormalization(t *testing.T) {
 	}
 	wg.Wait()
 }
+
+func TestTopicInflectionsAcrossKinds(t *testing.T) {
+	e, err := search.New()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, pair := range [][2]string{{"Аудит контура", "аудиты"}, {"Замер контура", "замеры"}, {"Ревизия контура", "ревизии"}, {"Осмотр контура", "осмотры"}} {
+		items := []domain.Event{{ID: 1, Title: pair[0], Kind: domain.EventTask}, {ID: 2, Title: pair[0], Kind: domain.EventMeeting}}
+		if got := e.Search(items, pair[1], 10); len(got) != 2 {
+			t.Errorf("%s / %s: title tokens %v query tokens %v, got %v", pair[0], pair[1], e.Tokens(pair[0]), e.Tokens(pair[1]), got)
+		}
+	}
+}

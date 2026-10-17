@@ -85,7 +85,8 @@ func MissingEntities(c domain.Command) []Entity {
 	if c.Action != domain.ActionCreate {
 		return missing
 	}
-	if !usefulTitle(c.Title) || full(`(?i)встреча|задача|напоминание`, c.Title) {
+	fullyScheduledMeeting := c.Kind == domain.EventMeeting && strings.EqualFold(c.Title, "Встреча") && c.Date != nil && c.Time != nil
+	if !fullyScheduledMeeting && (!usefulTitle(c.Title) || full(`(?i)встреча|задача|напоминание`, c.Title)) {
 		missing = append(missing, ActionText)
 	}
 	if c.Recurrence != nil && c.Recurrence.Frequency == "week" && len(c.Recurrence.Weekdays) == 0 {

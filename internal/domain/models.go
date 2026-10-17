@@ -127,6 +127,9 @@ func (e *Event) UnmarshalJSON(b []byte) error {
 }
 
 type Command struct {
+	Filter                 *ExecutionFilter
+	Changes                *ExecutionChanges
+	Batch                  bool
 	ExactAt                *time.Time
 	Recurrence             *Recurrence
 	Action                 Action
@@ -157,25 +160,28 @@ type EventSelector struct {
 }
 
 type commandJSON struct {
-	ExactAt             *time.Time     `json:"exact_at,omitempty"`
-	Recurrence          *Recurrence    `json:"recurrence,omitempty"`
-	Action              Action         `json:"action"`
-	Kind                EventType      `json:"kind"`
-	Title               string         `json:"title"`
-	Query               string         `json:"query"`
-	Date                *Date          `json:"date"`
-	Time                *TimeOfDay     `json:"time"`
-	PeriodStart         *Date          `json:"period_start"`
-	PeriodEnd           *Date          `json:"period_end"`
-	DurationMinutes     int            `json:"duration_minutes"`
-	TargetID            *int64         `json:"target_id"`
-	Error               *string        `json:"error"`
-	Provider            string         `json:"provider"`
-	ReminderEnabled     *bool          `json:"reminder_enabled,omitempty"`
-	ReminderMinutes     *int           `json:"reminder_minutes,omitempty"`
-	StartSecond         int            `json:"start_second,omitempty"`
-	NotificationContext bool           `json:"notification_context,omitempty"`
-	Selector            *EventSelector `json:"selector,omitempty"`
+	Filter              *ExecutionFilter  `json:"filter,omitempty"`
+	Changes             *ExecutionChanges `json:"execution_changes,omitempty"`
+	Batch               bool              `json:"batch,omitempty"`
+	ExactAt             *time.Time        `json:"exact_at,omitempty"`
+	Recurrence          *Recurrence       `json:"recurrence,omitempty"`
+	Action              Action            `json:"action"`
+	Kind                EventType         `json:"kind"`
+	Title               string            `json:"title"`
+	Query               string            `json:"query"`
+	Date                *Date             `json:"date"`
+	Time                *TimeOfDay        `json:"time"`
+	PeriodStart         *Date             `json:"period_start"`
+	PeriodEnd           *Date             `json:"period_end"`
+	DurationMinutes     int               `json:"duration_minutes"`
+	TargetID            *int64            `json:"target_id"`
+	Error               *string           `json:"error"`
+	Provider            string            `json:"provider"`
+	ReminderEnabled     *bool             `json:"reminder_enabled,omitempty"`
+	ReminderMinutes     *int              `json:"reminder_minutes,omitempty"`
+	StartSecond         int               `json:"start_second,omitempty"`
+	NotificationContext bool              `json:"notification_context,omitempty"`
+	Selector            *EventSelector    `json:"selector,omitempty"`
 }
 
 func (c Command) MarshalJSON() ([]byte, error) {
@@ -184,7 +190,7 @@ func (c Command) MarshalJSON() ([]byte, error) {
 		s := c.Error
 		errText = &s
 	}
-	return json.Marshal(commandJSON{ExactAt: c.ExactAt, Recurrence: c.Recurrence, Action: c.Action, Kind: c.Kind, Title: c.Title, Query: c.Query, Date: c.Date, Time: c.Time, PeriodStart: c.PeriodStart, PeriodEnd: c.PeriodEnd, DurationMinutes: int(c.Duration / time.Minute), TargetID: c.TargetID, Error: errText, Provider: c.Provider, ReminderEnabled: c.ReminderEnabled, ReminderMinutes: c.ReminderMinutes, StartSecond: c.StartSecond, NotificationContext: c.NotificationContext, Selector: c.Selector})
+	return json.Marshal(commandJSON{Filter: c.Filter, Changes: c.Changes, Batch: c.Batch, ExactAt: c.ExactAt, Recurrence: c.Recurrence, Action: c.Action, Kind: c.Kind, Title: c.Title, Query: c.Query, Date: c.Date, Time: c.Time, PeriodStart: c.PeriodStart, PeriodEnd: c.PeriodEnd, DurationMinutes: int(c.Duration / time.Minute), TargetID: c.TargetID, Error: errText, Provider: c.Provider, ReminderEnabled: c.ReminderEnabled, ReminderMinutes: c.ReminderMinutes, StartSecond: c.StartSecond, NotificationContext: c.NotificationContext, Selector: c.Selector})
 }
 func (c *Command) UnmarshalJSON(b []byte) error {
 	v := commandJSON{Action: ActionHelp, DurationMinutes: 60, Provider: "rules"}
@@ -204,12 +210,30 @@ func (c *Command) UnmarshalJSON(b []byte) error {
 	c.StartSecond = v.StartSecond
 	c.NotificationContext = v.NotificationContext
 	c.Selector = v.Selector
+	c.Filter, c.Changes, c.Batch = v.Filter, v.Changes, v.Batch
 	if v.Error != nil {
 		c.Error = *v.Error
 	}
 	return c.Validate()
 }
 func (c Command) Validate() error {
+	if c.Filter != nil {
+		if err := c.Filter.Validate(); err != nil {
+			return err
+		}
+	}
+	if c.Batch && (!inBatchAction(c.Action) || c.TargetID != nil) {
+		return errors.New("invalid batch command")
+	}
+	if c.Changes != nil {
+		ch := c.Changes
+		if c.Action != ActionUpdate || ch.Status != nil && *ch.Status != StatusOpen && *ch.Status != StatusDone || ch.Priority != nil && (*ch.Priority < PriorityNormal || *ch.Priority > PriorityHigh) {
+			return errors.New("invalid execution changes")
+		}
+		if ch.TimeShiftMinutes != nil && (*ch.TimeShiftMinutes == 0 || *ch.TimeShiftMinutes < -525600 || *ch.TimeShiftMinutes > 525600 || c.Date != nil || c.Time != nil || c.ExactAt != nil) {
+			return errors.New("invalid execution shift")
+		}
+	}
 	if err := (EventDetails{ReminderEnabled: c.ReminderEnabled, ReminderMinutes: c.ReminderMinutes, StartSecond: c.StartSecond, Recurrence: c.Recurrence}).Validate(); err != nil {
 		return err
 	}
@@ -239,15 +263,55 @@ func (c Command) Validate() error {
 	return nil
 }
 
+func inBatchAction(a Action) bool {
+	return a == ActionUpdate || a == ActionDelete || a == ActionComplete
+}
+
 type Pending struct {
-	Command     Command   `json:"command"`
-	Expectation string    `json:"expectation"`
-	At          time.Time `json:"at"`
-	Candidates  []Event   `json:"candidates,omitempty"`
+	TargetSnapshot    *Event    `json:"target_snapshot,omitempty"`
+	RequiredSlot      string    `json:"required_slot,omitempty"`
+	ConfirmationState string    `json:"confirmation_state,omitempty"`
+	EvidenceVersion   int       `json:"evidence_version,omitempty"`
+	BatchAfter        []Event   `json:"batch_after,omitempty"`
+	BatchConflicts    []Event   `json:"batch_conflicts,omitempty"`
+	Command           Command   `json:"command"`
+	Expectation       string    `json:"expectation"`
+	At                time.Time `json:"at"`
+	Candidates        []Event   `json:"candidates,omitempty"`
 }
 type State struct {
-	Pending *Pending `json:"pending,omitempty"`
-	LastIDs []int64  `json:"last_ids,omitempty"`
+	Pending  *Pending       `json:"pending,omitempty"`
+	LastIDs  []int64        `json:"last_ids,omitempty"`
+	Dialogue *DialogueState `json:"dialogue,omitempty"`
+}
+
+// DialogueState contains bounded conversational metadata. Pending and LastIDs
+// remain the single sources of truth for unfinished commands and record IDs.
+type DialogueState struct {
+	Search               *DialogueSearch  `json:"last_search,omitempty"`
+	AffectedIDs          []int64          `json:"affected_ids,omitempty"`
+	AffectedAt           time.Time        `json:"affected_at,omitempty"`
+	Filter               *ExecutionFilter `json:"filter,omitempty"`
+	LastAction           Action           `json:"last_action"`
+	LastKind             EventType        `json:"last_kind"`
+	Query                string           `json:"query,omitempty"`
+	PeriodStart          *Date            `json:"period_start,omitempty"`
+	PeriodEnd            *Date            `json:"period_end,omitempty"`
+	LastUserMessage      string           `json:"last_user_message"`
+	LastAssistantMessage string           `json:"last_assistant_message"`
+	ResultAt             time.Time        `json:"result_at"`
+	IdleTurns            int              `json:"idle_turns"`
+}
+
+type DialogueSearch struct {
+	Action Action           `json:"action"`
+	Kind   EventType        `json:"kind"`
+	Query  string           `json:"query,omitempty"`
+	Filter *ExecutionFilter `json:"filter,omitempty"`
+	Start  *Date            `json:"start,omitempty"`
+	End    *Date            `json:"end,omitempty"`
+	IDs    []int64          `json:"ids"`
+	At     time.Time        `json:"at"`
 }
 
 func (s State) MarshalJSON() ([]byte, error) {
@@ -257,6 +321,9 @@ func (s State) MarshalJSON() ([]byte, error) {
 	}
 	if s.LastIDs != nil {
 		value["last_ids"] = s.LastIDs
+	}
+	if s.Dialogue != nil {
+		value["dialogue"] = s.Dialogue
 	}
 	return json.Marshal(value)
 }

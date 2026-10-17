@@ -57,6 +57,15 @@ func (e *Engine) Tokens(text string) map[string]bool {
 	result := map[string]bool{}
 	for _, word := range words.FindAllString(Normalize(text), -1) {
 		value := e.lemma(word)
+		// For words outside the finite dictionary, Snowball can leave an
+		// inflection one pass behind its singular form. Match the second stem
+		// already used by strict TitleMatches, without changing dictionary
+		// lemmas, concepts or mutation candidate selection.
+		if _, known := e.dict.Lemmas[word]; !known {
+			if stem, err := snowball.Stem(value, "russian", true); err == nil {
+				value = stem
+			}
+		}
 		if e.stop[value] {
 			continue
 		}

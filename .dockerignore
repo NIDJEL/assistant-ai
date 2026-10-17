@@ -18,3 +18,10 @@ web/dist
 web/test-results
 web/playwright-report
 docs/screenshots
+
+.env.*
+!.env.example
+*.log
+*.db
+*.sqlite
+*.sqlite3

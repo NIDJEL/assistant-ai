@@ -1,6 +1,6 @@
 # Актуальная версия и синхронизация
 
-Версия: `20261015-gigachat-ultra-01`. Добавлены GigaChat-3-Ultra, strict SemanticCommand и production override. Сохраняются Web Push/PWA, Яндекс OAuth и календарь, onboarding, повторения и исправления жизненного цикла напоминаний.
+Версия: `20261017-simple-llm-01`. Основной runtime — simple_llm: компактный контекст, GigaChat-3-Ultra, operation contracts и Go validation/target/temporal resolution. Legacy доступен через GENA_NLU_MODE=semantic_plan_legacy. Сохраняются Web Push/PWA, Яндекс OAuth и календарь, onboarding, повторения и исправления жизненного цикла напоминаний.
 
 В `main` поддерживается одно приложение: Go API + React + PostgreSQL. Семантический provider включается явно через GENA_SEMANTIC_PROVIDER; production service использует подготовленный GigaChat override. Frozen evaluation сохранён без повторного held-out inference.
 

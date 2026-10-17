@@ -1,8 +1,8 @@
 # GigaChat: локальная настройка и подготовка production
 
-Production default остаётся `NLP_PROVIDER=rules`, пока `GENA_SEMANTIC_PROVIDER` не задан явно. Текущая работа не выполняет deploy.
+Production GigaChat override включает `GENA_NLU_MODE=simple_llm`, `GENA_SEMANTIC_PROVIDER=gigachat`, модель `GigaChat-3-Ultra` и concurrency 1. Без override сохраняется rules-only конфигурация. Rollback: `GENA_NLU_MODE=semantic_plan_legacy`.
 
-`Voice/Text → Go fast path → GigaChat → strict SemanticCommand → Go temporal parsing/validation → existing executor → PostgreSQL`.
+Текущий runtime: `text/voice + compact context → GigaChat-3-Ultra → small intent/arguments → Go validation/calendar/target resolution → existing executor`. По умолчанию в development `GENA_NLU_MODE=simple_llm`; `GENA_NLU_MODE=semantic_plan_legacy` оставляет прежний путь. [Контракты, безопасность и локальный ручной тест](SIMPLE_LLM_RUNTIME.md). Исторические SemanticCommand/SemanticPlan evaluators ниже не входят в новый runtime; его проверяет небольшой `cmd/simple-smoke`.
 
 В локальном `.env` задаются переменные из `.env.example`. Основной credential — `GIGACHAT_AUTHORIZATION_KEY`. Client ID/Secret можно хранить там для управления учётной записью; приложение их не использует. Ключи и access token не передаются в сообщения модели. `.env`, его local-варианты и semantic cache исключены из Git.
 
@@ -45,7 +45,7 @@ DEV 572 и frozen held-out 208 восстановлены из локально�
 docker compose --env-file /etc/rhythm/production.env -f deploy/compose.production.yaml -f deploy/compose.gigachat.example.yaml config --quiet
 ```
 
-Не публикуйте обычный `docker compose config` с раскрытыми env. Access token не задаётся в deployment env и не сохраняется на диск. При unavailable/timeout/invalid output semantic adapter возвращает уточнение, мутация не передаётся executor. Rules fast path консервативен: однозначные списки, полные декларации встреч с датой/временем и существующий dialogue flow обрабатываются локально.
+Не публикуйте обычный `docker compose config` с раскрытыми env. Access token не задаётся в deployment env и не сохраняется на диск. При unavailable/timeout/invalid output simple_llm возвращает уточнение без мутации. Fast path — только точные подтверждения и отмена при pending; остальная речь идёт в GigaChat с компактным контекстом.
 
 Для включения GigaChat в контейнерном запуске нужен указанный override: основной compose сам не передаёт GIGACHAT-переменные из локального `.env`. После замены credentials и подготовки environment будущая команда выпуска:
 

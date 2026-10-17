@@ -18,6 +18,7 @@ import (
 )
 
 type Config struct {
+	NLUMode                                                                    string
 	SemanticProvider                                                           string
 	GigaChat                                                                   llm.GigaChatConfig
 	WebPush                                                                    notifications.Config
@@ -43,6 +44,9 @@ func (c Config) EffectiveNLPProvider() string {
 	if c.SemanticProvider != "" {
 		return c.SemanticProvider
 	}
+	if c.NLUMode == "simple_llm" {
+		return "gigachat"
+	}
 	return c.NLPProvider
 }
 
@@ -65,6 +69,7 @@ func Load() (Config, error) {
 		return fallback
 	}
 	c := Config{
+		NLUMode:          value("GENA_NLU_MODE", ""),
 		SemanticProvider: value("GENA_SEMANTIC_PROVIDER", ""),
 		GigaChat:         llm.GigaChatConfig{AuthorizationKey: value("GIGACHAT_AUTHORIZATION_KEY", ""), Scope: value("GIGACHAT_SCOPE", "GIGACHAT_API_PERS"), BaseURL: value("GIGACHAT_BASE_URL", "https://api.giga.chat"), Model: value("GIGACHAT_MODEL", "GigaChat-3-Ultra"), CAFile: value("GIGACHAT_CA_FILE", "")},
 		WebPush:          notifications.Config{PublicKey: value("WEB_PUSH_VAPID_PUBLIC_KEY", ""), PrivateKey: value("WEB_PUSH_VAPID_PRIVATE_KEY", ""), Subject: value("WEB_PUSH_SUBJECT", "")},
@@ -76,6 +81,15 @@ func Load() (Config, error) {
 		DatabasePath: value("DATABASE_PATH", filepath.Join(root, "var/assistant-go.sqlite3")),
 		Timezone:     value("APP_TIMEZONE", "Europe/Moscow"), NLPProvider: value("NLP_PROVIDER", "rules"),
 		OllamaURL: value("OLLAMA_BASE_URL", "http://127.0.0.1:11434"), OllamaModel: value("OLLAMA_MODEL", "qwen2.5:7b"),
+	}
+	if c.NLUMode == "" {
+		c.NLUMode = "simple_llm"
+		if c.Environment == "production" {
+			c.NLUMode = "semantic_plan_legacy"
+		}
+	}
+	if c.NLUMode != "simple_llm" && c.NLUMode != "semantic_plan_legacy" {
+		return c, errors.New("GENA_NLU_MODE must be simple_llm or semantic_plan_legacy")
 	}
 	if err := c.WebPush.Validate(); err != nil {
 		return c, err

@@ -9,6 +9,8 @@ services:
       PUBLIC_URL: ${PUBLIC_URL:-http://localhost:8081}
       APP_ENV: ${APP_ENV:-development}
       APP_TIMEZONE: ${APP_TIMEZONE:-Europe/Moscow}
+      # Rules-only Docker/CI remains available without external credentials.
+      GENA_NLU_MODE: ${GENA_NLU_MODE:-semantic_plan_legacy}
       NLP_PROVIDER: ${NLP_PROVIDER:-rules}
       OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://ollama:11434}
       OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:7b}

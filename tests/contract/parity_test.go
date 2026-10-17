@@ -216,7 +216,13 @@ func TestSharedCorpusHTTP(t *testing.T) {
 					t.Fatal(err)
 				}
 				if step.Expected != nil {
-					compare(t, fmt.Sprintf("step%d", i), currentDialogueCopy(step.Expected), actual)
+					expected := currentDialogueCopy(step.Expected)
+					// An orphaned pronoun now asks for the target explicitly. The
+					// immutable historical corpus predates bounded dialogue state.
+					if scenario.Name == "restart_context" && i == 4 {
+						expected.(map[string]any)["reply"] = "Какую запись вы имеете в виду? Укажите название или выберите её из списка."
+					}
+					compare(t, fmt.Sprintf("step%d", i), expected, actual)
 				}
 				if step.ExpectedDetail != "" {
 					compare(t, "detail", step.ExpectedDetail, actual["detail"])

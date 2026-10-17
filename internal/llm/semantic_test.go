@@ -142,3 +142,23 @@ func TestSemanticContractExportMatchesSource(t *testing.T) {
 		t.Fatal("provider-neutral contract drift")
 	}
 }
+
+func TestParticipantSearchFastPathKeepsArbitraryQueryAndRejectsFilters(t *testing.T) {
+	provider := &fixtureProvider{name: "gigachat", model: "test", err: errors.New("unexpected model call")}
+	model := &Semantic{Provider: provider, FastPath: true}
+	now := time.Date(2026, 10, 16, 12, 30, 17, 0, time.UTC)
+	for _, query := range []string{"Сидором", "Зариной", "Жаном-Клодом", "Альбертом Эдуардовичем", "незнакомым участником"} {
+		provider.calls = 0
+		cmd, err := model.Interpret(t.Context(), "Найди встречи с "+query, now)
+		if err != nil || cmd.Action != domain.ActionSearch || cmd.Kind != domain.EventMeeting || cmd.Query != query || provider.calls != 0 {
+			t.Fatal(cmd, err, provider.calls)
+		}
+	}
+	for _, message := range []string{"Не найди встречи с Сидором", "Найди встречи с Сидором завтра", "Найди встречи с Сидором за прошлый месяц", "Найди встречи с Сидором и удали все", "Найди встречи с «Сидором»", "Он сказал найди встречи с Сидором", "Найди встречи с Сидором после обеда", "Найди встречи с Сидором а не Зариной", "Найди встречи с"} {
+		provider.calls = 0
+		cmd, err := model.Interpret(t.Context(), message, now)
+		if err != nil || cmd.Action != domain.ActionHelp || provider.calls != 1 {
+			t.Fatal(message, cmd, err, provider.calls)
+		}
+	}
+}

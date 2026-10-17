@@ -2,6 +2,8 @@ package assistant
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"regexp"
 	"strings"
@@ -27,6 +29,7 @@ type Service struct {
 	Interpreter         Interpreter
 	Calendar            *calendar.Service
 	AskReminderSettings bool
+	ObserveTurn         func(DialogueObservation)
 	mu                  sync.Mutex
 	locks               map[string]*lockEntry
 }
@@ -61,6 +64,9 @@ func (s *Service) sessionLock(ctx context.Context, id string) (func(), error) {
 	}
 }
 func (s *Service) Respond(ctx context.Context, message, sid, rid string, now time.Time) (domain.Response, error) {
+	if interpreter, ok := s.Interpreter.(operationInterpreter); ok {
+		return s.respondSimple(ctx, interpreter, message, sid, rid, now)
+	}
 	now = now.In(s.Calendar.Location)
 	var response domain.Response
 	unlock, err := s.sessionLock(ctx, sid)
@@ -69,17 +75,20 @@ func (s *Service) Respond(ctx context.Context, message, sid, rid string, now tim
 	}
 	defer unlock()
 	var cached *domain.Exchange
-	pendingExpectation := ""
+	var snapshot domain.State
+	var dialogue nlp.DialogueContext
 	err = s.Store.Read(ctx, func(tx repository.Tx) error {
 		var err error
 		cached, err = tx.Cached(ctx, sid, rid)
 		if err != nil || cached != nil {
 			return err
 		}
-		state, err := tx.State(ctx, sid)
-		if err == nil && state.Pending != nil && now.Sub(state.Pending.At) <= 30*time.Minute {
-			pendingExpectation = state.Pending.Expectation
+		snapshot, err = tx.State(ctx, sid)
+		if err != nil {
+			return err
 		}
+		expireDialogue(&snapshot, now)
+		dialogue, err = buildDialogueContext(ctx, tx, snapshot)
 		return err
 	})
 	if err != nil {
@@ -92,7 +101,43 @@ func (s *Service) Respond(ctx context.Context, message, sid, rid string, now tim
 		return cached.Response, nil
 	}
 	// Both deterministic interpretation and external LLM HTTP happen before BEGIN IMMEDIATE.
-	cmd, err := s.Interpreter.Interpret(nlp.WithPendingExpectation(ctx, pendingExpectation), message, now)
+	interpretStarted := time.Now()
+	var cmd domain.Command
+	var turn *nlp.ContextualTurn
+	var plan *nlp.SemanticPlan
+	var route RouteDecision
+	semanticCalls, planValid := 0, false
+	var evidenceError *nlp.EvidenceError
+	if planner, ok := s.Interpreter.(planInterpreter); ok {
+		route, turn = exactPlanFastPath(snapshot, message, now)
+		cmd = neutral(route.Path)
+		if turn == nil {
+			semanticCalls = 1
+			parsed, parseErr := planner.ParsePlan(ctx, message, dialogue, now)
+			parsed, _ = nlp.CanonicalizePlanSource(parsed, message)
+			planValid = parsed.Validate() == nil
+			if parseErr == nil {
+				parseErr = parsed.Validate()
+			}
+			if parseErr == nil {
+				parseErr = nlp.ValidatePlanEvidence(parsed, message)
+			}
+			if errors.As(parseErr, &evidenceError) {
+				planValid = true
+			}
+			if ctx.Err() != nil {
+				return response, ctx.Err()
+			}
+			if parseErr != nil {
+				cmd.Error = "Не удалось безопасно понять запрос. Уточните формулировку. Ничего не изменено."
+			} else {
+				plan, planValid = &parsed, true
+			}
+		}
+	} else {
+		cmd, turn, err = s.interpretDialogue(ctx, snapshot, dialogue, message, now)
+	}
+	interpretLatency := time.Since(interpretStarted)
 	if err != nil {
 		return response, err
 	}
@@ -112,21 +157,111 @@ func (s *Service) Respond(ctx context.Context, message, sid, rid string, now tim
 		if err != nil {
 			return err
 		}
-		if state.Pending != nil && now.Sub(state.Pending.At) > 30*time.Minute {
+		expireDialogue(&state, now)
+		if evidenceError != nil {
+			// A subsequent exact "yes" must not authorize an older preview after
+			// a newly rejected mutation has changed the user's intent.
 			state.Pending = nil
+			cmd.Error = "Не уверен, что правильно понял дату, время или нужные записи. Уточните запрос. Ничего не изменено."
 		}
 		provider := cmd.Provider
-		response, err = s.execute(ctx, tx, &state, cmd, message, now)
+		var resolved *domain.Response
+		if route.Reason == "context_cancellation" && sameDialogueSnapshot(snapshot, state) {
+			state.LastIDs, state.Dialogue = nil, nil
+			r := answer("Сейчас нечего подтверждать.", domain.ActionHelp)
+			resolved = &r
+		}
+		if route.Reason == "deferred_confirmation" && state.Pending != nil && sameDialogueSnapshot(snapshot, state) {
+			state.Pending.ConfirmationState = "deferred_confirmation"
+			r := answer("Подтверждение отложено. Предпросмотр сохранён; можно подтвердить или отменить действие.", domain.ActionClarify)
+			resolved = &r
+		}
+		// Another service instance may have advanced this same dialogue while
+		// inference was in flight. Never apply a contextual reply to a new state.
+		usesPending := turn != nil && in(turn.Type, "confirmation", "choice", "slot_reply") || plan != nil && in(plan.DialogueAct, "choice", "slot_reply")
+		if resolved != nil {
+			// A deferred preview is a dialogue transition, never a new command.
+		} else if route.Path != "" && usesPending && state.Pending != nil && state.Pending.EvidenceVersion != 1 {
+			state.Pending = nil
+			r := answer("Повторите исходную команду: сначала нужно проверить смысл запроса.", domain.ActionClarify)
+			resolved = &r
+		} else if (plan != nil || turn != nil && turn.Type != "command") && !sameDialogueSnapshot(snapshot, state) {
+			r := answer("Контекст диалога изменился. Повторите продолжение или выберите запись заново.", domain.ActionClarify)
+			resolved = &r
+		} else if plan != nil {
+			cmd, resolved, err = s.resolvePlan(ctx, tx, &state, *plan, message, now)
+			if err != nil {
+				return err
+			}
+		} else if turn != nil {
+			cmd, resolved, err = s.resolveTurn(ctx, tx, &state, *turn, message, now)
+			if err != nil {
+				return err
+			}
+		}
+		executionMessage := message
+		if route.Path != "" {
+			executionMessage = ""
+		}
+		if turn != nil && turn.Type == "confirmation" {
+			executionMessage = message
+		}
+		if turn != nil && in(turn.Type, "slot_reply", "reference", "choice") {
+			executionMessage = ""
+		}
+		if resolved != nil {
+			response = *resolved
+		} else if turn != nil && turn.Type == "confirmation" && route.Path != "" && state.Pending != nil && state.Pending.EvidenceVersion != 1 {
+			state.Pending = nil
+			response = answer("Повторите исходную команду: для этого подтверждения нужно заново проверить смысл запроса.", domain.ActionClarify)
+		} else if turn != nil && turn.Type == "confirmation" && state.Pending != nil && state.Pending.Expectation == "batch" {
+			response, err = s.confirmBatch(ctx, tx, &state, now)
+		} else {
+			response, err = s.execute(ctx, tx, &state, cmd, executionMessage, now)
+		}
 		if err != nil {
 			return err
 		}
+		newCheckedCommand := plan != nil && plan.Status == "ok" && plan.DialogueAct == "command" && plan.Operation != nil && *plan.Operation != "chat"
+		checkedContinuation := snapshot.Pending != nil && snapshot.Pending.EvidenceVersion == 1 && (turn != nil && in(turn.Type, "slot_reply", "choice") || plan != nil && in(plan.DialogueAct, "slot_reply", "choice"))
+		if state.Pending != nil && (newCheckedCommand || checkedContinuation) {
+			state.Pending.EvidenceVersion = 1
+		}
+		if state.Pending != nil && in(state.Pending.Expectation, "batch", "delete", "delete_many", "conflict") && state.Pending.ConfirmationState == "" {
+			state.Pending.ConfirmationState = "pending_confirmation"
+		}
 		response.SessionID, response.RequestID, response.Provider, response.Timezone, response.Pending = sid, rid, provider, s.Calendar.Location.String(), state.Pending != nil
+		rememberDialogue(&state, cmd, message, response, now, plan)
+		if s.ObserveTurn != nil {
+			typeName := "command"
+			if turn != nil {
+				typeName = turn.Type
+			}
+			if plan != nil {
+				typeName = plan.DialogueAct
+			}
+			reference := ""
+			if turn != nil && turn.Reference != nil {
+				reference = turn.Reference.Relation
+			}
+			o := DialogueObservation{Type: typeName, Reference: reference, Command: cmd, Provider: provider, InterpretationLatency: interpretLatency, Route: route, SemanticCalls: semanticCalls, PlanValid: planValid}
+			if evidenceError != nil {
+				o.EvidenceField, o.EvidenceReason = evidenceError.Field, evidenceError.Reason
+			}
+			s.ObserveTurn(o)
+		}
 		if err = tx.SaveState(ctx, sid, state, now); err != nil {
 			return err
 		}
 		return tx.SaveExchange(ctx, sid, rid, message, response, now)
 	})
 	return response, err
+}
+
+func sameDialogueSnapshot(a, b domain.State) bool {
+	x, _ := json.Marshal(a)
+	y, _ := json.Marshal(b)
+	return string(x) == string(y)
 }
 
 const help = "Я Гена. Помогу с задачами, встречами и напоминаниями. Например: «Напомни завтра в 10 утра позвонить Ивану», «В пятницу нужно отправить отчёт», «Что у меня на эту неделю?» или «Найди задачу по договору»."
@@ -161,10 +296,9 @@ func ask(state *domain.State, cmd domain.Command, text string, now time.Time, ex
 }
 
 var digits = regexp.MustCompile(`^#?\d+$`)
-var affirmative = regexp.MustCompile(`^да(?:[, ]+(?:пожалуйста|конечно|удали|удалить|сохрани|все|эти|их|записи|события|задачи|напоминания))*$`)
 
 func isAffirmative(text string) bool {
-	return in(text, "да", "подтверждаю", "подтверждаю удаление", "да все равно", "все равно", "сохранить", "удалить") || affirmative.MatchString(text)
+	return nlp.ClassifyConfirmation(text) == nlp.ConfirmationYes
 }
 
 func in(s string, values ...string) bool {
@@ -188,7 +322,7 @@ func joinEvents(events []domain.Event, limit int, separator string) string {
 func (s *Service) execute(ctx context.Context, tx repository.Tx, state *domain.State, cmd domain.Command, message string, now time.Time) (domain.Response, error) {
 	low := strings.Trim(strings.ReplaceAll(strings.ToLower(message), "ё", "е"), " .!?")
 	answeringReminder := state.Pending != nil && state.Pending.Expectation == "reminder"
-	if in(low, "отмена", "отменить", "стоп") || !answeringReminder && in(low, "не надо", "нет") {
+	if in(low, "отмена", "отмени", "отменить", "стоп") || !answeringReminder && nlp.ClassifyConfirmation(message) == nlp.ConfirmationNo {
 		state.Pending = nil
 		return answer("Действие отменено.", domain.ActionCancel), nil
 	}
@@ -281,6 +415,12 @@ func (s *Service) execute(ctx context.Context, tx repository.Tx, state *domain.S
 			return result, nil
 		}
 	}
+	return s.executeValidated(ctx, tx, state, cmd, now, force)
+}
+
+// executeValidated receives Go-resolved commands, with no natural-language input.
+// Pending dialogue is handled by the caller; this is the shared product executor.
+func (s *Service) executeValidated(ctx context.Context, tx repository.Tx, state *domain.State, cmd domain.Command, now time.Time, force bool) (domain.Response, error) {
 	if cmd.Error != "" {
 		if cmd.Action == domain.ActionCreate || cmd.Action == domain.ActionUpdate {
 			question := cmd.Error
@@ -292,8 +432,17 @@ func (s *Service) execute(ctx context.Context, tx repository.Tx, state *domain.S
 	if cmd.Action == domain.ActionHelp {
 		return answer(help, domain.ActionHelp), nil
 	}
+	if cmd.Batch {
+		return s.previewBatch(ctx, tx, state, cmd, now)
+	}
 	if cmd.Action == domain.ActionCreate {
-		if question := creationQuestion(cmd); question != "" {
+		question := ""
+		if cmd.Provider == "simple_llm" {
+			question = simpleCreationQuestion(cmd)
+		} else {
+			question = creationQuestion(cmd)
+		}
+		if question != "" {
 			return ask(state, cmd, question, now, "fields", nil), nil
 		}
 		if utf8.RuneCountInString(cmd.Title) > 500 {
@@ -307,6 +456,9 @@ func (s *Service) execute(ctx context.Context, tx repository.Tx, state *domain.S
 			kind = domain.EventTask
 		}
 		e := domain.Event{EventDetails: domain.EventDetails{ReminderMinutes: cmd.ReminderMinutes, ReminderEnabled: cmd.ReminderEnabled, StartSecond: cmd.StartSecond, Recurrence: cmd.Recurrence, OccurrenceAt: cmd.ExactAt}, Kind: kind, Title: cmd.Title, Date: cmd.Date, StartTime: cmd.Time, Duration: cmd.Duration, Status: domain.StatusOpen, Priority: domain.PriorityNormal}
+		if err := e.Validate(); err != nil {
+			return answer(err.Error(), domain.ActionClarify), nil
+		}
 		conflicts, err := s.Calendar.Conflicts(ctx, tx, e, 0)
 		if err != nil {
 			return domain.Response{}, err
@@ -337,6 +489,9 @@ func (s *Service) execute(ctx context.Context, tx repository.Tx, state *domain.S
 			suffix = " Указанная дата уже прошла."
 		}
 		result := answer(label+" "+saved+": "+describe(*event)+"."+suffix, domain.ActionCreate, *event)
+		if reply := relativeReminderReply(cmd, now); reply != "" {
+			result.Reply = reply
+		}
 		if event.HasReminder() && event.Date != nil && event.StartTime != nil && (s.AskReminderSettings || event.ReminderMinutes != nil) {
 			trigger := event.Date.At(*event.StartTime, s.Calendar.Location).Add(-time.Duration(event.ReminderLead()) * time.Minute)
 			result.Reply += " Напомню " + trigger.Format("02.01 в 15:04") + "."
@@ -352,6 +507,9 @@ func (s *Service) execute(ctx context.Context, tx repository.Tx, state *domain.S
 		}
 		if cmd.Action == domain.ActionList {
 			f.Status = domain.StatusOpen
+			if cmd.Filter != nil && cmd.Filter.Status != nil {
+				f.Status = *cmd.Filter.Status
+			}
 			if f.Start == nil {
 				f.Upcoming = domain.Day(now)
 			}
@@ -359,6 +517,13 @@ func (s *Service) execute(ctx context.Context, tx repository.Tx, state *domain.S
 		events, err := tx.Events(ctx, f)
 		if err != nil {
 			return domain.Response{}, err
+		}
+		// Query is handled by the established search engine below; structured
+		// constraints are deterministic and never recovered from message text.
+		if cmd.Filter != nil {
+			filter := *cmd.Filter
+			filter.Query = ""
+			events = s.filterEvents(events, &filter)
 		}
 		if cmd.Action == domain.ActionSearch {
 			events = s.Calendar.Search.Search(events, cmd.Query, len(events))
@@ -459,11 +624,17 @@ func (s *Service) execute(ctx context.Context, tx repository.Tx, state *domain.S
 	if cmd.Action != domain.ActionUpdate {
 		return answer("Уточните действие. Ничего не изменено.", domain.ActionClarify), nil
 	}
-	if cmd.Date == nil && cmd.Time == nil && strings.TrimSpace(cmd.Title) == "" {
+	if cmd.Date == nil && cmd.Time == nil && strings.TrimSpace(cmd.Title) == "" && cmd.ReminderEnabled == nil && cmd.ReminderMinutes == nil && cmd.Changes == nil {
 		return ask(state, cmd, "На какую дату или время перенести событие?", now, "fields", nil), nil
 	}
 	if cmd.Title != "" {
 		event.Title = strings.TrimSpace(cmd.Title)
+	}
+	if cmd.ReminderEnabled != nil {
+		event.ReminderEnabled = cmd.ReminderEnabled
+	}
+	if cmd.ReminderMinutes != nil {
+		event.ReminderMinutes = cmd.ReminderMinutes
 	}
 	if cmd.Date != nil || cmd.Time != nil {
 		event.OccurrenceAt = cmd.ExactAt
@@ -477,6 +648,9 @@ func (s *Service) execute(ctx context.Context, tx repository.Tx, state *domain.S
 	if cmd.Time != nil {
 		event.StartTime = cmd.Time
 		event.StartSecond = cmd.StartSecond
+	}
+	if err := applyExecutionChanges(&event, cmd.Changes, s.Calendar.Location); err != nil {
+		return answer(err.Error(), domain.ActionClarify), nil
 	}
 	if event.StartTime != nil && event.Date == nil {
 		return ask(state, cmd, "Уточните дату переноса.", now, "fields", nil), nil

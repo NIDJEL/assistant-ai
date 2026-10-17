@@ -1,0 +1,1798 @@
+[
+  {
+    "Name": "01 reminder tomorrow",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "Напомни завтра в 10 позвонить Ивану",
+        "Operation": {
+          "intent": "create_reminder",
+          "arguments": {
+            "title": "Позвонить Ивану",
+            "date": {
+              "type": "relative_day",
+              "offset": 1
+            },
+            "time": "10:00"
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "DBCount": 1,
+          "Event": {
+            "TitleContains": "Иван",
+            "Date": "2026-10-18",
+            "Time": "10:00"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "Name": "02 pizza timer",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "Поставь таймер на 10 минут вытащить пиццу",
+        "Operation": {
+          "intent": "create_reminder",
+          "arguments": {
+            "title": "Вытащить пиццу",
+            "date": {
+              "type": "relative_delay",
+              "unit": "minute",
+              "value": 10
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "DBCount": 1,
+          "Event": {
+            "TitleContains": "пицц",
+            "Date": "2026-10-17",
+            "Time": "12:40"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "Name": "03 meeting Matvey",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "Создай встречу с Матвеем завтра в 15",
+        "Operation": {
+          "intent": "create_meeting",
+          "arguments": {
+            "title": "Встреча с Матвеем",
+            "date": {
+              "type": "relative_day",
+              "offset": 1
+            },
+            "time": "15:00"
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "DBCount": 1,
+          "Event": {
+            "TitleContains": "Матве",
+            "Date": "2026-10-18",
+            "Time": "15:00"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "Name": "04 schedule tomorrow",
+    "Seeds": [
+      {
+        "Key": "alice",
+        "Kind": "meeting",
+        "Title": "Встреча с Алисой",
+        "Date": "2026-10-18",
+        "Time": "10:00",
+        "Status": "open"
+      },
+      {
+        "Key": "matvey",
+        "Kind": "meeting",
+        "Title": "Встреча с Матвеем",
+        "Date": "2026-10-18",
+        "Time": "14:00",
+        "Status": "open"
+      }
+    ],
+    "Turns": [
+      {
+        "Message": "Что у меня завтра?",
+        "Operation": {
+          "intent": "list",
+          "arguments": {
+            "date": {
+              "type": "relative_day",
+              "offset": 1
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "list",
+          "Count": 2,
+          "DBCount": 2
+        }
+      }
+    ]
+  },
+  {
+    "Name": "05 search Alice",
+    "Seeds": [
+      {
+        "Key": "alice",
+        "Kind": "meeting",
+        "Title": "Встреча с Алисой",
+        "Date": "2026-10-18",
+        "Time": "10:00",
+        "Status": "open"
+      },
+      {
+        "Key": "matvey",
+        "Kind": "meeting",
+        "Title": "Встреча с Матвеем",
+        "Date": "2026-10-18",
+        "Time": "14:00",
+        "Status": "open"
+      }
+    ],
+    "Turns": [
+      {
+        "Message": "Найди встречи с Алисой",
+        "Operation": {
+          "intent": "search",
+          "arguments": {
+            "kind": "meeting",
+            "query": "Алиса"
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "search",
+          "Count": 1,
+          "DBCount": 2
+        }
+      }
+    ]
+  },
+  {
+    "Name": "06 ordinal correction reminder deletion",
+    "Seeds": [
+      {
+        "Key": "alice",
+        "Kind": "meeting",
+        "Title": "Встреча с Алисой",
+        "Date": "2026-10-18",
+        "Time": "10:00",
+        "Status": "open"
+      },
+      {
+        "Key": "second",
+        "Kind": "meeting",
+        "Title": "Встреча с Алисой",
+        "Date": "2026-10-18",
+        "Time": "14:00",
+        "Status": "open"
+      }
+    ],
+    "Turns": [
+      {
+        "Message": "Найди встречи с Алисой",
+        "Operation": {
+          "intent": "search",
+          "arguments": {
+            "kind": "meeting",
+            "query": "Алиса"
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "search",
+          "Count": 2
+        }
+      },
+      {
+        "Message": "вторую перенеси на 16",
+        "Operation": {
+          "intent": "update",
+          "arguments": {
+            "target": {
+              "type": "ordinal",
+              "index": 2
+            },
+            "changes": {
+              "time": "16:00"
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "update",
+          "Event": {
+            "Time": "16:00"
+          },
+          "Records": [
+            {
+              "Key": "alice",
+              "Time": "10:00"
+            },
+            {
+              "Key": "second",
+              "Time": "16:00"
+            }
+          ]
+        }
+      },
+      {
+        "Message": "нет, лучше на 17",
+        "Operation": {
+          "intent": "update",
+          "arguments": {
+            "target": {
+              "type": "last"
+            },
+            "changes": {
+              "time": "17:00"
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "update",
+          "Event": {
+            "Time": "17:00"
+          }
+        }
+      },
+      {
+        "Message": "тогда напомни за час",
+        "Operation": {
+          "intent": "update",
+          "arguments": {
+            "target": {
+              "type": "last"
+            },
+            "changes": {
+              "reminder_minutes": 60,
+              "reminder_enabled": true
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "update",
+          "Event": {
+            "Time": "17:00",
+            "ReminderMinutes": 60
+          }
+        }
+      },
+      {
+        "Message": "удали её",
+        "Operation": {
+          "intent": "delete",
+          "arguments": {
+            "target": {
+              "type": "last"
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "clarify",
+          "Pending": true,
+          "DBCount": 2
+        }
+      },
+      {
+        "Message": "да",
+        "Operation": {
+          "intent": "confirm",
+          "arguments": {},
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "delete",
+          "DBCount": 1,
+          "Absent": [
+            "second"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "Name": "07 last month",
+    "Seeds": [
+      {
+        "Key": "alice",
+        "Kind": "meeting",
+        "Title": "Встреча с Алисой",
+        "Date": "2026-10-18",
+        "Time": "10:00",
+        "Status": "open"
+      },
+      {
+        "Key": "old",
+        "Kind": "meeting",
+        "Title": "Встреча с Матвеем",
+        "Date": "2026-09-14",
+        "Time": "10:00",
+        "Status": "open"
+      }
+    ],
+    "Turns": [
+      {
+        "Message": "найди встречи за прошлый месяц",
+        "Operation": {
+          "intent": "list",
+          "arguments": {
+            "kind": "meeting",
+            "period": {
+              "type": "calendar_period",
+              "unit": "month",
+              "offset": -1
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "list",
+          "Count": 1
+        }
+      }
+    ]
+  },
+  {
+    "Name": "08 completed search refinement",
+    "Seeds": [
+      {
+        "Key": "open",
+        "Kind": "meeting",
+        "Title": "Встреча с Алисой",
+        "Date": "2026-09-14",
+        "Time": "10:00",
+        "Status": "open"
+      },
+      {
+        "Key": "done",
+        "Kind": "meeting",
+        "Title": "Встреча с Алисой",
+        "Date": "2026-09-15",
+        "Time": "10:00",
+        "Status": "done"
+      },
+      {
+        "Key": "other",
+        "Kind": "meeting",
+        "Title": "Встреча с Матвеем",
+        "Date": "2026-09-15",
+        "Time": "10:00",
+        "Status": "done"
+      },
+      {
+        "Key": "alice",
+        "Kind": "meeting",
+        "Title": "Встреча с Алисой",
+        "Date": "2026-10-18",
+        "Time": "10:00",
+        "Status": "open"
+      }
+    ],
+    "Turns": [
+      {
+        "Message": "найди встречи с Алисой за прошлый месяц",
+        "Operation": {
+          "intent": "search",
+          "arguments": {
+            "kind": "meeting",
+            "query": "Алиса",
+            "period": {
+              "type": "calendar_period",
+              "unit": "month",
+              "offset": -1
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "search",
+          "Count": 2
+        }
+      },
+      {
+        "Message": "а теперь только завершённые",
+        "Operation": {
+          "intent": "list",
+          "arguments": {
+            "inherit": true,
+            "status": "done"
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "search",
+          "Count": 1,
+          "Event": {
+            "Date": "2026-09-15",
+            "Status": "done"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "Name": "09 batch shift confirm",
+    "Seeds": [
+      {
+        "Key": "alice",
+        "Kind": "meeting",
+        "Title": "Встреча с Алисой",
+        "Date": "2026-10-18",
+        "Time": "10:00",
+        "Status": "open"
+      },
+      {
+        "Key": "matvey",
+        "Kind": "meeting",
+        "Title": "Встреча с Матвеем",
+        "Date": "2026-10-18",
+        "Time": "14:00",
+        "Status": "open"
+      }
+    ],
+    "Turns": [
+      {
+        "Message": "все встречи завтра сдвинь на час",
+        "Operation": {
+          "intent": "batch_update",
+          "arguments": {
+            "filter": {
+              "kind": "meeting",
+              "date": {
+                "type": "relative_day",
+                "offset": 1
+              }
+            },
+            "changes": {
+              "shift_minutes": 60
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "clarify",
+          "Pending": true,
+          "DBCount": 2,
+          "Records": [
+            {
+              "Key": "alice",
+              "Time": "10:00"
+            },
+            {
+              "Key": "matvey",
+              "Time": "14:00"
+            }
+          ]
+        }
+      },
+      {
+        "Message": "подтверждаю",
+        "Operation": {
+          "intent": "confirm",
+          "arguments": {},
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "update",
+          "Count": 2,
+          "Records": [
+            {
+              "Key": "alice",
+              "Time": "11:00"
+            },
+            {
+              "Key": "matvey",
+              "Time": "15:00"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "Name": "10 batch cancel",
+    "Seeds": [
+      {
+        "Key": "alice",
+        "Kind": "meeting",
+        "Title": "Встреча с Алисой",
+        "Date": "2026-10-18",
+        "Time": "10:00",
+        "Status": "open"
+      },
+      {
+        "Key": "matvey",
+        "Kind": "meeting",
+        "Title": "Встреча с Матвеем",
+        "Date": "2026-10-18",
+        "Time": "14:00",
+        "Status": "open"
+      }
+    ],
+    "Turns": [
+      {
+        "Message": "все встречи завтра сдвинь на час",
+        "Operation": {
+          "intent": "batch_update",
+          "arguments": {
+            "filter": {
+              "kind": "meeting",
+              "date": {
+                "type": "relative_day",
+                "offset": 1
+              }
+            },
+            "changes": {
+              "shift_minutes": 60
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "clarify",
+          "Pending": true
+        }
+      },
+      {
+        "Message": "не надо",
+        "Operation": {
+          "intent": "cancel",
+          "arguments": {},
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "cancel",
+          "Records": [
+            {
+              "Key": "alice",
+              "Time": "10:00"
+            },
+            {
+              "Key": "matvey",
+              "Time": "14:00"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "Name": "11 batch exclusion",
+    "Seeds": [
+      {
+        "Key": "alice",
+        "Kind": "meeting",
+        "Title": "Встреча с Алисой",
+        "Date": "2026-10-18",
+        "Time": "10:00",
+        "Status": "open"
+      },
+      {
+        "Key": "matvey",
+        "Kind": "meeting",
+        "Title": "Встреча с Матвеем",
+        "Date": "2026-10-18",
+        "Time": "14:00",
+        "Status": "open"
+      }
+    ],
+    "Turns": [
+      {
+        "Message": "Все встречи завтра перенеси на 17:00 кроме встречи с Матвеем",
+        "Operation": {
+          "intent": "batch_update",
+          "arguments": {
+            "filter": {
+              "kind": "meeting",
+              "date": {
+                "type": "relative_day",
+                "offset": 1
+              }
+            },
+            "exclude": [
+              {
+                "query": "Матвей"
+              }
+            ],
+            "changes": {
+              "time": "17:00"
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "clarify",
+          "Pending": true,
+          "Count": 1
+        }
+      },
+      {
+        "Message": "да",
+        "Operation": {
+          "intent": "confirm",
+          "arguments": {},
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "update",
+          "Records": [
+            {
+              "Key": "alice",
+              "Time": "17:00"
+            },
+            {
+              "Key": "matvey",
+              "Time": "14:00"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "Name": "12 refine batch preview",
+    "Seeds": [
+      {
+        "Key": "alice",
+        "Kind": "meeting",
+        "Title": "Встреча с Алисой",
+        "Date": "2026-10-18",
+        "Time": "10:00",
+        "Status": "open"
+      },
+      {
+        "Key": "matvey",
+        "Kind": "meeting",
+        "Title": "Встреча с Матвеем",
+        "Date": "2026-10-18",
+        "Time": "14:00",
+        "Status": "open"
+      }
+    ],
+    "Turns": [
+      {
+        "Message": "Все встречи завтра сдвинь на час",
+        "Operation": {
+          "intent": "batch_update",
+          "arguments": {
+            "filter": {
+              "kind": "meeting",
+              "date": {
+                "type": "relative_day",
+                "offset": 1
+              }
+            },
+            "changes": {
+              "shift_minutes": 60
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "clarify",
+          "Pending": true
+        }
+      },
+      {
+        "Message": "все кроме встречи с Матвеем",
+        "Operation": {
+          "intent": "batch_update",
+          "arguments": {
+            "filter": {
+              "kind": "meeting",
+              "date": {
+                "type": "relative_day",
+                "offset": 1
+              }
+            },
+            "exclude": [
+              {
+                "query": "Матвей"
+              }
+            ],
+            "changes": {
+              "shift_minutes": 60
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "clarify",
+          "Pending": true,
+          "Count": 1,
+          "Records": [
+            {
+              "Key": "alice",
+              "Time": "10:00"
+            }
+          ]
+        }
+      },
+      {
+        "Message": "да",
+        "Operation": {
+          "intent": "confirm",
+          "arguments": {},
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "update",
+          "Records": [
+            {
+              "Key": "alice",
+              "Time": "11:00"
+            },
+            {
+              "Key": "matvey",
+              "Time": "14:00"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "Name": "13 greeting",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "привет",
+        "Operation": {
+          "intent": "chat",
+          "arguments": {
+            "reply": "Привет! Я Гена. Что запланируем?"
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "help",
+          "DBCount": 0
+        }
+      }
+    ]
+  },
+  {
+    "Name": "14 thanks",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "спасибо",
+        "Operation": {
+          "intent": "chat",
+          "arguments": {
+            "reply": "Пожалуйста!"
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "help",
+          "DBCount": 0
+        }
+      }
+    ]
+  },
+  {
+    "Name": "15 capabilities",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "Что ты умеешь?",
+        "Operation": {
+          "intent": "chat",
+          "arguments": {
+            "reply": "Помогаю с задачами, встречами и напоминаниями."
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "help",
+          "DBCount": 0
+        }
+      }
+    ]
+  },
+  {
+    "Name": "16 identity",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "Кто ты?",
+        "Operation": {
+          "intent": "chat",
+          "arguments": {
+            "reply": "Я Гена, ваш помощник."
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "help",
+          "DBCount": 0
+        }
+      }
+    ]
+  },
+  {
+    "Name": "17 ambiguous deletion choose confirm",
+    "Seeds": [
+      {
+        "Key": "alice",
+        "Kind": "meeting",
+        "Title": "Встреча с Алисой",
+        "Date": "2026-10-18",
+        "Time": "10:00",
+        "Status": "open"
+      },
+      {
+        "Key": "second",
+        "Kind": "meeting",
+        "Title": "Встреча с Алисой",
+        "Date": "2026-10-18",
+        "Time": "14:00",
+        "Status": "open"
+      }
+    ],
+    "Turns": [
+      {
+        "Message": "Удали встречу с Алисой",
+        "Operation": {
+          "intent": "delete",
+          "arguments": {
+            "target": {
+              "type": "query",
+              "value": "Алиса",
+              "filter": {
+                "kind": "meeting"
+              }
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "clarify",
+          "Pending": true,
+          "DBCount": 2
+        }
+      },
+      {
+        "Message": "вторую",
+        "Operation": {
+          "intent": "select",
+          "arguments": {
+            "target": {
+              "type": "ordinal",
+              "index": 2
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "clarify",
+          "Pending": true,
+          "DBCount": 2
+        }
+      },
+      {
+        "Message": "удаляй",
+        "Operation": {
+          "intent": "confirm",
+          "arguments": {},
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "delete",
+          "DBCount": 1,
+          "Absent": [
+            "second"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "Name": "18 half an hour",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "Слушай, через полчаса напомни чайник выключить",
+        "Operation": {
+          "intent": "create_reminder",
+          "arguments": {
+            "title": "Выключить чайник",
+            "date": {
+              "type": "relative_delay",
+              "unit": "minute",
+              "value": 30
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "Event": {
+            "Date": "2026-10-17",
+            "Time": "13:00",
+            "TitleContains": "чайник"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "Name": "19 pending date then time",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "Напомни позвонить маме",
+        "Operation": {
+          "intent": "create_reminder",
+          "arguments": {
+            "title": "Позвонить маме"
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "clarify",
+          "Pending": true,
+          "DBCount": 0
+        }
+      },
+      {
+        "Message": "завтра",
+        "Operation": {
+          "intent": "continue",
+          "arguments": {
+            "changes": {
+              "date": {
+                "type": "relative_day",
+                "offset": 1
+              }
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "clarify",
+          "Pending": true,
+          "DBCount": 0
+        }
+      },
+      {
+        "Message": "в 15:00",
+        "Operation": {
+          "intent": "continue",
+          "arguments": {
+            "changes": {
+              "time": "15:00"
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "Event": {
+            "Date": "2026-10-18",
+            "Time": "15:00",
+            "TitleContains": "мам"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "Name": "20 pending meeting time",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "Давай завтра встретимся с Матвеем",
+        "Operation": {
+          "intent": "create_meeting",
+          "arguments": {
+            "title": "Встреча с Матвеем",
+            "date": {
+              "type": "relative_day",
+              "offset": 1
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "clarify",
+          "Pending": true
+        }
+      },
+      {
+        "Message": "в 15:00",
+        "Operation": {
+          "intent": "continue",
+          "arguments": {
+            "changes": {
+              "time": "15:00"
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "Event": {
+            "Date": "2026-10-18",
+            "Time": "15:00"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "Name": "21 pending delay",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "Напомни проверить пиццу",
+        "Operation": {
+          "intent": "create_reminder",
+          "arguments": {
+            "title": "Проверить пиццу"
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "clarify",
+          "Pending": true
+        }
+      },
+      {
+        "Message": "через 10 минут",
+        "Operation": {
+          "intent": "continue",
+          "arguments": {
+            "changes": {
+              "date": {
+                "type": "relative_delay",
+                "unit": "minute",
+                "value": 10
+              }
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "Event": {
+            "Date": "2026-10-17",
+            "Time": "12:40"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "Name": "22 correction day after tomorrow",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "Запиши встречу с Матвеем завтра в три дня",
+        "Operation": {
+          "intent": "create_meeting",
+          "arguments": {
+            "title": "Встреча с Матвеем",
+            "date": {
+              "type": "relative_day",
+              "offset": 1
+            },
+            "time": "15:00"
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "Event": {
+            "Date": "2026-10-18",
+            "Time": "15:00"
+          }
+        }
+      },
+      {
+        "Message": "нет, лучше послезавтра",
+        "Operation": {
+          "intent": "update",
+          "arguments": {
+            "target": {
+              "type": "last"
+            },
+            "changes": {
+              "date": {
+                "type": "relative_day",
+                "offset": 2
+              }
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "update",
+          "Event": {
+            "Date": "2026-10-19",
+            "Time": "15:00"
+          },
+          "DBCount": 1
+        }
+      }
+    ]
+  },
+  {
+    "Name": "23 only meetings",
+    "Seeds": [
+      {
+        "Key": "alice",
+        "Kind": "meeting",
+        "Title": "Встреча с Алисой",
+        "Date": "2026-10-18",
+        "Time": "10:00",
+        "Status": "open"
+      },
+      {
+        "Key": "matvey",
+        "Kind": "meeting",
+        "Title": "Встреча с Матвеем",
+        "Date": "2026-10-18",
+        "Time": "14:00",
+        "Status": "open"
+      },
+      {
+        "Key": "task",
+        "Kind": "task",
+        "Title": "Подготовить отчёт",
+        "Date": "2026-10-18",
+        "Time": "09:00",
+        "Status": "open"
+      }
+    ],
+    "Turns": [
+      {
+        "Message": "Что у меня завтра?",
+        "Operation": {
+          "intent": "list",
+          "arguments": {
+            "date": {
+              "type": "relative_day",
+              "offset": 1
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "list",
+          "Count": 3
+        }
+      },
+      {
+        "Message": "а только встречи",
+        "Operation": {
+          "intent": "list",
+          "arguments": {
+            "inherit": true,
+            "kind": "meeting"
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "list",
+          "Count": 2
+        }
+      }
+    ]
+  },
+  {
+    "Name": "24 next Friday",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "Запланируй встречу с Алисой в следующую пятницу в 11",
+        "Operation": {
+          "intent": "create_meeting",
+          "arguments": {
+            "title": "Встреча с Алисой",
+            "date": {
+              "type": "weekday",
+              "weekday": "friday",
+              "direction": "next"
+            },
+            "time": "11:00"
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "Event": {
+            "Date": "2026-10-23",
+            "Time": "11:00"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "Name": "25 task dated",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "На завтра задачку: отправить отчёт",
+        "Operation": {
+          "intent": "create_task",
+          "arguments": {
+            "title": "Отправить отчёт",
+            "date": {
+              "type": "relative_day",
+              "offset": 1
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "Event": {
+            "Date": "2026-10-18",
+            "TitleContains": "отч"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "Name": "26 task without deadline",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "Добавь задачу купить хлеб",
+        "Operation": {
+          "intent": "create_task",
+          "arguments": {
+            "title": "Купить хлеб"
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "DBCount": 1,
+          "Event": {
+            "TitleContains": "хлеб"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "Name": "27 better at five",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "Напомни завтра в четыре проверить отчёт",
+        "Operation": {
+          "intent": "create_reminder",
+          "arguments": {
+            "title": "Проверить отчёт",
+            "date": {
+              "type": "relative_day",
+              "offset": 1
+            },
+            "time": "16:00"
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create"
+        }
+      },
+      {
+        "Message": "не, лучше в пять",
+        "Operation": {
+          "intent": "update",
+          "arguments": {
+            "target": {
+              "type": "last"
+            },
+            "changes": {
+              "time": "17:00"
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "update",
+          "Event": {
+            "Time": "17:00"
+          },
+          "DBCount": 1
+        }
+      }
+    ]
+  },
+  {
+    "Name": "28 complete task",
+    "Seeds": [
+      {
+        "Key": "task",
+        "Kind": "task",
+        "Title": "Подготовить отчёт",
+        "Date": "2026-10-18",
+        "Time": "09:00",
+        "Status": "open"
+      }
+    ],
+    "Turns": [
+      {
+        "Message": "Отметь задачу про отчёт выполненной",
+        "Operation": {
+          "intent": "complete",
+          "arguments": {
+            "target": {
+              "type": "query",
+              "value": "отчёт",
+              "filter": {
+                "kind": "task"
+              }
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "complete",
+          "Event": {
+            "Status": "done"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "Name": "29 batch complete",
+    "Seeds": [
+      {
+        "Key": "one",
+        "Kind": "task",
+        "Title": "Купить хлеб",
+        "Date": "2026-10-18",
+        "Time": "09:00",
+        "Status": "open"
+      },
+      {
+        "Key": "two",
+        "Kind": "task",
+        "Title": "Отправить отчёт",
+        "Date": "2026-10-18",
+        "Time": "12:00",
+        "Status": "open"
+      }
+    ],
+    "Turns": [
+      {
+        "Message": "Отметь все задачи на завтра завершёнными",
+        "Operation": {
+          "intent": "batch_complete",
+          "arguments": {
+            "filter": {
+              "kind": "task",
+              "date": {
+                "type": "relative_day",
+                "offset": 1
+              }
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "clarify",
+          "Pending": true,
+          "Records": [
+            {
+              "Key": "one",
+              "Status": "open"
+            },
+            {
+              "Key": "two",
+              "Status": "open"
+            }
+          ]
+        }
+      },
+      {
+        "Message": "да",
+        "Operation": {
+          "intent": "confirm",
+          "arguments": {},
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "complete",
+          "Count": 2,
+          "Records": [
+            {
+              "Key": "one",
+              "Status": "done"
+            },
+            {
+              "Key": "two",
+              "Status": "done"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "Name": "30 batch delete",
+    "Seeds": [
+      {
+        "Key": "alice",
+        "Kind": "meeting",
+        "Title": "Встреча с Алисой",
+        "Date": "2026-10-18",
+        "Time": "10:00",
+        "Status": "open"
+      },
+      {
+        "Key": "matvey",
+        "Kind": "meeting",
+        "Title": "Встреча с Матвеем",
+        "Date": "2026-10-18",
+        "Time": "14:00",
+        "Status": "open"
+      }
+    ],
+    "Turns": [
+      {
+        "Message": "Удали все встречи завтра",
+        "Operation": {
+          "intent": "batch_delete",
+          "arguments": {
+            "filter": {
+              "kind": "meeting",
+              "date": {
+                "type": "relative_day",
+                "offset": 1
+              }
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "clarify",
+          "Pending": true,
+          "DBCount": 2
+        }
+      },
+      {
+        "Message": "да",
+        "Operation": {
+          "intent": "confirm",
+          "arguments": {},
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "delete",
+          "DBCount": 0,
+          "Absent": [
+            "alice",
+            "matvey"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "Name": "31 ambiguous update choose",
+    "Seeds": [
+      {
+        "Key": "alice",
+        "Kind": "meeting",
+        "Title": "Встреча с Алисой",
+        "Date": "2026-10-18",
+        "Time": "10:00",
+        "Status": "open"
+      },
+      {
+        "Key": "second",
+        "Kind": "meeting",
+        "Title": "Встреча с Алисой",
+        "Date": "2026-10-18",
+        "Time": "14:00",
+        "Status": "open"
+      }
+    ],
+    "Turns": [
+      {
+        "Message": "Перенеси встречу с Алисой на 17:00",
+        "Operation": {
+          "intent": "update",
+          "arguments": {
+            "target": {
+              "type": "query",
+              "value": "Алиса",
+              "filter": {
+                "kind": "meeting"
+              }
+            },
+            "changes": {
+              "time": "17:00"
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "clarify",
+          "Pending": true
+        }
+      },
+      {
+        "Message": "вторую",
+        "Operation": {
+          "intent": "select",
+          "arguments": {
+            "target": {
+              "type": "ordinal",
+              "index": 2
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "update",
+          "Records": [
+            {
+              "Key": "alice",
+              "Time": "10:00"
+            },
+            {
+              "Key": "second",
+              "Time": "17:00"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "Name": "32 cancel incomplete creation",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "Создай встречу с Алисой завтра",
+        "Operation": {
+          "intent": "create_meeting",
+          "arguments": {
+            "title": "Встреча с Алисой",
+            "date": {
+              "type": "relative_day",
+              "offset": 1
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "clarify",
+          "Pending": true,
+          "DBCount": 0
+        }
+      },
+      {
+        "Message": "отмена",
+        "Operation": {
+          "intent": "cancel",
+          "arguments": {},
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "cancel",
+          "DBCount": 0
+        }
+      }
+    ]
+  },
+  {
+    "Name": "33 missing title",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "Создай задачу",
+        "Operation": {
+          "intent": "create_task",
+          "arguments": {
+            "title": ""
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "clarify",
+          "Pending": true,
+          "DBCount": 0
+        }
+      },
+      {
+        "Message": "Подготовить презентацию",
+        "Operation": {
+          "intent": "continue",
+          "arguments": {
+            "changes": {
+              "title": "Подготовить презентацию"
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "Event": {
+            "TitleContains": "презентац"
+          },
+          "DBCount": 1
+        }
+      }
+    ]
+  },
+  {
+    "Name": "34 delay crosses midnight",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "Через 13 часов напомни проверить сервер",
+        "Operation": {
+          "intent": "create_reminder",
+          "arguments": {
+            "title": "Проверить сервер",
+            "date": {
+              "type": "relative_delay",
+              "unit": "hour",
+              "value": 13
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "Event": {
+            "Date": "2026-10-18",
+            "Time": "01:30"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "Name": "35 conflict choose different time",
+    "Seeds": [
+      {
+        "Key": "busy",
+        "Kind": "meeting",
+        "Title": "Встреча с Алисой",
+        "Date": "2026-10-18",
+        "Time": "15:00",
+        "Status": "open"
+      }
+    ],
+    "Turns": [
+      {
+        "Message": "Создай встречу с Матвеем завтра в 15",
+        "Operation": {
+          "intent": "create_meeting",
+          "arguments": {
+            "title": "Встреча с Матвеем",
+            "date": {
+              "type": "relative_day",
+              "offset": 1
+            },
+            "time": "15:00"
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "clarify",
+          "Pending": true,
+          "DBCount": 1
+        }
+      },
+      {
+        "Message": "тогда давай в 17",
+        "Operation": {
+          "intent": "continue",
+          "arguments": {
+            "changes": {
+              "time": "17:00"
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "Event": {
+            "Time": "17:00"
+          },
+          "DBCount": 2
+        }
+      }
+    ]
+  }
+]

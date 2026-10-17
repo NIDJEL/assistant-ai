@@ -2,6 +2,7 @@ package nlp
 
 import (
 	"errors"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -22,6 +23,8 @@ func temporalAlias(raw string) string {
 		{`завтрашн\w*`, "завтра"}, {`сегодняшн\w*`, "сегодня"}, {`вчерашн\w*`, "вчера"},
 		{`полдевятого`, "половину девятого"}, {`полдесятого`, "половину десятого"},
 		{`полчасика`, "полчаса"}, {`часов\s+на\s+`, "в "},
+		{`часов\s+в\s+`, "в "},
+		{`\b(минут(?:у|ы)?|час(?:а|ов)?|секунд(?:у|ы)?)\s+через\s+(` + relativeAmount + `)\b`, "через $2 $1"},
 		{`пятницу`, "пятница"}, {`субботу`, "суббота"}, {`среду`, "среда"},
 		{`(\d+)\s+сек($|[^\p{L}])`, "${1} секунд${2}"},
 	} {
@@ -31,6 +34,9 @@ func temporalAlias(raw string) string {
 }
 
 func groundedExpression(expression, original string) bool {
+	if groundedTimerExpression(expression, original) {
+		return true
+	}
 	key := func(raw string) string {
 		raw = temporalAlias(raw)
 		raw = replace(`^(?:на|в|во|к)\s+`, raw, "")
@@ -41,7 +47,7 @@ func groundedExpression(expression, original string) bool {
 	// Keep a clock's colon and numeric date punctuation intact for exact spans.
 	direct := strings.Trim(temporalAlias(original), " ,.!?:;-")
 	original = regex(`[,.!?:;«»"]`).ReplaceAllString(temporalAlias(original), " ")
-	return expression != "" && (strings.Contains(" "+direct+" ", " "+expression+" ") || strings.Contains(" "+spaces(original)+" ", " "+expression+" "))
+	return expression != "" && (regex(`(?:^|[^\p{L}\p{N}:./-])`+regexp.QuoteMeta(expression)+`(?:$|[^\p{L}\p{N}:./-])`).MatchString(direct) || strings.Contains(" "+spaces(original)+" ", " "+expression+" "))
 }
 
 func clockExpression(raw string) string {
@@ -112,7 +118,7 @@ func semanticTemporal(date, clock, relative, period *string, original string, no
 		}
 	}
 	if relative != nil {
-		r := ParseDateTime(temporalAlias(*relative), now)
+		r := ParseDateTime(temporalAlias(timerRelative(*relative, original)), now)
 		if !r.Relative && r.Error == "" {
 			return t, errors.New("unsupported relative time expression")
 		}

@@ -305,23 +305,44 @@ func (g *GigaChat) Models(ctx context.Context) ([]string, error) {
 }
 
 func (g *GigaChat) Parse(ctx context.Context, req SemanticRequest) (nlp.SemanticCommand, ProviderMeta, error) {
-	var command nlp.SemanticCommand
+	meta, err := g.parseJSON(ctx, req, semanticMessages(req), nlp.SemanticSchema())
+	if err != nil {
+		return nlp.SemanticCommand{}, meta, err
+	}
+	command, err := nlp.DecodeSemantic([]byte(meta.Raw))
+	return command, meta, err
+}
+
+func (g *GigaChat) ParseTurn(ctx context.Context, req SemanticRequest, dialogue nlp.DialogueContext) (nlp.ContextualTurn, ProviderMeta, error) {
+	meta, err := g.parseJSON(ctx, req, contextualMessages(req, dialogue), nlp.ContextualSchema())
+	if err != nil {
+		return nlp.ContextualTurn{}, meta, err
+	}
+	turn, err := nlp.DecodeContextualTurn([]byte(meta.Raw))
+	return turn, meta, err
+}
+
+func (g *GigaChat) parseJSON(ctx context.Context, req SemanticRequest, messages []map[string]string, schema map[string]any) (ProviderMeta, error) {
 	var meta ProviderMeta
 	if strings.TrimSpace(req.Text) == "" || len([]rune(req.Text)) > 2000 || req.Source != "text" && req.Source != "voice" {
-		return command, meta, errors.New("invalid semantic request")
+		return meta, errors.New("invalid semantic request")
 	}
 	ctx, cancel := context.WithTimeout(ctx, g.cfg.Timeout)
 	defer cancel()
 	if err := g.acquire(ctx); err != nil {
-		return command, meta, err
+		return meta, err
 	}
 	defer func() { <-g.gate }()
 	started := time.Now()
-	payload, _ := json.Marshal(map[string]any{"model": g.cfg.Model, "messages": semanticMessages(req), "stream": false, "temperature": 0, "max_tokens": 768, "response_format": map[string]any{"type": "json_schema", "schema": nlp.SemanticSchema(), "strict": true}})
+	request := map[string]any{"model": g.cfg.Model, "messages": messages, "stream": false, "temperature": 0, "max_tokens": 2048}
+	if schema != nil {
+		request["response_format"] = map[string]any{"type": "json_schema", "schema": schema, "strict": true}
+	}
+	payload, _ := json.Marshal(request)
 	raw, err := g.authorized(ctx, http.MethodPost, "/v1/chat/completions", payload)
 	meta.InferenceMS = float64(time.Since(started).Microseconds()) / 1000
 	if err != nil {
-		return command, meta, err
+		return meta, err
 	}
 	var response struct {
 		Choices []struct {
@@ -339,19 +360,15 @@ func (g *GigaChat) Parse(ctx context.Context, req SemanticRequest) (nlp.Semantic
 		} `json:"usage"`
 	}
 	if json.Unmarshal(raw, &response) != nil || len(response.Choices) != 1 {
-		return command, meta, errors.New("invalid GigaChat envelope")
+		return meta, errors.New("invalid GigaChat envelope")
 	}
 	choice := response.Choices[0]
 	if choice.Message.Role != "assistant" || choice.Finish != "stop" || len(choice.Message.FunctionCall) > 0 && string(choice.Message.FunctionCall) != "null" {
-		return command, meta, errors.New("incomplete or non-assistant GigaChat response")
+		return meta, errors.New("incomplete or non-assistant GigaChat response")
 	}
 	meta.Raw = choice.Message.Content
 	meta.InputTokens = response.Usage.Input
 	meta.OutputTokens = response.Usage.Output
 	meta.TotalTokens = response.Usage.Total
-	command, err = nlp.DecodeSemantic([]byte(meta.Raw))
-	if err != nil {
-		return command, meta, errors.New("invalid SemanticCommand JSON")
-	}
-	return command, meta, nil
+	return meta, nil
 }

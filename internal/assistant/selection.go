@@ -60,7 +60,7 @@ func (s *Service) mutationCandidates(ctx context.Context, tx repository.Tx, stat
 		if e != nil {
 			pool = append(pool, *e)
 		}
-	} else if cmd.Query != "" || hasSelectionScope(cmd) {
+	} else if cmd.Query != "" || hasSelectionScope(cmd) || cmd.Filter != nil {
 		var err error
 		f := domain.Filter{Kind: cmd.Kind, Deleted: cmd.Action == domain.ActionRestore}
 		if cmd.Selector != nil {
@@ -86,6 +86,11 @@ func (s *Service) mutationCandidates(ctx context.Context, tx repository.Tx, stat
 		}
 	}
 	pool = selectionScope(pool, cmd)
+	if cmd.Filter != nil {
+		filter := *cmd.Filter
+		filter.Query = ""
+		pool = s.filterEvents(pool, &filter)
+	}
 	if cmd.TargetID == nil && cmd.Query != "" {
 		matches, certain := s.Calendar.Search.TitleMatches(pool, cmd.Query, cmd.Selector != nil && cmd.Selector.ExactTitle)
 		return matches, certain, nil
