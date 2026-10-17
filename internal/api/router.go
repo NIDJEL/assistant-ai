@@ -22,6 +22,7 @@ import (
 	"github.com/NIDJEL/assistant-ai/internal/integrations/yandexcalendar"
 	"github.com/NIDJEL/assistant-ai/internal/llm"
 	"github.com/NIDJEL/assistant-ai/internal/repository"
+	"github.com/NIDJEL/assistant-ai/internal/stt"
 	"github.com/NIDJEL/assistant-ai/migrations"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -29,6 +30,7 @@ import (
 )
 
 type API struct {
+	Transcriber  stt.Transcriber
 	Auth         *auth.Service
 	CalendarSync *yandexcalendar.Service
 	Config       config.Config
@@ -57,6 +59,7 @@ func (a *API) Router() http.Handler {
 		r.Get("/api/preferences/{profile}", a.preferences)
 		r.Put("/api/preferences/{profile}", a.preferences)
 		r.Post("/api/chat", a.chat)
+		r.Post("/api/voice/transcribe", a.transcribe)
 		r.Get("/api/history/{session_id}", a.history)
 		r.Get("/api/events", a.events(domain.EventUnknown))
 		r.Get("/api/tasks", a.events(domain.EventTask))

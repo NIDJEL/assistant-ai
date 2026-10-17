@@ -200,7 +200,7 @@ flowchart TD
 GigaChat pipeline: `text/voice + compact context → GigaChat intent/arguments → Go validation/calendar/target resolution → existing executor`.
 Модель — `GigaChat-3-Ultra`. Старые SemanticPlan, evidence, canonicalizer и русский command parser обходятся в новом пути. [Контракты, проверки и запуск](docs/SIMPLE_LLM_RUNTIME.md). Production включается через существующий GigaChat compose override.
 
-Браузерная диктовка зависит от SpeechRecognition и требует ручной проверки микрофона на устройстве. Следующая продуктовая проверка — обычный диалог с Геной и корректность изменений данных; новые большие synthetic holdout не требуются.
+Диктовка: `getUserMedia → MediaRecorder → POST /api/voice/transcribe → Groq whisper-large-v3-turbo → черновик → ручная отправка → simple_llm`. Настройте `GENA_STT_PROVIDER=groq`, `GROQ_API_KEY` и `GROQ_STT_MODEL=whisper-large-v3-turbo` только на backend. Записи до 15 МиБ обрабатываются в памяти; автоматической отправки и автоматического перехода на SpeechRecognition нет. Проверка физического микрофона выполняется вручную на устройстве. [Контракт дат и голосовой ввод](docs/DEADLINES_AND_VOICE.md).
 
 ## Разработка и проверки
 

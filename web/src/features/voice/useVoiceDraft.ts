@@ -1,17 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
-import { browserRecognition, VoiceController, type VoiceSnapshot } from './controller';
+import { MediaVoiceController, type MediaVoiceSnapshot } from './mediaController';
 import { usePreferences } from '../../app/PreferencesContext';
-import { useData } from '../../app/DataContext';
-import { learnCorrection, rememberCorrection, recognitionPhrases } from './adaptation';
+import { learnCorrection, rememberCorrection } from './adaptation';
 export function useVoiceDraft() {
-  const { preferences, update } = usePreferences(); const { events } = useData();
-  const context = useRef({ preferences, events }); context.current = { preferences, events };
-  const [state, setState] = useState<VoiceSnapshot>({ draft: '', listening: false, available: !!browserRecognition(), error: '' });
-  const ref = useRef<VoiceController | null>(null);
-  if (!ref.current) ref.current = new VoiceController(browserRecognition(), setState, {
-    corrections: () => context.current.preferences.speechCorrections,
-    phrases: () => recognitionPhrases(context.current.preferences.speechCorrections, [...context.current.events].sort((a, b) => b.updated_at.localeCompare(a.updated_at)).slice(0, 50).map(event => event.title)),
-  });
+  const { preferences, update } = usePreferences();
+  const context = useRef({ preferences }); context.current = { preferences };
+  const ref = useRef<MediaVoiceController | null>(null);
+  const [state, setState] = useState<MediaVoiceSnapshot>({ draft: '', phase: 'idle', listening: false, available: !!navigator.mediaDevices?.getUserMedia && typeof MediaRecorder !== 'undefined', error: '' });
+  if (!ref.current) ref.current = new MediaVoiceController(setState);
   const controller = ref.current;
   useEffect(() => () => controller.dispose(), [controller]);
   function commit() {

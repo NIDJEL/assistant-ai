@@ -11,6 +11,9 @@ services:
       APP_TIMEZONE: ${APP_TIMEZONE:-Europe/Moscow}
       # Rules-only Docker/CI remains available without external credentials.
       GENA_NLU_MODE: ${GENA_NLU_MODE:-semantic_plan_legacy}
+      GENA_STT_PROVIDER: ${GENA_STT_PROVIDER:-}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      GROQ_STT_MODEL: ${GROQ_STT_MODEL:-whisper-large-v3-turbo}
       NLP_PROVIDER: ${NLP_PROVIDER:-rules}
       OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://ollama:11434}
       OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:7b}

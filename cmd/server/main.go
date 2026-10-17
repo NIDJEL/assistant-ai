@@ -26,6 +26,7 @@ import (
 	"github.com/NIDJEL/assistant-ai/internal/notifications"
 	"github.com/NIDJEL/assistant-ai/internal/search"
 	"github.com/NIDJEL/assistant-ai/internal/storage/postgres"
+	"github.com/NIDJEL/assistant-ai/internal/stt"
 )
 
 func run(log *slog.Logger) error {
@@ -149,7 +150,10 @@ func run(log *slog.Logger) error {
 		}
 	}
 	app := &api.API{Config: cfg, Clock: now, Calendar: cal, CalendarSync: calendarSync, Assistant: service, Auth: authService, Logger: log}
-	server := &http.Server{Addr: cfg.Address, Handler: app.Router(), ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 10 * time.Second, WriteTimeout: 50 * time.Second, IdleTimeout: 60 * time.Second,
+	if cfg.STTProvider == "groq" {
+		app.Transcriber = stt.NewGroq(cfg.GroqAPIKey, cfg.GroqSTTModel)
+	}
+	server := &http.Server{Addr: cfg.Address, Handler: app.Router(), ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 30 * time.Second, WriteTimeout: 50 * time.Second, IdleTimeout: 60 * time.Second,
 		BaseContext: func(net.Listener) context.Context { return ctx }, ErrorLog: slog.NewLogLogger(log.Handler(), slog.LevelError)}
 	done := make(chan error, 1)
 	go func() {

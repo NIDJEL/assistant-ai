@@ -52,9 +52,11 @@ func (a *API) csrf(next http.Handler) http.Handler {
 			if r.Header.Get("Sec-Fetch-Site") == "cross-site" {
 				bad = true
 			}
-			// JSON plus same-origin checks reject form CSRF; no CORS headers are issued.
+			// Multipart is allowed only for voice uploads with an explicit matching
+			// Origin. Keep JSON-only protection for every other mutation.
 			mediaType, _, _ := mime.ParseMediaType(r.Header.Get("Content-Type"))
-			if r.Method != http.MethodDelete && mediaType != "application/json" {
+			voiceUpload := r.Method == http.MethodPost && r.URL.Path == "/api/voice/transcribe" && mediaType == "multipart/form-data" && origin == strings.TrimRight(a.Config.PublicURL, "/")
+			if r.Method != http.MethodDelete && mediaType != "application/json" && !voiceUpload {
 				bad = true
 			}
 			if bad {

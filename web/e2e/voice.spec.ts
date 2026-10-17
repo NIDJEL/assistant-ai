@@ -1,64 +1,63 @@
 import { test, expect } from './fixtures';
-import { mkdir, writeFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
-import { ready, screenshot } from './helpers';
-import { installSpeechMock } from './speech';
-import type { ChatResponse } from '../src/types/api';
+import { ready } from './helpers';
+import type { Page } from '@playwright/test';
 
-test('conversational диктовка creates a reminder despite оставь and embedded что', async ({ page }) => {
-  await installSpeechMock(page); await ready(page);
-  await page.getByRole('button', { name: 'Начать диктовку' }).click();
-  await page.evaluate(() => window.__rhythmSpeech.runs[0].result('мне сегодня надо в универ к 12:50 на пару Оставь пожалуйста уведомление в календарь что у меня пара'));
+// Controlled capture/STT checks UI behavior only. Real microphone/Groq quality
+// must be checked separately with a human; this mock is never quality evidence.
+async function installCaptureMock(page: Page) {
+  await page.addInitScript(() => {
+    class Recorder {
+      static isTypeSupported(type: string) { return type === 'audio/webm;codecs=opus'; }
+      mimeType = 'audio/webm;codecs=opus'; state = 'inactive';
+      ondataavailable?: (event: { data: Blob }) => void; onstop?: () => void;
+      start() { this.state = 'recording'; }
+      stop() { this.state = 'inactive'; this.ondataavailable?.({ data: new Blob(['mock audio'], { type: this.mimeType }) }); this.onstop?.(); }
+    }
+    Object.defineProperty(window, 'MediaRecorder', { configurable: true, value: Recorder });
+    Object.defineProperty(navigator, 'mediaDevices', { configurable: true, value: { getUserMedia: async () => ({ getTracks: () => [{ stop() {} }] }) } });
+    Object.defineProperty(window, 'webkitSpeechRecognition', { value: class { constructor() { throw new Error('SpeechRecognition must not start'); } } });
+  });
+}
+
+test('MediaRecorder inserts transcript; only manual Send creates a task', async ({ page }) => {
+  await installCaptureMock(page);
+  const text = 'Мне нужно сделать задание по VK Education до 20 числа';
+  let finish!: () => void; const release = new Promise<void>(resolve => { finish = resolve; });
+  let uploads = 0, chats = 0;
+  page.on('request', r => { if (r.url().endsWith('/api/chat') && r.method() === 'POST') chats++; });
+  await page.route('**/api/voice/transcribe', async route => {
+    uploads++; expect(route.request().headers()['content-type']).toContain('multipart/form-data');
+    await release; await route.fulfill({ json: { text } });
+  });
+  await ready(page);
   const input = page.getByRole('textbox', { name: 'Сообщение ассистенту' });
-  await expect(input).toHaveValue('мне сегодня надо в универ к 12:50 на пару поставь пожалуйста уведомление в календарь что у меня пара');
+  await page.getByRole('button', { name: 'Начать диктовку' }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'Слушаю' })).toBeVisible();
+  await page.getByRole('button', { name: 'Остановить диктовку' }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'Распознаю' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Отправить сообщение' })).toBeDisabled(); expect(chats).toBe(0);
+  finish(); await expect(input).toHaveValue(text); expect(uploads).toBe(1); expect(chats).toBe(0);
   const sent = page.waitForResponse(r => r.url().endsWith('/api/chat') && r.request().method() === 'POST');
-  await input.press('Enter'); const response = await (await sent).json() as ChatResponse;
-  expect(response.pending).toBe(false);
-  expect(response.action).toBe('create'); expect(response.events).toHaveLength(1);
-  expect(response.events[0]).toMatchObject({ kind: 'reminder', title: 'Пара', time: '12:50' });
+  await page.getByRole('button', { name: 'Отправить сообщение' }).click();
+  const result = await (await sent).json();
+  expect(result.action).toBe('create'); expect(result.pending).toBe(false); expect(result.events[0]).toMatchObject({ kind: 'task', date: '2026-10-20', time: null });
+  await expect(input).toHaveValue(''); expect(chats).toBe(1);
 });
 
-test('personal speech correction learns only after successful Send, survives reload and can be reset', async ({ page, request }) => {
-  await installSpeechMock(page); await ready(page);
-  const me = await (await request.get('/api/auth/me')).json(); const preferencesURL = `/api/preferences/${me.user.id}`;
+test('STT failure preserves draft without starting SpeechRecognition or chat', async ({ page }) => {
+  await installCaptureMock(page); let chats = 0;
+  page.on('request', r => { if (r.url().endsWith('/api/chat') && r.method() === 'POST') chats++; });
+  await page.route('**/api/voice/transcribe', route => route.fulfill({ status: 503, json: { error: { code: 'stt_unavailable', message: 'Распознавание временно недоступно. Черновик сохранён' } } }));
+  await ready(page); const input = page.getByRole('textbox', { name: 'Сообщение ассистенту' }); await input.fill('Мой черновик');
+  await page.getByRole('button', { name: 'Начать диктовку' }).click(); await page.getByRole('button', { name: 'Остановить диктовку' }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'Распознавание временно недоступно' })).toBeVisible(); await expect(input).toHaveValue('Мой черновик'); expect(chats).toBe(0);
+  await input.fill('Мой исправленный черновик'); await expect(input).toHaveValue('Мой исправленный черновик');
+});
+
+test('permission denial preserves draft', async ({ page }) => {
+  await installCaptureMock(page);
+  await page.addInitScript(() => { navigator.mediaDevices.getUserMedia = async () => { throw new DOMException('denied', 'NotAllowedError'); }; });
+  await ready(page); const input = page.getByRole('textbox', { name: 'Сообщение ассистенту' }); await input.fill('Сохранённый текст');
   await page.getByRole('button', { name: 'Начать диктовку' }).click();
-  await page.evaluate(() => window.__rhythmSpeech.runs[0].result('Поставь задачу позвонить Ане'));
-  const input = page.getByRole('textbox', { name: 'Сообщение ассистенту' }); await input.fill('Поставь задачу позвонить Анне');
-  await page.route('**/api/chat', route => route.abort(), { times: 1 });
-  await input.press('Enter'); await expect(page.getByText('Отправляю…', { exact: true })).toHaveCount(0);
-  await expect(input).toHaveValue('Поставь задачу позвонить Анне');
-  expect((await (await request.get(preferencesURL)).json()).speechCorrections || []).toHaveLength(0);
-  const saved = page.waitForResponse(r => r.url().endsWith(preferencesURL) && r.request().method() === 'PUT');
-  await input.press('Enter'); await saved; await expect(input).toHaveValue('');
-  const profile = await (await request.get(preferencesURL)).json(); expect(profile.speechCorrections).toEqual([{ from: 'Ане', to: 'Анне', before: 'позвонить', after: '' }]);
-  await page.reload(); await page.getByRole('button', { name: 'Начать диктовку' }).click();
-  await page.evaluate(() => window.__rhythmSpeech.runs[0].result('Поставь задачу позвонить Ане'));
-  await expect(input).toHaveValue('Поставь задачу позвонить Анне');
-  await ready(page, '/settings'); await expect(page.getByText('Сохранено исправлений: 1')).toBeVisible();
-  const reset = page.waitForResponse(r => r.url().endsWith(preferencesURL) && r.request().method() === 'PUT');
-  await page.getByRole('button', { name: 'Сбросить речевые исправления' }).click(); await reset;
-  expect((await (await request.get(preferencesURL)).json()).speechCorrections).toEqual([]);
-});
-test('voice proof: pause → zero POST; continue → draft; Send → exactly one POST', async ({ page, request }, info) => {
-  await installSpeechMock(page); const posts: string[] = []; page.on('request', r => { if (r.url().endsWith('/api/chat') && r.method() === 'POST') posts.push(r.postData()!); });
-  await ready(page); await page.getByRole('button', { name: 'Начать диктовку' }).click();
-  await page.evaluate(() => { const run = window.__rhythmSpeech.runs[0]; run.result('Поставь задачу проверить', true); run.end(); run.end(); });
-  // Wait beyond recognition's restart interval to detect delayed auto-send regressions.
-  await page.waitForTimeout(700); expect(posts).toHaveLength(0); await expect(page.getByRole('textbox', { name: 'Сообщение ассистенту' })).toHaveValue('Поставь задачу проверить'); await screenshot(page, 'voice-paused', info);
-  await page.evaluate(() => window.__rhythmSpeech.runs[1].result('голосовую диктовку', false)); await expect(page.getByRole('textbox', { name: 'Сообщение ассистенту' })).toHaveValue('Поставь задачу проверить голосовую диктовку');
-  await page.evaluate(() => window.__rhythmSpeech.runs[1].result('голосовую диктовку', true)); expect(posts).toHaveLength(0); await screenshot(page, 'voice-continued', info);
-  const pending = page.waitForResponse(r => r.url().endsWith('/api/chat') && r.request().method() === 'POST'); await page.getByRole('button', { name: 'Отправить сообщение' }).click(); const response = await (await pending).json() as ChatResponse;
-  await expect(page.getByRole('textbox', { name: 'Сообщение ассистенту' })).toHaveValue(''); await page.evaluate(() => { window.__rhythmSpeech.runs[1].end(); window.__rhythmSpeech.runs[1].result('дубликат'); }); await page.waitForTimeout(350); expect(posts).toHaveLength(1); expect(await page.evaluate(() => window.__rhythmSpeech.runs[1].abortCalls)).toBe(1); await screenshot(page, 'voice-sent', info);
-  const proof = { recognition: 'Controlled Web Speech API mock; real React UI and Go HTTP', pause_wait_ms: 700, posts_after_pause: 0, continued_draft: 'Поставь задачу проверить голосовую диктовку', posts_before_send: 0, posts_after_send_and_late_onend: posts.length, response_action: response.action, recognition_abort_calls: 1 };
-  const directory = process.env.P1_CAPTURE_SCREENSHOTS ? resolve('../docs/screenshots/p1') : info.outputDir; await mkdir(directory, { recursive: true }); await writeFile(resolve(directory, 'voice-proof.json'), JSON.stringify(proof, null, 2) + '\n'); await info.attach('voice-proof', { body: JSON.stringify(proof), contentType: 'application/json' });
-  const created = response.events[0]; await page.getByRole('checkbox', { name: `Завершить «${created.title}»`, exact: true }).check(); await expect(page.getByRole('checkbox', { name: `Возобновить «${created.title}»`, exact: true })).toBeChecked(); expect(posts).toHaveLength(1);
-  for (const event of response.events) await request.delete(`/api/events/${event.id}`);
-});
-for (const error of ['network', 'not-allowed']) test(`speech ${error} error does not send`, async ({ page }) => {
-  await installSpeechMock(page); let posts = 0; page.on('request', r => { if (r.url().endsWith('/api/chat') && r.method() === 'POST') posts++; }); await ready(page); await page.getByRole('button', { name: 'Начать диктовку' }).click();
-  await page.evaluate(code => { window.__rhythmSpeech.runs[0].result('Сохранённый черновик', false); window.__rhythmSpeech.runs[0].error(code); }, error); await page.waitForTimeout(350); expect(posts).toBe(0); await expect(page.getByRole('textbox', { name: 'Сообщение ассистенту' })).toHaveValue('Сохранённый черновик'); await expect(page.getByRole('button', { name: 'Начать диктовку' })).toBeVisible();
-});
-test('microphone stop is draft only; Enter sends once after keyboard editing', async ({ page, request }) => {
-  await installSpeechMock(page); let posts = 0; page.on('request', r => { if (r.url().endsWith('/api/chat') && r.method() === 'POST') posts++; }); await ready(page); await page.getByRole('button', { name: 'Начать диктовку' }).click(); await page.evaluate(() => window.__rhythmSpeech.runs[0].result('Поставь задачу')); await page.getByRole('button', { name: 'Остановить диктовку' }).click(); await page.waitForTimeout(350); expect(posts).toBe(0);
-  const input = page.getByRole('textbox', { name: 'Сообщение ассистенту' }); await input.fill('Поставь задачу проверить ручную отправку'); const pending = page.waitForResponse(r => r.url().endsWith('/api/chat') && r.request().method() === 'POST'); await input.press('Enter'); const response = await (await pending).json() as ChatResponse; await expect(input).toHaveValue(''); expect(posts).toBe(1); for (const event of response.events) await request.delete(`/api/events/${event.id}`);
+  await expect(page.getByRole('status').filter({ hasText: 'Нет доступа к микрофону' })).toBeVisible(); await expect(input).toHaveValue('Сохранённый текст');
 });

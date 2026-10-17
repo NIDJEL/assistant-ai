@@ -131,3 +131,24 @@ Compose project `rhythm`, постоянный том `rhythm-postgres-productio
 Для повторного выпуска с действующими production credentials передайте `preserve_credentials: true` в prepare и rollback у `gigachat_ops.py`; ключ и CA остаются в существующем secret storage. При activate передайте `nlu_mode: simple_llm`; check проверяет режим контейнера. Backup включает проверенный PostgreSQL dump, предыдущую revision, env, systemd unit, compose snapshot и схему env без значений. Compose snapshot содержит секреты и хранится только в root-only backup каталоге.
 
 Rollback восстанавливает сохранённые config, release symlink и предыдущий image, обновляет только app и сохраняет PostgreSQL volume. При использовании preserve_credentials возвращается исходная рабочая конфигурация; режим для ротации скомпрометированного ключа сохраняет прежнее поведение. SQL migrations этого релиза не меняются. После activate обязательны HTTPS/auth/API и небольшой smoke на отдельном тестовом аккаунте; при критической ошибке выполните rollback. Физический микрофон проверяется вручную на устройстве.
+
+## Deadline / Groq voice release
+
+`20261017-deadlines-groq-01` добавляет `day_of_month` в simple_llm и MediaRecorder →
+authenticated `/api/voice/transcribe` → Groq `whisper-large-v3-turbo`. Автоотправки
+и автоматического SpeechRecognition fallback нет. SQL migrations не меняются.
+
+После локальных tests/build, live GigaChat и пяти реальных голосовых проверок:
+commit/push, audit, backup, archive pushed revision, prepare с
+`preserve_credentials:true`, build. Перед activate вызовите `configure_stt` с
+`backup_dir` и `groq_api_key` только по SSH stdin, без вывода и сохранения payload.
+Действие сохраняет ключ в root-owned `/etc/rhythm/production.env` (0600), ставит
+`GENA_STT_PROVIDER=groq` и `GROQ_STT_MODEL=whisper-large-v3-turbo`.
+
+Activate выполняется с `nlu_mode:simple_llm`, обновляет только app и устанавливает
+Nginx config с отдельным upload limit 16 МиБ и `proxy_request_buffering off`.
+Это необходимо, чтобы Nginx не сохранял audio body во временные файлы. Backup и
+rollback включают прежний Nginx config. Проверяйте public HTTPS/auth, task due
+date, сохранность прежних записей, runtime STT config и реальную запись через
+браузер; HTTP health сам по себе не подтверждает качество STT. На критической
+ошибке rollback с `preserve_credentials:true`, без восстановления БД.

@@ -6,7 +6,7 @@ export class ApiError extends Error {
 export async function request<T>(path: string, init: RequestInit = {}, timeoutMs = 30000): Promise<T> {
   try {
     const signal = init.signal ? AbortSignal.any([init.signal, AbortSignal.timeout(timeoutMs)]) : AbortSignal.timeout(timeoutMs);
-    const response = await fetch(path, { credentials: 'same-origin', ...init, signal, headers: { Accept: 'application/json', ...(init.body ? { 'Content-Type': 'application/json' } : {}), ...init.headers } });
+    const response = await fetch(path, { credentials: 'same-origin', ...init, signal, headers: { Accept: 'application/json', ...(init.body && !(init.body instanceof FormData) ? { 'Content-Type': 'application/json' } : {}), ...init.headers } });
     if (response.status === 204) return undefined as T;
     const body = await response.json();
     if (!response.ok) { if (response.status === 401 && (!path.startsWith('/api/auth/') || path.endsWith('/onboarding') || (path.endsWith('/me') && init.method === 'PATCH'))) window.dispatchEvent(new Event('rhythm:unauthorized')); throw new ApiError(body.error?.message || 'Не удалось выполнить действие', body.error?.code || 'server_error', response.status, body.conflicts || []); }

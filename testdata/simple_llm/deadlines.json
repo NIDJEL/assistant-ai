@@ -1,0 +1,375 @@
+[
+  {
+    "Name": "deadline 01",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "Мне нужно сделать задание по VK Education до 20 числа",
+        "Operation": {
+          "intent": "create_task",
+          "arguments": {
+            "title": "VK Education",
+            "date": {
+              "type": "day_of_month",
+              "day": 20
+            },
+            "time": null
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "Pending": false,
+          "DBCount": 1,
+          "Event": {
+            "TitleContains": "VK Education",
+            "Date": "2026-10-20"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "Name": "deadline 02",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "Надо сдать отчёт к 25 числу",
+        "Operation": {
+          "intent": "create_task",
+          "arguments": {
+            "title": "отчёт",
+            "date": {
+              "type": "day_of_month",
+              "day": 25
+            },
+            "time": null
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "Pending": false,
+          "DBCount": 1,
+          "Event": {
+            "TitleContains": "отчёт",
+            "Date": "2026-10-25"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "Name": "deadline 03",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "Дедлайн по курсу двадцатого",
+        "Operation": {
+          "intent": "create_task",
+          "arguments": {
+            "title": "курсу",
+            "date": {
+              "type": "day_of_month",
+              "day": 20
+            },
+            "time": null
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "Pending": false,
+          "DBCount": 1,
+          "Event": {
+            "TitleContains": "курсу",
+            "Date": "2026-10-20"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "Name": "deadline 04",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "До пятницы закончить презентацию",
+        "Operation": {
+          "intent": "create_task",
+          "arguments": {
+            "title": "презентацию",
+            "date": {
+              "type": "weekday",
+              "weekday": "friday",
+              "direction": "next_or_current"
+            },
+            "time": null
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "Pending": false,
+          "DBCount": 1,
+          "Event": {
+            "TitleContains": "презентацию",
+            "Date": "2026-10-23"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "Name": "deadline 05",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "Поставь на двадцатое задание по VK",
+        "Operation": {
+          "intent": "create_task",
+          "arguments": {
+            "title": "VK",
+            "date": {
+              "type": "day_of_month",
+              "day": 20
+            },
+            "time": null
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "Pending": false,
+          "DBCount": 1,
+          "Event": {
+            "TitleContains": "VK",
+            "Date": "2026-10-20"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "Name": "deadline 06",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "У меня завтра надо закончить лабораторную",
+        "Operation": {
+          "intent": "create_task",
+          "arguments": {
+            "title": "лабораторную",
+            "date": {
+              "type": "relative_day",
+              "offset": 1
+            },
+            "time": null
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "Pending": false,
+          "DBCount": 1,
+          "Event": {
+            "TitleContains": "лабораторную",
+            "Date": "2026-10-18"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "Name": "deadline 07",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "Надо отправить макет до двадцатого",
+        "Operation": {
+          "intent": "create_task",
+          "arguments": {
+            "title": "макет",
+            "date": {
+              "type": "day_of_month",
+              "day": 20
+            },
+            "time": null
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "Pending": false,
+          "DBCount": 1,
+          "Event": {
+            "TitleContains": "макет",
+            "Date": "2026-10-20"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "Name": "deadline 08",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "Сдать эскиз к двадцатому",
+        "Operation": {
+          "intent": "create_task",
+          "arguments": {
+            "title": "эскиз",
+            "date": {
+              "type": "day_of_month",
+              "day": 20
+            },
+            "time": null
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "Pending": false,
+          "DBCount": 1,
+          "Event": {
+            "TitleContains": "эскиз",
+            "Date": "2026-10-20"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "Name": "deadline 09",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "Поставь задачу проверить договор на 20-е",
+        "Operation": {
+          "intent": "create_task",
+          "arguments": {
+            "title": "договор",
+            "date": {
+              "type": "day_of_month",
+              "day": 20
+            },
+            "time": null
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "Pending": false,
+          "DBCount": 1,
+          "Event": {
+            "TitleContains": "договор",
+            "Date": "2026-10-20"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "Name": "deadline 10",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "У меня до 20 числа задание по VK Education",
+        "Operation": {
+          "intent": "create_task",
+          "arguments": {
+            "title": "VK Education",
+            "date": {
+              "type": "day_of_month",
+              "day": 20
+            },
+            "time": null
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "Pending": false,
+          "DBCount": 1,
+          "Event": {
+            "TitleContains": "VK Education",
+            "Date": "2026-10-20"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "Name": "deadline 11",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "Создай запись на двадцатое, дедлайн по VK",
+        "Operation": {
+          "intent": "create_task",
+          "arguments": {
+            "title": "VK",
+            "date": {
+              "type": "day_of_month",
+              "day": 20
+            },
+            "time": null
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "Pending": false,
+          "DBCount": 1,
+          "Event": {
+            "TitleContains": "VK",
+            "Date": "2026-10-20"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "Name": "deadline 12",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "Дедлайн отправки заявки 25-го",
+        "Operation": {
+          "intent": "create_task",
+          "arguments": {
+            "title": "заявки",
+            "date": {
+              "type": "day_of_month",
+              "day": 25
+            },
+            "time": null
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "Pending": false,
+          "DBCount": 1,
+          "Event": {
+            "TitleContains": "заявки",
+            "Date": "2026-10-25"
+          }
+        }
+      }
+    ]
+  }
+]

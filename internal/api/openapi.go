@@ -119,6 +119,15 @@ func OpenAPI() map[string]any {
 	authOpenAPI(paths, schemas)
 	integrationsOpenAPI(paths, schemas)
 	notificationsOpenAPI(paths, schemas)
+	voiceResponses := map[string]any{"200": map[string]any{"description": "Transcript for manual review; no chat submission", "content": content(map[string]any{"type": "object", "required": []string{"text"}, "properties": map[string]any{"text": text()}})}}
+	for _, code := range []string{"400", "401", "403", "413", "415", "503"} {
+		voiceResponses[code] = map[string]any{"description": "Audio upload or transcription error", "content": content(ref("Error"))}
+	}
+	paths["/api/voice/transcribe"] = map[string]any{"post": map[string]any{
+		"description": "Authenticated, same-origin multipart upload. One file/audio part, up to 15 MiB; audio/webm, audio/ogg, audio/wav, audio/mpeg, audio/mp4. Audio is never saved.",
+		"requestBody": map[string]any{"required": true, "content": map[string]any{"multipart/form-data": map[string]any{"schema": map[string]any{"type": "object", "required": []string{"file"}, "properties": map[string]any{"file": map[string]any{"type": "string", "format": "binary"}}}}}},
+		"responses":   voiceResponses,
+	}}
 	paths["/health"].(map[string]any)["get"].(map[string]any)["security"] = []any{}
 	return map[string]any{"openapi": "3.0.3", "info": map[string]string{"title": "Ассистент Гена — multi-user API", "version": "0.4.0"}, "paths": paths, "security": []map[string]any{{"sessionCookie": []string{}}}, "components": map[string]any{"schemas": schemas, "securitySchemes": map[string]any{"sessionCookie": map[string]any{"type": "apiKey", "in": "cookie", "name": sessionCookie}}}}
 }

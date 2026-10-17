@@ -9,6 +9,7 @@ import (
 
 type Temporal struct {
 	Type      string `json:"type"`
+	Day       int    `json:"day,omitempty"`
 	Offset    int    `json:"offset,omitempty"`
 	Value     int    `json:"value,omitempty"`
 	Unit      string `json:"unit,omitempty"`
@@ -23,6 +24,9 @@ var errTemporal = errors.New("invalid temporal meaning")
 // Resolve performs calendar arithmetic only, in the supplied user's timezone.
 // End is exclusive. Exact is set only for delays.
 func (t Temporal) Resolve(now time.Time) (start, end *domain.Date, exact *time.Time, err error) {
+	if t.Day != 0 && t.Type != "day_of_month" {
+		return nil, nil, nil, errTemporal
+	}
 	if t.EndDate != "" && t.Type != "date_range" {
 		return nil, nil, nil, errTemporal
 	}
@@ -31,6 +35,21 @@ func (t Temporal) Resolve(now time.Time) (start, end *domain.Date, exact *time.T
 	}
 	day := domain.Day(now)
 	switch t.Type {
+	case "day_of_month":
+		if t.Day < 1 || t.Day > 31 || t.Offset != 0 || t.Value != 0 || t.Unit != "" || t.Date != "" || t.Weekday != "" || t.Direction != "" {
+			return nil, nil, nil, errTemporal
+		}
+		// Start from the first to avoid AddDate normalizing Jan 31 into March.
+		// Skip months which do not contain this day; never silently clamp it.
+		month := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
+		for i := 0; i < 14; i++ {
+			candidate := time.Date(month.Year(), month.Month(), t.Day, 0, 0, 0, 0, now.Location())
+			if candidate.Month() == month.Month() && !domain.Day(candidate).Before(day.Time) {
+				start = domain.Day(candidate)
+				break
+			}
+			month = month.AddDate(0, 1, 0)
+		}
 	case "relative_day":
 		if t.Value != 0 || t.Unit != "" || t.Date != "" || t.Weekday != "" || t.Direction != "" {
 			err = errTemporal

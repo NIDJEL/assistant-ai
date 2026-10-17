@@ -40,6 +40,22 @@ func simpleService(t *testing.T) (*Service, *scriptedOperations, time.Time) {
 func operationFixture(p *scriptedOperations, intent, args string) {
 	p.raw = `{"intent":"` + intent + `","arguments":` + args + `,"confidence":"high","clarification":null}`
 }
+func TestSimpleTaskDueDateWithoutTime(t *testing.T) {
+	for _, tc := range []struct{ date, want string }{
+		{`{"type":"day_of_month","day":20}`, "2026-10-20"},
+		{`{"type":"relative_day","offset":1}`, "2026-10-17"},
+		{`{"type":"weekday","weekday":"friday","direction":"next_or_current"}`, "2026-10-16"},
+	} {
+		t.Run(tc.want, func(t *testing.T) {
+			s, p, now := simpleService(t)
+			operationFixture(p, "create_task", `{"title":"Подготовить смету","date":`+tc.date+`,"time":null}`)
+			r := say(t, s, "Мне нужно подготовить смету к сроку", now)
+			if r.Action != domain.ActionCreate || r.Pending || len(r.Events) != 1 || r.Events[0].Kind != domain.EventTask || r.Events[0].Date.String() != tc.want || r.Events[0].StartTime != nil {
+				t.Fatalf("%+v", r)
+			}
+		})
+	}
+}
 func TestSimpleContextCorrectionDeletion(t *testing.T) {
 	s, p, now := simpleService(t)
 	first := seedPlanEvent(t, s, "Встреча с Алисой", "2026-10-17", "10:00", domain.EventMeeting, now)

@@ -89,7 +89,7 @@ def main():
             if len(value)<8:continue
             raw=value.encode();known[raw]=prefix+':'+name
             known[base64.b64encode(raw)]=prefix+':'+name+' (encoded)'
-    private={name:value for name,value in local_env.items() if name in LABELS.values() or re.search(r'(?:SECRET|PASSWORD|PRIVATE_KEY|ACCESS_TOKEN|REFRESH_TOKEN)$',name)}
+    private={name:value for name,value in local_env.items() if name in LABELS.values() or re.search(r'(?:SECRET|PASSWORD|PRIVATE_KEY|API_KEY|ACCESS_TOKEN|REFRESH_TOKEN)$',name)}
     add(private,'current credential')
     for name in args.extra_source:
         path=pathlib.Path(name)

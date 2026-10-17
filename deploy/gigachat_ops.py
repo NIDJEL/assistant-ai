@@ -27,6 +27,7 @@ RELEASES=pathlib.Path('/opt/rhythm/releases')
 ENV=pathlib.Path('/etc/rhythm/production.env')
 UNIT=pathlib.Path('/etc/systemd/system/rhythm.service')
 CA=pathlib.Path('/etc/rhythm/certs/gigachat-root.pem')
+NGINX=pathlib.Path('/etc/nginx/conf.d/rhythm.conf')
 
 def run(args,timeout=120,extra_env=None):
     result=subprocess.run(args,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=timeout,env=dict(os.environ,**(extra_env or {})))
@@ -74,7 +75,7 @@ def sudo_input_logging():
 def audit(payload):
     known={entry['sha256']:entry['kind'] for entry in payload.get('credential_hashes',[])}
     for key,value in env_values().items():
-        if len(value)>=12 and re.search(r'(?:SECRET|PASSWORD|PRIVATE_KEY|AUTHORIZATION_KEY)$',key):known[hashlib.sha256(value.encode()).hexdigest()]='production secret:'+key
+        if len(value)>=12 and re.search(r'(?:SECRET|PASSWORD|PRIVATE_KEY|AUTHORIZATION_KEY|API_KEY)$',key):known[hashlib.sha256(value.encode()).hexdigest()]='production secret:'+key
     matches=[]
     def scan_bytes(raw,path,category):
         found=set()
@@ -148,6 +149,7 @@ def backup(payload):
     if verified.returncode:raise RuntimeError('database backup validation failed')
     shutil.copy2(ENV,folder/'production.env');os.chmod(folder/'production.env',0o600)
     shutil.copy2(UNIT,folder/'rhythm.service')
+    shutil.copy2(NGINX,folder/'nginx.conf')
     (folder/'compose.json').write_bytes(run(compose(previous)+['config','--format','json']));os.chmod(folder/'compose.json',0o600)
     (folder/'containers.json').write_text(json.dumps(container_summary(containers())))
     (folder/'env-schema.json').write_text(json.dumps(sorted(env_values())))
@@ -196,6 +198,14 @@ def build(payload):
     run(compose(release)+['build','app'],timeout=1200,extra_env={'RELEASE_TAG':payload['release']})
     return {'build':'PASS','release':str(release)}
 
+def configure_stt(payload):
+    state(payload)  # A verified release backup must exist before secret transfer.
+    if sudo_input_logging():raise RuntimeError('sudo input logging blocks secret transfer')
+    key=payload['groq_api_key']
+    if not re.fullmatch(r'[A-Za-z0-9_-]{16,256}',key):raise RuntimeError('invalid Groq key format')
+    write_env({'GROQ_API_KEY':key,'GENA_STT_PROVIDER':'groq','GROQ_STT_MODEL':'whisper-large-v3-turbo'})
+    return {'stt_provider':'groq','model':'whisper-large-v3-turbo','env_mode':oct(ENV.stat().st_mode&0o777)}
+
 def activate(payload):
     saved=state(payload);release=RELEASES/payload['release']
     if not release.is_dir() or (release/'REVISION').read_text().strip()!=payload['revision']:raise RuntimeError('release revision mismatch')
@@ -204,6 +214,9 @@ def activate(payload):
     temporary.symlink_to(release,target_is_directory=True);os.replace(temporary,CURRENT)
     shutil.copy2(release/'deploy/rhythm.service',UNIT);run(['systemctl','daemon-reload'])
     run(compose(release)+['up','-d','--no-deps','--wait','--wait-timeout','180','app'],timeout=240)
+    # This upload route needs its larger body limit and disk buffering disabled.
+    shutil.copy2(release/'deploy/nginx.conf',NGINX)
+    run(['nginx','-t']);run(['systemctl','reload','nginx'])
     return check(payload)
 
 def check(payload):
@@ -263,6 +276,9 @@ def rollback(payload):
     if not payload.get('preserve_credentials'):
         write_env({'GIGACHAT_AUTHORIZATION_KEY':None,'GIGACHAT_CLIENT_ID':None,'GIGACHAT_CLIENT_SECRET':None,'GENA_SEMANTIC_PROVIDER':'rules'})
     shutil.copy2(pathlib.Path(saved['backup_dir'])/'rhythm.service',UNIT)
+    nginx_backup=pathlib.Path(saved['backup_dir'])/'nginx.conf'
+    if nginx_backup.exists():
+        shutil.copy2(nginx_backup,NGINX);run(['nginx','-t']);run(['systemctl','reload','nginx'])
     temporary=CURRENT.with_name('.current-gigachat-rollback');temporary.symlink_to(previous,target_is_directory=True);os.replace(temporary,CURRENT)
     run(['systemctl','daemon-reload']);run(compose(previous,bool(payload.get('preserve_credentials')))+['up','-d','--no-deps','--wait','--wait-timeout','180','app'],timeout=240)
     return {'rollback':'PASS','revision':saved['previous_revision'],'containers':container_summary(containers()),'database_restored':False}
@@ -270,7 +286,7 @@ def rollback(payload):
 def main():
     if os.geteuid()!=0:raise RuntimeError('root required')
     payload=json.load(sys.stdin)
-    actions={'audit':audit,'backup':backup,'prepare':prepare,'build':build,'activate':activate,'check':check,'giga':giga,'rollback':rollback}
+    actions={'audit':audit,'backup':backup,'prepare':prepare,'build':build,'configure_stt':configure_stt,'activate':activate,'check':check,'giga':giga,'rollback':rollback}
     result=actions[payload['action']](payload)
     print(json.dumps({'ok':True,'action':payload['action'],'result':result},ensure_ascii=False))
 
