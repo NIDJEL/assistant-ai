@@ -65,7 +65,7 @@ test('calendar circles remain round and content changes leave the header and too
 test('completed reminder collapses, explains its disappearance and can be undone', async ({ page, request }, info) => {
   const health = await (await request.get('/health')).json() as Health; const today = dayKey(health.now, health.timezone); const token = Date.now(); const ids: number[] = [];
   try {
-    for (const time of ['08:01', '08:02', '08:03']) { const response = await request.post('/api/events', { data: { kind: 'reminder', title: `Плавное напоминание ${token} ${time}`, date: today, time } }); expect(response.status()).toBe(201); ids.push((await response.json()).id); }
+    for (const time of ['08:01', '08:02', '08:03']) { const response = await request.post('/api/events', { data: { kind: 'reminder', title: `Плавное напоминание ${token} ${time}`, date: addDays(today, 1), time } }); expect(response.status()).toBe(201); ids.push((await response.json()).id); }
     await ready(page, '/reminders'); await page.getByRole('textbox', { name: 'Поиск напоминаний' }).fill(`Плавное напоминание ${token}`);
     const title = `Плавное напоминание ${token} 08:01`; const card = page.locator('.reminder-card').filter({ hasText: title });
     await card.locator('.reminder-title').click(); await expect(card.getByRole('form')).toBeVisible(); await expect(card.locator('.reminder-title')).toBeVisible();

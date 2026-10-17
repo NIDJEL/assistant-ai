@@ -11,16 +11,16 @@ jobs:
       postgres:
         image: postgres:17
         env:
-          POSTGRES_DB: rhythm_test
+          POSTGRES_DB: semantic_test
           POSTGRES_USER: rhythm
           POSTGRES_PASSWORD: ci-only-password
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U rhythm -d rhythm_test"
+          --health-cmd "pg_isready -U rhythm -d semantic_test"
           --health-interval 5s --health-timeout 3s --health-retries 12
     env:
-      TEST_DATABASE_URL: postgres://rhythm:ci-only-password@127.0.0.1:5432/rhythm_test?sslmode=disable
+      TEST_DATABASE_URL: postgres://rhythm:ci-only-password@127.0.0.1:5432/semantic_test?sslmode=disable
       GOTOOLCHAIN: local
     strategy:
       matrix:
@@ -63,16 +63,16 @@ jobs:
       postgres:
         image: postgres:17
         env:
-          POSTGRES_DB: rhythm_test
+          POSTGRES_DB: semantic_test
           POSTGRES_USER: rhythm
           POSTGRES_PASSWORD: ci-only-password
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U rhythm -d rhythm_test"
+          --health-cmd "pg_isready -U rhythm -d semantic_test"
           --health-interval 5s --health-timeout 3s --health-retries 12
     env:
-      TEST_DATABASE_URL: postgres://rhythm:ci-only-password@127.0.0.1:5432/rhythm_test?sslmode=disable
+      TEST_DATABASE_URL: postgres://rhythm:ci-only-password@127.0.0.1:5432/semantic_test?sslmode=disable
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
