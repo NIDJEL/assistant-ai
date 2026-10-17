@@ -152,3 +152,10 @@ rollback включают прежний Nginx config. Проверяйте publ
 date, сохранность прежних записей, runtime STT config и реальную запись через
 браузер; HTTP health сам по себе не подтверждает качество STT. На критической
 ошибке rollback с `preserve_credentials:true`, без восстановления БД.
+
+Для отдельного прокси Groq передайте в `configure_stt` поле `groq_proxy_url`
+через тот же приватный SSH stdin. Оно сохраняется как `GROQ_PROXY_URL` в secret env
+и передаётся только HTTP transport клиента Groq. Поддерживаются SOCKS5/SOCKS5H и
+HTTP(S); системный VPN, default route и общие proxy environment не меняются.
+В `activate/check` передайте `require_stt_proxy:true`: проверяются runtime proxy
+и отсутствие глобальных HTTP_PROXY/HTTPS_PROXY/ALL_PROXY. URL и пароль не выводятся.

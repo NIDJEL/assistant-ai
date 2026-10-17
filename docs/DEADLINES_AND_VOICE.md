@@ -41,6 +41,15 @@ Dockerfile/frontend или Git. Клиент Groq переиспользует h
 Форма содержит file, model, language=ru, response_format=json, temperature=0.
 [Документация Groq](https://console.groq.com/docs/speech-to-text).
 
+Опциональный `GROQ_PROXY_URL` задаёт прокси только для HTTP-клиента Groq.
+Поддерживаются socks5/socks5h (DNS через SOCKS5) и HTTP(S). Transport принадлежит
+этому клиенту; глобальные HTTP_PROXY/HTTPS_PROXY/ALL_PROXY и системные маршруты
+не меняются. При пустом GROQ_PROXY_URL используется прямое подключение; при
+ошибке прокси запрос завершается безопасной ошибкой без обхода прокси.
+TLS-проверка Groq сохраняется. URL с credentials хранится только в secret env;
+validation/network errors не раскрывают его. Прокси не должен требовать
+установки сертификата для расшифровки HTTPS.
+
 Audio не пишется на диск и не логируется. Используется MultipartReader вместо
 ParseMultipartForm. Nginx voice location имеет limit 16 МиБ (с multipart overhead)
 и proxy_request_buffering off; остальные маршруты сохраняют прежние ограничения.

@@ -8,6 +8,7 @@ import pathlib
 import re
 import subprocess
 import sys
+import urllib.parse
 
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 LABELS={'Authorization Key':'GIGACHAT_AUTHORIZATION_KEY','Client ID':'GIGACHAT_CLIENT_ID','Client Secret':'GIGACHAT_CLIENT_SECRET'}
@@ -89,7 +90,11 @@ def main():
             if len(value)<8:continue
             raw=value.encode();known[raw]=prefix+':'+name
             known[base64.b64encode(raw)]=prefix+':'+name+' (encoded)'
-    private={name:value for name,value in local_env.items() if name in LABELS.values() or re.search(r'(?:SECRET|PASSWORD|PRIVATE_KEY|API_KEY|ACCESS_TOKEN|REFRESH_TOKEN)$',name)}
+    private={name:value for name,value in local_env.items() if name in LABELS.values() or re.search(r'(?:SECRET|PASSWORD|PRIVATE_KEY|API_KEY|ACCESS_TOKEN|REFRESH_TOKEN|PROXY_URL)$',name)}
+    for name,value in list(private.items()):
+        if name.endswith('PROXY_URL'):
+            password=urllib.parse.urlsplit(value).password
+            if password:private[name+'_PASSWORD']=urllib.parse.unquote(password)
     add(private,'current credential')
     for name in args.extra_source:
         path=pathlib.Path(name)

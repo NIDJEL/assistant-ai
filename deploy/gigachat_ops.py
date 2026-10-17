@@ -20,6 +20,7 @@ import sys
 import tarfile
 import time
 import urllib.request
+import urllib.parse
 import uuid
 
 CURRENT=pathlib.Path('/opt/rhythm/current')
@@ -74,11 +75,14 @@ def sudo_input_logging():
 
 def audit(payload):
     known={entry['sha256']:entry['kind'] for entry in payload.get('credential_hashes',[])}
+    proxy_secret=env_values().get('GROQ_PROXY_URL','')
+    proxy_password=urllib.parse.unquote(urllib.parse.urlsplit(proxy_secret).password or '')
     for key,value in env_values().items():
         if len(value)>=12 and re.search(r'(?:SECRET|PASSWORD|PRIVATE_KEY|AUTHORIZATION_KEY|API_KEY)$',key):known[hashlib.sha256(value.encode()).hexdigest()]='production secret:'+key
     matches=[]
     def scan_bytes(raw,path,category):
         found=set()
+        if proxy_secret and (proxy_secret.encode() in raw or proxy_password and proxy_password.encode() in raw):found.add('production proxy credential')
         for candidate in re.findall(rb'[A-Za-z0-9_+/.=-]{24,}',raw):
             variants=[candidate]
             if b'=' in candidate and re.fullmatch(rb'[A-Za-z_][A-Za-z0-9_]*',candidate.partition(b'=')[0]):variants.append(candidate.partition(b'=')[2])
@@ -203,8 +207,13 @@ def configure_stt(payload):
     if sudo_input_logging():raise RuntimeError('sudo input logging blocks secret transfer')
     key=payload['groq_api_key']
     if not re.fullmatch(r'[A-Za-z0-9_-]{16,256}',key):raise RuntimeError('invalid Groq key format')
-    write_env({'GROQ_API_KEY':key,'GENA_STT_PROVIDER':'groq','GROQ_STT_MODEL':'whisper-large-v3-turbo'})
-    return {'stt_provider':'groq','model':'whisper-large-v3-turbo','env_mode':oct(ENV.stat().st_mode&0o777)}
+    proxy=payload.get('groq_proxy_url','')
+    if proxy:
+        parsed=urllib.parse.urlsplit(proxy)
+        if parsed.scheme not in ('socks5','socks5h','http','https') or not parsed.hostname or parsed.query or parsed.fragment or parsed.path not in ('','/') or re.search(r'\s',proxy):raise RuntimeError('invalid Groq proxy configuration')
+        if parsed.port is not None and not 1<=parsed.port<=65535:raise RuntimeError('invalid Groq proxy port')
+    write_env({'GROQ_API_KEY':key,'GENA_STT_PROVIDER':'groq','GROQ_STT_MODEL':'whisper-large-v3-turbo','GROQ_PROXY_URL':proxy})
+    return {'stt_provider':'groq','model':'whisper-large-v3-turbo','proxy_enabled':bool(proxy),'env_mode':oct(ENV.stat().st_mode&0o777)}
 
 def activate(payload):
     saved=state(payload);release=RELEASES/payload['release']
@@ -232,6 +241,10 @@ def check(payload):
     mount=any(m['Destination']=='/etc/gigachat/ca.pem' and not m['RW'] for m in app['Mounts'])
     if not nginx or health.get('nlp_provider')!='gigachat' or not matches or not mount or 'id="root"' not in html:raise RuntimeError('public/provider health failed')
     if payload.get('nlu_mode') and runtime.get('GENA_NLU_MODE')!=payload['nlu_mode']:raise RuntimeError('runtime mode mismatch')
+    if payload.get('require_stt_proxy'):
+        proxy=runtime.get('GROQ_PROXY_URL','')
+        if not proxy or proxy!=config.get('GROQ_PROXY_URL') or runtime.get('GENA_STT_PROVIDER')!='groq' or runtime.get('GROQ_STT_MODEL')!='whisper-large-v3-turbo':raise RuntimeError('runtime STT proxy configuration mismatch')
+        if any(runtime.get(k) for k in ('HTTP_PROXY','HTTPS_PROXY','ALL_PROXY','http_proxy','https_proxy','all_proxy')):raise RuntimeError('global proxy must not be enabled')
     return {'nlu_mode':runtime.get('GENA_NLU_MODE','semantic_plan_legacy'),'model':runtime.get('GIGACHAT_MODEL'),'concurrency':runtime.get('GIGACHAT_MAX_CONCURRENT'),'revision':(CURRENT/'REVISION').read_text().strip(),'containers':summary,'nginx':True,'https':True,'frontend_html':True,'provider':health['nlp_provider'],'runtime_key_matches_secret_env':True,'ca_mount_read_only':True,'public_url':config['PUBLIC_URL']}
 
 def strict(value,schema):

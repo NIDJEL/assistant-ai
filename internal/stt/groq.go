@@ -4,11 +4,14 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"mime"
 	"mime/multipart"
 	"net/http"
 	"net/textproto"
+	"net/url"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -31,6 +34,49 @@ func NewGroq(key, model string) *Groq {
 		CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse },
 	}}
 }
+
+// ParseProxyURL never includes proxy credentials in validation errors.
+func ParseProxyURL(value string) (*url.URL, error) {
+	if value == "" {
+		return nil, nil
+	}
+	bad := errors.New("GROQ_PROXY_URL must be an HTTP(S) or SOCKS5 proxy URL")
+	u, err := url.Parse(value)
+	if err != nil || u.Hostname() == "" || u.RawQuery != "" || u.Fragment != "" || (u.Path != "" && u.Path != "/") {
+		return nil, bad
+	}
+	switch u.Scheme {
+	case "http", "https", "socks5", "socks5h":
+	default:
+		return nil, bad
+	}
+	if port := u.Port(); port != "" {
+		n, err := strconv.Atoi(port)
+		if err != nil || n < 1 || n > 65535 {
+			return nil, bad
+		}
+	}
+	return u, nil
+}
+
+// NewGroqWithProxy isolates routing to this client. It never changes process
+// proxy environment, http.DefaultTransport, DNS, or other providers' clients.
+func NewGroqWithProxy(key, model, proxyURL string) (*Groq, error) {
+	u, err := ParseProxyURL(proxyURL)
+	if err != nil {
+		return nil, err
+	}
+	transport := http.DefaultTransport.(*http.Transport).Clone()
+	transport.Proxy = nil
+	if u != nil {
+		transport.Proxy = http.ProxyURL(u)
+	}
+	g := NewGroq(key, model)
+	g.client.Transport = transport
+	return g, nil
+}
+
+func (g *Groq) Close() { g.client.CloseIdleConnections() }
 
 func (g *Groq) Transcribe(ctx context.Context, filename, contentType string, audio []byte) (string, error) {
 	if err := Validate(contentType, audio); err != nil {

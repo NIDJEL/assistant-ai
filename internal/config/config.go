@@ -19,7 +19,7 @@ import (
 )
 
 type Config struct {
-	STTProvider, GroqAPIKey, GroqSTTModel                                      string
+	STTProvider, GroqAPIKey, GroqSTTModel, GroqProxyURL                        string
 	NLUMode                                                                    string
 	SemanticProvider                                                           string
 	GigaChat                                                                   llm.GigaChatConfig
@@ -74,6 +74,7 @@ func Load() (Config, error) {
 		STTProvider:      value("GENA_STT_PROVIDER", ""),
 		GroqAPIKey:       value("GROQ_API_KEY", ""),
 		GroqSTTModel:     value("GROQ_STT_MODEL", stt.DefaultModel),
+		GroqProxyURL:     value("GROQ_PROXY_URL", ""),
 		NLUMode:          value("GENA_NLU_MODE", ""),
 		SemanticProvider: value("GENA_SEMANTIC_PROVIDER", ""),
 		GigaChat:         llm.GigaChatConfig{AuthorizationKey: value("GIGACHAT_AUTHORIZATION_KEY", ""), Scope: value("GIGACHAT_SCOPE", "GIGACHAT_API_PERS"), BaseURL: value("GIGACHAT_BASE_URL", "https://api.giga.chat"), Model: value("GIGACHAT_MODEL", "GigaChat-3-Ultra"), CAFile: value("GIGACHAT_CA_FILE", "")},
@@ -95,6 +96,9 @@ func Load() (Config, error) {
 	}
 	if c.STTProvider != "" && c.STTProvider != "groq" {
 		return c, errors.New("GENA_STT_PROVIDER must be groq or empty")
+	}
+	if _, err := stt.ParseProxyURL(c.GroqProxyURL); err != nil {
+		return c, err
 	}
 	if c.NLUMode != "simple_llm" && c.NLUMode != "semantic_plan_legacy" {
 		return c, errors.New("GENA_NLU_MODE must be simple_llm or semantic_plan_legacy")

@@ -151,7 +151,12 @@ func run(log *slog.Logger) error {
 	}
 	app := &api.API{Config: cfg, Clock: now, Calendar: cal, CalendarSync: calendarSync, Assistant: service, Auth: authService, Logger: log}
 	if cfg.STTProvider == "groq" {
-		app.Transcriber = stt.NewGroq(cfg.GroqAPIKey, cfg.GroqSTTModel)
+		transcriber, err := stt.NewGroqWithProxy(cfg.GroqAPIKey, cfg.GroqSTTModel, cfg.GroqProxyURL)
+		if err != nil {
+			return err
+		}
+		defer transcriber.Close()
+		app.Transcriber = transcriber
 	}
 	server := &http.Server{Addr: cfg.Address, Handler: app.Router(), ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 30 * time.Second, WriteTimeout: 50 * time.Second, IdleTimeout: 60 * time.Second,
 		BaseContext: func(net.Listener) context.Context { return ctx }, ErrorLog: slog.NewLogLogger(log.Handler(), slog.LevelError)}
