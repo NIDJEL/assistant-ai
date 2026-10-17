@@ -1,10 +1,14 @@
 # Simple LLM runtime Гены
 
+[← Документация](README.md)
+
 `text/voice → compact context → GigaChat-3-Ultra → intent + arguments → Go validation/calendar/target resolution → assistant.Service → repository`.
 
 Локально используется `GENA_NLU_MODE=simple_llm`. В development это значение по умолчанию; provider по умолчанию GigaChat. Нужны локальные `GIGACHAT_AUTHORIZATION_KEY` и при необходимости `GIGACHAT_CA_FILE`. `GENA_SEMANTIC_PROVIDER=ollama` включает альтернативного провайдера с тем же коротким контрактом.
 
-`GENA_NLU_MODE=semantic_plan_legacy` сохраняет прежний runtime, включая явный rules mode. Без явного флага production сохраняет прежний выбор runtime/provider. Production использует существующий GigaChat compose override: `GENA_NLU_MODE=simple_llm`, `GENA_SEMANTIC_PROVIDER=gigachat`, `GIGACHAT_MODEL=GigaChat-3-Ultra`, concurrency 1. Секреты и CA берутся из существующего `/etc/rhythm/production.env`. Для отката runtime задайте `GENA_NLU_MODE=semantic_plan_legacy` и обновите только app; полный откат релиза описан в [deployment](../deploy/README.md).
+`GENA_NLU_MODE=semantic_plan_legacy` сохраняет прежний runtime, включая явный rules mode. В production без явного режима config выбирает legacy; базовый локальный Compose также явно выбирает legacy, если переменная отсутствует. `.env.example` задаёт simple_llm. Штатный GigaChat override включает `simple_llm`, `GENA_SEMANTIC_PROVIDER=gigachat`, `GIGACHAT_MODEL=GigaChat-3-Ultra`, concurrency 1. [Настройка и Compose](GIGACHAT_CONFIGURATION.md).
+
+Смена только `GENA_NLU_MODE` на legacy сохраняет выбранный provider и включает прежний planner. Для режима без внешних моделей нужны также `GENA_SEMANTIC_PROVIDER=rules` и базовый Compose без GigaChat override. [Обновление и откат](../deploy/README.md).
 
 ## Граница модели и Go
 
@@ -55,6 +59,7 @@
 | Прошлый месяц | `{"type":"calendar_period","unit":"month","offset":-1}` |
 | Следующая пятница | `{"type":"weekday","weekday":"friday","direction":"next"}` |
 | Явная дата | `{"type":"absolute","date":"2026-10-18"}` |
+| До двадцатого / к 20 числу | `{"type":"day_of_month","day":20}`; ближайший существующий день вычисляет Go |
 | Последние N дней | `{"type":"rolling_period","unit":"day","value":7}` |
 | Готовые границы сохранённого фильтра | `{"type":"date_range","date":"2026-09-01","end_date":"2026-10-01"}` |
 
@@ -90,4 +95,4 @@ go run ./cmd/simple-smoke -interactive -output artifacts/simple_llm_manual.json
 
 `simple-smoke` использует только временные пустые SQLite-базы, удаляет их после завершения и никогда не открывает `DATABASE_URL`/`DATABASE_PATH` приложения. Live mode читает конфигурацию только для GigaChat. Интерактивный режим начинает пустую сессию, сохраняет transcript; `/quit` завершает диалог. Учётная запись GigaChat может ограничивать concurrency, поэтому эти команды запускаются последовательно.
 
-Корпус `testdata/simple_llm/smoke.json`: 35 небольших сценариев, 61 реплика. Fixture mode проверяет исполнитель, live mode — реальную модель и исполнитель вместе. Это продуктовый smoke, без holdout/fresh versions, evidence layers и требования достичь synthetic score.
+Корпус `testdata/simple_llm/smoke.json` содержит небольшие диалоговые сценарии; `deadlines.json` проверяет формулировки дедлайнов. Fixture mode проверяет исполнитель, live mode — реальную модель и исполнитель вместе. Старые semantic-корпуса и их отчёты относятся к legacy-контракту и не измеряют качество этого runtime.

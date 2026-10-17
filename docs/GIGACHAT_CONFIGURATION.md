@@ -1,58 +1,69 @@
-# GigaChat: локальная настройка и подготовка production
+# Настройка GigaChat
 
-Production GigaChat override включает `GENA_NLU_MODE=simple_llm`, `GENA_SEMANTIC_PROVIDER=gigachat`, модель `GigaChat-3-Ultra` и concurrency 1. Без override сохраняется rules-only конфигурация. Rollback: `GENA_NLU_MODE=semantic_plan_legacy`.
+[← Документация](README.md)
 
-Текущий runtime: `text/voice + compact context → GigaChat-3-Ultra → small intent/arguments → Go validation/calendar/target resolution → existing executor`. По умолчанию в development `GENA_NLU_MODE=simple_llm`; `GENA_NLU_MODE=semantic_plan_legacy` оставляет прежний путь. [Контракты, безопасность и локальный ручной тест](SIMPLE_LLM_RUNTIME.md). Исторические SemanticCommand/SemanticPlan evaluators ниже не входят в новый runtime; его проверяет небольшой `cmd/simple-smoke`.
+GigaChat используется для разбора текста в `simple_llm`. Голос предварительно превращается в текст отдельным провайдером Groq. [Контракт LLM](SIMPLE_LLM_RUNTIME.md) · [Голос](DEADLINES_AND_VOICE.md).
 
-В локальном `.env` задаются переменные из `.env.example`. Основной credential — `GIGACHAT_AUTHORIZATION_KEY`. Client ID/Secret можно хранить там для управления учётной записью; приложение их не использует. Ключи и access token не передаются в сообщения модели. `.env`, его local-варианты и semantic cache исключены из Git.
+## Сервер вне Docker
 
-Список доступных account model IDs нужно получить до выбора модели:
+В локальном `.env` задайте:
 
-```powershell
-$env:GIGACHAT_INTEGRATION = '1'
-go run ./cmd/semantic-eval -models
+```dotenv
+GENA_NLU_MODE=simple_llm
+GENA_SEMANTIC_PROVIDER=gigachat
+GIGACHAT_AUTHORIZATION_KEY=<ключ авторизации>
+GIGACHAT_SCOPE=GIGACHAT_API_PERS
+GIGACHAT_MODEL=GigaChat-3-Ultra
+GIGACHAT_TIMEOUT=30s
+GIGACHAT_MAX_CONCURRENT=1
 ```
 
-OAuth идёт на `https://ngw.devices.sberbank.ru:9443/api/v2/oauth`; inference — на `https://api.giga.chat/v1/chat/completions`. Используется `GIGACHAT_API_PERS`, timeout `30s`, inference concurrency `1`. Одна goroutine обновляет токен, остальные ждут с учётом context; токен хранится только в памяти и обновляется за минуту до expiry. После 401 — invalidation и один повтор; после 429/5xx — максимум два повтора с ограниченной задержкой.
+`GIGACHAT_AUTHORIZATION_KEY` — credential приложения; runtime не использует отдельные `GIGACHAT_CLIENT_ID` и `GIGACHAT_CLIENT_SECRET`. Access token получает backend и хранит только в памяти.
 
-TLS verification обязательна. Если системного trust store недостаточно, скачайте CA bundle по [официальной инструкции GigaChat](https://developers.sber.ru/docs/ru/gigachat/certificates), проверяя HTTPS при скачивании, и задайте `GIGACHAT_CA_FILE` абсолютным локальным путём. Не отключайте проверку TLS. В текущей локальной проверке используется отдельный файл CA в `var/certs/`; он не добавлен в системное хранилище.
+Если доверенных системных сертификатов недостаточно, укажите `GIGACHAT_CA_FILE` — абсолютный путь к проверенному CA bundle на машине, где запущен Go. TLS-проверка остаётся включённой. Файл сертификатов и ключи не добавляйте в Git.
 
-Обычный `go test ./...` работает без GigaChat. Live-проверка требует явного флага:
+## Docker Compose
 
-```powershell
-$env:GIGACHAT_INTEGRATION = '1'
-go test ./internal/llm -run '^TestGigaChatIntegration$' -count=1
+Базовый `compose.yaml` не передаёт GigaChat environment в контейнер. Используйте [override](../deploy/compose.gigachat.example.yaml) вместе с базовым файлом:
+
+1. Добавьте AI-переменные выше в `.env`.
+2. Задайте `GIGACHAT_CA_FILE_HOST` — абсолютный путь к проверенному CA bundle на Docker-хосте. На Windows используйте путь с прямыми слешами, например `D:/certs/gigachat-ca.pem`.
+3. Выполните:
+
+```bash
+docker compose -f compose.yaml -f deploy/compose.gigachat.example.yaml config --quiet
+docker compose -f compose.yaml -f deploy/compose.gigachat.example.yaml up --build -d --wait
 ```
 
-Оценка по исходному prompt/schema, без runtime fast path:
+Override монтирует bundle read-only как `/etc/gigachat/ca.pem` и задаёт контейнерный `GIGACHAT_CA_FILE`. Команды управления этим запуском выполняйте с той же парой `-f`.
 
-```powershell
-go run ./cmd/semantic-eval -model GigaChat-3-Ultra -input testdata/semantic/structured_regressions.jsonl -output artifacts/gigachat/mandatory-ultra.json
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts/gigachat-screen.ps1
+Для production используется `deploy/compose.production.yaml` вместо локального `compose.yaml`; оба production-файла уже указаны в `deploy/rhythm.service`. [Порядок обновления](../deploy/README.md).
+
+## Поведение при ошибках
+
+Клиент переиспользует HTTP transport, обновляет токен и ограничивает число одновременных запросов. После 401 инвалидирует токен и повторяет запрос один раз; временные ошибки имеют ограниченные повторы. Timeout, отмена и некорректный ответ не должны приводить к мутации пользовательских данных.
+
+LLM получает текст и компактный контекст. Go отклоняет неизвестные JSON-поля и разрешает ссылки только на существующие записи пользователя. Точные подтверждения/отмена при pending обрабатываются без inference; остальные реплики в AI-режиме идут в модель.
+
+Concurrency ограничена на процесс. Для нескольких replicas с общей квотой провайдера нужна общая очередь либо один inference worker.
+
+## Проверки
+
+Обычные Go-тесты не требуют обращения к GigaChat. Проверка исполнительного пути с фиксированными ответами:
+
+```bash
+go run ./cmd/simple-smoke -mode fixture -output artifacts/simple_llm_smoke_fixture.json
 ```
 
-Cache key включает provider, model, system prompt, schema, source и input. `-mode go` использует только cache и не делает inference. `-bypass-cache` предназначен для отдельного latency experiment, а не для повторного независимого held-out. Все cached responses повторно строго декодируются. Частичный прогон сохраняется с `planned_total` и `aborted_reason`; три последовательных транспортных сбоя останавливают прогон.
+Явная проверка реального провайдера, с использованием его квоты:
 
-DEV 572 и frozen held-out 208 восстановлены из локального бэкапа. `structured_heldout.jsonl` не изменён: SHA-256 `704b0c5324dab12bf5673afeab92df1c7507d7555f1761e619456eb8ab093b1e`. DEV-выборка и её seed/IDs/hashes сохраняются в `artifacts/gigachat/freeze.json`. Итоги и ограничения — в [GIGACHAT_SEMANTIC_REPORT.md](GIGACHAT_SEMANTIC_REPORT.md).
-
-## Production override
-
-На VPS используется hardened `deploy/compose.production.yaml` вместе с `deploy/compose.gigachat.example.yaml`; оба файла подключены в `deploy/rhythm.service`. Основной локальный `compose.yaml` не менялся. В `/etc/rhythm/production.env` сохраняется только нужный runtime Authorization Key; Client ID/Secret туда не передаются. `GIGACHAT_CA_FILE_HOST` указывает на проверенный Linux CA bundle, монтируемый read-only как `/etc/gigachat/ca.pem`. Не копируйте Windows-путь из локального `.env` на сервер. При нескольких backend replicas Freemium concurrency=1 нужна общая очередь или единственный inference worker; текущий semaphore действует в одном процессе.
-
-Для проверки сборки compose-конфигурации используйте только вывод без значений:
-
-```sh
-docker compose --env-file /etc/rhythm/production.env -f deploy/compose.production.yaml -f deploy/compose.gigachat.example.yaml config --quiet
+```bash
+go run ./cmd/simple-smoke -mode live -output artifacts/simple_llm_smoke_live.json
+go run ./cmd/simple-smoke -interactive -output artifacts/simple_llm_manual.json
 ```
 
-Не публикуйте обычный `docker compose config` с раскрытыми env. Access token не задаётся в deployment env и не сохраняется на диск. При unavailable/timeout/invalid output simple_llm возвращает уточнение без мутации. Fast path — только точные подтверждения и отмена при pending; остальная речь идёт в GigaChat с компактным контекстом.
+Smoke работает во временной SQLite-базе, не в PostgreSQL приложения. Команды запускайте последовательно. `cmd/semantic-eval` и корпуса `testdata/semantic` сохранены для регрессий legacy-контракта; их оценки не являются оценками `simple_llm`.
 
-Для включения GigaChat в контейнерном запуске нужен указанный override: основной compose сам не передаёт GIGACHAT-переменные из локального `.env`. После замены credentials и подготовки environment будущая команда выпуска:
+## Режим правил
 
-```sh
-docker compose --env-file /etc/rhythm/production.env -f deploy/compose.production.yaml -f deploy/compose.gigachat.example.yaml up -d --build --no-deps --wait app
-```
-
-Обновляется только app; PostgreSQL и постоянные volumes сохраняются. Перед выпуском выполняются штатный backup PostgreSQL, проверка dump через pg_restore --list и сохранение старых release/config. `deploy/gigachat_ops.py` принимает приватный JSON только через stdin и печатает только metadata/counts; credentials не передаются как argv. При откате используется предыдущий release/config без восстановления устаревшего GigaChat ключа. Подробный workflow — [deploy/README.md](../deploy/README.md).
-
-Полный локальный audit: `python scripts/security-audit.py --extra-source <old-credentials-txt>`. Он проверяет рабочие файлы, index, diff и Git objects всех refs/reflog; выводит только counts/paths/types. `.env` — разрешённое ignored secret-хранилище. Dependencies исключены из обхода. Проверенные синтетические OAuth fixtures исключаются только по path-scoped hashes; exact-value matches реальных credentials никогда не исключаются.
+Для запуска без LLM задайте `GENA_NLU_MODE=semantic_plan_legacy`, `GENA_SEMANTIC_PROVIDER=rules`, `NLP_PROVIDER=rules` и используйте базовый Compose без GigaChat override. Это выбор другого runtime, а не автоматический fallback при недоступности GigaChat.

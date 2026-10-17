@@ -1,95 +1,61 @@
-# Аккаунты, PostgreSQL и onboarding
+# Аккаунты и данные
 
-Go runtime now requires PostgreSQL and server-side sessions. SQLite support remains available for compatibility tests and explicit import. New accounts start empty; `/api/import-demo` imports sample events only into the authenticated account.
+[← Документация](README.md)
 
-## Run and environment
+Сервер использует PostgreSQL и серверные сессии. Вход доступен по email/паролю или Яндекс ID. Новый аккаунт начинается с пустого плана; `/api/import-demo` импортирует демонстрационные записи только текущему авторизованному пользователю.
 
-Copy `.env.example` to `.env`. Set `POSTGRES_PASSWORD` and `SESSION_SECRET` to independently generated random values. Hexadecimal passwords need no escaping in the Compose connection URL. Never commit `.env`.
+## Конфигурация
 
-```powershell
-Copy-Item .env.example .env
-# Generate two independent values and put them in .env:
-[Convert]::ToHexString([System.Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
-docker compose up --build -d --wait
+Задайте `DATABASE_URL`, независимый случайный `SESSION_SECRET` длиной от 32 символов и фактический `PUBLIC_URL`. В Docker адрес базы задаёт Compose; строка подключения с localhost в `.env.example` предназначена для Go вне контейнера. Нестандартные символы пароля в URL должны быть percent-encoded.
+
+Origin браузера, `PUBLIC_URL` и callback должны совпадать: localhost и 127.0.0.1 — разные origins. Production требует `APP_ENV=production` и HTTPS. Для удалённой базы используйте проверяемое TLS-соединение.
+
+Сохраняйте `SESSION_SECRET` между обновлениями: от него зависят сессии, OAuth и шифрование календарных credentials. После замены секрета потребуется повторный вход и подключение календаря. `AUTH_RATE_LIMIT` ограничивает попытки входа на процесс; нескольким экземплярам нужен дополнительный общий лимит на proxy.
+
+## Владение и сессии
+
+- `users` и `auth_identities` хранят аккаунт и способы входа; совпадение email провайдера не связывает аккаунты автоматически.
+- `sessions` хранит HMAC случайного токена, владельца и срок действия 30 дней. Исходный токен остаётся в HttpOnly cookie.
+- `oauth_states` хранит одноразовый state, browser binding, PKCE verifier, назначение и срок 10 минут.
+- Дела, диалоги, настройки, виджеты и календарные подключения принадлежат конкретному пользователю.
+
+Repository ограничивает чтение и изменение владельцем. Пользовательские advisory locks PostgreSQL сериализуют доменные записи между экземплярами. Клиентские кэши и идентификаторы диалогов разделены по аккаунтам; смена сессии в другой вкладке очищает защищённое содержимое.
+
+## HTTP и защита
+
+| Маршрут | Назначение |
+| --- | --- |
+| `POST /api/auth/register` | Регистрация: name, email, password, password_confirmation. Пароль от 10 символов. |
+| `POST /api/auth/login` | Вход с ротацией текущей сессии. |
+| `POST /api/auth/logout` | Удаление сессии и очистка cookie. |
+| `GET /api/auth/me` | Текущий профиль, providers и состояние onboarding. |
+| `PATCH /api/auth/me` | Изменение профиля. |
+| `POST /api/auth/onboarding` | Завершение знакомства с приложением. |
+
+Пароли хешируются Argon2id с индивидуальной солью. Cookie имеет HttpOnly, SameSite=Lax, Path=/ и Secure при HTTPS/production. Credentials не хранятся в localStorage. API требует сессию, возвращает 404 для чужих записей и `Cache-Control: no-store`.
+
+Изменения проверяют настроенный Origin и Fetch Metadata; обычные body-запросы принимают JSON. Исключение для multipart ограничено авторизованной [транскрипцией аудио](DEADLINES_AND_VOICE.md). `/health` публичен и не раскрывает пользовательские данные.
+
+## Яндекс ID и onboarding
+
+Задайте `YANDEX_CLIENT_ID`, `YANDEX_CLIENT_SECRET`, `YANDEX_REDIRECT_URI`. Callback: `PUBLIC_URL/api/auth/yandex/callback`. Вход запрашивает права профиля `login:info login:email login:avatar`, использует authorization code, S256 PKCE и одноразовый state.
+
+Новая provider identity с конфликтующим email не входит в существующий аккаунт. Для явного связывания сначала войдите в этот аккаунт и подключите Яндекс в настройках. Identity не переносится между пользователями.
+
+Вход через Яндекс не подключает календарь автоматически. Onboarding предлагает отдельное согласие с `calendar:all` или пропуск. После успеха или пропуска открывается чат; ошибка возвращает в onboarding. Подключение из «Интеграций» возвращает туда. Источник возврата хранится в серверном state из разрешённого списка. [Настройка календаря](YANDEX_CALENDAR.md).
+
+## Миграции и импорт SQLite
+
+Рабочие миграции встроены из `internal/storage/postgres/migrations`. При старте сервер берёт migration lock и применяет ожидающие версии. Откат исходников не отменяет изменение схемы.
+
+Для переноса прежней SQLite остановите старое приложение и сохраните копию файла. Аккаунт назначения должен быть пуст: импорт сохраняет IDs и не объединяет произвольные наборы данных.
+
+В окружении задайте `DATABASE_URL`, `SESSION_SECRET`, `IMPORT_USER_EMAIL`, `IMPORT_USER_NAME`, `IMPORT_USER_PASSWORD` (от 10 символов). Пароль передаётся через environment, не через аргументы команды.
+
+```bash
+go run ./cmd/import-sqlite -sqlite /path/to/assistant-go.sqlite3
 ```
 
-Default URL: `http://localhost:8081`. Use the same host in `PUBLIC_URL`, the browser and provider redirect URIs: localhost and 127.0.0.1 are different origins. PostgreSQL stays on the Compose network and uses a persistent volume. Startup waits for PostgreSQL health, retries readiness for 30 seconds, then applies migrations.
+Если в исходнике несколько профилей настроек, явно выберите `-profile LEGACY_PROFILE_UUID`. Команда создаёт аккаунт или проверяет пароль существующего, переносит данные атомарно и обновляет sequence. Повтор того же snapshot пропускается; другой snapshot после заполнения назначения отклоняется.
 
-Native development requires a running PostgreSQL instance, `DATABASE_URL` and `SESSION_SECRET`. Build with `pnpm --dir web build`, then `go run ./cmd/server`. Compose supplies its own internal database URL; the localhost URL in `.env.example` is for native Go. Percent-encode non-hex passwords in native connection URLs.
-
-Production requires `APP_ENV=production`, HTTPS `PUBLIC_URL` and a TLS reverse proxy. Use `sslmode=verify-full` for remote databases. Keep `SESSION_SECRET` stable; rotation invalidates sessions and OAuth handshakes. `AUTH_RATE_LIMIT` defaults to 20 expensive auth attempts per IP per minute per server process. Multi-instance deployment needs an additional shared/proxy limit. Arbitrary forwarded IP headers are deliberately not trusted.
-
-Optional Ollama: `docker compose --profile ollama up -d`, pull the configured model in that container and select `NLP_PROVIDER=hybrid`. Auth and rules-based planning work without Ollama.
-
-## Architecture and ownership
-
-HTTP → `internal/auth.Service` → `internal/user.Service` → repository interfaces → `internal/storage/postgres`. Password work and provider HTTP happen outside domain write transactions.
-
-- `users`: UUID, normalized optional unique contact email, name, avatar, durable onboarding completion.
-- `auth_identities`: unique `(provider, provider_subject)` and `(user_id, provider)`; only email identities store password hashes.
-- `sessions`: HMAC of a random 256-bit cookie token, owner, creation, fixed 30-day expiry and last-seen time. Raw session tokens are never stored in PostgreSQL.
-- `oauth_states`: HMAC state and browser binding, server-held PKCE verifier, optional linking owner and 10-minute expiry. Consumption is atomic and single-use.
-- `events`, `dialogue_sessions`, `dialogue_exchanges`, `preferences`, `widget_layouts`, `calendar_connections`: ownership and foreign keys. Dialogue and idempotency keys include the user.
-
-Middleware supplies the authenticated user in context. PostgreSQL rejects missing ownership, and every domain SELECT/UPDATE/DELETE includes the owner. Search only receives that user's records. Per-user PostgreSQL advisory transaction locks serialize domain writes across server instances, protecting meeting conflict checks and idempotency. Browser preference caches and dialogue identifiers use per-user keys; anonymous legacy caches are not assigned to new accounts. BroadcastChannel propagates login/logout between tabs and clears protected content before checking the changed session.
-
-## API and security
-
-`POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me`, `PATCH /api/auth/me`, `POST /api/auth/onboarding`. Register accepts `name`, `email`, `password`, `password_confirmation`; minimum password length is 10 characters. `/me` returns `user.id`, `email`, `name`, `avatar_url`, `providers`, `onboarding_completed`.
-
-Main APIs return 401 without a valid session. Foreign event IDs and preference profiles return 404. Public `/health` exposes readiness and no personal event count. API responses are `Cache-Control: no-store`.
-
-Argon2id: unique 16-byte salt, 64 MiB, three iterations, two lanes, 32-byte hash. Four concurrent password computations maximum. Wrong password and unknown email both verify a hash and return the same generic message. Registration duplicate email returns the requested inline validation message.
-
-Cookies: HttpOnly, SameSite=Lax, Path=/, no Domain, Secure in production or on HTTPS. Login rotates the current session; logout deletes it and clears the cookie. Credentials never enter localStorage. Auth bodies are limited to 8 KiB, other JSON bodies to 64 KiB. CSRF protection checks the exact configured Origin, Fetch Metadata and JSON for body methods; DELETE has no required body and retains origin checks. No CORS permissions are issued. Access logs record paths, not queries or request bodies.
-
-## Yandex ID
-
-Use the formal application name **Ассистент Гена**. Register an authorization application in [Yandex OAuth](https://oauth.yandex.ru/). Set `YANDEX_CLIENT_ID`, `YANDEX_CLIENT_SECRET`, `YANDEX_REDIRECT_URI`; grant `login:info login:email login:avatar`.
-
-Routes: `/api/auth/yandex/start`, `/api/auth/yandex/callback`. Authorization code with S256 PKCE, fixed redirect, browser-bound one-use state, server token exchange, Authorization-header profile request. The stable Yandex ID is the identity key. References: [Yandex code/PKCE](https://yandex.ru/dev/id/doc/ru/codes/code-url), [profile API](https://yandex.ru/dev/id/doc/ru/user-information).
-
-These are OAuth profile flows. ID tokens are not accepted as identity evidence, so this flow does not use an OIDC nonce/JWT path. A future OIDC path must implement nonce, issuer, audience and signature verification.
-
-## Linking, onboarding and calendars
-
-Only email and Yandex identities remain supported. Migration `003_remove_vk.sql` removes retired provider identities and pending states, preserving users, sessions, events and shared OAuth infrastructure. Accounts with only the retired provider need an email/Yandex identity before production migration to retain a login method.
-
-Provider contact email never signs into an existing account. A new identity with a conflicting email is rejected, avoiding automatic takeover and duplicates. Sign into the existing account and use **Settings → Account → Connect**. `?link=1` starts explicit linking; callback requires the same current user. Identities cannot transfer between accounts.
-
-Yandex login never creates a calendar connection. Onboarding separately offers Yandex Calendar or allows skipping. The live CalDAV integration is documented in [YANDEX_CALENDAR.md](YANDEX_CALENDAR.md).
-
-Current onboarding starts Calendar OAuth directly and returns to the chat on success or skip. Migration 004 persists its whitelisted source alongside the browser-bound state. Errors return to onboarding; normal Integrations flows still return to Integrations. Already connected/pending accounts skip consent. [Current onboarding flow](ONBOARDING.md).
-
-## Migrations and SQLite import
-
-Embedded versioned SQL lives in `internal/storage/postgres/migrations`. Startup takes an advisory migration lock and applies pending files plus `schema_migrations` records in one transaction. Repeated startup is safe. Use `pg_dump` before future deployment migrations and restore a backup for data rollback.
-
-Stop and back up the old SQLite app before import. Import before other PostgreSQL event data, because preserved IDs must not collide. The destination user must have no events, dialogue or preferences. Multiple legacy preference profiles require explicit `-profile`; the command never mixes them silently.
-
-Set `DATABASE_URL`, `SESSION_SECRET`, `IMPORT_USER_EMAIL` (default `dev@rhythm.local`), `IMPORT_USER_NAME`, `IMPORT_USER_PASSWORD` in the shell. Passwords are environment values, never CLI arguments. The command creates the development email account or checks its existing password.
-
-```powershell
-go run ./cmd/import-sqlite -sqlite var/assistant-go.sqlite3
-# When multiple legacy profiles exist:
-go run ./cmd/import-sqlite -sqlite var/assistant-go.sqlite3 -profile LEGACY_PROFILE_UUID
-```
-
-The retained SQLite migration system backs up older schemas before upgrade. A consistent read snapshot transfers IDs, details, deletions, dialogue state/history, idempotency keys, selected preferences and widget layouts atomically. The PostgreSQL event sequence advances safely. A digest makes repeat imports a no-op; changed snapshots are rejected after the destination has data. SQLite remains on disk.
-
-## UI and checks
-
-```powershell
-$env:TEST_DATABASE_URL='postgres://rhythm@127.0.0.1:5433/rhythm?sslmode=disable'
-go test ./...
-go vet ./...
-pnpm --dir web test
-pnpm --dir web build
-pnpm --dir web e2e
-```
-
-Local testing can use a PostgreSQL container with `POSTGRES_HOST_AUTH_METHOD=trust` bound to 127.0.0.1:5433. Never use trust for deployment. Tests create/drop unique schemas, cover auth, isolation, OAuth state/linking, migrations, rollback, constraints, foreign keys, concurrency and import. Provider protocol tests use local HTTP mocks. Browser tests use real Go/PostgreSQL/email sessions and retain Web Speech mocks for voice UX.
-
-CI provisions PostgreSQL and runs Go/race, frontend tests/build/E2E and Compose smoke, verifying session and data across a server restart.
-
-Live Yandex login requires configured applications and real-account verification. Protocol mocks do not confirm credentials, provider moderation or live consent screens. Password recovery mail is a later feature; the UI states its availability without claiming to send mail. Public legal pages describe runtime handling and must be completed by the deployment operator.
+SQLite-файл сохраняется. Поддержка старых схем и `migrations/` нужны импорту и регрессионным тестам, а не рабочему серверу. [Проверки с PostgreSQL](DEVELOPMENT.md).

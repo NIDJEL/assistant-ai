@@ -1,1 +1,31 @@
-<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ассистент Гена — архитектура</title><link rel="icon" href="/favicon.svg"><style>body{margin:0;background:#edf5ff;color:#152555;font:17px/1.7 'Segoe UI',sans-serif}main{max-width:1100px;margin:32px auto;padding:24px}a{color:#006aff}h1{font-size:38px;line-height:1.2}section{background:white;border:1px solid #dfeafb;border-radius:22px;padding:24px;margin:24px 0}img{display:block;width:100%;height:auto;border-radius:15px}h2{font-size:23px}a:focus-visible{outline:3px solid #006aff;outline-offset:5px}@media(max-width:600px){main{padding:16px;margin:0}section{padding:12px}h1{font-size:30px}}</style></head><body><main><a href="/">← Вернуться к Гене</a><h1>Как работает Гена</h1><section><h2>React, Go и PostgreSQL</h2><p>Go отдаёт production build React, выполняет команды и сохраняет события и структурные повторения в PostgreSQL. LLM вызывается до короткой write transaction.</p><a href="/diagrams/architecture.svg"><img src="/diagrams/architecture.svg" alt="Архитектура: React, typed API client, Go API, сервисы и PostgreSQL. Ollama работает вне транзакции. Node нужен только на этапе сборки."></a></section><section><h2>Диктовка и ручная отправка</h2><p>Пауза, onend и остановка microphone сохраняют черновик. Send или Enter останавливает recognition и отправляет один запрос.</p><a href="/diagrams/voice-flow.svg"><img src="/diagrams/voice-flow.svg" alt="Voice flow: microphone, speech recognition, редактируемый draft, ручное действие Send или Enter, остановка recognition и один POST chat."></a></section><a href="/docs">OpenAPI ↗</a></main></body></html>
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ассистент Гена — архитектура</title>
+<link rel="icon" href="/favicon.svg">
+<style>
+body{margin:0;background:#f2f7ff;color:#172755;font:17px/1.7 "Segoe UI",sans-serif}
+main{max-width:1200px;margin:32px auto;padding:24px}
+a{color:#006aff}h1{font-size:38px;line-height:1.2}
+section{background:#fff;border:1px solid #dfeafb;border-radius:22px;padding:24px;margin:24px 0}
+img{display:block;width:100%;height:auto;border-radius:15px}
+h2{font-size:24px}a:focus-visible{outline:3px solid #006aff;outline-offset:5px}
+@media(max-width:600px){main{padding:16px;margin:0}section{padding:12px}h1{font-size:30px}}
+</style>
+</head>
+<body><main>
+<a href="/">← Вернуться к Гене</a>
+<h1>Как работает Гена</h1>
+<p>React в браузере, Go на сервере, PostgreSQL для данных и фоновых очередей.</p>
+<section><h2>От текста к операции</h2>
+<p>В режиме simple_llm модель возвращает intent и arguments. Go вычисляет даты, выбирает записи текущего пользователя, проверяет данные и сохраняет изменения. Внешний вызов модели выполняется до транзакции изменения дела.</p>
+<a href="/diagrams/architecture.svg"><img src="/diagrams/architecture.svg" alt="React, Go API и ассистент, PostgreSQL; Groq для аудио, GigaChat или Ollama для текста, workers для Яндекса и Web Push."></a>
+</section>
+<section><h2>Запись → черновик → ручная отправка</h2>
+<p>MediaRecorder записывает аудио. Авторизованный Go endpoint передаёт его в Groq, а распознанный текст возвращает в черновик. После проверки пользователь нажимает «Отправить» или Enter. Остановка микрофона сама не создаёт команду в чате.</p>
+<a href="/diagrams/voice-flow.svg"><img src="/diagrams/voice-flow.svg" alt="Запись MediaRecorder, серверная транскрипция Groq, редактирование черновика, ручная отправка, проверка Go и результат."></a>
+</section>
+<p><a href="/docs">HTTP API / OpenAPI ↗</a></p>
+</main></body></html>

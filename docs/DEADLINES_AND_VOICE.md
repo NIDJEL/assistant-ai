@@ -1,5 +1,7 @@
 # Дедлайны и голосовой ввод
 
+[← Документация](README.md)
+
 `simple_llm` принимает обычные формулировки дел и дедлайнов как `create_task`.
 «Мне нужно подготовить смету до двадцатого» даёт title «Подготовить смету»,
 date `{"type":"day_of_month","day":20}` и time null. Временная часть не входит
@@ -39,7 +41,7 @@ Dockerfile/frontend или Git. Клиент Groq переиспользует h
 30 секунд, передаёт context cancellation и запрещает redirects. Response ограничен
 64 КиБ; HTTP errors, invalid JSON и пустой transcript не раскрывают provider body.
 Форма содержит file, model, language=ru, response_format=json, temperature=0.
-[Документация Groq](https://console.groq.com/docs/speech-to-text).
+[Клиент Groq в проекте](../internal/stt/groq.go).
 
 Опциональный `GROQ_PROXY_URL` задаёт прокси только для HTTP-клиента Groq.
 Поддерживаются socks5/socks5h (DNS через SOCKS5) и HTTP(S). Transport принадлежит
@@ -53,9 +55,10 @@ validation/network errors не раскрывают его. Прокси не д
 Audio не пишется на диск и не логируется. Используется MultipartReader вместо
 ParseMultipartForm. Nginx voice location имеет limit 16 МиБ (с multipart overhead)
 и proxy_request_buffering off; остальные маршруты сохраняют прежние ограничения.
-Секреты выпуска передаются по SSH stdin в root-owned production.env (0600).
-Release backup включает PostgreSQL, env, unit и Nginx; rollback возвращает
-конфигурацию и image, сохраняя пользовательские данные.
+В Docker эти переменные передаются backend через локальный и production Compose.
+Пустой `GENA_STT_PROVIDER` выключает серверную транскрипцию; текстовый ввод остаётся
+доступным. Значение `groq` требует непустой `GROQ_API_KEY` при старте сервера.
+[Конфигурация и обновление production](../deploy/README.md).
 
 Проверки: temporal edge cases, Groq mock HTTP errors/timeout/cancellation/response
 limits/redirects, endpoint validation/auth/CSRF, frontend state/cancellation/manual
@@ -73,6 +76,6 @@ pnpm test
 pnpm build
 ```
 
-До выпуска обязательны пять реальных записей на устройстве и проверка их
-transcripts, ручной отправки и создания задачи. Synthetic audio и fixtures не
-считаются проверкой качества микрофона.
+Для проверки качества сделайте несколько реальных записей на устройстве:
+проверьте transcript, ручную отправку и созданную задачу. Synthetic audio и fixtures
+проверяют программный путь, но не качество живого микрофона.

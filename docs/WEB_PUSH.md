@@ -1,5 +1,7 @@
 # Web Push и PWA Ассистента Гены
 
+[← Документация](README.md)
+
 Гена обрабатывает сроки на сервере независимо от открытых вкладок. Системные уведомления требуют настроенного сервера, разрешения пользователя и активной подписки конкретного устройства. Без подписки остаются уведомления внутри открытого приложения.
 
 ## Архитектура
@@ -21,7 +23,7 @@ flowchart LR
 
 Планировщик выбирает наступившие записи и получает `pg_try_advisory_xact_lock(hashtextextended(user_id,0))`, тот же PostgreSQL lock, который используется редактированием дел. Он повторно читает актуальные данные внутри транзакции, сохраняет occurrence, доставки и следующий момент повторения одним commit. Второй экземпляр пропускает занятый аккаунт. Отправители получают `FOR UPDATE OF d,s SKIP LOCKED`; блокировка доставки/устройства удерживается до сохранения результата ограниченного HTTP-вызова.
 
-`GET /api/reminders/due` в production только читает последние сохранённые снимки. Он не отправляет push и не продвигает recurrence. React опрашивает этот endpoint для уведомлений внутри видимой страницы; вызов системного уведомления из polling удалён. SQLite/Python остаются reference/parity-слоем: сохранённый SQLite Due не используется production-сервером.
+`GET /api/reminders/due` в production только читает последние сохранённые снимки. Он не отправляет push и не продвигает recurrence. React опрашивает этот endpoint для уведомлений внутри видимой страницы; polling не вызывает системное уведомление. Сохранённый SQLite Due используется для совместимости и тестов, не рабочим сервером.
 
 ## База данных
 
@@ -115,11 +117,9 @@ pnpm --dir web test
 pnpm --dir web exec tsc --noEmit
 pnpm --dir web build
 pnpm --dir web e2e
-python -m pytest -q
-node --test tests/voice.test.js
 ```
 
-Задайте TEST_DATABASE_URL на тестовую PostgreSQL. Contract suite создаёт отдельные схемы и проверяет миграции, API ownership/CRUD, uniqueness, multi-device, concurrency/SKIP LOCKED, retry, restart, missed occurrences и DST. SQLite-тесты не заменяют PostgreSQL concurrency suite. Windows без gcc запускает race detector в Linux Docker, как в GO_PARITY.md.
+Задайте TEST_DATABASE_URL на тестовую PostgreSQL. Contract suite создаёт отдельные схемы и проверяет миграции, API ownership/CRUD, uniqueness, multi-device, concurrency/SKIP LOCKED, retry, restart, missed occurrences и DST. SQLite-тесты не заменяют PostgreSQL concurrency suite. Race detector выполняется в Linux CI с C-компилятором. [Проверки проекта](DEVELOPMENT.md).
 
 Unit tests проверяют capabilities/permission/subscription lifecycle, iOS standalone, UI-состояния и service worker с настоящим IndexedDB test adapter. E2E использует настоящий Go/PostgreSQL API и установленный service worker, но подменяет OAuth, browser permission/subscription provider и OS display. Read-only probe `tests/e2e-push` проверяет PostgreSQL delivery records. Настоящее Web Push encryption проверяется Go sender test; headless-сценарий не является проверкой живых APNs/FCM/Firefox endpoints.
 
