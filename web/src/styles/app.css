@@ -262,9 +262,13 @@
 .task-recurrence{display:block;font-size:12px;line-height:1.35;white-space:normal;max-width:240px}
 
 .assistant-voice-option { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 10px 0; }
-.assistant-voice-option label { display: flex; align-items: center; gap: 8px; flex: 1; }
+.assistant-voice-option > span { flex: 1; min-width: 120px; }
 .assistant-voice-option .tts-button { width: auto; min-height: 38px; margin: 0; flex-shrink: 0; }
 .assistant-voice-option [role="alert"] { flex-basis: 100%; }
+.assistant-voice-volume { display: grid; gap: 8px; margin-top: 20px; }
+.assistant-voice-volume label { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.assistant-voice-volume output { color: var(--accent); font-variant-numeric: tabular-nums; }
+.assistant-voice-volume input[type="range"] { width: 100%; min-height: 32px; padding: 0; border: 0; background: transparent; accent-color: var(--accent); }
 .tts-loading svg { animation: tts-spin 1s linear infinite; }
 @keyframes tts-spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .tts-loading svg { animation: none; } }

@@ -44,7 +44,7 @@ type Voice struct {
 	Name string `json:"name"`
 }
 
-var allowedVoices = []Voice{{DefaultVoice, "Дмитрий, мужской"}, {"ru-RU-SvetlanaNeural", "Светлана, женский"}, {"ru-RU-DariyaNeural", "Дарья, женский"}}
+var allowedVoices = []Voice{{DefaultVoice, "Дмитрий, мужской"}}
 
 func AllowedVoice(id string) bool {
 	for _, v := range allowedVoices {

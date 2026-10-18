@@ -224,7 +224,7 @@ def configure_tts(payload):
     voice=payload.get('azure_tts_voice','ru-RU-DmitryNeural')
     if not re.fullmatch(r'[A-Za-z0-9_-]{16,256}',key):raise RuntimeError('Azure speech key missing or invalid')
     if not re.fullmatch(r'[a-z][a-z0-9]{1,39}',region):raise RuntimeError('invalid Azure region')
-    allowed={'ru-RU-DmitryNeural','ru-RU-SvetlanaNeural','ru-RU-DariyaNeural'}
+    allowed={'ru-RU-DmitryNeural'}
     if voice not in allowed:raise RuntimeError('invalid Azure voice')
     available=read_json('https://'+region+'.tts.speech.microsoft.com/cognitiveservices/voices/list',headers={'Ocp-Apim-Subscription-Key':key})
     voices=sorted(v['ShortName'] for v in available if v.get('ShortName') in allowed and v.get('Locale')=='ru-RU')

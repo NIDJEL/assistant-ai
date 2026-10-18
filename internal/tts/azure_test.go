@@ -76,14 +76,21 @@ func TestAzureSSMLCacheAndVoices(t *testing.T) {
 	if calls.Load() != 1 {
 		t.Fatalf("cache misses=%d", calls.Load())
 	}
-	if _, err := s.Synthesize(context.Background(), "Привет & 20.10.2026 в 10:00", "ru-RU-SvetlanaNeural"); err != nil {
+	voices, err := s.Voices(context.Background())
+	if err != nil || len(voices) != 1 || voices[0].ID != DefaultVoice {
+		t.Fatal("only Dmitry should be offered")
+	}
+	if _, err := s.Synthesize(context.Background(), "Другой ответ & 20.10.2026 в 10:00", DefaultVoice); err != nil {
 		t.Fatal(err)
 	}
 	if calls.Load() != 2 {
-		t.Fatal("voice not part of cache key")
+		t.Fatal("text not part of cache key")
 	}
 	if _, err := s.Synthesize(context.Background(), "Привет", "ru-RU-DariyaNeural"); !errors.Is(err, ErrVoice) {
-		t.Fatal("region voice availability ignored")
+		t.Fatal("removed voice accepted")
+	}
+	if _, err := s.Synthesize(context.Background(), "Привет", "ru-RU-SvetlanaNeural"); !errors.Is(err, ErrVoice) {
+		t.Fatal("removed voice accepted")
 	}
 	if _, err := s.Synthesize(context.Background(), "Привет", `evil"><break/>`); !errors.Is(err, ErrVoice) {
 		t.Fatal("voice injection accepted")

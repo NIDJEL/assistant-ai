@@ -2,6 +2,8 @@ import { useSyncExternalStore } from 'react';
 import { ApiError } from '../../api/client';
 
 export const defaultTTSVoice = 'ru-RU-DmitryNeural';
+export const defaultTTSVolume = 100;
+export function normalizeTTSVolume(value: unknown): number { return typeof value === 'number' && Number.isFinite(value) ? Math.max(0, Math.min(100, Math.round(value))) : defaultTTSVolume; }
 export type TTSState = { id: string; phase: 'idle' | 'loading' | 'playing' | 'error'; error: string };
 const idle: TTSState = { id: '', phase: 'idle', error: '' };
 let state = idle;
@@ -9,6 +11,11 @@ let controller: AbortController | undefined;
 let audio: HTMLAudioElement | undefined;
 let objectURL: string | undefined;
 let generation = 0;
+let volume = defaultTTSVolume;
+export function setTTSVolume(value: number) {
+  volume = normalizeTTSVolume(value);
+  if (audio) audio.volume = volume / 100;
+}
 const listeners = new Set<() => void>();
 const publish = (next: TTSState) => { state = next; listeners.forEach(fn => fn()); };
 export const ttsAvailable = () => typeof window !== 'undefined' && typeof Audio !== 'undefined';
@@ -26,7 +33,7 @@ export async function speak(text: string, voice = defaultTTSVoice, id = 'preview
   stopSpeaking();
   const run = generation;
   const abort = new AbortController(); controller = abort;
-  const player = new Audio(); audio = player;
+  const player = new Audio(); player.volume = volume / 100; audio = player;
   publish({ id, phase: 'loading', error: '' });
   try {
     const response = await fetch('/api/voice/synthesize', {

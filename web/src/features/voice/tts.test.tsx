@@ -1,22 +1,22 @@
 import { act, cleanup, render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { SpeakButton } from './SpeakButton';
-import { speak, stopSpeaking, ttsSnapshot } from './tts';
+import { speak, stopSpeaking, ttsSnapshot, setTTSVolume } from './tts';
 
 const players: FakeAudio[] = [];
 class FakeAudio {
-  src = ''; onended: (() => void) | null = null; onerror: (() => void) | null = null;
+  volume = 1; src = ''; onended: (() => void) | null = null; onerror: (() => void) | null = null;
   pause = vi.fn(); load = vi.fn(); removeAttribute = vi.fn(); play = vi.fn(async () => {});
   constructor() { players.push(this); }
 }
 beforeEach(() => {
-  players.length = 0; vi.stubGlobal('Audio', FakeAudio);
+  setTTSVolume(100); players.length = 0; vi.stubGlobal('Audio', FakeAudio);
   URL.createObjectURL = vi.fn(() => 'blob:tts'); URL.revokeObjectURL = vi.fn();
   vi.stubGlobal('fetch', vi.fn(async () => new Response(new Blob(['MP3']), { headers: { 'Content-Type': 'audio/mpeg' } })));
 });
 afterEach(() => { cleanup(); act(() => stopSpeaking()); vi.unstubAllGlobals(); });
 
 it('sends only on click, toggles stop, cleans object URLs and switches messages', async () => {
-  render(<><SpeakButton id="first" text="Первый" voice="ru-RU-DmitryNeural"/><SpeakButton id="second" text="Второй" voice="ru-RU-SvetlanaNeural"/></>);
+  render(<><SpeakButton id="first" text="Первый" voice="ru-RU-DmitryNeural"/><SpeakButton id="second" text="Второй" voice="ru-RU-DmitryNeural"/></>);
   expect(fetch).not.toHaveBeenCalled();
   fireEvent.click(screen.getAllByRole('button', { name: 'Озвучить ответ' })[0]);
   await screen.findByRole('button', { name: 'Остановить озвучивание' });
@@ -47,4 +47,10 @@ it('shows provider failures and permits a subsequent successful attempt', async 
 it('releases resources at the end of playback', async () => {
   await speak('Привет'); players[0].onended?.();
   expect(ttsSnapshot().phase).toBe('idle'); expect(URL.revokeObjectURL).toHaveBeenCalled();
+});
+it('applies saved volume to new audio and adjusts active playback, including mute', async () => {
+  setTTSVolume(35); await speak('Привет'); expect(players[0].volume).toBe(0.35);
+  setTTSVolume(0); expect(players[0].volume).toBe(0);
+  setTTSVolume(200); expect(players[0].volume).toBe(1);
+  stopSpeaking(); await speak('Следующий ответ'); expect(players[1].volume).toBe(1);
 });
