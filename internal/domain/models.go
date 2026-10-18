@@ -53,6 +53,9 @@ func (e Event) Interval(loc *time.Location) (time.Time, time.Time, bool) {
 	return start, start.Add(e.Duration), true
 }
 func (e Event) Validate() error {
+	if e.ConferenceProvider == "zoom" && e.Kind != EventMeeting {
+		return errors.New("Zoom доступен только для встреч")
+	}
 	if e.Recurrence != nil {
 		if err := e.Recurrence.Validate(true); err != nil {
 			return err
@@ -127,26 +130,27 @@ func (e *Event) UnmarshalJSON(b []byte) error {
 }
 
 type Command struct {
-	Filter                 *ExecutionFilter
-	Changes                *ExecutionChanges
-	Batch                  bool
-	ExactAt                *time.Time
-	Recurrence             *Recurrence
-	Action                 Action
-	Kind                   EventType
-	Title, Query           string
-	Date                   *Date
-	Time                   *TimeOfDay
-	PeriodStart, PeriodEnd *Date
-	Duration               time.Duration
-	TargetID               *int64
-	Error, Provider        string
-	Confidence             float64
-	ReminderEnabled        *bool
-	ReminderMinutes        *int
-	StartSecond            int
-	NotificationContext    bool
-	Selector               *EventSelector
+	CalendarProvider, ConferenceProvider string
+	Filter                               *ExecutionFilter
+	Changes                              *ExecutionChanges
+	Batch                                bool
+	ExactAt                              *time.Time
+	Recurrence                           *Recurrence
+	Action                               Action
+	Kind                                 EventType
+	Title, Query                         string
+	Date                                 *Date
+	Time                                 *TimeOfDay
+	PeriodStart, PeriodEnd               *Date
+	Duration                             time.Duration
+	TargetID                             *int64
+	Error, Provider                      string
+	Confidence                           float64
+	ReminderEnabled                      *bool
+	ReminderMinutes                      *int
+	StartSecond                          int
+	NotificationContext                  bool
+	Selector                             *EventSelector
 }
 
 // EventSelector describes existing records. Command.Date/Time describe the
@@ -160,6 +164,8 @@ type EventSelector struct {
 }
 
 type commandJSON struct {
+	CalendarProvider    string            `json:"calendar_provider,omitempty"`
+	ConferenceProvider  string            `json:"conference_provider,omitempty"`
 	Filter              *ExecutionFilter  `json:"filter,omitempty"`
 	Changes             *ExecutionChanges `json:"execution_changes,omitempty"`
 	Batch               bool              `json:"batch,omitempty"`
@@ -190,7 +196,7 @@ func (c Command) MarshalJSON() ([]byte, error) {
 		s := c.Error
 		errText = &s
 	}
-	return json.Marshal(commandJSON{Filter: c.Filter, Changes: c.Changes, Batch: c.Batch, ExactAt: c.ExactAt, Recurrence: c.Recurrence, Action: c.Action, Kind: c.Kind, Title: c.Title, Query: c.Query, Date: c.Date, Time: c.Time, PeriodStart: c.PeriodStart, PeriodEnd: c.PeriodEnd, DurationMinutes: int(c.Duration / time.Minute), TargetID: c.TargetID, Error: errText, Provider: c.Provider, ReminderEnabled: c.ReminderEnabled, ReminderMinutes: c.ReminderMinutes, StartSecond: c.StartSecond, NotificationContext: c.NotificationContext, Selector: c.Selector})
+	return json.Marshal(commandJSON{CalendarProvider: c.CalendarProvider, ConferenceProvider: c.ConferenceProvider, Filter: c.Filter, Changes: c.Changes, Batch: c.Batch, ExactAt: c.ExactAt, Recurrence: c.Recurrence, Action: c.Action, Kind: c.Kind, Title: c.Title, Query: c.Query, Date: c.Date, Time: c.Time, PeriodStart: c.PeriodStart, PeriodEnd: c.PeriodEnd, DurationMinutes: int(c.Duration / time.Minute), TargetID: c.TargetID, Error: errText, Provider: c.Provider, ReminderEnabled: c.ReminderEnabled, ReminderMinutes: c.ReminderMinutes, StartSecond: c.StartSecond, NotificationContext: c.NotificationContext, Selector: c.Selector})
 }
 func (c *Command) UnmarshalJSON(b []byte) error {
 	v := commandJSON{Action: ActionHelp, DurationMinutes: 60, Provider: "rules"}
@@ -207,6 +213,7 @@ func (c *Command) UnmarshalJSON(b []byte) error {
 	}
 	*c = Command{ExactAt: v.ExactAt, Recurrence: v.Recurrence, Action: v.Action, Kind: v.Kind, Title: v.Title, Query: v.Query, Date: v.Date, Time: v.Time, PeriodStart: v.PeriodStart, PeriodEnd: v.PeriodEnd, Duration: time.Duration(v.DurationMinutes) * time.Minute, TargetID: v.TargetID, Provider: v.Provider}
 	c.ReminderEnabled, c.ReminderMinutes = v.ReminderEnabled, v.ReminderMinutes
+	c.CalendarProvider, c.ConferenceProvider = v.CalendarProvider, v.ConferenceProvider
 	c.StartSecond = v.StartSecond
 	c.NotificationContext = v.NotificationContext
 	c.Selector = v.Selector

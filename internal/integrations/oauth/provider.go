@@ -28,6 +28,16 @@ func (p *Provider) AuthorizationURL(state, challenge string) string {
 	if p.Name == "yandex" {
 		q.Set("scope", "login:info login:email login:avatar")
 	}
+	if p.Name == "google" {
+		q.Set("scope", "openid email https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar.calendarlist.readonly")
+		q.Set("access_type", "offline")
+		q.Set("prompt", "consent")
+	}
+	if p.Name == "zoom" {
+		// Confidential User OAuth uses HTTP Basic client authentication.
+		q.Del("code_challenge")
+		q.Del("code_challenge_method")
+	}
 	return p.AuthorizeEndpoint + "?" + q.Encode()
 }
 func (p *Provider) CalendarAuthorizationURL(state, challenge string) string {
@@ -66,6 +76,9 @@ func (p *Provider) request(ctx context.Context, method, endpoint string, form ur
 	}
 	if authorization != "" {
 		req.Header.Set("Authorization", authorization)
+	}
+	if p.Name == "zoom" && endpoint == p.TokenEndpoint {
+		req.SetBasicAuth(p.ClientID, p.ClientSecret)
 	}
 	client := p.Client
 	if client == nil {
@@ -130,6 +143,22 @@ func (p *Provider) Grant(ctx context.Context, code, verifier, state string) (gra
 		if !raw.Empty && raw.Avatar != "" {
 			i.AvatarURL = "https://avatars.yandex.net/get-yapic/" + url.PathEscape(raw.Avatar) + "/islands-200"
 		}
+	}
+	if p.Name == "google" || p.Name == "zoom" {
+		var raw struct {
+			Sub   string `json:"sub"`
+			ID    string `json:"id"`
+			Email string `json:"email"`
+			Name  string `json:"name"`
+		}
+		if err := p.request(ctx, "GET", p.UserEndpoint, nil, "Bearer "+token.AccessToken, &raw); err != nil {
+			return grant, err
+		}
+		i.Subject, i.Email, i.Name = raw.Sub, raw.Email, raw.Name
+		if p.Name == "zoom" {
+			i.Subject = raw.ID
+		}
+		grant.Login = raw.Email
 	}
 	if i.Subject == "" {
 		return grant, errors.New("missing provider subject")

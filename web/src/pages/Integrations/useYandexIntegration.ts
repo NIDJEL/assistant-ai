@@ -18,5 +18,5 @@ export function useYandexIntegration() {
     window.addEventListener(changed, load);
     return () => { controller.abort(); window.clearInterval(timer); window.removeEventListener(changed, load); };
   }, []);
-  return { connection: data?.connections.find(c => c.provider === 'yandex'), configured: data?.yandex_configured, loaded: !!data, error };
+  return { data, connection: data?.connections.find(c => c.provider === 'yandex'), configured: data?.yandex_configured, loaded: !!data, error };
 }

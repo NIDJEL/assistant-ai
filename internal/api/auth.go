@@ -145,6 +145,8 @@ func (a *API) authRoutes(r chi.Router) {
 		r.With(a.requireUser).Post("/onboarding", a.completeOnboarding)
 		r.Get("/yandex/start", a.oauthStart)
 		r.Get("/yandex/callback", a.oauthCallback)
+		r.Get("/{provider:google|zoom}/start", a.cloudOAuthStart)
+		r.Get("/{provider:google|zoom}/callback", a.cloudOAuthCallback)
 	})
 	// Preserve an already registered Yandex callback containing a double slash.
 	if callback, err := url.Parse(a.Config.YandexRedirectURI); err == nil && callback.Path == "//api/auth/yandex/callback" {

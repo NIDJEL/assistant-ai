@@ -19,6 +19,7 @@ import (
 	"github.com/NIDJEL/assistant-ai/internal/clock"
 	"github.com/NIDJEL/assistant-ai/internal/config"
 	"github.com/NIDJEL/assistant-ai/internal/domain"
+	"github.com/NIDJEL/assistant-ai/internal/integrations/cloud"
 	"github.com/NIDJEL/assistant-ai/internal/integrations/yandexcalendar"
 	"github.com/NIDJEL/assistant-ai/internal/llm"
 	"github.com/NIDJEL/assistant-ai/internal/repository"
@@ -31,6 +32,7 @@ import (
 )
 
 type API struct {
+	Cloud        *cloud.Service
 	Synthesizer  tts.Synthesizer
 	Transcriber  stt.Transcriber
 	Auth         *auth.Service
@@ -85,6 +87,11 @@ func (a *API) Router() http.Handler {
 		r.Get("/api/integrations", a.integrations)
 		r.Post("/api/integrations/yandex/sync", a.syncYandexCalendar)
 		r.Delete("/api/integrations/yandex", a.disconnectYandexCalendar)
+		r.Post("/api/integrations/{provider}/sync", a.cloudSync)
+		r.Delete("/api/integrations/{provider}", a.cloudDisconnect)
+		r.Get("/api/integrations/google/calendars", a.googleCalendars)
+		r.Put("/api/integrations/google/calendar", a.googleCalendars)
+		r.Post("/api/events/{id}/zoom", a.zoomMeeting)
 		r.Get("/api/events/{id}", a.get)
 		r.Post("/api/events", a.create)
 		r.Patch("/api/events/{id}", a.update)
