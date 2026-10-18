@@ -24,6 +24,7 @@ import (
 	"log/slog"
 	"net/http/httptest"
 	"strconv"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -165,6 +166,9 @@ func TestZoomChatSignedWebhookLifecycleAndPersistence(t *testing.T) {
 	}
 	if err = service.RefreshZoomCards(ctx, &list[0].Response); err != nil || list[0].Response.ZoomMeetings[0].Status != "ended" {
 		t.Fatal("old run rewritten", err)
+	}
+	if strings.Contains(list[0].Response.Reply, "присоединиться") || !strings.Contains(list[0].Response.Reply, "завершилась") {
+		t.Fatal("ended notification still promises joining", list[0].Response.Reply)
 	}
 	post("meeting.ended", "1002", "end-before-start", "host-a")
 	post("meeting.started", "1002", "end-before-start", "host-a")

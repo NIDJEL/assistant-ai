@@ -2,6 +2,7 @@ package assistant
 
 import (
 	"context"
+	"fmt"
 	"github.com/NIDJEL/assistant-ai/internal/domain"
 	"github.com/NIDJEL/assistant-ai/internal/repository"
 )
@@ -37,6 +38,15 @@ func (s *Service) zoomCards(ctx context.Context, tx repository.Tx, r *domain.Res
 			}
 		}
 		r.ZoomMeetings = append(r.ZoomMeetings, *card)
+	}
+	// A persisted start notification must not keep promising access after its
+	// particular run ended, even when the original exchange is loaded much later.
+	if r.Provider == "zoom_webhook" {
+		if len(r.ZoomMeetings) == 1 && r.ZoomMeetings[0].Status == "ended" {
+			r.Reply = fmt.Sprintf("Ваша встреча „%s“ завершилась.", r.ZoomMeetings[0].Title)
+		} else if len(r.ZoomMeetings) == 0 {
+			r.Reply = "Ранее Zoom сообщил о начале встречи. Теперь эта встреча недоступна в Гене."
+		}
 	}
 	return nil
 }
