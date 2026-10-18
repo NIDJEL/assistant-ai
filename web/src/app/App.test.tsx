@@ -20,9 +20,9 @@ it('navigates all eight pages and preserves explicit integration states', async 
   for (const name of ['Календарь', 'Задачи', 'Встречи', 'Напоминания', 'Архив', 'Интеграции']) {
     await user.click(within(nav).getByRole('link', { name })); expect(screen.getByRole('heading', { level: 1, name })).toBeInTheDocument();
   }
-  expect(screen.getAllByText('Скоро')).toHaveLength(2);
+  expect(screen.queryByText('Скоро')).not.toBeInTheDocument();
   expect(document.querySelectorAll('.integration-state')).toHaveLength(3);
-  await user.click(screen.getByRole('button', { name: 'Настроить' })); expect(screen.getByRole('complementary', { name: 'Интеграция' })).toHaveTextContent('Разрешите Гене добавлять ваши дела в календарь.'); expect(screen.queryByRole('complementary', { name: 'Виджеты' })).not.toBeInTheDocument();
+  await user.click(screen.getAllByRole('button', { name: 'Настроить' })[0]); expect(screen.getByRole('complementary', { name: 'Интеграция' })).toHaveTextContent('Разрешите Гене добавлять ваши дела в календарь.'); expect(screen.queryByRole('complementary', { name: 'Виджеты' })).not.toBeInTheDocument();
   await user.click(screen.getByRole('button', { name: 'Назад к виджетам' })); await user.click(screen.getByRole('link', { name: 'Настройки' })); expect(screen.getByRole('heading', { level: 1, name: 'Настройки' })).toBeInTheDocument();
 });
 it.each(['Send', 'Enter'])('%s sends exactly once while a request is in progress', async mode => {

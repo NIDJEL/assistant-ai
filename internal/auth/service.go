@@ -26,6 +26,7 @@ type Service struct {
 	Secret        []byte
 	Providers     map[string]Provider
 	Calendar      CalendarConnector
+	Integrations  CalendarConnector
 	passwordSlots chan struct{}
 	dummyHash     string
 }

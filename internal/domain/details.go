@@ -15,20 +15,33 @@ type Subtask struct {
 
 // Optional personal event metadata. Empty fields preserve the existing JSON contract.
 type EventDetails struct {
-	Recurrence           *Recurrence   `json:"recurrence,omitempty"`
-	OccurrenceAt         *time.Time    `json:"occurrence_at,omitempty"`
-	LastNotificationAt   *time.Time    `json:"last_notification_at,omitempty"`
-	LastNotificationLead int           `json:"last_notification_lead,omitempty"`
-	Tags                 []string      `json:"tags,omitempty"`
-	Subtasks             []Subtask     `json:"subtasks,omitempty"`
-	Participants         []Participant `json:"participants,omitempty"`
-	ReminderEnabled      *bool         `json:"reminder_enabled,omitempty"`
-	ReminderMinutes      *int          `json:"reminder_minutes,omitempty"`
+	GoogleAllDayDays      int           `json:"google_all_day_days,omitempty"`
+	GoogleDurationSeconds int64         `json:"google_duration_seconds,omitempty"`
+	CalendarProvider      string        `json:"calendar_provider,omitempty"`
+	ConferenceProvider    string        `json:"conference_provider,omitempty"`
+	Recurrence            *Recurrence   `json:"recurrence,omitempty"`
+	OccurrenceAt          *time.Time    `json:"occurrence_at,omitempty"`
+	LastNotificationAt    *time.Time    `json:"last_notification_at,omitempty"`
+	LastNotificationLead  int           `json:"last_notification_lead,omitempty"`
+	Tags                  []string      `json:"tags,omitempty"`
+	Subtasks              []Subtask     `json:"subtasks,omitempty"`
+	Participants          []Participant `json:"participants,omitempty"`
+	ReminderEnabled       *bool         `json:"reminder_enabled,omitempty"`
+	ReminderMinutes       *int          `json:"reminder_minutes,omitempty"`
 	// Sub-minute precision for relative NLU commands, stored in existing metadata.
 	StartSecond int `json:"start_second,omitempty"`
 }
 
 func (d EventDetails) Validate() error {
+	if d.GoogleAllDayDays < 0 || d.GoogleAllDayDays > 36600 || d.GoogleDurationSeconds < 0 || d.GoogleDurationSeconds > 315360000 {
+		return errors.New("Некорректная длительность внешнего события")
+	}
+	if d.CalendarProvider != "" && d.CalendarProvider != "google" {
+		return errors.New("Некорректный календарь")
+	}
+	if d.ConferenceProvider != "" && d.ConferenceProvider != "zoom" {
+		return errors.New("Некорректный сервис конференций")
+	}
 	if d.Recurrence != nil {
 		if err := d.Recurrence.Validate(false); err != nil {
 			return err

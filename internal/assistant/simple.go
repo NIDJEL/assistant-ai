@@ -63,7 +63,7 @@ func (s *Service) respondSimple(ctx context.Context, interpreter operationInterp
 		if cached.Message != message {
 			return response, domain.Validation("request_id уже использован для другого сообщения")
 		}
-		return cached.Response, nil
+		return s.finishExternal(ctx, cached.Response), nil
 	}
 	started := time.Now()
 	calls := 0
@@ -134,7 +134,37 @@ func (s *Service) respondSimple(ctx context.Context, interpreter operationInterp
 		}
 		return nil
 	})
+	if err == nil {
+		response = s.finishExternal(ctx, response)
+	}
 	return response, err
+}
+
+func (s *Service) finishExternal(ctx context.Context, r domain.Response) domain.Response {
+	if s.Integrations == nil || r.Pending || !in(r.Action.String(), "create", "update") {
+		return r
+	}
+	for i, e := range r.Events {
+		google, zoom := e.CalendarProvider == "google", e.ConferenceProvider == "zoom"
+		if !google && !zoom {
+			continue
+		}
+		current, err := s.Integrations.SyncEvent(ctx, e.ID, google, zoom)
+		if err != nil {
+			r.Reply += " Изменение сохранено в Гене; синхронизация с внешним сервисом ещё не подтверждена. Проверьте раздел «Интеграции»."
+			continue
+		}
+		if current != nil {
+			r.Events[i] = *current
+			if zoom && current.MeetingURL != "" {
+				r.Reply += " Ссылка Zoom: " + current.MeetingURL
+			}
+			if google {
+				r.Reply += " Событие отправлено в Google Calendar."
+			}
+		}
+	}
+	return r
 }
 
 func (s *Service) simpleTarget(ctx context.Context, tx repository.Tx, state *domain.State, pending *domain.Pending, t nlu.Target, c *domain.Command, now time.Time) error {
@@ -269,6 +299,23 @@ func (s *Service) applySimple(ctx context.Context, tx repository.Tx, state *doma
 		c.Action = domain.ActionCreate
 		c.Kind, _ = domain.ParseEventType(strings.TrimPrefix(op.Intent, "create_"))
 		c.Title, c.ReminderMinutes, c.ReminderEnabled = a.Title, a.ReminderMinutes, a.ReminderEnabled
+		if (a.Calendar != "" && a.Calendar != "google") || (a.Conference != "" && a.Conference != "zoom") {
+			return clarify("Выберите Google Calendar или Zoom.")
+		}
+		c.CalendarProvider, c.ConferenceProvider = a.Calendar, a.Conference
+		if a.Conference != "" && c.Kind != domain.EventMeeting {
+			return clarify("Zoom можно добавить к встрече.")
+		}
+		for _, provider := range []string{a.Calendar, a.Conference} {
+			if provider != "" {
+				if s.Integrations == nil {
+					return clarify("Подключите " + provider + " в разделе «Интеграции».")
+				}
+				if e := s.Integrations.Ready(ctx, provider); e != nil {
+					return clarify(e.Error())
+				}
+			}
+		}
 		if a.DurationMinutes != nil {
 			if *a.DurationMinutes < 5 || *a.DurationMinutes > 1440 {
 				return clarify("Длительность должна быть от 5 минут до суток.")

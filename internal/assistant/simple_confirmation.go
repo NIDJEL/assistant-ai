@@ -23,7 +23,7 @@ func (s *Service) confirmSimple(ctx context.Context, tx repository.Tx, state *do
 		c := p.Command
 		var proposed domain.Event
 		if c.Action == domain.ActionCreate {
-			proposed = domain.Event{EventDetails: domain.EventDetails{ReminderEnabled: c.ReminderEnabled, ReminderMinutes: c.ReminderMinutes, StartSecond: c.StartSecond, OccurrenceAt: c.ExactAt}, Kind: c.Kind, Title: c.Title, Date: c.Date, StartTime: c.Time, Duration: c.Duration, Status: domain.StatusOpen, Priority: domain.PriorityNormal}
+			proposed = domain.Event{EventDetails: domain.EventDetails{CalendarProvider: c.CalendarProvider, ConferenceProvider: c.ConferenceProvider, ReminderEnabled: c.ReminderEnabled, ReminderMinutes: c.ReminderMinutes, StartSecond: c.StartSecond, OccurrenceAt: c.ExactAt}, Kind: c.Kind, Title: c.Title, Date: c.Date, StartTime: c.Time, Duration: c.Duration, Status: domain.StatusOpen, Priority: domain.PriorityNormal}
 		} else if c.Action == domain.ActionUpdate && c.TargetID != nil && p.TargetSnapshot != nil {
 			current, err := tx.Get(ctx, *c.TargetID)
 			if err != nil {

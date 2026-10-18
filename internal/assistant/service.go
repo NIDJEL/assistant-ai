@@ -25,6 +25,7 @@ type lockEntry struct {
 	refs  int
 }
 type Service struct {
+	Integrations        ExternalIntegrations
 	Store               repository.Store
 	Interpreter         Interpreter
 	Calendar            *calendar.Service
@@ -32,6 +33,11 @@ type Service struct {
 	ObserveTurn         func(DialogueObservation)
 	mu                  sync.Mutex
 	locks               map[string]*lockEntry
+}
+
+type ExternalIntegrations interface {
+	Ready(context.Context, string) error
+	SyncEvent(context.Context, int64, bool, bool) (*domain.Event, error)
 }
 
 func New(store repository.Store, interpreter Interpreter, cal *calendar.Service) *Service {
@@ -455,7 +461,7 @@ func (s *Service) executeValidated(ctx context.Context, tx repository.Tx, state 
 		if kind == domain.EventUnknown {
 			kind = domain.EventTask
 		}
-		e := domain.Event{EventDetails: domain.EventDetails{ReminderMinutes: cmd.ReminderMinutes, ReminderEnabled: cmd.ReminderEnabled, StartSecond: cmd.StartSecond, Recurrence: cmd.Recurrence, OccurrenceAt: cmd.ExactAt}, Kind: kind, Title: cmd.Title, Date: cmd.Date, StartTime: cmd.Time, Duration: cmd.Duration, Status: domain.StatusOpen, Priority: domain.PriorityNormal}
+		e := domain.Event{EventDetails: domain.EventDetails{CalendarProvider: cmd.CalendarProvider, ConferenceProvider: cmd.ConferenceProvider, ReminderMinutes: cmd.ReminderMinutes, ReminderEnabled: cmd.ReminderEnabled, StartSecond: cmd.StartSecond, Recurrence: cmd.Recurrence, OccurrenceAt: cmd.ExactAt}, Kind: kind, Title: cmd.Title, Date: cmd.Date, StartTime: cmd.Time, Duration: cmd.Duration, Status: domain.StatusOpen, Priority: domain.PriorityNormal}
 		if err := e.Validate(); err != nil {
 			return answer(err.Error(), domain.ActionClarify), nil
 		}

@@ -16,6 +16,8 @@ type Operation struct {
 	Clarification *string         `json:"clarification"`
 }
 type Create struct {
+	Calendar        string    `json:"calendar,omitempty"`
+	Conference      string    `json:"conference,omitempty"`
 	Title           string    `json:"title"`
 	Date            *Temporal `json:"date,omitempty"`
 	Time            *string   `json:"time,omitempty"`

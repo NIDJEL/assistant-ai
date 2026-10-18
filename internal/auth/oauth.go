@@ -28,6 +28,14 @@ type OAuthResult struct {
 	User             *user.User
 	Linked, Calendar bool
 	Source           string
+	Integration      bool
+}
+
+func (s *Service) StartIntegrationOAuth(ctx context.Context, provider, userID string, now time.Time) (string, string, error) {
+	if (provider != "google" && provider != "zoom") || userID == "" || s.Integrations == nil {
+		return "", "", domain.Validation("Интеграция недоступна")
+	}
+	return s.startOAuth(ctx, provider, userID, "integration", "integrations", now)
 }
 
 func (s *Service) StartOAuth(ctx context.Context, provider, link string, now time.Time) (string, string, error) {
@@ -49,6 +57,9 @@ func (s *Service) startOAuth(ctx context.Context, provider, link, purpose, sourc
 	p := s.Providers[provider]
 	if p == nil {
 		return "", "", &domain.AppError{Code: "oauth_unavailable", Message: "Этот способ входа ещё не настроен. Используйте почту.", Status: 503}
+	}
+	if purpose != "integration" && provider != "yandex" {
+		return "", "", domain.Validation("Провайдер доступен только для подключения интеграции")
 	}
 	state, err := randomToken()
 	if err != nil {
@@ -93,6 +104,7 @@ func (s *Service) FinishOAuthFlow(ctx context.Context, provider, browser, curren
 		return result, invalid
 	}
 	result.Calendar = state.Purpose == "calendar"
+	result.Integration = state.Purpose == "integration"
 	result.Source = state.Source
 	if q.Get("error") != "" {
 		return result, &domain.AppError{Code: "oauth_cancelled", Message: "Авторизация была отменена", Status: 400}
@@ -106,6 +118,18 @@ func (s *Service) FinishOAuthFlow(ctx context.Context, provider, browser, curren
 	}
 	var identity repository.Identity
 	var grant repository.OAuthGrant
+	if result.Integration {
+		cp, ok := p.(CalendarGrantProvider)
+		if !ok || (provider != "google" && provider != "zoom") || state.LinkUserID == "" || state.LinkUserID != currentUser || s.Integrations == nil {
+			return result, invalid
+		}
+		grant, err = cp.Grant(ctx, q.Get("code"), state.Verifier, q.Get("state"))
+		if err != nil || grant.Identity.Provider != provider || grant.Identity.Subject == "" {
+			return result, invalid
+		}
+		err = s.Integrations.Connect(repository.WithUser(ctx, currentUser), grant, now)
+		return result, err
+	}
 	if result.Calendar {
 		cp, ok := p.(CalendarGrantProvider)
 		if !ok || provider != "yandex" || state.LinkUserID == "" || s.Calendar == nil {
