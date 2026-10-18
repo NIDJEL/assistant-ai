@@ -128,6 +128,12 @@ func OpenAPI() map[string]any {
 		"requestBody": map[string]any{"required": true, "content": map[string]any{"multipart/form-data": map[string]any{"schema": map[string]any{"type": "object", "required": []string{"file"}, "properties": map[string]any{"file": map[string]any{"type": "string", "format": "binary"}}}}}},
 		"responses":   voiceResponses,
 	}}
+	paths["/api/voice/synthesize"] = map[string]any{"post": map[string]any{
+		"description": "Authenticated reply synthesis. Up to 2000 Unicode characters, allowed regional Azure voices only. In-memory cache; no audio files. Per-user request/character limits and global daily Azure character budget.",
+		"requestBody": map[string]any{"required": true, "content": content(map[string]any{"type": "object", "required": []string{"text"}, "additionalProperties": false, "properties": map[string]any{"text": map[string]any{"type": "string", "minLength": 1, "maxLength": 2000}, "voice": map[string]any{"type": "string", "enum": []string{"ru-RU-DmitryNeural", "ru-RU-SvetlanaNeural", "ru-RU-DariyaNeural"}}}})},
+		"responses":   map[string]any{"200": map[string]any{"description": "MP3 audio; Cache-Control: no-store", "content": map[string]any{"audio/mpeg": map[string]any{"schema": map[string]any{"type": "string", "format": "binary"}}}}, "default": map[string]any{"description": "Validation, authentication, rate limit or provider error", "content": content(ref("Error"))}},
+	}}
+	paths["/api/voice/voices"] = map[string]any{"get": map[string]any{"description": "Allowed Russian voices verified against the configured Azure region", "responses": map[string]any{"200": map[string]any{"description": "Voices and default_voice"}, "default": map[string]any{"description": "Authentication, rate limit or provider error", "content": content(ref("Error"))}}}}
 	paths["/health"].(map[string]any)["get"].(map[string]any)["security"] = []any{}
 	return map[string]any{"openapi": "3.0.3", "info": map[string]string{"title": "Ассистент Гена — multi-user API", "version": "0.4.0"}, "paths": paths, "security": []map[string]any{{"sessionCookie": []string{}}}, "components": map[string]any{"schemas": schemas, "securitySchemes": map[string]any{"sessionCookie": map[string]any{"type": "apiKey", "in": "cookie", "name": sessionCookie}}}}
 }

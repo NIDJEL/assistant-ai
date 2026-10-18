@@ -94,7 +94,8 @@ it('ignores another legacy browser user’s dialogue and TTS preference', async 
  const { handler, user } = await start();
  await waitFor(() => expect(handler.mock.calls.some(([path]) => String(path).startsWith('/api/history/'))).toBe(true));
  expect(handler.mock.calls.some(([path]) => String(path).endsWith(`/api/history/${legacy}`))).toBe(false);
- await user.click(screen.getByRole('link', { name: 'Настройки' })); expect(screen.getByRole('switch', { name: 'Озвучивать ответы' })).not.toBeChecked();
+ await user.click(screen.getByRole('link', { name: 'Настройки' })); expect(await screen.findByRole('radio', { name: /Дмитрий/ })).toBeChecked();
+ expect(screen.getByText(/Автоматическая озвучка выключена/)).toBeInTheDocument();
 });
 it('replaces a corrupt stored session UUID instead of repeatedly failing history', async () => {
   localStorage.setItem('rhythm.session.v2.11111111-1111-4111-8111-111111111111', '-'.repeat(36)); await start(); expect(localStorage.getItem('rhythm.session.v2.11111111-1111-4111-8111-111111111111')).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);

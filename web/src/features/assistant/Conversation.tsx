@@ -1,14 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Volume2, CalendarDays } from 'lucide-react';
+import { CalendarDays } from 'lucide-react';
 import { BrandMark } from '../../components/Brand';
-import { Alert, Button, IconButton } from '../../components/UI';
+import { Alert, Button } from '../../components/UI';
 import { useData } from '../../app/DataContext';
 import { useAuth } from '../../app/AuthContext';
 import { Avatar } from '../../components/Avatar';
 import { ChatEventCard } from './ChatEventCard';
 import { formatDay } from '../calendar/dates';
-import { speak, ttsAvailable } from '../voice/tts';
+import { SpeakButton } from '../voice/SpeakButton';
+import { usePreferences } from '../../app/PreferencesContext';
 import type { ChatItem } from './useAssistant';
 function Response({ item, onDraft, active }: { item: ChatItem; onDraft: (text: string) => void; active: boolean }) {
   const [expanded, setExpanded] = useState(false); const response = item.response!;
@@ -19,12 +20,13 @@ function Response({ item, onDraft, active }: { item: ChatItem; onDraft: (text: s
     </>;
 }
 export function Conversation({ items, busy, loading, error, onDraft }: { items: ChatItem[]; busy: boolean; loading: boolean; error: string; onDraft: (text: string) => void }) {
+  const { preferences } = usePreferences();
   const bottom = useRef<HTMLDivElement>(null); const { health } = useData(); const { user } = useAuth();
   useEffect(() => { bottom.current?.scrollIntoView({ block: 'end', behavior: 'instant' }); }, [items, busy]);
   const time = (instant: string) => new Intl.DateTimeFormat('ru-RU', { timeZone: health!.timezone, hour: '2-digit', minute: '2-digit' }).format(new Date(instant));
   return <div className="conversation" aria-label="Диалог с ассистентом">{error && <Alert>{error}</Alert>}{loading && <p role="status" className="muted">Загружаю историю…</p>}
     {!items.length && !loading && <div className="conversation-empty"><BrandMark/><p>Напишите или продиктуйте сообщение</p><Button variant="ghost" onClick={() => onDraft('Что у меня на эту неделю?')}>Что у меня на неделю?</Button></div>}
     {items.map(item => <div className="exchange" key={item.id}><div className="user-message"><Avatar name={user!.name} url={user!.avatar_url}/><div className="message-bubble"><p>{item.message}</p><small>{time(item.created)}</small></div></div>
-      <div className="assistant-message"><span className="assistant-avatar"><BrandMark small/></span><div className="message-bubble">{item.response ? <Response item={item} onDraft={onDraft} active={item.id === items.at(-1)?.id}/> : item.error ? <Alert>{item.error}</Alert> : <span role="status">Думаю…</span>}{item.response && <div className="reply-footer">{ttsAvailable() && <IconButton className="tts-button" icon={Volume2} label="Озвучить ответ" onClick={() => speak(item.response!.reply)}/>}<small className="reply-time">{time(item.created)}</small></div>}</div></div></div>)}<div ref={bottom}/>
+      <div className="assistant-message"><span className="assistant-avatar"><BrandMark small/></span><div className="message-bubble">{item.response ? <Response item={item} onDraft={onDraft} active={item.id === items.at(-1)?.id}/> : item.error ? <Alert>{item.error}</Alert> : <span role="status">Думаю…</span>}{item.response && <div className="reply-footer"><SpeakButton id={item.id} text={item.response.reply} voice={preferences.ttsVoice}/><small className="reply-time">{time(item.created)}</small></div>}</div></div></div>)}<div ref={bottom}/>
   </div>;
 }

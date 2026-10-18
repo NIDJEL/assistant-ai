@@ -36,7 +36,7 @@ func (a *API) security(next http.Handler) http.Handler {
 		}
 		w.Header().Set("Referrer-Policy", "same-origin")
 		w.Header().Set("Permissions-Policy", "microphone=(self)")
-		policy := "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://avatars.yandex.net; connect-src 'self'; frame-ancestors 'none'"
+		policy := "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://avatars.yandex.net; media-src 'self' blob:; connect-src 'self'; frame-ancestors 'none'"
 		if r.URL.Path == "/docs" {
 			policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' data: https://avatars.yandex.net; connect-src 'self'; frame-ancestors 'none'"
 		}
