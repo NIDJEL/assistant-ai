@@ -66,7 +66,7 @@ test('expanded task, meeting selection, selected calendar day, inline reminder a
     const inline = page.getByRole('form', { name: `Редактор: ${reminder.title}` }); await inline.getByLabel('Время напоминания').fill('09:45'); await inline.getByRole('button', { name: 'Сохранить', exact: true }).click();
     await expect.poll(async () => (await (await request.get(`/api/events/${reminder.id}`)).json()).time).toBe('09:45');
     await page.getByRole('switch', { name: `Включить «${reminder.title}»` }).uncheck(); await expect.poll(async () => (await (await request.get(`/api/events/${reminder.id}`)).json()).reminder_enabled).toBe(false);
-    await ready(page, '/integrations'); await page.getByRole('button', { name: 'Настроить', exact: true }).click();
+    await ready(page, '/integrations'); await page.locator('.integration-card').filter({ has: page.getByRole('heading', { name: 'Яндекс Календарь', exact: true }) }).getByRole('button', { name: 'Настроить', exact: true }).click();
     await expect(page.getByRole('complementary', { name: 'Виджеты', exact: true })).toHaveCount(0); const detail = page.getByRole('complementary', { name: 'Интеграция', exact: true }); await expect(detail).toContainText('Не подключено'); await expect(detail.getByRole('button', { name: 'Синхронизировать сейчас' })).toBeDisabled();
     await page.reload(); await expect(detail).toBeVisible(); await noOverflow(page); await page.getByRole('button', { name: 'Назад к виджетам' }).click(); await expect(page.getByRole('complementary', { name: 'Виджеты', exact: true })).toBeVisible();
   } finally { for (const id of ids) await request.delete(`/api/events/${id}`); }
