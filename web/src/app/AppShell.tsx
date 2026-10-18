@@ -12,7 +12,11 @@ import { IntegrationDetail, services } from '../pages/Integrations/IntegrationsP
 import { usePreferences } from './PreferencesContext';
 import { useData } from './DataContext';
 import { ReminderNotifications } from '../features/notifications/ReminderNotifications';
+import { ChatNotificationsProvider } from '../features/assistant/ChatNotifications';
 export function AppShell() {
+  return <ChatNotificationsProvider><AppShellContent/></ChatNotificationsProvider>;
+}
+function AppShellContent() {
   const prefs = usePreferences(); const { preferences, update } = prefs; const { health, error, refresh } = useData(); const location = useLocation(); const [params, setParams] = useSearchParams();
   const [menu, setMenu] = useState(false); const [widgetsDrawer, setWidgetsDrawer] = useState(false);
   useEffect(() => { setMenu(false); setWidgetsDrawer(false); }, [location.pathname]);

@@ -26,10 +26,12 @@ export interface EventQuery { start?: string; end?: string; kind?: EventKind; st
 export interface Health { status: string; backend: string; events: number; timezone: string; now: string; nlp_provider: string; schema_version: number }
 export interface ChatInput { message: string; session_id: string; request_id: string; source?: 'text' | 'voice' }
 export interface ChatResponse {
+  zoom_meetings?: ZoomMeeting[];
   reply: string; action: Action; events: RhythmEvent[]; candidates: RhythmEvent[] | null;
   conflicts: RhythmEvent[] | null; total?: number; session_id: string;
   request_id: string; provider: string; timezone: string; pending: boolean;
   suggestions?: string[];
 }
-export interface Exchange { message: string; response: ChatResponse; created_at: string }
+export interface ZoomMeeting { event_id: number; title: string; scheduled_at?: string; timezone: string; status: 'scheduled' | 'started' | 'ended'; join_url?: string; run_id?: string }
+export interface Exchange { message: string; response: ChatResponse; created_at: string; notification?: boolean; read?: boolean }
 export interface History { exchanges: Exchange[]; state: { pending?: unknown; last_ids?: number[] } }

@@ -239,6 +239,9 @@ func (s *Service) filterEvents(events []domain.Event, f *domain.ExecutionFilter)
 	return result
 }
 func (s *Service) eventMatchesFilter(e domain.Event, f domain.ExecutionFilter) bool {
+	if f.Conference != "" && e.ConferenceProvider != f.Conference {
+		return false
+	}
 	if f.Kind != domain.EventUnknown && e.Kind != f.Kind || f.Start != nil && (e.Date == nil || e.Date.Before(f.Start.Time)) || f.End != nil && (e.Date == nil || !e.Date.Before(f.End.Time)) {
 		return false
 	}

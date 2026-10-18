@@ -9,6 +9,7 @@ import './styles/motion.css';
 import './styles/layout.css';
 import './styles/auth.css';
 import './styles/notifications.css';
+import './styles/zoom.css';
 if (typeof document.startViewTransition === 'function') document.documentElement.dataset.nativeMotion = 'true';
 createRoot(document.getElementById('root')!).render(<StrictMode><App/></StrictMode>);
 if (window.isSecureContext && navigator.serviceWorker) void registerNotifications().catch(() => {});

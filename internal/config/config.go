@@ -20,6 +20,7 @@ import (
 )
 
 type Config struct {
+	ZoomWebhookSecret                                                             string
 	GoogleCalendarClientID, GoogleCalendarClientSecret, GoogleCalendarRedirectURI string
 	ZoomClientID, ZoomClientSecret, ZoomRedirectURI                               string
 	TTSProvider, AzureSpeechKey, AzureSpeechRegion, AzureTTSVoice                 string
@@ -75,6 +76,7 @@ func Load() (Config, error) {
 		return fallback
 	}
 	c := Config{
+		ZoomWebhookSecret:      value("ZOOM_WEBHOOK_SECRET_TOKEN", ""),
 		GoogleCalendarClientID: value("GOOGLE_CALENDAR_CLIENT_ID", ""), GoogleCalendarClientSecret: value("GOOGLE_CALENDAR_CLIENT_SECRET", ""), GoogleCalendarRedirectURI: value("GOOGLE_CALENDAR_REDIRECT_URI", ""),
 		ZoomClientID: value("ZOOM_CLIENT_ID", ""), ZoomClientSecret: value("ZOOM_CLIENT_SECRET", ""), ZoomRedirectURI: value("ZOOM_REDIRECT_URI", ""),
 		TTSProvider:       value("GENA_TTS_PROVIDER", ""),

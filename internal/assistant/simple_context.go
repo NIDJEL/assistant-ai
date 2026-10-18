@@ -58,6 +58,9 @@ func buildSimpleContext(ctx context.Context, tx repository.Tx, state domain.Stat
 		}
 		if q := v.Search; q != nil {
 			d.LastSearch = &nlu.SearchSummary{Kind: q.Kind.String(), Query: q.Query}
+			if q.Filter != nil {
+				d.LastSearch.Conference = q.Filter.Conference
+			}
 			if q.Start != nil {
 				d.LastSearch.Start = q.Start.String()
 			}

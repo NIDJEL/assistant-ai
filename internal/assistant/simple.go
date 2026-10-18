@@ -63,7 +63,9 @@ func (s *Service) respondSimple(ctx context.Context, interpreter operationInterp
 		if cached.Message != message {
 			return response, domain.Validation("request_id уже использован для другого сообщения")
 		}
-		return s.finishExternal(ctx, cached.Response), nil
+		response = s.finishExternal(ctx, cached.Response)
+		err = s.RefreshZoomCards(ctx, &response)
+		return response, err
 	}
 	started := time.Now()
 	calls := 0
@@ -126,6 +128,9 @@ func (s *Service) respondSimple(ctx context.Context, interpreter operationInterp
 		if err = tx.SaveState(ctx, sid, state, now); err != nil {
 			return err
 		}
+		if err = s.zoomCards(ctx, tx, &response); err != nil {
+			return err
+		}
 		if err = tx.SaveExchange(ctx, sid, rid, message, response, now); err != nil {
 			return err
 		}
@@ -136,6 +141,7 @@ func (s *Service) respondSimple(ctx context.Context, interpreter operationInterp
 	})
 	if err == nil {
 		response = s.finishExternal(ctx, response)
+		err = s.RefreshZoomCards(ctx, &response)
 	}
 	return response, err
 }
@@ -156,9 +162,6 @@ func (s *Service) finishExternal(ctx context.Context, r domain.Response) domain.
 		}
 		if current != nil {
 			r.Events[i] = *current
-			if zoom && current.MeetingURL != "" {
-				r.Reply += " Ссылка Zoom: " + current.MeetingURL
-			}
 			if google {
 				r.Reply += " Событие отправлено в Google Calendar."
 			}
@@ -336,6 +339,7 @@ func (s *Service) applySimple(ctx context.Context, tx repository.Tx, state *doma
 		}
 	case *nlu.Read:
 		c.Action = domain.ActionList
+		c.Next = a.Next
 		f, err := simpleFilter(a.Filter, now)
 		if err != nil {
 			return clarify("Уточните фильтры поиска.")
@@ -351,6 +355,9 @@ func (s *Service) applySimple(ctx context.Context, tx repository.Tx, state *doma
 			}
 			if a.Kind != "" {
 				base.Kind = f.Kind
+			}
+			if a.Conference != "" {
+				base.Conference = f.Conference
 			}
 			if a.Query != "" {
 				base.Query = f.Query
