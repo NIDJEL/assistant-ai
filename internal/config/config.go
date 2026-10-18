@@ -15,10 +15,12 @@ import (
 	"github.com/NIDJEL/assistant-ai/internal/llm"
 	"github.com/NIDJEL/assistant-ai/internal/notifications"
 	"github.com/NIDJEL/assistant-ai/internal/stt"
+	"github.com/NIDJEL/assistant-ai/internal/tts"
 	"github.com/joho/godotenv"
 )
 
 type Config struct {
+	TTSProvider, AzureSpeechKey, AzureSpeechRegion, AzureTTSVoice              string
 	STTProvider, GroqAPIKey, GroqSTTModel, GroqProxyURL                        string
 	NLUMode                                                                    string
 	SemanticProvider                                                           string
@@ -71,15 +73,19 @@ func Load() (Config, error) {
 		return fallback
 	}
 	c := Config{
-		STTProvider:      value("GENA_STT_PROVIDER", ""),
-		GroqAPIKey:       value("GROQ_API_KEY", ""),
-		GroqSTTModel:     value("GROQ_STT_MODEL", stt.DefaultModel),
-		GroqProxyURL:     value("GROQ_PROXY_URL", ""),
-		NLUMode:          value("GENA_NLU_MODE", ""),
-		SemanticProvider: value("GENA_SEMANTIC_PROVIDER", ""),
-		GigaChat:         llm.GigaChatConfig{AuthorizationKey: value("GIGACHAT_AUTHORIZATION_KEY", ""), Scope: value("GIGACHAT_SCOPE", "GIGACHAT_API_PERS"), BaseURL: value("GIGACHAT_BASE_URL", "https://api.giga.chat"), Model: value("GIGACHAT_MODEL", "GigaChat-3-Ultra"), CAFile: value("GIGACHAT_CA_FILE", "")},
-		WebPush:          notifications.Config{PublicKey: value("WEB_PUSH_VAPID_PUBLIC_KEY", ""), PrivateKey: value("WEB_PUSH_VAPID_PRIVATE_KEY", ""), Subject: value("WEB_PUSH_SUBJECT", "")},
-		ImportUserEmail:  value("IMPORT_USER_EMAIL", "dev@rhythm.local"), ImportUserName: value("IMPORT_USER_NAME", "Разработчик"), ImportUserPassword: value("IMPORT_USER_PASSWORD", ""),
+		TTSProvider:       value("GENA_TTS_PROVIDER", ""),
+		AzureSpeechKey:    value("AZURE_SPEECH_KEY", ""),
+		AzureSpeechRegion: value("AZURE_SPEECH_REGION", "eastus"),
+		AzureTTSVoice:     value("AZURE_TTS_VOICE", tts.DefaultVoice),
+		STTProvider:       value("GENA_STT_PROVIDER", ""),
+		GroqAPIKey:        value("GROQ_API_KEY", ""),
+		GroqSTTModel:      value("GROQ_STT_MODEL", stt.DefaultModel),
+		GroqProxyURL:      value("GROQ_PROXY_URL", ""),
+		NLUMode:           value("GENA_NLU_MODE", ""),
+		SemanticProvider:  value("GENA_SEMANTIC_PROVIDER", ""),
+		GigaChat:          llm.GigaChatConfig{AuthorizationKey: value("GIGACHAT_AUTHORIZATION_KEY", ""), Scope: value("GIGACHAT_SCOPE", "GIGACHAT_API_PERS"), BaseURL: value("GIGACHAT_BASE_URL", "https://api.giga.chat"), Model: value("GIGACHAT_MODEL", "GigaChat-3-Ultra"), CAFile: value("GIGACHAT_CA_FILE", "")},
+		WebPush:           notifications.Config{PublicKey: value("WEB_PUSH_VAPID_PUBLIC_KEY", ""), PrivateKey: value("WEB_PUSH_VAPID_PRIVATE_KEY", ""), Subject: value("WEB_PUSH_SUBJECT", "")},
+		ImportUserEmail:   value("IMPORT_USER_EMAIL", "dev@rhythm.local"), ImportUserName: value("IMPORT_USER_NAME", "Разработчик"), ImportUserPassword: value("IMPORT_USER_PASSWORD", ""),
 		DatabaseURL: value("DATABASE_URL", ""), SessionSecret: value("SESSION_SECRET", ""),
 		PublicURL: value("PUBLIC_URL", "http://localhost:8081"), Environment: value("APP_ENV", "development"),
 		YandexClientID: value("YANDEX_CLIENT_ID", ""), YandexClientSecret: value("YANDEX_CLIENT_SECRET", ""), YandexRedirectURI: value("YANDEX_REDIRECT_URI", ""),
@@ -96,6 +102,9 @@ func Load() (Config, error) {
 	}
 	if c.STTProvider != "" && c.STTProvider != "groq" {
 		return c, errors.New("GENA_STT_PROVIDER must be groq or empty")
+	}
+	if c.TTSProvider != "" && c.TTSProvider != "azure" {
+		return c, errors.New("GENA_TTS_PROVIDER must be azure or empty")
 	}
 	if _, err := stt.ParseProxyURL(c.GroqProxyURL); err != nil {
 		return c, err

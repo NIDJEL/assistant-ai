@@ -27,6 +27,7 @@ import (
 	"github.com/NIDJEL/assistant-ai/internal/search"
 	"github.com/NIDJEL/assistant-ai/internal/storage/postgres"
 	"github.com/NIDJEL/assistant-ai/internal/stt"
+	"github.com/NIDJEL/assistant-ai/internal/tts"
 )
 
 func run(log *slog.Logger) error {
@@ -150,6 +151,14 @@ func run(log *slog.Logger) error {
 		}
 	}
 	app := &api.API{Config: cfg, Clock: now, Calendar: cal, CalendarSync: calendarSync, Assistant: service, Auth: authService, Logger: log}
+	if cfg.TTSProvider == "azure" {
+		synthesizer, err := tts.NewAzure(cfg.AzureSpeechKey, cfg.AzureSpeechRegion, cfg.AzureTTSVoice)
+		if err != nil {
+			return err
+		}
+		defer synthesizer.Close()
+		app.Synthesizer = synthesizer
+	}
 	if cfg.STTProvider == "groq" {
 		transcriber, err := stt.NewGroqWithProxy(cfg.GroqAPIKey, cfg.GroqSTTModel, cfg.GroqProxyURL)
 		if err != nil {

@@ -215,6 +215,23 @@ def configure_stt(payload):
     write_env({'GROQ_API_KEY':key,'GENA_STT_PROVIDER':'groq','GROQ_STT_MODEL':'whisper-large-v3-turbo','GROQ_PROXY_URL':proxy})
     return {'stt_provider':'groq','model':'whisper-large-v3-turbo','proxy_enabled':bool(proxy),'env_mode':oct(ENV.stat().st_mode&0o777)}
 
+def configure_tts(payload):
+    state(payload)  # Verified backup and rollback configuration must exist.
+    if sudo_input_logging():raise RuntimeError('sudo input logging blocks secret transfer')
+    config=env_values()
+    key=config.get('AZURE_SPEECH_KEY') or payload.get('azure_speech_key','')
+    region=payload.get('azure_speech_region','eastus')
+    voice=payload.get('azure_tts_voice','ru-RU-DmitryNeural')
+    if not re.fullmatch(r'[A-Za-z0-9_-]{16,256}',key):raise RuntimeError('Azure speech key missing or invalid')
+    if not re.fullmatch(r'[a-z][a-z0-9]{1,39}',region):raise RuntimeError('invalid Azure region')
+    allowed={'ru-RU-DmitryNeural'}
+    if voice not in allowed:raise RuntimeError('invalid Azure voice')
+    available=read_json('https://'+region+'.tts.speech.microsoft.com/cognitiveservices/voices/list',headers={'Ocp-Apim-Subscription-Key':key})
+    voices=sorted(v['ShortName'] for v in available if v.get('ShortName') in allowed and v.get('Locale')=='ru-RU')
+    if voice not in voices:raise RuntimeError('default Azure voice unavailable in region')
+    write_env({'GENA_TTS_PROVIDER':'azure','AZURE_SPEECH_KEY':key,'AZURE_SPEECH_REGION':region,'AZURE_TTS_VOICE':voice})
+    return {'tts_provider':'azure','region':region,'default_voice':voice,'available_voices':voices,'env_mode':oct(ENV.stat().st_mode&0o777)}
+
 def activate(payload):
     saved=state(payload);release=RELEASES/payload['release']
     if not release.is_dir() or (release/'REVISION').read_text().strip()!=payload['revision']:raise RuntimeError('release revision mismatch')
@@ -299,7 +316,7 @@ def rollback(payload):
 def main():
     if os.geteuid()!=0:raise RuntimeError('root required')
     payload=json.load(sys.stdin)
-    actions={'audit':audit,'backup':backup,'prepare':prepare,'build':build,'configure_stt':configure_stt,'activate':activate,'check':check,'giga':giga,'rollback':rollback}
+    actions={'audit':audit,'backup':backup,'prepare':prepare,'build':build,'configure_stt':configure_stt,'configure_tts':configure_tts,'activate':activate,'check':check,'giga':giga,'rollback':rollback}
     result=actions[payload['action']](payload)
     print(json.dumps({'ok':True,'action':payload['action'],'result':result},ensure_ascii=False))
 

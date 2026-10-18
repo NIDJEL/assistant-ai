@@ -2,14 +2,15 @@ import { createContext, useContext, useEffect, useLayoutEffect, useRef, useState
 import { useAuth } from './AuthContext';
 import { request, errorMessage } from '../api/client';
 import { speechCorrections, type SpeechCorrection } from '../features/voice/adaptation';
+import { defaultTTSVoice, defaultTTSVolume, normalizeTTSVolume, setTTSVolume } from '../features/voice/tts';
 export type WidgetKey = 'calendar' | 'today' | 'tasks' | 'meetings' | 'progress' | 'quick' | 'tags';
 export interface WidgetLayout { order: WidgetKey[]; hidden: WidgetKey[]; settings: Partial<Record<WidgetKey, { limit: number }>> }
 export type MotionPreference = 'system' | 'full' | 'reduced';
-export interface Preferences { name: string; tts: boolean; widgets: boolean; navCollapsed: boolean; motion: MotionPreference; layouts: Record<string, WidgetLayout>; speechCorrections: SpeechCorrection[]; browserNotifications: boolean; revision: number }
-const defaults: Preferences = { name: 'Пользователь', tts: false, widgets: true, navCollapsed: false, motion: 'system', layouts: {}, speechCorrections: [], browserNotifications: false, revision: 0 };
+export interface Preferences { name: string; tts: boolean; ttsVoice: string; ttsVolume: number; widgets: boolean; navCollapsed: boolean; motion: MotionPreference; layouts: Record<string, WidgetLayout>; speechCorrections: SpeechCorrection[]; browserNotifications: boolean; revision: number }
+const defaults: Preferences = { name: 'Пользователь', tts: false, ttsVoice: defaultTTSVoice, ttsVolume: defaultTTSVolume, widgets: true, navCollapsed: false, motion: 'system', layouts: {}, speechCorrections: [], browserNotifications: false, revision: 0 };
 const key = 'rhythm.preferences.v1';
 function normalize(value: Partial<Preferences> & { panel_visible?: boolean }): Preferences {
-  return { name: typeof value.name === 'string' && value.name.trim() ? value.name.slice(0, 50) : defaults.name, tts: typeof value.tts === 'boolean' ? value.tts : false, widgets: typeof value.panel_visible === 'boolean' ? value.panel_visible : typeof value.widgets === 'boolean' ? value.widgets : true, navCollapsed: value.navCollapsed === true, motion: value.motion === 'full' || value.motion === 'reduced' ? value.motion : 'system', layouts: value.layouts && typeof value.layouts === 'object' ? value.layouts : {}, speechCorrections: speechCorrections(value.speechCorrections), browserNotifications: value.browserNotifications === true, revision: Number.isSafeInteger(value.revision) && value.revision! >= 0 ? value.revision! : 0 };
+  return { name: typeof value.name === 'string' && value.name.trim() ? value.name.slice(0, 50) : defaults.name, tts: false, ttsVoice: defaultTTSVoice, ttsVolume: normalizeTTSVolume(value.ttsVolume), widgets: typeof value.panel_visible === 'boolean' ? value.panel_visible : typeof value.widgets === 'boolean' ? value.widgets : true, navCollapsed: value.navCollapsed === true, motion: value.motion === 'full' || value.motion === 'reduced' ? value.motion : 'system', layouts: value.layouts && typeof value.layouts === 'object' ? value.layouts : {}, speechCorrections: speechCorrections(value.speechCorrections), browserNotifications: value.browserNotifications === true, revision: Number.isSafeInteger(value.revision) && value.revision! >= 0 ? value.revision! : 0 };
 }
 const Context = createContext<{ preferences: Preferences; update: (patch: Partial<Preferences>) => void; ready: boolean; saving: boolean; error: string; retry: () => void } | null>(null);
 export function PreferencesProvider({ children }: { children: ReactNode }) {
@@ -18,6 +19,7 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false); const [saving, setSaving] = useState(false); const [error, setError] = useState('');
   const endpoint = useRef(`/api/preferences/${user!.id}`); const queue = useRef(Promise.resolve());
   const pendingWrites = useRef(0);
+  useLayoutEffect(() => { setTTSVolume(preferences.ttsVolume); }, [preferences.ttsVolume]);
   useLayoutEffect(() => {
     document.documentElement.dataset.motion = preferences.motion;
     return () => { delete document.documentElement.dataset.motion; };

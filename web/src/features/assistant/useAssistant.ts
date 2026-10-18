@@ -3,8 +3,7 @@ import { useAuth } from '../../app/AuthContext';
 import * as api from '../../api/assistant';
 import { errorMessage } from '../../api/client';
 import { useData } from '../../app/DataContext';
-import { usePreferences } from '../../app/PreferencesContext';
-import { speak, stopSpeaking } from '../voice/tts';
+import { stopSpeaking } from '../voice/tts';
 import type { ChatInput, ChatResponse } from '../../types/api';
 export interface ChatItem { id: string; message: string; response?: ChatResponse; created: string; error?: string }
 function sessionId(userId: string): string {
@@ -17,7 +16,7 @@ export function useAssistant() {
   const [session] = useState(() => sessionId(user!.id)); const [items, setItems] = useState<ChatItem[]>([]); const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true); const [historyError, setHistoryError] = useState('');
   const locked = useRef(false); const interacted = useRef(false); const pending = useRef<ChatInput | null>(null);
-  const { refresh, accept } = useData(); const { preferences } = usePreferences();
+  const { refresh, accept } = useData();
   useEffect(() => {
     const controller = new AbortController();
     api.history(session, controller.signal).then(data => {
@@ -35,7 +34,7 @@ export function useAssistant() {
       const response = await api.sendChat(input);
       accept(response.events);
       setItems(current => current.map(item => item.id === input.request_id ? { ...item, response } : item));
-      pending.current = null; if (preferences.tts) speak(response.reply); await refresh(); return true;
+      pending.current = null; await refresh(); return true;
     } catch (e) {
       setItems(current => current.map(item => item.id === input.request_id ? { ...item, error: errorMessage(e) } : item)); return false;
     } finally { locked.current = false; setBusy(false); }
