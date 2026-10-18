@@ -57,6 +57,11 @@ func (d *Database) SaveCloudConnection(ctx context.Context, c repository.CloudCo
 	if err != nil {
 		return err
 	}
+	if status == "disconnected" || subject == "" {
+		if _, err = tx.ExecContext(ctx, `INSERT INTO cloud_outbox(user_id,provider,event_id) SELECT user_id,$2,id FROM events WHERE user_id=$1 AND (($2='google' AND $3<>'' AND date IS NOT NULL) OR ($2='zoom' AND (details::jsonb->>'conference_provider'='zoom' OR EXISTS(SELECT 1 FROM cloud_event_links l WHERE l.user_id=$1 AND l.provider='zoom' AND l.event_id=events.id)))) ON CONFLICT(user_id,provider,event_id) DO UPDATE SET version=cloud_outbox.version+1`, uid, c.Provider, c.CalendarID); err != nil {
+			return err
+		}
+	}
 	return tx.Commit()
 }
 func (d *Database) CloudConnections(ctx context.Context) ([]repository.CalendarConnection, error) {
@@ -167,7 +172,7 @@ func (d *Database) SelectCloudCalendar(ctx context.Context, id string) error {
 	if _, err = tx.ExecContext(ctx, `UPDATE cloud_connections SET calendar_id=$2,sync_token='',status='pending',last_error='' WHERE user_id=$1 AND provider='google'`, uid, id); err != nil {
 		return err
 	}
-	if _, err = tx.ExecContext(ctx, `INSERT INTO cloud_outbox(user_id,provider,event_id) SELECT user_id,'google',id FROM events WHERE user_id=$1 AND deleted_at IS NULL AND date IS NOT NULL ON CONFLICT(user_id,provider,event_id) DO UPDATE SET version=cloud_outbox.version+1`, uid); err != nil {
+	if _, err = tx.ExecContext(ctx, `INSERT INTO cloud_outbox(user_id,provider,event_id) SELECT user_id,'google',id FROM events WHERE user_id=$1 AND date IS NOT NULL ON CONFLICT(user_id,provider,event_id) DO UPDATE SET version=cloud_outbox.version+1`, uid); err != nil {
 		return err
 	}
 	return tx.Commit()

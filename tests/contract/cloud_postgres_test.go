@@ -199,6 +199,20 @@ func TestPostgresCloudSyncZoomAndIsolation(t *testing.T) {
 	if err != nil || len(c.Ciphertext) != 0 || c.Status != "disconnected" {
 		t.Fatal("disconnect retained token")
 	}
+	offline, err := cal.Create(ctx, domain.Event{Kind: domain.EventTask, Title: "Created while disconnected", Date: day}, now, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	grant := repository.OAuthGrant{Identity: repository.Identity{Provider: "google", Subject: "subject-google"}, Login: "cloud@example.test", Token: repository.OAuthToken{AccessToken: "test-reconnected-access", RefreshToken: "test-reconnected-refresh", ExpiresIn: 3600, Scope: "https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar.calendarlist.readonly"}}
+	if err = svc.Connect(ctx, grant, now); err != nil {
+		t.Fatal(err)
+	}
+	if err = svc.Sync(ctx, "google"); err != nil {
+		t.Fatal(err)
+	}
+	if link, err := db.CloudLink(ctx, "google", "primary", offline.ID); err != nil || link == nil {
+		t.Fatal("reconnect lost offline event", err)
+	}
 	if tokenCalls == 0 {
 		t.Fatal("expired credentials not refreshed")
 	}
