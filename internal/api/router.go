@@ -52,6 +52,7 @@ func (a *API) Router() http.Handler {
 	r.Use(a.security)
 	r.Use(middleware.Timeout(45 * time.Second))
 	r.Get("/health", a.health)
+	r.Post("/api/webhooks/zoom", a.zoomWebhook)
 	if a.Auth != nil {
 		a.authRoutes(r)
 	}
@@ -63,6 +64,8 @@ func (a *API) Router() http.Handler {
 		r.Get("/api/preferences/{profile}", a.preferences)
 		r.Put("/api/preferences/{profile}", a.preferences)
 		r.Post("/api/chat", a.chat)
+		r.Get("/api/chat/notifications", a.chatNotifications)
+		r.Post("/api/chat/notifications/read", a.chatNotifications)
 		r.Post("/api/voice/transcribe", a.transcribe)
 		r.With(a.ttsLimiter()).Post("/api/voice/synthesize", a.synthesize)
 		r.With(a.ttsLimiter()).Get("/api/voice/voices", a.ttsVoices)

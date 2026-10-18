@@ -26,14 +26,16 @@ type Create struct {
 	ReminderEnabled *bool     `json:"reminder_enabled,omitempty"`
 }
 type Filter struct {
-	Kind   string    `json:"kind,omitempty"`
-	Query  string    `json:"query,omitempty"`
-	Date   *Temporal `json:"date,omitempty"`
-	Period *Temporal `json:"period,omitempty"`
-	Status *string   `json:"status,omitempty"`
+	Conference string    `json:"conference,omitempty"`
+	Kind       string    `json:"kind,omitempty"`
+	Query      string    `json:"query,omitempty"`
+	Date       *Temporal `json:"date,omitempty"`
+	Period     *Temporal `json:"period,omitempty"`
+	Status     *string   `json:"status,omitempty"`
 }
 type Read struct {
 	Filter
+	Next    bool `json:"next,omitempty"`
 	Inherit bool `json:"inherit,omitempty"`
 }
 type Target struct {
@@ -162,11 +164,12 @@ type Pending struct {
 	Exclude      []Filter `json:"exclude,omitempty"`
 }
 type SearchSummary struct {
-	Kind   string `json:"kind,omitempty"`
-	Query  string `json:"query,omitempty"`
-	Start  string `json:"start,omitempty"`
-	End    string `json:"end,omitempty"`
-	Status string `json:"status,omitempty"`
+	Conference string `json:"conference,omitempty"`
+	Kind       string `json:"kind,omitempty"`
+	Query      string `json:"query,omitempty"`
+	Start      string `json:"start,omitempty"`
+	End        string `json:"end,omitempty"`
+	Status     string `json:"status,omitempty"`
 }
 type Context struct {
 	Now          string         `json:"now"`

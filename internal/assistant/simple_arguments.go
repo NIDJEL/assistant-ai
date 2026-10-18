@@ -81,6 +81,9 @@ func simpleChanges(c *domain.Command, ch nlu.Changes, now time.Time) error {
 }
 func simpleFilter(f nlu.Filter, now time.Time) (*domain.ExecutionFilter, error) {
 	v := &domain.ExecutionFilter{Query: f.Query}
+	if f.Conference != "" && f.Conference != "any" {
+		v.Conference = f.Conference
+	}
 	if f.Kind != "" && f.Kind != "any" {
 		kind, err := domain.ParseEventType(f.Kind)
 		if err != nil {
@@ -125,7 +128,7 @@ func displayFilter(f *domain.ExecutionFilter) *nlu.Filter {
 	if f == nil {
 		return nil
 	}
-	v := &nlu.Filter{Kind: f.Kind.String(), Query: f.Query}
+	v := &nlu.Filter{Kind: f.Kind.String(), Query: f.Query, Conference: f.Conference}
 	if f.Status != nil {
 		status := f.Status.String()
 		if status == "" {

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -104,7 +105,9 @@ func (s *Service) Respond(ctx context.Context, message, sid, rid string, now tim
 		if cached.Message != message {
 			return response, domain.Validation("request_id уже использован для другого сообщения")
 		}
-		return cached.Response, nil
+		response = cached.Response
+		err = s.RefreshZoomCards(ctx, &response)
+		return response, err
 	}
 	// Both deterministic interpretation and external LLM HTTP happen before BEGIN IMMEDIATE.
 	interpretStarted := time.Now()
@@ -259,6 +262,9 @@ func (s *Service) Respond(ctx context.Context, message, sid, rid string, now tim
 		if err = tx.SaveState(ctx, sid, state, now); err != nil {
 			return err
 		}
+		if err = s.zoomCards(ctx, tx, &response); err != nil {
+			return err
+		}
 		return tx.SaveExchange(ctx, sid, rid, message, response, now)
 	})
 	return response, err
@@ -268,6 +274,24 @@ func sameDialogueSnapshot(a, b domain.State) bool {
 	x, _ := json.Marshal(a)
 	y, _ := json.Marshal(b)
 	return string(x) == string(y)
+}
+
+func nextScheduled(events []domain.Event, now time.Time, loc *time.Location) []domain.Event {
+	upcoming := []domain.Event{}
+	for _, e := range events {
+		if start, _, ok := e.Interval(loc); ok && !start.Before(now) {
+			upcoming = append(upcoming, e)
+		}
+	}
+	sort.SliceStable(upcoming, func(i, j int) bool {
+		a, _, _ := upcoming[i].Interval(loc)
+		b, _, _ := upcoming[j].Interval(loc)
+		return a.Before(b)
+	})
+	if len(upcoming) > 1 {
+		upcoming = upcoming[:1]
+	}
+	return upcoming
 }
 
 const help = "Я Гена. Помогу с задачами, встречами и напоминаниями. Например: «Напомни завтра в 10 утра позвонить Ивану», «В пятницу нужно отправить отчёт», «Что у меня на эту неделю?» или «Найди задачу по договору»."
@@ -533,11 +557,17 @@ func (s *Service) executeValidated(ctx context.Context, tx repository.Tx, state 
 		}
 		if cmd.Action == domain.ActionSearch {
 			events = s.Calendar.Search.Search(events, cmd.Query, len(events))
+			if cmd.Next {
+				events = nextScheduled(events, now, s.Calendar.Location)
+			}
 			intro = "Нашёл записи"
 			if len(events) == 0 {
 				intro = "Подходящих записей не нашёл. Попробуйте другое имя или тему."
 			}
 		} else {
+			if cmd.Next {
+				events = nextScheduled(events, now, s.Calendar.Location)
+			}
 			intro = fmt.Sprintf("Запланировано событий: %d", len(events))
 			if len(events) == 0 {
 				intro = "На этот период событий нет."
@@ -704,5 +734,12 @@ func (s *Service) History(ctx context.Context, id string) ([]domain.Exchange, do
 		state, err = tx.State(ctx, id)
 		return err
 	})
+	if err == nil {
+		for i := range history {
+			if err = s.RefreshZoomCards(ctx, &history[i].Response); err != nil {
+				break
+			}
+		}
+	}
 	return history, state, err
 }

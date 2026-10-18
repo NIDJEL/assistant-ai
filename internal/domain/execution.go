@@ -7,6 +7,7 @@ import (
 
 // ExecutionFilter is grounded exclusively by Go and retained for refinements.
 type ExecutionFilter struct {
+	Conference string            `json:"conference,omitempty"`
 	Query      string            `json:"query,omitempty"`
 	Kind       EventType         `json:"kind"`
 	Start      *Date             `json:"start,omitempty"`
@@ -27,6 +28,9 @@ type ExecutionChanges struct {
 func (f ExecutionFilter) Validate() error { return f.validateDepth(0) }
 func (f ExecutionFilter) validateDepth(depth int) error {
 	bad := errors.New("invalid grounded filter")
+	if f.Conference != "" && f.Conference != "zoom" {
+		return bad
+	}
 	if depth > 4 || len(f.Exclude) > 20 || utf8.RuneCountInString(f.Query) > 2000 || f.Kind > EventReminder {
 		return bad
 	}

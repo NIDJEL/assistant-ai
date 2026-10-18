@@ -130,6 +130,7 @@ func (e *Event) UnmarshalJSON(b []byte) error {
 }
 
 type Command struct {
+	Next                                 bool `json:"next,omitempty"`
 	CalendarProvider, ConferenceProvider string
 	Filter                               *ExecutionFilter
 	Changes                              *ExecutionChanges
@@ -336,23 +337,26 @@ func (s State) MarshalJSON() ([]byte, error) {
 }
 
 type Response struct {
-	Reply       string   `json:"reply"`
-	Action      Action   `json:"action"`
-	Events      []Event  `json:"events"`
-	Candidates  []Event  `json:"candidates"`
-	Conflicts   []Event  `json:"conflicts"`
-	Total       *int     `json:"total,omitempty"`
-	SessionID   string   `json:"session_id"`
-	RequestID   string   `json:"request_id"`
-	Provider    string   `json:"provider"`
-	Timezone    string   `json:"timezone"`
-	Pending     bool     `json:"pending"`
-	Suggestions []string `json:"suggestions,omitempty"`
+	ZoomMeetings []ZoomMeeting `json:"zoom_meetings,omitempty"`
+	Reply        string        `json:"reply"`
+	Action       Action        `json:"action"`
+	Events       []Event       `json:"events"`
+	Candidates   []Event       `json:"candidates"`
+	Conflicts    []Event       `json:"conflicts"`
+	Total        *int          `json:"total,omitempty"`
+	SessionID    string        `json:"session_id"`
+	RequestID    string        `json:"request_id"`
+	Provider     string        `json:"provider"`
+	Timezone     string        `json:"timezone"`
+	Pending      bool          `json:"pending"`
+	Suggestions  []string      `json:"suggestions,omitempty"`
 }
 type Exchange struct {
-	Message   string    `json:"message"`
-	Response  Response  `json:"response"`
-	CreatedAt time.Time `json:"created_at"`
+	Notification bool      `json:"notification,omitempty"`
+	Read         bool      `json:"read,omitempty"`
+	Message      string    `json:"message"`
+	Response     Response  `json:"response"`
+	CreatedAt    time.Time `json:"created_at"`
 }
 type Filter struct {
 	Deleted              bool
