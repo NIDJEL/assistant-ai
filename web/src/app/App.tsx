@@ -15,6 +15,8 @@ import { RemindersPage } from '../pages/Reminders/RemindersPage';
 import { ArchivePage } from '../pages/Archive/ArchivePage';
 import { IntegrationsPage } from '../pages/Integrations/IntegrationsPage';
 import { SettingsPage } from '../pages/Settings/SettingsPage';
+import { FriendsPage } from '../pages/Friends/FriendsPage';
+import { SocialProvider } from '../features/social/SocialContext';
 export function App() {
   return <BrowserRouter useTransitions={false}><AuthProvider><AuthGate/></AuthProvider></BrowserRouter>;
 }
@@ -25,8 +27,8 @@ function AuthGate() {
   if (location.pathname === '/auth') return <AuthPage/>;
   if (!user) return <Navigate to="/auth" replace/>;
   if (!user.onboarding_completed || location.pathname === '/onboarding') return <OnboardingPage/>;
-  return <PreferencesProvider key={user.id}><DataProvider><EventActionsProvider><Routes><Route element={<AppShell/>}>
+  return <PreferencesProvider key={user.id}><DataProvider><SocialProvider><EventActionsProvider><Routes><Route element={<AppShell/>}>
     <Route index element={<TodayPage/>}/><Route path="calendar" element={<CalendarPage/>}/><Route path="tasks" element={<TasksPage/>}/><Route path="meetings" element={<MeetingsPage/>}/><Route path="reminders" element={<RemindersPage/>}/><Route path="archive" element={<ArchivePage/>}/><Route path="integrations" element={<IntegrationsPage/>}/><Route path="settings" element={<SettingsPage/>}/>
-    <Route path="*" element={<div className="page"><h1>Страница не найдена</h1><a href="/">Вернуться на Сегодня</a></div>}/>
-  </Route></Routes></EventActionsProvider></DataProvider></PreferencesProvider>;
+    <Route path="friends" element={<FriendsPage/>}/><Route path="*" element={<div className="page"><h1>Страница не найдена</h1><a href="/">Вернуться на Сегодня</a></div>}/>
+  </Route></Routes></EventActionsProvider></SocialProvider></DataProvider></PreferencesProvider>;
 }

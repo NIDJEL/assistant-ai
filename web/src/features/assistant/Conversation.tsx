@@ -8,6 +8,7 @@ import { useAuth } from '../../app/AuthContext';
 import { Avatar } from '../../components/Avatar';
 import { ChatEventCard } from './ChatEventCard';
 import { ZoomMeetingCard } from './ZoomMeetingCard';
+import { SocialChatLink } from '../social/SharedMeetings';
 import { useChatNotifications } from './ChatNotifications';
 import { formatDay } from '../calendar/dates';
 import { SpeakButton } from '../voice/SpeakButton';
@@ -17,7 +18,7 @@ function Response({ item, onDraft, active }: { item: ChatItem; onDraft: (text: s
   const [expanded, setExpanded] = useState(false); const response = item.response!;
   const { events } = useData(); const current = new Map(events.map(event => [event.id, event])); const firstDate = current.get(response.events[0]?.id)?.date;
   return <><p className="reply-text">{response.reply}</p>{response.events.length > 0 && <div className="response-events">{response.events.slice(0, expanded ? 100 : 4).map(event => { const zoom = response.zoom_meetings?.find(card => card.event_id === event.id); if (zoom) return <ZoomMeetingCard key={event.id} meeting={zoom}/>; const live = current.get(event.id); return live ? <ChatEventCard key={event.id} event={live}/> : <div className="event-row compact" key={event.id}><span className="event-title">{event.title}</span><span className="muted">Запись удалена</span></div>; })}{response.events.length > 4 && <Button variant="ghost" onClick={() => setExpanded(current => !current)}>{expanded ? 'Свернуть' : `Ещё ${response.events.length - 4}`}</Button>}{firstDate && <Link className="calendar-link" to={`/calendar?date=${firstDate}`}><CalendarDays size={18}/>Открыть в календаре</Link>}</div>}
-    {active && !!response.candidates?.length && <div className="reply-choices" aria-label="Выбор записи">{response.candidates.map(event => <Button key={event.id} variant="soft" onClick={() => onDraft(`#${event.id}`)}>{event.title} · {event.date ? formatDay(event.date, { day: 'numeric', month: 'short', year: 'numeric' }) : 'Без срока'}{event.time ? `, ${event.time}` : ''} · {{ task: 'Задача', meeting: 'Встреча', reminder: 'Напоминание' }[event.kind]}</Button>)}</div>}
+    {response.social && <SocialChatLink kind={response.social.kind} eventId={response.social.event_id}/>}{active && !!response.candidates?.length && <div className="reply-choices" aria-label="Выбор записи">{response.candidates.map(event => <Button key={event.id} variant="soft" onClick={() => onDraft(`#${event.id}`)}>{event.title} · {event.date ? formatDay(event.date, { day: 'numeric', month: 'short', year: 'numeric' }) : 'Без срока'}{event.time ? `, ${event.time}` : ''} · {{ task: 'Задача', meeting: 'Встреча', reminder: 'Напоминание' }[event.kind]}</Button>)}</div>}
     {active && response.pending && <div className="reply-choices">{response.suggestions?.map(text => <Button key={text} variant="soft" onClick={() => onDraft(text)}>{text}</Button>)}{response.reply.includes('«да»') && <Button variant="soft" onClick={() => onDraft('да')}>Да</Button>}<Button variant="ghost" onClick={() => onDraft('отмена')}>Отмена</Button></div>}
     </>;
 }

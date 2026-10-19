@@ -75,7 +75,7 @@ func (d *Database) SaveCalendarCredentials(ctx context.Context, c repository.Cal
 	if err != nil {
 		return err
 	}
-	_, err = tx.ExecContext(ctx, `INSERT INTO calendar_outbox(user_id,event_id) SELECT user_id,id FROM events WHERE user_id=$1
+	_, err = tx.ExecContext(ctx, `INSERT INTO calendar_outbox(user_id,event_id) SELECT $1,id FROM events WHERE `+visibleEvents("$1")+`
  ON CONFLICT(user_id,event_id) DO UPDATE SET version=calendar_outbox.version+1`, id)
 	if err != nil {
 		return err

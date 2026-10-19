@@ -10,8 +10,10 @@ import { IconButton } from './UI';
 import { motionUpdate } from './motion/motion';
 import { Avatar } from './Avatar';
 import { errorMessage } from '../api/client';
+import { useSocial } from '../features/social/SocialContext';
 export function Sidebar({ onNavigate, collapsible = false }: { onNavigate?: () => void; collapsible?: boolean }) {
   const { user, logout } = useAuth();
+  const social = useSocial(); const friendRequests = social.people?.incoming.length || 0; const invitations = social.meetings.filter(m => !m.cancelled && m.members.some(p => p.id === user?.id && p.status === 'pending')).length;
   const { preferences, update } = usePreferences();
   const location = useLocation();
   const [profileOpen, setProfileOpen] = useState(false); const [busy, setBusy] = useState(false); const [error, setError] = useState('');
@@ -27,7 +29,7 @@ export function Sidebar({ onNavigate, collapsible = false }: { onNavigate?: () =
   }, [profileOpen]);
   async function leave() { if (busy) return; setBusy(true); setError(''); try { await logout(); } catch (e) { setError(errorMessage(e)); setBusy(false); } }
   return <div className="sidebar-inner"><div className="sidebar-brand-row"><NavLink className="brand" to="/" aria-label="Гена — Сегодня" onClick={onNavigate}><BrandMark/><span>Гена</span></NavLink>{collapsible && <IconButton className="sidebar-collapse" icon={preferences.navCollapsed ? PanelLeftOpen : PanelLeftClose} label={preferences.navCollapsed ? 'Развернуть навигацию' : 'Свернуть навигацию'} onClick={() => motionUpdate(() => update({ navCollapsed: !preferences.navCollapsed }), 'layout')}/>}</div>
-    <nav aria-label="Основная навигация">{navigation.filter(item => item.path !== '/settings').map(({ path, label, icon: Icon }) => <NavLink key={path} to={path} end={path === '/'} className="nav-link" aria-label={label} title={label} onClick={onNavigate}><Icon size={24} aria-hidden="true"/><span>{label}</span></NavLink>)}</nav>
+    <nav aria-label="Основная навигация">{navigation.filter(item => item.path !== '/settings').map(({ path, label, icon: Icon }) => <NavLink key={path} to={path} end={path === '/'} className="nav-link" aria-label={label} title={label} onClick={onNavigate}><Icon size={24} aria-hidden="true"/><span>{label}</span>{((path === '/friends' && friendRequests) || (path === '/meetings' && invitations)) ? <b className="social-nav-count">{path === '/friends' ? friendRequests : invitations}</b> : null}</NavLink>)}</nav>
     <div className="sidebar-footer"><div className="profile-menu-anchor" ref={profile}><button type="button" ref={trigger} className="profile-trigger" aria-label="Меню аккаунта" aria-haspopup="menu" aria-expanded={profileOpen} onClick={() => setProfileOpen(!profileOpen)}><Avatar name={user!.name} url={user!.avatar_url}/></button>{profileOpen && <div className="profile-menu" role="menu" aria-label="Аккаунт" onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget) && event.relatedTarget !== trigger.current) setProfileOpen(false); }} onKeyDown={event => {
       if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
       event.preventDefault(); const items = [...event.currentTarget.querySelectorAll<HTMLElement>('[role="menuitem"]:not(:disabled)')]; const index = items.indexOf(document.activeElement as HTMLElement);

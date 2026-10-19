@@ -34,7 +34,7 @@ func (d *Database) ImportSQLite(ctx context.Context, source *sql.DB, uid, profil
 		name, query string
 		cols        int
 	}{
-		{"events", "SELECT " + columns + " FROM events ORDER BY id", 17},
+		{"events", "SELECT " + baseColumns + " FROM events ORDER BY id", 17},
 		{"dialogue_sessions", "SELECT id,state,updated_at FROM sessions ORDER BY id", 3},
 		{"dialogue_exchanges", "SELECT session_id,request_id,message,response,created_at FROM exchanges ORDER BY id", 5},
 	}
@@ -117,7 +117,7 @@ func (d *Database) ImportSQLite(ctx context.Context, source *sql.DB, uid, profil
 			var query string
 			switch row.table {
 			case "events":
-				query = "INSERT INTO events(" + columns + ",user_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)"
+				query = "INSERT INTO events(" + baseColumns + ",user_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)"
 				imported++
 			case "dialogue_sessions":
 				query = "INSERT INTO dialogue_sessions(id,state,updated_at,user_id) VALUES($1,$2,$3,$4)"

@@ -90,7 +90,17 @@ func (d *Database) Read(ctx context.Context, fn func(repository.Tx) error) error
 	if id == "" {
 		return fmt.Errorf("authenticated user scope required")
 	}
-	return fn(&Repo{q: d.DB, userID: id})
+	// Multi-query views (invitations, members and proposals) must come from one
+	// snapshot, including when another account revokes access concurrently.
+	tx, err := d.DB.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelRepeatableRead, ReadOnly: true})
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	if err = fn(&Repo{q: tx, userID: id}); err != nil {
+		return err
+	}
+	return tx.Commit()
 }
 func (d *Database) Write(ctx context.Context, fn func(repository.Tx) error) error {
 	id := repository.UserID(ctx)
@@ -104,6 +114,11 @@ func (d *Database) Write(ctx context.Context, fn func(repository.Tx) error) erro
 	defer tx.Rollback()
 	// Serializes domain writes per user across server instances; LLM HTTP remains
 	// outside the transaction. Prevents meeting conflicts and idempotency races.
+	// Collaborative changes span accounts. Take this short domain-write lock
+	// before any user lock, also in external calendar imports, to avoid inversions.
+	if _, err = tx.ExecContext(ctx, "SELECT pg_advisory_xact_lock(73121013)"); err != nil {
+		return err
+	}
 	if _, err = tx.ExecContext(ctx, "SELECT pg_advisory_xact_lock(hashtextextended($1,0))", id); err != nil {
 		return err
 	}

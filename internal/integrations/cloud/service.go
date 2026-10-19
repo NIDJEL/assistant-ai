@@ -304,6 +304,7 @@ func (s *Service) Run(ctx context.Context) {
 }
 
 type Calendar struct {
+	TimeZone   string `json:"timeZone,omitempty"`
 	ID         string `json:"id"`
 	Summary    string `json:"summary"`
 	AccessRole string `json:"accessRole"`

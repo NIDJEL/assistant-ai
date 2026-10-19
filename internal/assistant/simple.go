@@ -11,6 +11,7 @@ import (
 	"github.com/NIDJEL/assistant-ai/internal/domain"
 	"github.com/NIDJEL/assistant-ai/internal/nlu"
 	"github.com/NIDJEL/assistant-ai/internal/repository"
+	"github.com/NIDJEL/assistant-ai/internal/social"
 )
 
 type operationInterpreter interface {
@@ -54,6 +55,21 @@ func (s *Service) respondSimple(ctx context.Context, interpreter operationInterp
 		}
 		expireDialogue(&snapshot, now)
 		compact, err = buildSimpleContext(ctx, tx, snapshot, now)
+		if err == nil {
+			if session, e := social.In(ctx, tx, s.Calendar.Location); e == nil {
+				if people, e := session.People(ctx); e == nil {
+					for _, friend := range people.Friends {
+						compact.Friends = append(compact.Friends, nlu.Friend{Name: friend.Name, Tags: friend.Tags})
+					}
+				}
+			}
+			if snapshot.Pending != nil && len(snapshot.Pending.SocialOperation) > 0 {
+				var pending nlu.Operation
+				if json.Unmarshal(snapshot.Pending.SocialOperation, &pending) == nil {
+					compact.SocialPending = &pending
+				}
+			}
+		}
 		return err
 	})
 	if err != nil {
@@ -82,6 +98,9 @@ func (s *Service) respondSimple(ctx context.Context, interpreter operationInterp
 		return response, ctx.Err()
 	}
 	latency := time.Since(started)
+	if parseErr == nil && s.RefreshPlanning != nil {
+		s.prepareSimplePlanning(ctx, op, now)
+	}
 	err = s.Store.Write(ctx, func(tx repository.Tx) error {
 		cached, err := tx.Cached(ctx, sid, rid)
 		if err != nil {
@@ -277,6 +296,9 @@ func (s *Service) applySimple(ctx context.Context, tx repository.Tx, state *doma
 			q = *op.Clarification
 		}
 		return clarify(q)
+	}
+	if handled, reply, e := s.applySocial(ctx, tx, state, op, args, now); handled {
+		return c, reply, e
 	}
 	if op.Intent == "chat" {
 		return c, answer(args.(*nlu.Chat).Reply, domain.ActionHelp), nil

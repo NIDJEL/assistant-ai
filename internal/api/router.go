@@ -45,6 +45,9 @@ type API struct {
 }
 
 func (a *API) Router() http.Handler {
+	if a.Assistant != nil {
+		a.Assistant.RefreshPlanning = a.refreshPlanning
+	}
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
 	r.Use(a.logging)
@@ -62,6 +65,7 @@ func (a *API) Router() http.Handler {
 			r.Use(a.csrf)
 		}
 		r.Get("/api/preferences/{profile}", a.preferences)
+		a.socialRoutes(r)
 		r.Put("/api/preferences/{profile}", a.preferences)
 		r.Post("/api/chat", a.chat)
 		r.Get("/api/chat/notifications", a.chatNotifications)
@@ -342,6 +346,10 @@ func (a *API) update(w http.ResponseWriter, r *http.Request) {
 	patch, err := body.Domain()
 	if err != nil {
 		a.fail(w, r, domain.Validation(err.Error()))
+		return
+	}
+	if err = a.prepareSharedPatch(r.Context(), eventID, patch); err != nil {
+		a.fail(w, r, err)
 		return
 	}
 	e, err := a.Calendar.Update(r.Context(), eventID, patch, a.Clock.Now())

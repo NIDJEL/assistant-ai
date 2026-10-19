@@ -16,6 +16,8 @@ type Operation struct {
 	Clarification *string         `json:"clarification"`
 }
 type Create struct {
+	Friends         []string  `json:"friends,omitempty"`
+	FriendTag       string    `json:"friend_tag,omitempty"`
 	Calendar        string    `json:"calendar,omitempty"`
 	Conference      string    `json:"conference,omitempty"`
 	Title           string    `json:"title"`
@@ -76,6 +78,30 @@ type Chat struct {
 	Reply string `json:"reply"`
 }
 
+// Social is an operation-specific contract. Names/tags are resolved only
+// against the authenticated user's confirmed friends by Go.
+type Social struct {
+	Code            string       `json:"code,omitempty"`
+	Friends         []string     `json:"friends,omitempty"`
+	Tag             string       `json:"tag,omitempty"`
+	Query           string       `json:"query,omitempty"`
+	Date            *Temporal    `json:"date,omitempty"`
+	Period          *Temporal    `json:"period,omitempty"`
+	Time            *string      `json:"time,omitempty"`
+	DurationMinutes *int         `json:"duration_minutes,omitempty"`
+	Status          string       `json:"status,omitempty"`
+	Options         []SocialTime `json:"options,omitempty"`
+	Option          int          `json:"option,omitempty"`
+}
+type SocialTime struct {
+	Date *Temporal `json:"date"`
+	Time *string   `json:"time"`
+}
+type Friend struct {
+	Name string   `json:"name"`
+	Tags []string `json:"tags,omitempty"`
+}
+
 // Strict rejects extra fields recursively, including id/target_id at any depth.
 func Strict(raw []byte, value any) error {
 	if len(raw) == 0 || bytes.Equal(bytes.TrimSpace(raw), []byte("null")) {
@@ -111,6 +137,8 @@ func (o Operation) Args() (any, error) {
 	}
 	var v any
 	switch o.Intent {
+	case "friend_request", "friend_requests", "friend_availability", "invite_friends", "respond_invitation", "propose_reschedule", "resolve_reschedule":
+		v = &Social{}
 	case "create_task", "create_meeting", "create_reminder":
 		v = &Create{}
 	case "search", "list":
@@ -172,11 +200,13 @@ type SearchSummary struct {
 	Status     string `json:"status,omitempty"`
 }
 type Context struct {
-	Now          string         `json:"now"`
-	Timezone     string         `json:"timezone"`
-	LastAction   string         `json:"last_action,omitempty"`
-	LastResults  []Item         `json:"last_results,omitempty"`
-	LastAffected *Item          `json:"last_affected,omitempty"`
-	LastSearch   *SearchSummary `json:"last_search,omitempty"`
-	Pending      *Pending       `json:"pending,omitempty"`
+	Friends       []Friend       `json:"friends,omitempty"`
+	SocialPending *Operation     `json:"social_pending,omitempty"`
+	Now           string         `json:"now"`
+	Timezone      string         `json:"timezone"`
+	LastAction    string         `json:"last_action,omitempty"`
+	LastResults   []Item         `json:"last_results,omitempty"`
+	LastAffected  *Item          `json:"last_affected,omitempty"`
+	LastSearch    *SearchSummary `json:"last_search,omitempty"`
+	Pending       *Pending       `json:"pending,omitempty"`
 }

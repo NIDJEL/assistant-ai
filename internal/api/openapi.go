@@ -119,6 +119,7 @@ func OpenAPI() map[string]any {
 	authOpenAPI(paths, schemas)
 	integrationsOpenAPI(paths, schemas)
 	notificationsOpenAPI(paths, schemas)
+	socialOpenAPI(paths, schemas)
 	voiceResponses := map[string]any{"200": map[string]any{"description": "Transcript for manual review; no chat submission", "content": content(map[string]any{"type": "object", "required": []string{"text"}, "properties": map[string]any{"text": text()}})}}
 	for _, code := range []string{"400", "401", "403", "413", "415", "503"} {
 		voiceResponses[code] = map[string]any{"description": "Audio upload or transcription error", "content": content(ref("Error"))}

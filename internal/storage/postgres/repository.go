@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/NIDJEL/assistant-ai/internal/domain"
+	"github.com/NIDJEL/assistant-ai/internal/social"
 )
 
 type executor interface {
@@ -23,7 +24,8 @@ type Repo struct {
 }
 type scanner interface{ Scan(...any) error }
 
-const columns = "id,kind,title,date,time,duration_minutes,status,created_at,updated_at,source_key,description,priority,external_calendar_id,location,meeting_url,details,deleted_at"
+const baseColumns = "id,kind,title,date,time,duration_minutes,status,created_at,updated_at,source_key,description,priority,external_calendar_id,location,meeting_url,details,deleted_at"
+const columns = baseColumns + ",user_id,EXISTS(SELECT 1 FROM collaborative_meetings cm WHERE cm.event_id=events.id),coalesce((SELECT version FROM collaborative_meetings cm WHERE cm.event_id=events.id),0)"
 
 func dateValue(v *domain.Date) any {
 	if v == nil {
@@ -43,7 +45,7 @@ func scanEvent(row scanner) (*domain.Event, error) {
 	var day, clock, source, external, deleted sql.NullString
 	var details string
 	var minutes int
-	if err := row.Scan(&e.ID, &kind, &e.Title, &day, &clock, &minutes, &status, &created, &updated, &source, &e.Description, &priority, &external, &e.Location, &e.MeetingURL, &details, &deleted); err != nil {
+	if err := row.Scan(&e.ID, &kind, &e.Title, &day, &clock, &minutes, &status, &created, &updated, &source, &e.Description, &priority, &external, &e.Location, &e.MeetingURL, &details, &deleted, &e.OrganizerID, &e.Collaborative, &e.MeetingVersion); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
@@ -96,16 +98,25 @@ func scanEvent(row scanner) (*domain.Event, error) {
 }
 func (r *Repo) Count(ctx context.Context) (int, error) {
 	var n int
-	err := r.q.QueryRowContext(ctx, "SELECT count(*) FROM events WHERE user_id=$1 AND deleted_at IS NULL", r.userID).Scan(&n)
+	err := r.q.QueryRowContext(ctx, "SELECT count(*) FROM events WHERE "+visibleEvents("$1")+" AND deleted_at IS NULL", r.userID).Scan(&n)
 	return n, err
 }
 func (r *Repo) Get(ctx context.Context, id int64) (*domain.Event, error) {
-	return scanEvent(r.q.QueryRowContext(ctx, "SELECT "+columns+" FROM events WHERE id=$1 AND user_id=$2 AND deleted_at IS NULL", id, r.userID))
+	e, err := scanEvent(r.q.QueryRowContext(ctx, "SELECT "+columns+" FROM events WHERE id=$1 AND "+visibleEvents("$2")+" AND deleted_at IS NULL", id, r.userID))
+	r.sharedProjection(e)
+	return e, err
 }
 func (r *Repo) GetDeleted(ctx context.Context, id int64) (*domain.Event, error) {
 	return scanEvent(r.q.QueryRowContext(ctx, "SELECT "+columns+" FROM events WHERE id=$1 AND user_id=$2 AND deleted_at IS NOT NULL", id, r.userID))
 }
 func (r *Repo) Restore(ctx context.Context, id int64, now time.Time) (*domain.Event, error) {
+	var shared bool
+	if err := r.q.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM collaborative_meetings cm JOIN events e ON e.id=cm.event_id WHERE e.id=$1 AND e.user_id=$2 AND cm.cancelled)`, id, r.userID).Scan(&shared); err != nil {
+		return nil, err
+	}
+	if shared {
+		return nil, &domain.AppError{Status: 409, Code: "shared_meeting_cancelled", Message: "Приглашения на эту встречу отменены. Создайте новую встречу, чтобы пригласить участников заново."}
+	}
 	_, err := r.q.ExecContext(ctx, "UPDATE events SET deleted_at=NULL,updated_at=$1 WHERE id=$2 AND user_id=$3 AND deleted_at IS NOT NULL", now.Format(time.RFC3339Nano), id, r.userID)
 	if err != nil {
 		return nil, err
@@ -113,11 +124,15 @@ func (r *Repo) Restore(ctx context.Context, id int64, now time.Time) (*domain.Ev
 	return r.Get(ctx, id)
 }
 func (r *Repo) Events(ctx context.Context, f domain.Filter) ([]domain.Event, error) {
-	where := []string{"deleted_at IS NULL", "user_id=?"}
+	where := []string{"deleted_at IS NULL", visibleEvents("?")}
 	if f.Deleted {
 		where[0] = "deleted_at IS NOT NULL"
+		where[1] = "user_id=?"
 	}
 	args := []any{r.userID}
+	if !f.Deleted {
+		args = append(args, r.userID)
+	}
 	if f.Kind != domain.EventUnknown {
 		where = append(where, "kind=?")
 		args = append(args, f.Kind.String())
@@ -154,9 +169,25 @@ func (r *Repo) Events(ctx context.Context, f domain.Filter) ([]domain.Event, err
 		if err != nil {
 			return nil, err
 		}
+		r.sharedProjection(e)
 		events = append(events, *e)
 	}
 	return events, rows.Err()
+}
+
+func (r *Repo) sharedProjection(e *domain.Event) {
+	if e == nil || e.OrganizerID == r.userID {
+		return
+	}
+	// Organizer-only metadata is not part of the invitation's public details.
+	e.Participants = nil
+	e.Tags = nil
+	e.Subtasks = nil
+	e.SourceKey = nil
+	e.ExternalCalendarID = nil
+	e.ReminderEnabled = nil
+	e.ReminderMinutes = nil
+	e.LastNotificationAt = nil
 }
 func (r *Repo) Create(ctx context.Context, e domain.Event, now time.Time) (*domain.Event, error) {
 	if err := e.Validate(); err != nil {
@@ -181,6 +212,9 @@ func (r *Repo) Update(ctx context.Context, e domain.Event, now time.Time) (*doma
 	if err := e.Validate(); err != nil {
 		return nil, err
 	}
+	if err := r.beforeSharedChange(ctx, e, false, now); err != nil {
+		return nil, err
+	}
 	details, err := json.Marshal(e.EventDetails)
 	if err != nil {
 		return nil, err
@@ -191,13 +225,52 @@ func (r *Repo) Update(ctx context.Context, e domain.Event, now time.Time) (*doma
 	}
 	n, err := result.RowsAffected()
 	if err != nil || n == 0 {
+		if err == nil {
+			err = &domain.AppError{Status: 403, Code: "organizer_required", Message: "Только организатор может изменять встречу"}
+		}
 		return nil, err
 	}
 	return r.Get(ctx, e.ID)
 }
 func (r *Repo) Delete(ctx context.Context, id int64) error {
-	_, err := r.q.ExecContext(ctx, "UPDATE events SET deleted_at=$1 WHERE id=$2 AND user_id=$3 AND deleted_at IS NULL", time.Now().UTC().Format(time.RFC3339Nano), id, r.userID)
+	e, err := r.Get(ctx, id)
+	if err != nil {
+		return err
+	}
+	if e == nil {
+		return &domain.AppError{Status: 404, Code: "not_found", Message: "Запись не найдена"}
+	}
+	if e.OrganizerID != r.userID {
+		return &domain.AppError{Status: 403, Code: "organizer_required", Message: "Только организатор может отменить встречу"}
+	}
+	if err = r.beforeSharedChange(ctx, *e, true, time.Now()); err != nil {
+		return err
+	}
+	_, err = r.q.ExecContext(ctx, "UPDATE events SET deleted_at=$1 WHERE id=$2 AND user_id=$3 AND deleted_at IS NULL", time.Now().UTC().Format(time.RFC3339Nano), id, r.userID)
 	return err
+}
+
+func visibleEvents(param string) string {
+	return "(user_id=" + param + " OR EXISTS(SELECT 1 FROM meeting_participants p JOIN collaborative_meetings cm ON cm.event_id=p.event_id WHERE p.event_id=events.id AND p.user_id=" + param + " AND p.status='accepted' AND NOT cm.cancelled))"
+}
+func (r *Repo) beforeSharedChange(ctx context.Context, e domain.Event, deleting bool, now time.Time) error {
+	if e.OrganizerID != "" && e.OrganizerID != r.userID {
+		return &domain.AppError{Status: 403, Code: "organizer_required", Message: "Только организатор может изменять встречу"}
+	}
+	var zone string
+	err := r.q.QueryRowContext(ctx, `SELECT timezone FROM collaborative_meetings WHERE event_id=$1`, e.ID).Scan(&zone)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	loc, err := time.LoadLocation(zone)
+	if err != nil {
+		return err
+	}
+	s := social.Session{Q: r.q, UserID: r.userID, Location: loc}
+	return s.BeforeChange(ctx, r, e, deleting, now)
 }
 func (r *Repo) State(ctx context.Context, id string) (domain.State, error) {
 	var state domain.State

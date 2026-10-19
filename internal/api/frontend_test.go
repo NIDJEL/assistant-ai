@@ -23,7 +23,7 @@ func TestProductionSPARoutesAndAPI404(t *testing.T) {
 	_ = os.WriteFile(filepath.Join(root, "web/dist/notifications-sw.js"), []byte("self.addEventListener('notificationclick', () => {})"), 0600)
 	a := API{Config: config.Config{Root: root}, Logger: slog.New(slog.NewJSONHandler(io.Discard, nil))}
 	router := a.Router()
-	for _, path := range []string{"/", "/calendar", "/tasks", "/meetings", "/reminders", "/archive", "/integrations", "/settings"} {
+	for _, path := range []string{"/", "/calendar", "/tasks", "/meetings", "/friends", "/reminders", "/archive", "/integrations", "/settings"} {
 		w := httptest.NewRecorder()
 		router.ServeHTTP(w, httptest.NewRequest("GET", path, nil))
 		if w.Code != 200 || !strings.Contains(w.Body.String(), "React build") || w.Header().Get("Cache-Control") != "no-cache" {
