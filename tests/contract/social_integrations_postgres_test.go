@@ -81,6 +81,10 @@ func TestPostgresSharedCalendarExportsAndIncompleteAvailability(t *testing.T) {
 	if err != nil || canonical.Title != "Shared export" || canonical.StartTime.Hour != 15 {
 		t.Fatal("attendee import mutated organizer", canonical, err)
 	}
+	privateTags := []string{"PRIVATE ORGANIZER TAG"}
+	if _, err = cal.Update(a, r.EventID, calendar.Patch{Tags: &privateTags}, now); err != nil {
+		t.Fatal(err)
+	}
 	execute(a, social.Operation{Action: "cancel_invitation", EventID: r.EventID, Version: 1, UserID: v.ID})
 	title := "Private new agenda"
 	if _, err = cal.Update(a, r.EventID, calendar.Patch{Title: &title}, now); err != nil {
@@ -94,6 +98,9 @@ func TestPostgresSharedCalendarExportsAndIncompleteAvailability(t *testing.T) {
 		}
 		if m.Event.Title != "Shared export" || !m.Cancelled {
 			t.Fatal("cancelled invitation leaked later changes", m)
+		}
+		if len(m.Event.Tags) != 0 || len(m.Event.Participants) != 0 || m.Event.ReminderMinutes != nil {
+			t.Fatal("organizer metadata leaked in cancelled snapshot", m.Event)
 		}
 		return nil
 	})

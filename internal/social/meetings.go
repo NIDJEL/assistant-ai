@@ -377,6 +377,9 @@ func (s *Session) meetingOperation(ctx context.Context, op Operation, now time.T
 		}
 		frozen := *m
 		frozen.Cancelled = true
+		// The organizer's editor view contains personal tags/reminders and legacy
+		// participant metadata. History for the revoked guest retains public fields.
+		frozen.Event.EventDetails = domain.EventDetails{}
 		res, e := s.Q.ExecContext(ctx, `UPDATE meeting_participants SET status='cancelled',responded_at=$3,cancelled_snapshot=$4 WHERE event_id=$1 AND user_id=$2 AND status<>'cancelled'`, m.Event.ID, op.UserID, now, jsonText(frozen))
 		if e != nil {
 			return r, e
