@@ -49,10 +49,10 @@ test('widget visibility and Settings persist for the authenticated account', asy
 });
 
 test('responsive routes, drawers and desktop screenshots for all pages', async ({ page }, info) => {
-  // Eight page captures plus six viewport/drawer sweeps exceed the ordinary
-  // single-flow budget on hosted CI. Individual assertions keep their timeout.
-  test.setTimeout(90000);
-  const pages = [{ path: '/', title: 'Чем помочь?', shot: 'today' }, { path: '/calendar', title: 'Календарь', shot: 'calendar' }, { path: '/tasks', title: 'Задачи', shot: 'tasks' }, { path: '/meetings', title: 'Встречи', shot: 'meetings' }, { path: '/reminders', title: 'Напоминания', shot: 'reminders' }, { path: '/archive', title: 'Архив', shot: 'archive' }, { path: '/integrations', title: 'Интеграции', shot: 'integrations' }, { path: '/settings', title: 'Настройки', shot: 'settings' }];
+  // Nine pages are loaded twice at six sizes, including persistent data reads.
+  // Keep the sweep budget separate from individual assertion/action timeouts.
+  test.setTimeout(150000);
+  const pages = [{ path: '/', title: 'Чем помочь?', shot: 'today' }, { path: '/calendar', title: 'Календарь', shot: 'calendar' }, { path: '/tasks', title: 'Задачи', shot: 'tasks' }, { path: '/meetings', title: 'Встречи', shot: 'meetings' }, { path: '/friends', title: 'Друзья', shot: 'friends' }, { path: '/reminders', title: 'Напоминания', shot: 'reminders' }, { path: '/archive', title: 'Архив', shot: 'archive' }, { path: '/integrations', title: 'Интеграции', shot: 'integrations' }, { path: '/settings', title: 'Настройки', shot: 'settings' }];
   for (const viewport of [{ width: 1920, height: 1080 }, { width: 1600, height: 900 }, { width: 1440, height: 900 }, { width: 1280, height: 800 }, { width: 834, height: 1112 }, { width: 390, height: 844 }]) {
     await page.setViewportSize(viewport);
     for (const item of pages) {
@@ -63,6 +63,6 @@ test('responsive routes, drawers and desktop screenshots for all pages', async (
       }
     }
     if (viewport.width < 1180) { await page.getByRole('button', { name: 'Открыть виджеты' }).click(); await expect(page.getByRole('dialog', { name: 'Виджеты' })).toBeVisible(); await noOverflow(page); await page.keyboard.press('Escape'); }
-    if (viewport.width === 390) { await page.getByRole('button', { name: 'Открыть навигацию' }).click(); await page.getByRole('dialog').getByRole('link', { name: 'Сегодня', exact: true }).click(); await expect(page.locator('h1')).toHaveText('Чем помочь?'); await noOverflow(page); await screenshot(page, 'mobile', info); }
+    if (viewport.width === 390) { await page.getByRole('button', { name: 'Открыть навигацию' }).click(); await page.getByRole('dialog').getByRole('link', { name: 'Сегодня', exact: true }).click({ timeout: 10000 }); await expect(page.locator('h1')).toHaveText('Чем помочь?'); await noOverflow(page); await screenshot(page, 'mobile', info); }
   }
 });
