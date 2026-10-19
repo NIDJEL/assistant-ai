@@ -50,6 +50,7 @@ func (s *Session) Meeting(ctx context.Context, tx repository.Tx, id int64) (*Mee
 		if err = json.Unmarshal([]byte(snapshot), m); err != nil {
 			return nil, err
 		}
+		m.Event.EventDetails = domain.EventDetails{}
 		return m, nil
 	} else if !errors.Is(err, sql.ErrNoRows) {
 		return nil, err

@@ -90,6 +90,11 @@ func TestPostgresSharedCalendarExportsAndIncompleteAvailability(t *testing.T) {
 	if _, err = cal.Update(a, r.EventID, calendar.Patch{Title: &title}, now); err != nil {
 		t.Fatal(err)
 	}
+	// Earlier deployments may have stored an organizer-view snapshot. The read
+	// projection also redacts those existing historical rows.
+	if _, err = db.DB.Exec(`UPDATE meeting_participants SET cancelled_snapshot=jsonb_set(cancelled_snapshot,'{event,tags}','["PRIVATE LEGACY TAG"]'::jsonb) WHERE event_id=$1 AND user_id=$2`, r.EventID, v.ID); err != nil {
+		t.Fatal(err)
+	}
 	err = db.Read(b, func(tx repository.Tx) error {
 		s, _ := social.In(b, tx, now.Location())
 		m, e := s.Meeting(b, tx, r.EventID)
