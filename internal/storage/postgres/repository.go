@@ -25,7 +25,7 @@ type Repo struct {
 type scanner interface{ Scan(...any) error }
 
 const baseColumns = "id,kind,title,date,time,duration_minutes,status,created_at,updated_at,source_key,description,priority,external_calendar_id,location,meeting_url,details,deleted_at"
-const columns = baseColumns + ",user_id,EXISTS(SELECT 1 FROM collaborative_meetings cm WHERE cm.event_id=events.id),coalesce((SELECT version FROM collaborative_meetings cm WHERE cm.event_id=events.id),0)"
+const columns = baseColumns + ",user_id,EXISTS(SELECT 1 FROM collaborative_meetings cm WHERE cm.event_id=events.id),coalesce((SELECT version FROM collaborative_meetings cm WHERE cm.event_id=events.id),0),coalesce((SELECT jsonb_agg(jsonb_build_object('name',u.display_name) ORDER BY p.invited_at,u.id) FROM meeting_participants p JOIN users u ON u.id=p.user_id WHERE p.event_id=events.id AND p.status<>'cancelled'),'[]'::jsonb)"
 
 func dateValue(v *domain.Date) any {
 	if v == nil {
@@ -43,9 +43,9 @@ func scanEvent(row scanner) (*domain.Event, error) {
 	var e domain.Event
 	var kind, status, priority, created, updated string
 	var day, clock, source, external, deleted sql.NullString
-	var details string
+	var details, sharedParticipants string
 	var minutes int
-	if err := row.Scan(&e.ID, &kind, &e.Title, &day, &clock, &minutes, &status, &created, &updated, &source, &e.Description, &priority, &external, &e.Location, &e.MeetingURL, &details, &deleted, &e.OrganizerID, &e.Collaborative, &e.MeetingVersion); err != nil {
+	if err := row.Scan(&e.ID, &kind, &e.Title, &day, &clock, &minutes, &status, &created, &updated, &source, &e.Description, &priority, &external, &e.Location, &e.MeetingURL, &details, &deleted, &e.OrganizerID, &e.Collaborative, &e.MeetingVersion, &sharedParticipants); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
@@ -53,6 +53,11 @@ func scanEvent(row scanner) (*domain.Event, error) {
 	}
 	if err := json.Unmarshal([]byte(details), &e.EventDetails); err != nil {
 		return nil, err
+	}
+	if e.Collaborative {
+		if err := json.Unmarshal([]byte(sharedParticipants), &e.Participants); err != nil {
+			return nil, err
+		}
 	}
 	var err error
 	if e.Kind, err = domain.ParseEventType(kind); err != nil {
@@ -180,7 +185,6 @@ func (r *Repo) sharedProjection(e *domain.Event) {
 		return
 	}
 	// Organizer-only metadata is not part of the invitation's public details.
-	e.Participants = nil
 	e.Tags = nil
 	e.Subtasks = nil
 	e.SourceKey = nil

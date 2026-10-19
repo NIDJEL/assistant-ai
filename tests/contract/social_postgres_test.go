@@ -120,6 +120,15 @@ func TestPostgresFriendsInvitationsAvailabilityRescheduleAndPrivacy(t *testing.T
 	if got["time"] != "17:00" {
 		t.Fatal("canonical time not updated", got)
 	}
+	participants := got["participants"].([]any)
+	if len(participants) != 2 {
+		t.Fatal("calendar participants missing", got)
+	}
+	for _, p := range participants {
+		if p.(map[string]any)["email"] != nil {
+			t.Fatal("calendar participant email leaked", p)
+		}
+	}
 	var count int
 	if err := db.DB.QueryRow(`SELECT count(*) FROM events WHERE title='План команды'`).Scan(&count); err != nil || count != 1 {
 		t.Fatal("duplicate canonical event", count, err)
