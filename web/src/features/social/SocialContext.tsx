@@ -2,10 +2,12 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState, ty
 import { request, errorMessage } from '../../api/client';
 import { useData } from '../../app/DataContext';
 import type { Availability, People, SharedMeeting, Slot, SocialOperation, SocialResult } from './types';
-interface SocialData { people: People | null; meetings: SharedMeeting[]; error: string; loading: boolean; refresh: () => Promise<void>; perform: (op: SocialOperation) => Promise<SocialResult>; check: (ids: string[], slot: Slot, eventId?: number) => Promise<Availability> }
+import { Button } from '../../components/UI';
+interface SocialData { people: People | null; meetings: SharedMeeting[]; error: string; loading: boolean; refresh: () => Promise<void>; perform: (op: SocialOperation) => Promise<SocialResult>; check: (ids: string[], slot: Slot, eventId?: number) => Promise<Availability>; inform: (message: string) => void }
 const Context = createContext<SocialData | null>(null);
 export function SocialProvider({ children }: { children: ReactNode }) {
   const [people, setPeople] = useState<People | null>(null); const [meetings, setMeetings] = useState<SharedMeeting[]>([]); const [error, setError] = useState(''); const [loading, setLoading] = useState(true);
+  const [notice, setNotice] = useState('');
   const data = useData(); const refreshData = data.refresh; const pending = useRef(new Map<string, string>()); const running = useRef(false); const mounted = useRef(true);
   const meetingStamp = useRef('');
   const refresh = useCallback(async () => {
@@ -18,9 +20,10 @@ export function SocialProvider({ children }: { children: ReactNode }) {
   async function perform(op: SocialOperation) {
     const key = JSON.stringify(op); const requestId = pending.current.get(key) || crypto.randomUUID(); pending.current.set(key, requestId);
     const result = await request<SocialResult>('/api/social/operations', { method: 'POST', body: JSON.stringify({ ...op, request_id: requestId }) }, 45000);
+    if (result.message.includes('не полностью')) setNotice(result.message);
     pending.current.delete(key); await Promise.all([refresh(), refreshData()]); return result;
   }
   const check = (ids: string[], slot: Slot, eventId = 0) => request<Availability>('/api/social/availability', { method: 'POST', body: JSON.stringify({ friend_ids: ids, slot, event_id: eventId }) }, 45000);
-  return <Context value={{ people, meetings, error, loading, refresh, perform, check }}>{children}</Context>;
+  return <Context value={{ people, meetings, error, loading, refresh, perform, check, inform: setNotice }}>{children}{notice && <div className="toast"><div className="social-notice" role="status"><span>{notice}</span><Button variant="ghost" onClick={() => setNotice('')}>Понятно</Button></div></div>}</Context>;
 }
 export function useSocial() { const value = useContext(Context); if (!value) throw new Error('SocialProvider missing'); return value; }

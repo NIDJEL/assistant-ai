@@ -29,7 +29,7 @@ export function EventEditor({ spec, onClose }: { spec: EditorSpec; onClose: () =
     if (locked.current) return; locked.current = true; setBusy(true); setError('');
     try {
       const payload = { ...input, title: input.title.trim(), reminder_enabled: !!input.date && !!input.time && reminderEnabled, reminder_minutes: reminderMinutes, tags: [...new Set(tags.split(',').map(tag => tag.trim()).filter(Boolean))], ...(spec.kind === 'task' ? { subtasks } : {}), ...(spec.kind === 'meeting' ? { participants } : {}), force };
-      if (event) { const { kind: _kind, ...patch } = payload; const updated = await data.update(event.id, patch); if (friendIds.length) await social.perform({ action: 'invite', event_id: event.id, version: updated.meeting_version || 1, friend_ids: friendIds }); }
+      if (event) { if (event.collaborative && input.date && input.time) { const checked = await social.check(friendIds, localSlot(input.date, input.time, input.duration_minutes || 60, data.health!.timezone), event.id); if (!checked.complete) social.inform('Доступность внешних календарей проверена не полностью. Проверьте время с участниками.'); } const { kind: _kind, ...patch } = payload; const updated = await data.update(event.id, patch); if (friendIds.length) await social.perform({ action: 'invite', event_id: event.id, version: updated.meeting_version || 1, friend_ids: friendIds }); }
       else if (spec.kind === 'meeting' && friendIds.length) await social.perform({ action: 'create_meeting', event: payload, friend_ids: friendIds });
       else await data.create(payload);
       onClose();

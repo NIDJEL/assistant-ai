@@ -211,6 +211,9 @@ func (s *Session) meetingOperation(ctx context.Context, op Operation, now time.T
 		}
 		err = s.invite(ctx, m.Event, op.FriendIDs, m.Version, now)
 		r.Message = "Приглашения отправлены"
+		if !a.Complete {
+			r.Message += " Доступность внешних календарей проверена не полностью."
+		}
 	case "respond":
 		if op.UserID != "" && op.UserID != s.UserID {
 			return r, problem(403, "own_response_only", "Можно отвечать только на собственное приглашение")
