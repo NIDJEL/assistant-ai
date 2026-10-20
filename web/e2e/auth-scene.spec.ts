@@ -21,7 +21,7 @@ async function settle(page: Page) {
 
 test('desktop and mobile layouts keep the form, illustrations and consents intact', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  for (const viewport of [{ width: 1920, height: 1080 }, { width: 1440, height: 900 }, { width: 1366, height: 768 }, { width: 1024, height: 768 }, { width: 768, height: 1024 }, { width: 390, height: 844 }, { width: 360, height: 740 }, { width: 320, height: 740 }]) {
+  for (const viewport of [{ width: 1920, height: 1080 }, { width: 1440, height: 900 }, { width: 1366, height: 768 }, { width: 1280, height: 720 }, { width: 1024, height: 768 }, { width: 768, height: 1024 }, { width: 593, height: 932 }, { width: 390, height: 844 }, { width: 360, height: 740 }, { width: 320, height: 740 }]) {
     await page.setViewportSize(viewport);
     await page.goto('/auth');
     await expect(page.getByRole('heading', { name: 'Добро пожаловать! Я Гена' })).toBeVisible();
@@ -42,7 +42,9 @@ test('desktop and mobile layouts keep the form, illustrations and consents intac
         await expect(field).toBeInViewport({ ratio: 1 });
         expect(await field.evaluate(e => e.closest('.auth-input')!.getBoundingClientRect().height)).toBeGreaterThanOrEqual(48);
       }
-      await page.getByRole('button', { name: mode === 'login' ? 'Войти' : 'Создать аккаунт', exact: true }).scrollIntoViewIfNeeded();
+      const submit = page.getByRole('button', { name: mode === 'login' ? 'Войти' : 'Создать аккаунт', exact: true });
+      await submit.scrollIntoViewIfNeeded();
+      await expect(submit).toBeInViewport({ ratio: 1 });
       expect(await page.locator('.auth-premium img').evaluateAll(images => images.every(image => image instanceof HTMLImageElement && image.complete && image.naturalWidth > 0))).toBe(true);
     }
   }

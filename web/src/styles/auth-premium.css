@@ -125,6 +125,7 @@
 .auth-page-footer a { color: #a4b4d1; }
 .auth-page-footer a>span { padding-left: 6px; }
 .auth-premium :is(button, a, input):focus-visible { outline: 2px solid #8bc8ff; outline-offset: 4px; }
+.auth-premium :is(button, input, fieldset) { scroll-margin-block: 16px; }
 .auth-premium .auth-input input:focus-visible { outline: none; }
 .auth-premium[data-paused='true'] *, .auth-premium[data-paused='true'] *::before, .auth-premium[data-paused='true'] *::after { animation-play-state: paused!important; }
 .auth-premium[data-feedback='success'] .gena-smile { transform: scale(1.3); }
