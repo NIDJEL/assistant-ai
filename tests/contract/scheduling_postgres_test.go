@@ -83,7 +83,18 @@ func TestPostgresSchedulingExistingOwnerZoomAndMultipleChoices(t *testing.T) {
 
 func TestPostgresSchedulingZoomFailureDoesNotClaimSuccess(t *testing.T) {
 	h := schedulingFixture(t)
-	h.shared(h.a, h.bid, domain.Day(h.now.AddDate(0, 0, 1)), 17)
+	id := h.shared(h.a, h.bid, domain.Day(h.now.AddDate(0, 0, 1)), 17)
+	if err := h.db.Write(h.a, func(tx repository.Tx) error {
+		e, err := tx.Get(h.a, id)
+		if err != nil {
+			return err
+		}
+		e.MeetingURL = "https://meet.example.test/previous-call"
+		_, err = tx.Update(h.a, *e, h.now)
+		return err
+	}); err != nil {
+		t.Fatal(err)
+	}
 	z := &schedulingZoom{h: h, fail: true}
 	h.service.Integrations = z
 	r := h.say(h.a, "meeting_zoom", `{"friends":["Матвей"],"date":{"type":"relative_day","offset":1}}`, "Добавь Zoom завтра")
@@ -369,6 +380,53 @@ func TestPostgresSchedulingContinuationAcrossMidnightKeepsOriginalDay(t *testing
 	r = h.say(h.a, "continue", `{"changes":{"time":"15:00"}}`, "В 15")
 	if r.Pending || len(r.Events) != 1 || r.Events[0].Date.String() != want {
 		t.Fatal(r)
+	}
+}
+
+func TestPostgresSchedulingGroupDisplayTitleMatchesCalendarAndRevokedHistory(t *testing.T) {
+	h := schedulingFixture(t)
+	c, err := h.auth.Register(t.Context(), "Алиса Проверка", "group-title@example.test", "password 12345", "password 12345")
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx := repository.WithUser(t.Context(), c.ID)
+	var code string
+	if err = h.db.DB.QueryRow(`SELECT friend_code FROM users WHERE id=$1`, c.ID).Scan(&code); err != nil {
+		t.Fatal(err)
+	}
+	rq := h.execute(h.a, social.Operation{Action: "request", Code: code})
+	h.execute(ctx, social.Operation{Action: "accept_request", ID: rq.ID})
+	e := domain.Event{Kind: domain.EventMeeting, Title: "Встреча", Date: domain.Day(h.now.AddDate(0, 0, 1)), StartTime: &domain.TimeOfDay{Hour: 17}, Duration: time.Hour, Status: domain.StatusOpen, Priority: domain.PriorityNormal}
+	rq = h.execute(h.a, social.Operation{Action: "create_meeting", Event: &e, FriendIDs: []string{h.bid, c.ID}})
+	h.execute(h.b, social.Operation{Action: "respond", EventID: rq.EventID, Version: 1, Status: "accepted"})
+	want := "Встреча с Никитой Кругловым"
+	if err = h.db.Read(h.b, func(tx repository.Tx) error {
+		s, _ := social.In(h.b, tx, h.now.Location())
+		m, err := s.Meeting(h.b, tx, rq.EventID)
+		if err != nil {
+			return err
+		}
+		event, err := tx.Get(h.b, rq.EventID)
+		if err != nil {
+			return err
+		}
+		if m.Event.Label() != want || event == nil || event.Label() != want {
+			t.Fatal(m, event)
+		}
+		return nil
+	}); err != nil {
+		t.Fatal(err)
+	}
+	h.execute(h.a, social.Operation{Action: "cancel_invitation", EventID: rq.EventID, Version: 1, UserID: h.bid})
+	if err = h.db.Read(h.b, func(tx repository.Tx) error {
+		s, _ := social.In(h.b, tx, h.now.Location())
+		m, err := s.Meeting(h.b, tx, rq.EventID)
+		if err == nil && m.Event.Label() != want {
+			t.Fatal(m)
+		}
+		return err
+	}); err != nil {
+		t.Fatal(err)
 	}
 }
 

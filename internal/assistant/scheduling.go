@@ -273,7 +273,7 @@ func (s *Service) createSocialMeeting(ctx context.Context, tx repository.Tx, sta
 		if len(matches) > 0 {
 			if len(matches) == 1 {
 				m := matches[0]
-				if m.Organizer.ID != session.UserID || a.Conference == "" || m.Event.MeetingURL != "" {
+				if m.Organizer.ID != session.UserID || a.Conference == "" || domain.ValidZoomJoinURL(m.Event.MeetingURL) {
 					return s.useExistingMeeting(ctx, tx, state, &m, a.Conference, now)
 				}
 				q.Selected = &m.Event
@@ -430,7 +430,7 @@ func (s *Service) useExistingMeeting(ctx context.Context, tx repository.Tx, stat
 	if conference != "zoom" {
 		return r, nil
 	}
-	if m.Event.MeetingURL != "" {
+	if domain.ValidZoomJoinURL(m.Event.MeetingURL) {
 		r.Reply += " Ссылка для звонка уже добавлена."
 		return r, nil
 	}

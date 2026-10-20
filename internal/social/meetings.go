@@ -51,6 +51,7 @@ func (s *Session) Meeting(ctx context.Context, tx repository.Tx, id int64) (*Mee
 			return nil, err
 		}
 		m.Event.EventDetails = domain.EventDetails{}
+		m.displayTitle(s.UserID)
 		return m, nil
 	} else if !errors.Is(err, sql.ErrNoRows) {
 		return nil, err
@@ -104,21 +105,26 @@ func (s *Session) Meeting(ctx context.Context, tx repository.Tx, id int64) (*Mee
 	if err = rows.Err(); err != nil {
 		return nil, err
 	}
-	m.Event.OrganizerName = m.Organizer.Name
+	m.displayTitle(s.UserID)
 	if domain.ValidZoomJoinURL(m.Event.MeetingURL) {
 		m.Event.ConferenceProvider = "zoom"
 	}
+	return m, nil
+}
+
+func (m *Meeting) displayTitle(viewer string) {
+	m.Event.OrganizerName = m.Organizer.Name
 	names := []string{}
-	if m.Organizer.ID != s.UserID {
+	if m.Organizer.ID != viewer {
 		names = append(names, m.Organizer.Name)
-	}
-	for _, p := range m.Members {
-		if p.ID != s.UserID && p.Status != "cancelled" {
-			names = append(names, p.Name)
+	} else {
+		for _, p := range m.Members {
+			if p.Status != "cancelled" {
+				names = append(names, p.Name)
+			}
 		}
 	}
 	m.Event.DisplayTitle = domain.MeetingDisplayTitle(m.Event.Title, names)
-	return m, nil
 }
 func (s *Session) meetingOperation(ctx context.Context, op Operation, now time.Time) (Result, error) {
 	r := Result{EventID: op.EventID}
