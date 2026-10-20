@@ -512,7 +512,9 @@ func (s *Service) applySimple(ctx context.Context, tx repository.Tx, state *doma
 		c = p.Command
 		c.Error = ""
 		if err = simpleChanges(&c, a.Changes, now); err != nil {
-			state.Pending = p
+			if in(p.Expectation, "fields", "reminder") {
+				state.Pending = p
+			}
 			return clarify("Уточните дату, время, длительность или настройки напоминания.")
 		}
 		if p.RequiredSlot == "date" && a.Changes.Date == nil || p.RequiredSlot == "time" && a.Changes.Time == nil && (a.Changes.Date == nil || a.Changes.Date.Type != "relative_delay") {

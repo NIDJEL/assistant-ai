@@ -86,3 +86,28 @@ func TestSimpleBatchDurationRequiresPreviewAndConfirmation(t *testing.T) {
 		}
 	}
 }
+
+func TestSimpleInvalidDurationDisarmsOlderConflictConfirmation(t *testing.T) {
+	s, p, now := simpleService(t)
+	meeting := seedPlanEvent(t, s, "Проверка макета", "2026-10-17", "10:00", domain.EventMeeting, now)
+	seedPlanEvent(t, s, "Другая встреча", "2026-10-17", "11:45", domain.EventMeeting, now)
+	operationFixture(p, "search", `{"kind":"meeting","query":"макет"}`)
+	say(t, s, "Найди встречу по макету", now)
+	operationFixture(p, "update", `{"target":{"type":"last"},"changes":{"time":"11:00"}}`)
+	if r := say(t, s, "Перенеси на одиннадцать", now.Add(time.Second)); !r.Pending {
+		t.Fatal("expected conflict confirmation", r)
+	}
+	operationFixture(p, "continue", `{"changes":{"duration_minutes":2}}`)
+	if r := say(t, s, "Лучше на две минуты", now.Add(2*time.Second)); r.Pending || r.Action != domain.ActionClarify {
+		t.Fatal("invalid correction kept an older preview armed", r)
+	}
+	operationFixture(p, "confirm", `{}`)
+	if r := say(t, s, "да", now.Add(3*time.Second)); r.Action != domain.ActionClarify || r.Pending {
+		t.Fatal("confirmed an invalidated preview", r)
+	}
+	for _, e := range readAll(t, s) {
+		if e.ID == meeting.ID && e.StartTime.String() != "10:00" {
+			t.Fatal("stale move executed", e)
+		}
+	}
+}
