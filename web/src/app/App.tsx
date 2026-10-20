@@ -1,3 +1,4 @@
+import { useLayoutEffect } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './AuthContext';
 import { AuthPage } from '../pages/Auth/AuthPage';
@@ -25,6 +26,12 @@ export function App() {
 function AuthGate() {
   const { user, loading, error, refresh } = useAuth(); const location = useLocation();
   const legalDocument = legalDocumentAt(location.pathname);
+  const surface = legalDocument ? 'legal' : location.pathname === '/onboarding' || user && !user.onboarding_completed ? 'onboarding' : location.pathname === '/auth' || !user ? 'auth' : 'workspace';
+  useLayoutEffect(() => {
+    document.documentElement.dataset.surface = surface;
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#080f21');
+    return () => { delete document.documentElement.dataset.surface; };
+  }, [surface]);
   if (legalDocument) return <LegalPage document={legalDocument}/>;
   if (loading || error) return <main className="auth-splash"><BrandMark/><span>{error || 'Гена'}</span>{error && <button className="auth-primary" onClick={() => void refresh()}>Повторить</button>}</main>;
   if (location.pathname === '/auth') return <AuthPage/>;

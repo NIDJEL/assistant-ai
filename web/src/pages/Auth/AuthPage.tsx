@@ -1,4 +1,4 @@
-import { useRef, useState, type InputHTMLAttributes, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type InputHTMLAttributes, type ReactNode } from 'react';
 import { Mail, LockKeyhole, UserRound, Eye, EyeOff, ChevronRight, LoaderCircle, type LucideIcon } from 'lucide-react';
 import { Navigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../app/AuthContext';
@@ -19,8 +19,24 @@ function AuthField({ label, icon: Icon, action, ...input }: InputHTMLAttributes<
 const oauthErrors: Record<string, string> = { legal_acceptance_required: 'Прочитайте документы и подтвердите согласие перед входом.', oauth_account_exists: 'Войдите в существующий аккаунт и подключите этот способ входа в настройках.', oauth_invalid: 'Не удалось завершить вход. Попробуйте ещё раз.', oauth_cancelled: 'Авторизация была отменена', oauth_unavailable: 'Вход через Яндекс ещё не настроен. Используйте почту.', session: 'Сессия истекла. Войдите снова.' };
 export function AuthPage() {
   const sceneRef = usePointerSpring<HTMLElement>();
-  const { user, login, register } = useAuth(); const [params] = useSearchParams();
+  const { user, login, register, refresh } = useAuth(); const [params] = useSearchParams();
   const [mode, setMode] = useState<'login' | 'register'>('login'); const [phase, setPhase] = useState(''); const [busy, setBusy] = useState(''); const locked = useRef(false);
+  const oauthNavigation = useRef(false);
+  const oauthDeparted = useRef(false);
+  useEffect(() => {
+    function resume() {
+      if (!oauthNavigation.current || document.hidden) return;
+      oauthNavigation.current = false; oauthDeparted.current = false; locked.current = false; setBusy('');
+      void refresh();
+    }
+    function visibility() { if (document.hidden) oauthDeparted.current = true; else if (oauthDeparted.current) resume(); }
+    function focus() { if (oauthDeparted.current) resume(); }
+    // Safari restores the form's pending state from its back/forward cache.
+    window.addEventListener('pageshow', resume);
+    document.addEventListener('visibilitychange', visibility);
+    window.addEventListener('focus', focus);
+    return () => { window.removeEventListener('pageshow', resume); document.removeEventListener('visibilitychange', visibility); window.removeEventListener('focus', focus); };
+  }, [refresh]);
   const [name, setName] = useState(''); const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [confirmation, setConfirmation] = useState(''); const [visible, setVisible] = useState(false);
   const [error, setError] = useState(oauthErrors[params.get('error') || ''] || ''); const [help, setHelp] = useState(''); const isRegister = mode === 'register';
   const [termsAccepted, setTermsAccepted] = useState(false); const [dataConsent, setDataConsent] = useState(false);
@@ -32,7 +48,7 @@ export function AuthPage() {
     if (isRegister && password.length < 10) { setError('Пароль должен содержать от 10 символов'); return; } if (isRegister && password !== confirmation) { setError('Пароли не совпадают'); return; }
     locked.current = true; setBusy('email'); try { if (isRegister) await register(name.trim(), email.trim(), password, confirmation, acceptance); else await login(email.trim(), password, acceptance); setPhase('success'); window.setTimeout(() => { setPhase(''); }, window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches ? 0 : 240); } catch (e) { setError(errorMessage(e)); } finally { setBusy(''); locked.current = false; }
   }
-  async function oauth(provider: 'yandex') { if (locked.current || phase || !agreed) return; locked.current = true; setBusy(provider); setError(''); try { const data = await request<{ redirect_url: string }>(`/api/auth/${provider}/start`, { method: 'POST', body: JSON.stringify(acceptance) }); window.location.assign(data.redirect_url); } catch (e) { setError(errorMessage(e)); setBusy(''); locked.current = false; } }
+  async function oauth(provider: 'yandex') { if (locked.current || phase || !agreed) return; locked.current = true; setBusy(provider); setError(''); try { const data = await request<{ redirect_url: string }>(`/api/auth/${provider}/start`, { method: 'POST', body: JSON.stringify(acceptance) }); oauthNavigation.current = true; window.location.assign(data.redirect_url); } catch (e) { oauthNavigation.current = false; setError(errorMessage(e)); setBusy(''); locked.current = false; } }
   const passwordInput = (repeat = false) => <AuthField id={repeat ? 'auth-password-confirmation' : 'auth-password'} label={repeat ? 'Повторите пароль' : 'Пароль'} icon={LockKeyhole} type={visible ? 'text' : 'password'} autoComplete={isRegister ? 'new-password' : 'current-password'} value={repeat ? confirmation : password} onChange={e => repeat ? setConfirmation(e.target.value) : setPassword(e.target.value)} required maxLength={1024} aria-invalid={!!error} action={!repeat && <button type="button" aria-label={visible ? 'Скрыть пароль' : 'Показать пароль'} onClick={() => setVisible(!visible)}>{visible ? <Eye size={21}/> : <EyeOff size={21}/>}</button>}/>;
   return <main ref={sceneRef} className="auth-page auth-premium" data-feedback={phase === 'success' ? 'success' : error ? 'error' : busy ? 'busy' : 'idle'}><AuthBackdrop/><div className={`auth-container ${isRegister ? 'auth-register' : ''} ${phase === 'success' ? 'auth-success' : ''}`}>
     <AuthScene/>
@@ -54,6 +70,6 @@ export function AuthPage() {
         </fieldset>
         <AutoHeight className="auth-message-size">{(error || help) && <p id="auth-message" className={error ? 'auth-error' : 'auth-help'} role={error ? 'alert' : 'status'}>{error || help}</p>}</AutoHeight>
         <button type="submit" className="auth-primary" disabled={!!busy || !!phase || !agreed}><span>{busy === 'email' ? isRegister ? 'Создаём аккаунт…' : 'Входим…' : phase === 'success' ? 'Готово' : isRegister ? 'Создать аккаунт' : 'Войти'}</span>{busy === 'email' && <LoaderCircle className="auth-spinner" size={20}/>}</button>
-      </form><p className="auth-alternate">{isRegister ? 'Уже есть аккаунт?' : 'Нет аккаунта?'} <button type="button" disabled={!!busy || !!phase} onClick={() => switchMode(isRegister ? 'login' : 'register')}>{isRegister ? 'Войти' : 'Создать аккаунт'}</button></p></div></AutoHeight>
+      </form></div></AutoHeight>
     </section></div></main>;
 }

@@ -124,6 +124,63 @@ test('Yandex keeps the real start endpoint and consent payload', async ({ page }
   expect(body).toEqual({ terms_accepted: true, personal_data_consent: true, legal_version: LEGAL_VERSION });
 });
 
+for (const event of ['pageshow', 'visibilitychange']) test(`returning from Yandex via ${event} restores credentials and consent`, async ({ page }) => {
+  let starts = 0;
+  let release!: () => void; const pending = new Promise<void>(resolve => { release = resolve; });
+  await page.route('**/api/auth/yandex/start', async route => {
+    starts++;
+    if (starts === 1) await pending;
+    return starts === 1
+      ? route.fulfill({ json: { redirect_url: new URL('/oauth-cancel-test', page.url()).href } })
+      : route.fulfill({ status: 503, json: { error: { message: 'Повторный вход доступен' } } });
+  });
+  await page.route('**/oauth-cancel-test', route => route.abort('aborted'));
+  await page.goto('/auth');
+  await page.getByLabel('Почта', { exact: true }).fill('return@example.test');
+  await page.getByRole('checkbox', { name: /Принимаю/ }).check();
+  await page.getByRole('checkbox', { name: /Даю/ }).check();
+  const cancelledNavigation = page.waitForEvent('requestfailed', request => request.url().endsWith('/oauth-cancel-test'));
+  await page.getByRole('button', { name: 'Войти через Яндекс' }).click();
+  await page.evaluate(() => window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true })));
+  await expect(page.getByRole('button', { name: 'Переходим в Яндекс…' })).toBeDisabled();
+  await expect(page.getByRole('tab', { name: 'Создать аккаунт' })).toBeDisabled();
+  release();
+  await cancelledNavigation;
+  await expect(page.getByRole('button', { name: 'Переходим в Яндекс…' })).toBeDisabled();
+  // A cached document gets pageshow rather than a fresh React mount.
+  await page.evaluate(event => {
+    if (event === 'pageshow') window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true }));
+    else {
+      Object.defineProperty(document, 'hidden', { configurable: true, get: () => true }); document.dispatchEvent(new Event('visibilitychange'));
+      Object.defineProperty(document, 'hidden', { configurable: true, get: () => false }); document.dispatchEvent(new Event('visibilitychange'));
+    }
+  }, event);
+  await expect(page.getByRole('button', { name: 'Войти через Яндекс' })).toBeEnabled();
+  await expect(page.getByRole('tab', { name: 'Создать аккаунт' })).toBeEnabled();
+  await expect(page.getByLabel('Почта', { exact: true })).toHaveValue('return@example.test');
+  await expect(page.getByRole('checkbox', { name: /Принимаю/ })).toBeChecked();
+  await expect(page.getByRole('checkbox', { name: /Даю/ })).toBeChecked();
+  await page.getByRole('button', { name: 'Войти через Яндекс' }).click();
+  await expect(page.getByRole('alert')).toHaveText('Повторный вход доступен');
+  expect(starts).toBe(2);
+});
+
+test('installed app metadata and safe areas keep mobile auth controls clear of system indicators', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.setViewportSize({ width: 390, height: 844 }); await page.goto('/auth');
+  await expect(page.locator('meta[name=viewport]')).toHaveAttribute('content', /viewport-fit=cover/);
+  await expect(page.locator('meta[name=apple-mobile-web-app-status-bar-style]')).toHaveAttribute('content', 'black-translucent');
+  const manifest = await (await page.request.get('/manifest.webmanifest')).json();
+  expect(manifest).toMatchObject({ display: 'standalone', theme_color: '#080f21', background_color: '#080f21', scope: '/' });
+  await page.evaluate(() => { document.documentElement.style.setProperty('--safe-top', '47px'); document.documentElement.style.setProperty('--safe-bottom', '34px'); });
+  for (const name of ['Создать аккаунт', 'Войти']) {
+    await page.getByRole('tab', { name, exact: true }).click(); await settle(page);
+    const card = (await page.locator('.auth-card').boundingBox())!;
+    expect(card.y).toBeGreaterThanOrEqual(47); expect(card.y + card.height).toBeLessThanOrEqual(810);
+    expect(await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight)).toBe(true);
+  }
+});
+
 test('reduced motion disables decorative animation and pointer movement', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/auth'); await settle(page);

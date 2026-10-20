@@ -12,6 +12,7 @@ import './styles/auth-premium.css';
 import './styles/notifications.css';
 import './styles/zoom.css';
 import './styles/social.css';
+import './styles/workspace.css';
 if (typeof document.startViewTransition === 'function') document.documentElement.dataset.nativeMotion = 'true';
 createRoot(document.getElementById('root')!).render(<StrictMode><App/></StrictMode>);
 if (window.isSecureContext && navigator.serviceWorker) void registerNotifications().catch(() => {});

@@ -45,7 +45,7 @@ test('avatar menu opens settings and logs out, while account persists names and 
     await expect(page.locator('.account-card [role="alert"]')).toContainText('Выберите изображение'); await expect(page.locator('.account-avatar img')).toBeVisible();
     await page.getByRole('button', { name: 'Удалить фото', exact: true }).click(); await expect(page.locator('.account-card').getByRole('status')).toContainText('Фото удалено'); await expect(page.locator('.account-avatar img')).toHaveCount(0); await expect(other.locator('.profile-trigger img')).toHaveCount(0);
     await page.getByRole('button', { name: 'Меню аккаунта', exact: true }).click();
-    const logout = page.getByRole('menuitem', { name: 'Выйти', exact: true }); await expect(logout).toHaveCSS('color', 'rgb(213, 57, 72)');
+    const logout = page.getByRole('menuitem', { name: 'Выйти', exact: true }); await expect(logout).toHaveCSS('color', 'rgb(255, 148, 164)');
     await page.screenshot({ path: info.outputPath('profile-menu.png'), animations: 'disabled' });
     await logout.click(); await expect(page).toHaveURL(/\/auth$/); await expect(other).toHaveURL(/\/auth$/);
   } finally { await other.close(); }
