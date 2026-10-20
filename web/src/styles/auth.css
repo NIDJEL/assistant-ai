@@ -30,8 +30,7 @@ html:has(.auth-page),html:has(.auth-splash){scrollbar-gutter:auto}
 .auth-page .auth-segment>span{transition:transform .48s cubic-bezier(.22,1,.36,1)!important}
 @media(prefers-reduced-motion:reduce){.auth-page .auth-segment>span{transition-duration:.3s!important}.auth-page .auth-experience{animation:auth-form-fade .2s ease!important}}
 
-.auth-container .auth-legal{border:0;min-width:0;padding:0;margin:0 0 20px;text-align:left;font-size:13px;line-height:1.5;color:#4c6287;display:grid;gap:12px}
-.auth-legal legend{font-size:12px;font-weight:600;color:#6b7f9f;padding:0;margin-bottom:10px}
+.auth-container .auth-legal{border:0;min-width:0;padding:0;margin:0;text-align:left;font-size:13px;line-height:1.5;color:#4c6287;display:grid;gap:12px}
 .auth-agreement{display:flex;align-items:flex-start;gap:10px;cursor:pointer}.auth-agreement input{appearance:auto;flex-shrink:0;accent-color:#1678ff;width:18px;height:18px;min-height:18px;margin:2px 0 0;padding:0;cursor:pointer}.auth-agreement span{min-width:0}.auth-agreement a{text-decoration:underline;text-underline-offset:2px;color:#0968d9}.auth-agreement a:focus-visible,.auth-agreement input:focus-visible{outline:3px solid #85b8ff;outline-offset:3px}
 .auth-oauth>button:disabled{opacity:.6;cursor:not-allowed}.auth-primary:disabled{cursor:not-allowed}
-@media(max-width:760px){.auth-container .auth-legal{font-size:13px;gap:12px;margin-bottom:18px}.auth-agreement{gap:9px}.auth-legal legend{font-size:12px}}
+@media(max-width:760px){.auth-container .auth-legal{font-size:13px;gap:12px}.auth-agreement{gap:9px}}
