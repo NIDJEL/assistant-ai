@@ -25,6 +25,7 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"os"
+	"path/filepath"
 
 	"strings"
 	"sync"
@@ -79,7 +80,7 @@ func pgFixture(t *testing.T) (*postgres.Database, *auth.Service, http.Handler, t
 	if err != nil {
 		t.Fatal(err)
 	}
-	cal := &calendar.Service{Store: db, Search: engine, Location: loc}
+	cal := &calendar.Service{Store: db, Search: engine, Location: loc, DemoPath: filepath.Join(root(), "data/voice_assistant_events_1000.csv")}
 	app := &api.API{Config: config.Config{Root: root(), Timezone: "Europe/Moscow", NLPProvider: "rules", PublicURL: "https://rhythm.test", Environment: "production"}, Auth: svc, Clock: clock.Func(func() time.Time { return now }), Calendar: cal, Assistant: assistant.New(db, nlp.Hybrid{}, cal), Logger: slog.New(slog.NewTextHandler(io.Discard, nil))}
 	return db, svc, app.Router(), now
 }

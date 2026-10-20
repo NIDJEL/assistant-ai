@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/NIDJEL/assistant-ai/internal/domain"
 	"github.com/NIDJEL/assistant-ai/internal/repository"
@@ -361,6 +362,10 @@ func (s *Service) Import(ctx context.Context, input io.Reader, filename string, 
 	}
 	cols := map[string]int{}
 	for i, h := range header {
+		h = strings.TrimSpace(h)
+		if _, exists := cols[h]; exists {
+			return result, domain.Validation("CSV содержит повторяющиеся названия столбцов")
+		}
 		cols[h] = i
 	}
 	for _, name := range []string{"id", "date", "time", "text"} {
@@ -383,6 +388,10 @@ func (s *Service) Import(ctx context.Context, input io.Reader, filename string, 
 		if readErr != nil {
 			return result, domain.Validation(fmt.Sprintf("Ошибка CSV в строке %d: %v", line, readErr))
 		}
+		line, _ = reader.FieldPos(0)
+		if len(prepared) >= CSVMaxRows {
+			return result, domain.Validation("В CSV должно быть не больше 10000 записей")
+		}
 		id, idErr := strconv.ParseInt(row[cols["id"]], 10, 64)
 		day, dayErr := domain.ParseDate(row[cols["date"]])
 		clock, clockErr := domain.ParseTime(row[cols["time"]])
@@ -391,6 +400,9 @@ func (s *Service) Import(ctx context.Context, input io.Reader, filename string, 
 		}
 		seen[id] = true
 		title := strings.TrimSpace(row[cols["text"]])
+		if !utf8.ValidString(title) {
+			return result, domain.Validation(fmt.Sprintf("Ошибка CSV в строке %d: используйте кодировку UTF-8", line))
+		}
 		kind := domain.EventTask
 		firstWord := ""
 		if fields := strings.Fields(title); len(fields) > 0 {
@@ -409,6 +421,9 @@ func (s *Service) Import(ctx context.Context, input io.Reader, filename string, 
 			return result, domain.Validation(fmt.Sprintf("Ошибка CSV в строке %d: %v", line, err))
 		}
 		prepared = append(prepared, e)
+	}
+	if len(prepared) == 0 {
+		return result, domain.Validation("CSV не содержит записей: добавьте хотя бы одну строку после заголовка")
 	}
 	result.TotalRows = len(prepared)
 	err = s.Store.Write(ctx, func(tx repository.Tx) error {

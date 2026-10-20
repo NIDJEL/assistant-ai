@@ -18,4 +18,10 @@ export const createEvent = (input: EventInput) => request<RhythmEvent>('/api/eve
 export const updateEvent = (id: number, input: EventPatch) => request<RhythmEvent>(`/api/events/${id}`, { method: 'PATCH', body: JSON.stringify(input) });
 export const deleteEvent = (id: number) => request<void>(`/api/events/${id}`, { method: 'DELETE' });
 export const restoreEvent = (id: number, force = false) => request<RhythmEvent>(`/api/events/${id}/restore`, { method: 'POST', body: JSON.stringify({ force }) });
-export const importDemo = () => request<{ imported: number; skipped: number; total_rows: number }>('/api/import-demo', { method: 'POST', body: '{}' });
+export interface ImportResult { imported: number; skipped: number; total_rows: number }
+export const importDemo = () => request<ImportResult>('/api/import-demo', { method: 'POST', body: '{}' });
+export const importCSV = (file: File) => {
+  const body = new FormData();
+  body.append('file', file);
+  return request<ImportResult>('/api/import-csv', { method: 'POST', body });
+};

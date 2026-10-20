@@ -105,6 +105,7 @@ func (a *API) Router() http.Handler {
 		r.Delete("/api/events/{id}", a.delete)
 		r.Post("/api/events/{id}/restore", a.restore)
 		r.Post("/api/import-demo", a.importDemo)
+		r.Post("/api/import-csv", a.importCSV)
 	})
 	r.Get("/openapi.json", func(w http.ResponseWriter, r *http.Request) { write(w, 200, OpenAPI()) })
 	r.Get("/docs", a.docs)

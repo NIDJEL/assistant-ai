@@ -244,7 +244,7 @@ func (s *Service) simpleTarget(ctx context.Context, tx repository.Tx, state *dom
 		}
 		return nil
 	}
-	if t.Value != "" || t.Filter != nil {
+	if t.Value != "" || t.Filter != nil && t.Type != "last" {
 		return errors.New("Некорректная ссылка на запись.")
 	}
 	if t.Type == "ordinal" && pending != nil && pending.Expectation == "choose" && pending.Command.Provider == "simple_llm" {
@@ -275,6 +275,28 @@ func (s *Service) simpleTarget(ctx context.Context, tx repository.Tx, state *dom
 			ids = state.Dialogue.AffectedIDs
 		} else if !freshResult(*state, now) {
 			ids = nil
+		}
+		if t.Filter != nil {
+			filter, err := simpleFilter(*t.Filter, now)
+			if err != nil || filter.Query != "" {
+				return errors.New("Уточните тип или период записи из последнего списка.")
+			}
+			// Narrow the active reference scope by stored fields. A task mentioning
+			// a meeting in its title is still a task. Never search outside this scope.
+			matching := []int64{}
+			for _, id := range ids {
+				e, err := tx.Get(ctx, id)
+				if err != nil {
+					return err
+				}
+				if e != nil && s.eventMatchesFilter(*e, *filter) {
+					matching = append(matching, id)
+				}
+			}
+			ids = matching
+			if len(ids) == 0 {
+				return errors.New("В последнем списке нет записи этого типа или периода. Уточните название или повторите поиск.")
+			}
 		}
 		if len(ids) != 1 {
 			return errors.New("Какую запись вы имеете в виду? Укажите название или номер из списка.")

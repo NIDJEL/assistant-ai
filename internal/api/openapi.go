@@ -124,6 +124,14 @@ func OpenAPI() map[string]any {
 	notificationsOpenAPI(paths, schemas)
 	socialOpenAPI(paths, schemas)
 	voiceResponses := map[string]any{"200": map[string]any{"description": "Transcript for manual review; no chat submission", "content": content(map[string]any{"type": "object", "required": []string{"text"}, "properties": map[string]any{"text": text()}})}}
+	paths["/api/import-csv"] = map[string]any{"post": map[string]any{
+		"description": "Import one UTF-8 CSV with comma-separated id,date,time,text columns, at most 5 MiB and 10000 records. Dates YYYY-MM-DD, times HH:MM, unique positive IDs. Entire batch is validated before writing; records are personal to the current account. Re-uploading identical contents under another filename skips existing records, including the built-in demo. Changed contents identify a new batch; existing events are not overwritten.",
+		"requestBody": map[string]any{"required": true, "content": map[string]any{"multipart/form-data": map[string]any{"schema": map[string]any{"type": "object", "required": []string{"file"}, "properties": map[string]any{"file": map[string]any{"type": "string", "format": "binary"}}}}}},
+		"responses": map[string]any{
+			"200":     map[string]any{"description": "Import counts", "content": content(map[string]any{"type": "object", "required": []string{"imported", "skipped", "total_rows"}, "properties": map[string]any{"imported": map[string]any{"type": "integer"}, "skipped": map[string]any{"type": "integer"}, "total_rows": map[string]any{"type": "integer"}}})},
+			"default": map[string]any{"description": "Authentication, origin, file size or CSV validation error", "content": content(ref("Error"))},
+		},
+	}}
 	for _, code := range []string{"400", "401", "403", "413", "415", "503"} {
 		voiceResponses[code] = map[string]any{"description": "Audio upload or transcription error", "content": content(ref("Error"))}
 	}

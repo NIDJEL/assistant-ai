@@ -52,11 +52,10 @@ func (a *API) csrf(next http.Handler) http.Handler {
 			if r.Header.Get("Sec-Fetch-Site") == "cross-site" {
 				bad = true
 			}
-			// Multipart is allowed only for voice uploads with an explicit matching
-			// Origin. Keep JSON-only protection for every other mutation.
+			// Only the two upload endpoints accept multipart, with a matching Origin.
 			mediaType, _, _ := mime.ParseMediaType(r.Header.Get("Content-Type"))
-			voiceUpload := r.Method == http.MethodPost && r.URL.Path == "/api/voice/transcribe" && mediaType == "multipart/form-data" && origin == strings.TrimRight(a.Config.PublicURL, "/")
-			if r.Method != http.MethodDelete && mediaType != "application/json" && !voiceUpload {
+			upload := r.Method == http.MethodPost && (r.URL.Path == "/api/voice/transcribe" || r.URL.Path == "/api/import-csv") && mediaType == "multipart/form-data" && origin == strings.TrimRight(a.Config.PublicURL, "/")
+			if r.Method != http.MethodDelete && mediaType != "application/json" && !upload {
 				bad = true
 			}
 			if bad {
