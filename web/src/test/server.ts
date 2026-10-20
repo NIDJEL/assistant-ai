@@ -11,6 +11,8 @@ export function mockServer(options: { chatGate?: Promise<void>; historyGate?: Pr
     const json = (data: unknown, status = 200) => new Response(JSON.stringify(data), { status, headers: { 'Content-Type': 'application/json' } });
     if (url.pathname === '/api/auth/me') return json({ user: { id: '11111111-1111-4111-8111-111111111111', name: 'Алексей', email: 'alex@example.test', avatar_url: '', onboarding_completed: true, providers: ['email'] } });
     if (url.pathname === '/api/integrations') return json({ connections: [], yandex_configured: true });
+    if (url.pathname === '/api/social/people') return json({ profile: { id: '11111111-1111-4111-8111-111111111111', name: 'Алексей', email: 'alex@example.test', avatar_url: '', code: 'ABCD-EFGH', share_email: false, timezone: 'Europe/Moscow', start_hour: 9, end_hour: 21, tags: [] }, friends: [], incoming: [], outgoing: [] });
+    if (url.pathname === '/api/social/meetings') return json({ meetings: [] });
     if (url.pathname === '/api/voice/voices') return json({ voices: [{ id: 'ru-RU-DmitryNeural', name: 'Дмитрий, мужской' }], default_voice: 'ru-RU-DmitryNeural' });
     if (url.pathname === '/api/notifications/push/config') return json({ enabled: false, public_key: '' });
     if (url.pathname === '/api/notifications/push/subscriptions') return json({ subscriptions: [] });

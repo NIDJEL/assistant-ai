@@ -10,6 +10,9 @@ import (
 )
 
 func simpleCreationQuestion(c domain.Command) string {
+	if c.Kind == domain.EventMeeting && domain.GenericMeetingTitle(c.Title) {
+		return "С кем встреча или по какому поводу?"
+	}
 	if strings.TrimSpace(c.Title) == "" {
 		return "Что нужно сделать или с кем провести встречу?"
 	}

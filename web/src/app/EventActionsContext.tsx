@@ -7,15 +7,17 @@ import { MotionLink } from '../components/motion/MotionNavLink';
 import { useData } from './DataContext';
 import { errorMessage } from '../api/client';
 import { request } from '../api/client';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useAuth } from './AuthContext';
 import type { EventKind, RhythmEvent } from '../types/api';
 import { Presence } from '../components/motion/Presence';
 interface Actions {
-  create: (kind: EventKind, date?: string, time?: string, preset?: { title: string; duration: number }) => void; edit: (event: RhythmEvent, focusDate?: boolean) => void;
+  create: (kind: EventKind, date?: string, time?: string, preset?: { title: string; duration: number; friendIds?: string[] }) => void; edit: (event: RhythmEvent, focusDate?: boolean) => void;
   complete: (event: RhythmEvent) => Promise<void>; remove: (event: RhythmEvent) => void;
 }
 const Context = createContext<Actions | null>(null);
 export function EventActionsProvider({ children }: { children: ReactNode }) {
+  const navigate = useNavigate(); const { user } = useAuth(); const sharedGuest = (event: RhythmEvent) => !!event.collaborative && event.organizer_id !== user?.id;
   const data = useData(); const [editor, setEditor] = useState<EditorSpec | null>(null); const [deleting, setDeleting] = useState<RhythmEvent | null>(null);
   const [params,setParams] = useSearchParams(); const deepLink = params.get('event');
   useEffect(() => {
@@ -38,9 +40,10 @@ export function EventActionsProvider({ children }: { children: ReactNode }) {
   }
   const actions: Actions = {
     create: (kind, date, time, preset) => setEditor({ kind, date, time, ...preset, nonce: Date.now() }),
-    edit: (event, focusDate) => setEditor({ kind: event.kind, event, focusDate, nonce: Date.now() }),
-    remove: event => { setError(''); setDeleting(event); },
+    edit: (event, focusDate) => { if (sharedGuest(event)) { navigate(`/meetings?shared=${event.id}`); return; } setEditor({ kind: event.kind, event, focusDate, nonce: Date.now() }); },
+    remove: event => { if (sharedGuest(event)) { navigate(`/meetings?shared=${event.id}`); return; } setError(''); setDeleting(event); },
     complete: async event => {
+      if (sharedGuest(event)) { navigate(`/meetings?shared=${event.id}`); return; }
       if (pendingIds.current.has(event.id)) return; pendingIds.current.add(event.id);
       try { await data.update(event.id, { status: event.status === 'done' ? 'open' : 'done' }); if (event.status === 'open') setNotice({ event, deleted: false }); }
       catch (e) { setError(errorMessage(e)); } finally { pendingIds.current.delete(event.id); }

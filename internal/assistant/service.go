@@ -26,6 +26,7 @@ type lockEntry struct {
 	refs  int
 }
 type Service struct {
+	RefreshPlanning     func(context.Context, []string, time.Time, time.Time)
 	Integrations        ExternalIntegrations
 	Store               repository.Store
 	Interpreter         Interpreter

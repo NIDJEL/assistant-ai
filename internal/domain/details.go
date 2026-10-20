@@ -15,6 +15,7 @@ type Subtask struct {
 
 // Optional personal event metadata. Empty fields preserve the existing JSON contract.
 type EventDetails struct {
+	GoogleTransparent     bool          `json:"google_transparent,omitempty"`
 	GoogleAllDayDays      int           `json:"google_all_day_days,omitempty"`
 	GoogleDurationSeconds int64         `json:"google_duration_seconds,omitempty"`
 	CalendarProvider      string        `json:"calendar_provider,omitempty"`

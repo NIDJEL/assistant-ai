@@ -172,7 +172,7 @@ func (d *Database) SelectCloudCalendar(ctx context.Context, id string) error {
 	if _, err = tx.ExecContext(ctx, `UPDATE cloud_connections SET calendar_id=$2,sync_token='',status='pending',last_error='' WHERE user_id=$1 AND provider='google'`, uid, id); err != nil {
 		return err
 	}
-	if _, err = tx.ExecContext(ctx, `INSERT INTO cloud_outbox(user_id,provider,event_id) SELECT user_id,'google',id FROM events WHERE user_id=$1 AND date IS NOT NULL ON CONFLICT(user_id,provider,event_id) DO UPDATE SET version=cloud_outbox.version+1`, uid); err != nil {
+	if _, err = tx.ExecContext(ctx, `INSERT INTO cloud_outbox(user_id,provider,event_id) SELECT $1,'google',id FROM events WHERE `+visibleEvents("$1")+` AND date IS NOT NULL ON CONFLICT(user_id,provider,event_id) DO UPDATE SET version=cloud_outbox.version+1`, uid); err != nil {
 		return err
 	}
 	return tx.Commit()
@@ -258,6 +258,9 @@ func (d *Database) ImportGoogleEvent(ctx context.Context, cal string, link repos
 		return err
 	}
 	defer tx.Rollback()
+	if _, err = tx.ExecContext(ctx, "SELECT pg_advisory_xact_lock(73121013)"); err != nil {
+		return err
+	}
 	if _, err = tx.ExecContext(ctx, "SELECT pg_advisory_xact_lock(hashtextextended($1,0))", uid); err != nil {
 		return err
 	}
@@ -286,6 +289,14 @@ func (d *Database) ImportGoogleEvent(ctx context.Context, cal string, link repos
 		if e == nil {
 			return tx.Commit()
 		}
+		// An attendee's external calendar cannot mutate the canonical meeting.
+		if e.Collaborative && e.OrganizerID != uid {
+			link.EventID = id
+			if err = saveCloudLink(ctx, tx, uid, "google", cal, link); err != nil {
+				return err
+			}
+			return tx.Commit()
+		}
 		if cancelled {
 			if err = repo.Delete(ctx, id); err != nil {
 				return err
@@ -297,6 +308,7 @@ func (d *Database) ImportGoogleEvent(ctx context.Context, cal string, link repos
 			}
 			e.StartSecond = incoming.StartSecond
 			e.GoogleAllDayDays, e.GoogleDurationSeconds = incoming.GoogleAllDayDays, incoming.GoogleDurationSeconds
+			e.GoogleTransparent = incoming.GoogleTransparent
 			if e.Kind == domain.EventMeeting && e.StartTime == nil {
 				e.Kind = domain.EventTask
 				if _, err = tx.ExecContext(ctx, `UPDATE events SET kind='task' WHERE user_id=$1 AND id=$2`, uid, id); err != nil {

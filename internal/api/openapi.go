@@ -19,7 +19,7 @@ func OpenAPI() map[string]any {
 	}
 	schemas := map[string]any{
 		"ChatRequest": map[string]any{"type": "object", "additionalProperties": false, "required": []string{"message"}, "properties": map[string]any{
-			"message": map[string]any{"type": "string", "minLength": 1, "maxLength": 2000}, "session_id": map[string]any{"type": "string", "format": "uuid"}, "request_id": map[string]any{"type": "string", "format": "uuid"}}},
+			"message": map[string]any{"type": "string", "minLength": 1, "maxLength": 2000}, "choice": ref("ChatChoice"), "session_id": map[string]any{"type": "string", "format": "uuid"}, "request_id": map[string]any{"type": "string", "format": "uuid"}}},
 		"EventCreate": map[string]any{"type": "object", "additionalProperties": false, "required": []string{"kind", "title"}, "properties": eventProperties},
 		"EventPatch": map[string]any{"type": "object", "additionalProperties": false, "properties": map[string]any{
 			"title": eventProperties["title"], "description": text(), "location": eventProperties["location"], "meeting_url": eventProperties["meeting_url"], "date": day, "time": clock, "duration_minutes": eventProperties["duration_minutes"], "status": eventProperties["status"], "priority": eventProperties["priority"], "force": eventProperties["force"]}},
@@ -28,6 +28,9 @@ func OpenAPI() map[string]any {
 		"Error": map[string]any{"type": "object", "required": []string{"error", "request_id"}, "properties": map[string]any{
 			"error": map[string]any{"type": "object", "required": []string{"code", "message"}, "properties": map[string]any{"code": text(), "message": text()}}, "request_id": text(), "detail": text()}},
 	}
+	schemas["ChatChoice"] = map[string]any{"type": "object", "additionalProperties": false, "required": []string{"token", "action"}, "properties": map[string]any{"token": map[string]any{"type": "string", "format": "uuid"}, "action": enum("slot", "meeting", "more", "cancel", "confirm", "new"), "index": map[string]any{"type": "integer", "minimum": 1, "maximum": 8}, "slot": ref("PlanningSlot")}, "description": "Choice of a persisted, user-scoped chat offer. A slot submits its exact start/end and one-based index. Stale or altered offers cannot create meetings; identical request_id retries return the saved result without another LLM call."}
+	schemas["Event"].(map[string]any)["properties"].(map[string]any)["display_title"] = text()
+	schemas["Event"].(map[string]any)["properties"].(map[string]any)["organizer_name"] = text()
 
 	schemas["Recurrence"] = map[string]any{"type": "object", "nullable": true, "additionalProperties": false, "required": []string{"frequency", "interval", "timezone"}, "description": "Calendar rules use local wall time; elapsed minute/hour rules use anchor. Missing monthly dates are skipped. DST gap shifts forward, fold fires once at the first instant.", "properties": map[string]any{"frequency": enum("minute", "hour", "day", "week", "month", "year"), "interval": map[string]any{"type": "integer", "minimum": 1, "maximum": 366}, "weekdays": map[string]any{"type": "array", "uniqueItems": true, "items": map[string]any{"type": "integer", "minimum": 0, "maximum": 6}}, "day_of_month": map[string]any{"type": "integer", "minimum": 1, "maximum": 31}, "month": map[string]any{"type": "integer", "minimum": 1, "maximum": 12}, "local_time": clock, "timezone": map[string]any{"type": "string", "description": "IANA timezone"}, "anchor": map[string]any{"type": "string", "format": "date-time"}}}
 	metadata := map[string]any{
@@ -119,6 +122,7 @@ func OpenAPI() map[string]any {
 	authOpenAPI(paths, schemas)
 	integrationsOpenAPI(paths, schemas)
 	notificationsOpenAPI(paths, schemas)
+	socialOpenAPI(paths, schemas)
 	voiceResponses := map[string]any{"200": map[string]any{"description": "Transcript for manual review; no chat submission", "content": content(map[string]any{"type": "object", "required": []string{"text"}, "properties": map[string]any{"text": text()}})}}
 	for _, code := range []string{"400", "401", "403", "413", "415", "503"} {
 		voiceResponses[code] = map[string]any{"description": "Audio upload or transcription error", "content": content(ref("Error"))}

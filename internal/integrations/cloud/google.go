@@ -19,17 +19,18 @@ type googleTime struct {
 	TimeZone string `json:"timeZone,omitempty"`
 }
 type googleEvent struct {
-	ID          string     `json:"id,omitempty"`
-	ETag        string     `json:"etag,omitempty"`
-	Updated     string     `json:"updated,omitempty"`
-	Status      string     `json:"status,omitempty"`
-	Summary     string     `json:"summary"`
-	Description string     `json:"description,omitempty"`
-	Location    string     `json:"location,omitempty"`
-	HangoutLink string     `json:"hangoutLink,omitempty"`
-	Start       googleTime `json:"start"`
-	End         googleTime `json:"end"`
-	Extended    struct {
+	Transparency string     `json:"transparency,omitempty"`
+	ID           string     `json:"id,omitempty"`
+	ETag         string     `json:"etag,omitempty"`
+	Updated      string     `json:"updated,omitempty"`
+	Status       string     `json:"status,omitempty"`
+	Summary      string     `json:"summary"`
+	Description  string     `json:"description,omitempty"`
+	Location     string     `json:"location,omitempty"`
+	HangoutLink  string     `json:"hangoutLink,omitempty"`
+	Start        googleTime `json:"start"`
+	End          googleTime `json:"end"`
+	Extended     struct {
 		Private map[string]string `json:"private,omitempty"`
 	} `json:"extendedProperties,omitempty"`
 }
@@ -48,6 +49,7 @@ func (s *Service) fromGoogle(g googleEvent) (*domain.Event, error) {
 	}
 	e := &domain.Event{Kind: domain.EventTask, Title: title, Description: g.Description, Location: g.Location, MeetingURL: g.HangoutLink, Duration: time.Hour, Status: domain.StatusOpen, Priority: domain.PriorityNormal}
 	e.CalendarProvider = "google"
+	e.GoogleTransparent = g.Transparency == "transparent"
 	if len([]rune(e.Location)) > 500 {
 		e.Location = string([]rune(e.Location)[:500])
 	}

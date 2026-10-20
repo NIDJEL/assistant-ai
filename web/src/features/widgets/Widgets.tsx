@@ -26,7 +26,7 @@ export function CalendarWidget() {
 }
 function WidgetEvent({ event }: { event: RhythmEvent }) {
   const actions = useEventActions(); const { today } = useData();
-  return <div className="widget-event"><i className={`dot kind-${event.kind}`} aria-hidden="true"/><span className="widget-time">{event.date === today ? event.time || '—' : dateLabel(event.date, today)}</span><button type="button" onClick={() => actions.edit(event)}>{event.title}</button><small>{durationLabel(event.duration_minutes)}</small></div>;
+  return <div className="widget-event"><i className={`dot kind-${event.kind}`} aria-hidden="true"/><span className="widget-time">{event.date === today ? event.time || '—' : dateLabel(event.date, today)}</span><button type="button" onClick={() => actions.edit(event)}>{event.display_title || event.title}</button><small>{durationLabel(event.duration_minutes)}</small></div>;
 }
 export function TodayWidget() {
   const { events, today } = useData(); const actions = useEventActions(); const { limit, taskTitle } = useWidgetFrame(); const items = events.filter(event => event.date === today && event.status === 'open').sort(byMoment);
@@ -34,7 +34,7 @@ export function TodayWidget() {
 }
 export function TasksWidget() {
   const { events, today } = useData(); const actions = useEventActions(); const { limit, taskTitle } = useWidgetFrame(); const items = events.filter(event => event.kind === 'task' && event.status === 'open' && (!event.date || event.date >= today)).sort(byMoment);
-  return <Frame title={taskTitle || "Задачи"} onAdd={() => actions.create('task')}>{items.slice(0, limit).map(event => <div className="widget-task" key={event.id}><CompleteCheckbox event={event} label={`Завершить в виджете «${event.title}»`}/><button type="button" onClick={() => actions.edit(event)}>{event.title}</button><i className={`dot priority-${event.priority}`}/></div>)}{!items.length && <p className="widget-empty">Все задачи выполнены</p>}<Link className="widget-link" to="/tasks">Все задачи <ArrowRight size={16}/></Link></Frame>;
+  return <Frame title={taskTitle || "Задачи"} onAdd={() => actions.create('task')}>{items.slice(0, limit).map(event => <div className="widget-task" key={event.id}><CompleteCheckbox event={event} label={`Завершить в виджете «${event.display_title || event.title}»`}/><button type="button" onClick={() => actions.edit(event)}>{event.display_title || event.title}</button><i className={`dot priority-${event.priority}`}/></div>)}{!items.length && <p className="widget-empty">Все задачи выполнены</p>}<Link className="widget-link" to="/tasks">Все задачи <ArrowRight size={16}/></Link></Frame>;
 }
 export function UpcomingMeetingsWidget() {
   const { events, today } = useData(); const actions = useEventActions(); const { limit, taskTitle } = useWidgetFrame(); const items = events.filter(event => event.kind === 'meeting' && event.status === 'open' && event.date && event.date >= today).sort(byMoment);

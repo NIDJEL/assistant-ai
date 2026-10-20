@@ -13,13 +13,22 @@ import (
 )
 
 type Chat struct {
-	Source    string `json:"source,omitempty"`
-	Message   string `json:"message"`
-	SessionID string `json:"session_id"`
-	RequestID string `json:"request_id"`
+	Choice    *domain.ChatChoice `json:"choice,omitempty"`
+	Source    string             `json:"source,omitempty"`
+	Message   string             `json:"message"`
+	SessionID string             `json:"session_id"`
+	RequestID string             `json:"request_id"`
 }
 
 func (c *Chat) Validate() error {
+	if c.Choice != nil {
+		if _, err := uuid.Parse(c.Choice.Token); err != nil {
+			return domain.Validation("Некорректный выбор")
+		}
+		if c.Choice.Index < 0 || c.Choice.Index > 8 {
+			return domain.Validation("Некорректный номер варианта")
+		}
+	}
 	if c.Source == "" {
 		c.Source = "text"
 	}

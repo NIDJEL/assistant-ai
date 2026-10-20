@@ -5,7 +5,7 @@ import * as api from '../../api/assistant';
 import { errorMessage } from '../../api/client';
 import { useData } from '../../app/DataContext';
 import { stopSpeaking } from '../voice/tts';
-import type { ChatInput, ChatResponse } from '../../types/api';
+import type { ChatInput, ChatResponse, ChatChoice } from '../../types/api';
 export interface ChatItem { id: string; message: string; response?: ChatResponse; created: string; error?: string; notification?: boolean; read?: boolean }
 function sessionId(userId: string): string {
  const key = `rhythm.session.v2.${userId}`;
@@ -40,10 +40,10 @@ export function useAssistant() {
     window.addEventListener('focus', poll); document.addEventListener('visibilitychange', poll);
     return () => { controller.abort(); clearInterval(timer); window.removeEventListener('focus', poll); document.removeEventListener('visibilitychange', poll); stopSpeaking(); };
   }, [session]);
-  async function send(text: string, source: 'text' | 'voice' = 'text'): Promise<boolean> {
+  async function send(text: string, source: 'text' | 'voice' = 'text', choice?: ChatChoice): Promise<boolean> {
     const message = text.trim(); if (!message || locked.current || [...message].length > 2000) return false;
     locked.current = true; interacted.current = true; setBusy(true); stopSpeaking();
-    const input = pending.current?.message === message ? pending.current : { message, source, session_id: session, request_id: crypto.randomUUID() };
+    const input = pending.current?.message === message && JSON.stringify(pending.current.choice) === JSON.stringify(choice) ? pending.current : { message, source, choice, session_id: session, request_id: crypto.randomUUID() };
     pending.current = input;
     setItems(current => [...current.filter(item => item.id !== input.request_id), { id: input.request_id, message, created: new Date().toISOString() }]);
     try {

@@ -33,7 +33,7 @@ func ZoomCard(e Event, loc *time.Location) *ZoomMeeting {
 	if e.Kind != EventMeeting || e.ConferenceProvider != "zoom" {
 		return nil
 	}
-	card := &ZoomMeeting{EventID: e.ID, Title: e.Title, Timezone: loc.String(), Status: "scheduled"}
+	card := &ZoomMeeting{EventID: e.ID, Title: e.Label(), Timezone: loc.String(), Status: "scheduled"}
 	if start, _, ok := e.Interval(loc); ok {
 		card.ScheduledAt = &start
 	}
