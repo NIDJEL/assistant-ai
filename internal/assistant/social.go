@@ -16,14 +16,29 @@ import (
 )
 
 func (s *Service) applySocial(ctx context.Context, tx repository.Tx, state *domain.State, op nlu.Operation, args any, now time.Time) (bool, domain.Response, error) {
+	prior := state.Pending
+	var continuationErr error
+	op, args, continuationErr = socialContinuation(prior, op, args, now)
+	if continuationErr != nil {
+		return true, answer(continuationErr.Error(), domain.ActionClarify), nil
+	}
+	if op.Intent == "meeting_zoom" {
+		a := args.(*nlu.Social)
+		args = &nlu.Create{Friends: a.Friends, FriendTag: a.Tag, Title: a.Query, Date: a.Date, Conference: "zoom"}
+		op.Intent = "create_meeting"
+		op.Arguments, _ = json.Marshal(args)
+	}
 	a, isSocial := args.(*nlu.Social)
 	create, isCreate := args.(*nlu.Create)
-	isCreate = isCreate && op.Intent == "create_meeting" && (len(create.Friends) > 0 || create.FriendTag != "")
+	isCreate = isCreate && op.Intent == "create_meeting"
 	if !isSocial && !isCreate {
 		return false, domain.Response{}, nil
 	}
 	session, err := social.In(ctx, tx, s.Calendar.Location)
 	if err != nil {
+		if isCreate && len(create.Friends) == 0 && create.FriendTag == "" {
+			return false, domain.Response{}, nil
+		}
 		return true, answer(err.Error(), domain.ActionClarify), nil
 	}
 	ctx = social.WithTx(ctx, tx)
@@ -51,69 +66,10 @@ func (s *Service) applySocial(ctx context.Context, tx repository.Tx, state *doma
 	}
 	operation := social.Operation{RequestID: uuid.NewString()}
 	if isCreate {
-		ids, e := session.Resolve(ctx, create.Friends, create.FriendTag)
-		if e != nil {
-			return question(e.Error())
-		}
-		c := neutral("simple_llm")
-		c.Kind = domain.EventMeeting
-		c.Title = create.Title
-		if c.Title == "" {
-			c.Title = "Встреча с друзьями"
-		}
-		if e = simpleDate(&c, create.Date, create.Time, now); e != nil {
-			return question("Уточните дату и время встречи.")
-		}
-		if c.Date == nil {
-			return question("В какой день назначить встречу с друзьями?")
-		}
-		if c.Time == nil {
-			return question("Во сколько назначить встречу?")
-		}
-		duration := 60
-		if create.DurationMinutes != nil {
-			duration = *create.DurationMinutes
-		}
-		event := domain.Event{Title: c.Title, Kind: domain.EventMeeting, Date: c.Date, StartTime: c.Time, Duration: time.Duration(duration) * time.Minute, Status: domain.StatusOpen, Priority: domain.PriorityNormal}
-		event.CalendarProvider, event.ConferenceProvider = create.Calendar, create.Conference
-		for _, p := range []string{create.Calendar, create.Conference} {
-			if p != "" {
-				if !contains(p, "google", "zoom") {
-					return question("Выберите Google Calendar или Zoom.")
-				}
-				if s.Integrations == nil {
-					return question("Подключите " + p + " в разделе «Интеграции».")
-				}
-				if e = s.Integrations.Ready(ctx, p); e != nil {
-					return question(e.Error())
-				}
-			}
-		}
-		operation.Action, operation.Event, operation.FriendIDs = "create_meeting", &event, ids
-		result, e := session.Execute(ctx, operation, now)
-		if e != nil {
-			var app *domain.AppError
-			if errors.As(e, &app) && app.Code == "availability_conflict" {
-				start, end, _ := event.Interval(s.Calendar.Location)
-				avail, checkErr := session.Availability(ctx, ids, social.Slot{Start: start, End: end}, 0, now)
-				if checkErr == nil {
-					return question(availabilityText(avail, s.Calendar.Location))
-				}
-			}
-		}
-		handled, r, finishErr := finish(result, e)
-		if e == nil && finishErr == nil {
-			r.Action = domain.ActionCreate
-			created, getErr := tx.Get(ctx, result.EventID)
-			if getErr != nil {
-				return true, r, getErr
-			}
-			if created != nil {
-				r.Events = []domain.Event{*created}
-			}
-		}
-		return handled, r, finishErr
+		r, e := s.createSocialMeeting(ctx, tx, state, prior, session, op, create, now)
+		return true, r, e
 	}
+
 	switch op.Intent {
 	case "friend_request":
 		if e := session.Rate(ctx, "codes", 20); e != nil {
@@ -238,14 +194,6 @@ func (s *Service) applySocial(ctx context.Context, tx repository.Tx, state *doma
 	result, e := session.Execute(ctx, operation, now)
 	return finish(result, e)
 }
-func contains(value string, list ...string) bool {
-	for _, v := range list {
-		if v == value {
-			return true
-		}
-	}
-	return false
-}
 func availabilityText(a social.Availability, loc *time.Location) string {
 	text := "Выбранное время свободно."
 	for _, p := range a.Users {
@@ -276,12 +224,13 @@ func availabilityText(a social.Availability, loc *time.Location) string {
 
 // Prepare external availability outside the write transaction. Resolution here
 // is read-only; execution resolves and authorizes the names again under the lock.
-func (s *Service) prepareSimplePlanning(ctx context.Context, op nlu.Operation, now time.Time) {
+func (s *Service) prepareSimplePlanning(ctx context.Context, op nlu.Operation, now time.Time, after *time.Time) {
 	args, err := op.Args()
 	if err != nil {
 		return
 	}
 	ids := []string{}
+	requested := false
 	start := now.Add(time.Hour).Truncate(time.Minute)
 	err = s.Store.Read(ctx, func(tx repository.Tx) error {
 		session, e := social.In(ctx, tx, s.Calendar.Location)
@@ -290,9 +239,10 @@ func (s *Service) prepareSimplePlanning(ctx context.Context, op nlu.Operation, n
 		}
 		switch a := args.(type) {
 		case *nlu.Create:
-			if len(a.Friends) == 0 && a.FriendTag == "" {
+			if op.Intent != "create_meeting" {
 				return nil
 			}
+			requested = true
 			ids, e = session.Resolve(ctx, a.Friends, a.FriendTag)
 			if e != nil {
 				return e
@@ -309,6 +259,7 @@ func (s *Service) prepareSimplePlanning(ctx context.Context, op nlu.Operation, n
 			if op.Intent == "friend_request" || op.Intent == "friend_requests" {
 				return nil
 			}
+			requested = true
 			ids, e = session.Resolve(ctx, a.Friends, a.Tag)
 			if e != nil {
 				return e
@@ -357,7 +308,10 @@ func (s *Service) prepareSimplePlanning(ctx context.Context, op nlu.Operation, n
 		}
 		return nil
 	})
-	if err == nil && len(ids) > 0 {
+	if after != nil {
+		start = *after
+	}
+	if err == nil && requested {
 		s.RefreshPlanning(ctx, append([]string{repository.UserID(ctx)}, ids...), start.Add(-24*time.Hour), start.AddDate(0, 0, 14))
 	}
 }

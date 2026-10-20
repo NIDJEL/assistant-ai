@@ -59,6 +59,9 @@ func (s *Service) respondSimple(ctx context.Context, interpreter operationInterp
 			if session, e := social.In(ctx, tx, s.Calendar.Location); e == nil {
 				if people, e := session.People(ctx); e == nil {
 					for _, friend := range people.Friends {
+						if len(compact.Friends) >= 100 {
+							break
+						}
 						compact.Friends = append(compact.Friends, nlu.Friend{Name: friend.Name, Tags: friend.Tags})
 					}
 				}
@@ -69,6 +72,16 @@ func (s *Service) respondSimple(ctx context.Context, interpreter operationInterp
 					compact.SocialPending = &pending
 				}
 			}
+			if p := snapshot.Pending; p != nil && p.Scheduling != nil {
+				for _, slot := range p.Scheduling.Slots {
+					day := domain.Day(slot.Start.In(now.Location())).String()
+					clock := slot.Start.In(now.Location()).Format("15:04")
+					compact.OfferedSlots = append(compact.OfferedSlots, nlu.SocialTime{Date: &nlu.Temporal{Type: "absolute", Date: day}, Time: &clock})
+				}
+				for i, e := range p.Scheduling.Meetings {
+					compact.MeetingChoices = append(compact.MeetingChoices, compactItem(e, i+1))
+				}
+			}
 		}
 		return err
 	})
@@ -76,7 +89,7 @@ func (s *Service) respondSimple(ctx context.Context, interpreter operationInterp
 		return response, err
 	}
 	if cached != nil {
-		if cached.Message != message {
+		if cached.Message != message || !sameChoice(cached.Response.SubmittedChoice, chatChoice(ctx)) {
 			return response, domain.Validation("request_id уже использован для другого сообщения")
 		}
 		response = s.finishExternal(ctx, cached.Response)
@@ -87,7 +100,9 @@ func (s *Service) respondSimple(ctx context.Context, interpreter operationInterp
 	calls := 0
 	op := nlu.Operation{Intent: simpleControl(snapshot, message), Confidence: "high", Arguments: json.RawMessage(`{}`)}
 	var parseErr error
-	if op.Intent == "" {
+	if choice := chatChoice(ctx); choice != nil {
+		op, parseErr = choiceOperation(snapshot.Pending, choice)
+	} else if op.Intent == "" {
 		calls = 1
 		op, parseErr = interpreter.InterpretOperation(ctx, message, compact)
 	}
@@ -99,7 +114,21 @@ func (s *Service) respondSimple(ctx context.Context, interpreter operationInterp
 	}
 	latency := time.Since(started)
 	if parseErr == nil && s.RefreshPlanning != nil {
-		s.prepareSimplePlanning(ctx, op, now)
+		prepared := op
+		var planningAfter *time.Time
+		if snapshot.Pending != nil {
+			raw, _ := json.Marshal(snapshot.Pending)
+			var p domain.Pending
+			_ = json.Unmarshal(raw, &p)
+			args, _ := op.Args()
+			if effective, _, e := socialContinuation(&p, op, args, now); e == nil {
+				prepared = effective
+				if p.Scheduling != nil {
+					planningAfter = p.Scheduling.After
+				}
+			}
+		}
+		s.prepareSimplePlanning(ctx, prepared, now, planningAfter)
 	}
 	err = s.Store.Write(ctx, func(tx repository.Tx) error {
 		cached, err := tx.Cached(ctx, sid, rid)
@@ -107,7 +136,7 @@ func (s *Service) respondSimple(ctx context.Context, interpreter operationInterp
 			return err
 		}
 		if cached != nil {
-			if cached.Message != message {
+			if cached.Message != message || !sameChoice(cached.Response.SubmittedChoice, chatChoice(ctx)) {
 				return domain.Validation("request_id уже использован для другого сообщения")
 			}
 			response = cached.Response
@@ -122,9 +151,15 @@ func (s *Service) respondSimple(ctx context.Context, interpreter operationInterp
 		if !sameDialogueSnapshot(snapshot, state) {
 			response = answer("Контекст изменился. Повторите запрос или выберите запись заново.", domain.ActionClarify)
 		} else if parseErr != nil {
-			// A failed new request must not leave an older destructive preview armed.
-			state.Pending = nil
-			response = answer("Не удалось понять запрос. Уточните, что нужно сделать. Ничего не изменено.", domain.ActionClarify)
+			if chatChoice(ctx) != nil {
+				response = answer(parseErr.Error(), domain.ActionClarify)
+			} else {
+				// A failed new request must not leave an older destructive preview armed.
+				if state.Pending == nil || len(state.Pending.SocialOperation) == 0 {
+					state.Pending = nil
+				}
+				response = answer("Не удалось понять запрос. Уточните, что нужно сделать. Ничего не изменено.", domain.ActionClarify)
+			}
 		} else {
 			cmd, response, err = s.applySimple(ctx, tx, &state, op, message, now)
 			if err != nil {
@@ -144,6 +179,7 @@ func (s *Service) respondSimple(ctx context.Context, interpreter operationInterp
 		}
 		rememberSimple(&state, cmd, response, now)
 		response.SessionID, response.RequestID, response.Provider, response.Timezone, response.Pending = sid, rid, "simple_llm", s.Calendar.Location.String(), state.Pending != nil
+		response.SubmittedChoice = chatChoice(ctx)
 		if err = tx.SaveState(ctx, sid, state, now); err != nil {
 			return err
 		}
@@ -324,6 +360,9 @@ func (s *Service) applySimple(ctx context.Context, tx repository.Tx, state *doma
 		c.Action = domain.ActionCreate
 		c.Kind, _ = domain.ParseEventType(strings.TrimPrefix(op.Intent, "create_"))
 		c.Title, c.ReminderMinutes, c.ReminderEnabled = a.Title, a.ReminderMinutes, a.ReminderEnabled
+		if c.Kind == domain.EventMeeting && domain.GenericMeetingTitle(c.Title) {
+			c.Title = ""
+		}
 		if (a.Calendar != "" && a.Calendar != "google") || (a.Conference != "" && a.Conference != "zoom") {
 			return clarify("Выберите Google Calendar или Zoom.")
 		}

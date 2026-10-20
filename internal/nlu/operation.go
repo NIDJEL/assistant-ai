@@ -16,6 +16,7 @@ type Operation struct {
 	Clarification *string         `json:"clarification"`
 }
 type Create struct {
+	AllWithTag      bool      `json:"all_with_tag,omitempty"`
 	Friends         []string  `json:"friends,omitempty"`
 	FriendTag       string    `json:"friend_tag,omitempty"`
 	Calendar        string    `json:"calendar,omitempty"`
@@ -73,6 +74,13 @@ type BatchUpdate struct {
 }
 type Continue struct {
 	Changes Changes `json:"changes"`
+}
+type SchedulingReply struct {
+	Option     int     `json:"option,omitempty"`
+	More       bool    `json:"more,omitempty"`
+	NewMeeting bool    `json:"new_meeting,omitempty"`
+	Confirm    bool    `json:"confirm,omitempty"`
+	Changes    Changes `json:"changes,omitempty"`
 }
 type Chat struct {
 	Reply string `json:"reply"`
@@ -139,6 +147,10 @@ func (o Operation) Args() (any, error) {
 	switch o.Intent {
 	case "friend_request", "friend_requests", "friend_availability", "invite_friends", "respond_invitation", "propose_reschedule", "resolve_reschedule":
 		v = &Social{}
+	case "choose_time":
+		v = &SchedulingReply{}
+	case "meeting_zoom":
+		v = &Social{}
 	case "create_task", "create_meeting", "create_reminder":
 		v = &Create{}
 	case "search", "list":
@@ -200,13 +212,15 @@ type SearchSummary struct {
 	Status     string `json:"status,omitempty"`
 }
 type Context struct {
-	Friends       []Friend       `json:"friends,omitempty"`
-	SocialPending *Operation     `json:"social_pending,omitempty"`
-	Now           string         `json:"now"`
-	Timezone      string         `json:"timezone"`
-	LastAction    string         `json:"last_action,omitempty"`
-	LastResults   []Item         `json:"last_results,omitempty"`
-	LastAffected  *Item          `json:"last_affected,omitempty"`
-	LastSearch    *SearchSummary `json:"last_search,omitempty"`
-	Pending       *Pending       `json:"pending,omitempty"`
+	OfferedSlots   []SocialTime   `json:"offered_slots,omitempty"`
+	MeetingChoices []Item         `json:"meeting_choices,omitempty"`
+	Friends        []Friend       `json:"friends,omitempty"`
+	SocialPending  *Operation     `json:"social_pending,omitempty"`
+	Now            string         `json:"now"`
+	Timezone       string         `json:"timezone"`
+	LastAction     string         `json:"last_action,omitempty"`
+	LastResults    []Item         `json:"last_results,omitempty"`
+	LastAffected   *Item          `json:"last_affected,omitempty"`
+	LastSearch     *SearchSummary `json:"last_search,omitempty"`
+	Pending        *Pending       `json:"pending,omitempty"`
 }

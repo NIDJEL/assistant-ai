@@ -207,7 +207,7 @@ func (a *API) chat(w http.ResponseWriter, r *http.Request) {
 		a.fail(w, r, err)
 		return
 	}
-	result, err := a.Assistant.Respond(llm.WithSource(r.Context(), body.Source), body.Message, body.SessionID, body.RequestID, a.Clock.Now())
+	result, err := a.Assistant.Respond(assistant.WithChatChoice(llm.WithSource(r.Context(), body.Source), body.Choice), body.Message, body.SessionID, body.RequestID, a.Clock.Now())
 	if err != nil {
 		a.fail(w, r, err)
 		return

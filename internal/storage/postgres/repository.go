@@ -25,7 +25,7 @@ type Repo struct {
 type scanner interface{ Scan(...any) error }
 
 const baseColumns = "id,kind,title,date,time,duration_minutes,status,created_at,updated_at,source_key,description,priority,external_calendar_id,location,meeting_url,details,deleted_at"
-const columns = baseColumns + ",user_id,EXISTS(SELECT 1 FROM collaborative_meetings cm WHERE cm.event_id=events.id),coalesce((SELECT version FROM collaborative_meetings cm WHERE cm.event_id=events.id),0),coalesce((SELECT jsonb_agg(jsonb_build_object('name',u.display_name) ORDER BY p.invited_at,u.id) FROM meeting_participants p JOIN users u ON u.id=p.user_id WHERE p.event_id=events.id AND p.status<>'cancelled'),'[]'::jsonb)"
+const columns = baseColumns + ",user_id,EXISTS(SELECT 1 FROM collaborative_meetings cm WHERE cm.event_id=events.id),coalesce((SELECT version FROM collaborative_meetings cm WHERE cm.event_id=events.id),0),coalesce((SELECT jsonb_agg(jsonb_build_object('name',u.display_name) ORDER BY p.invited_at,u.id) FROM meeting_participants p JOIN users u ON u.id=p.user_id WHERE p.event_id=events.id AND p.status<>'cancelled'),'[]'::jsonb),(SELECT display_name FROM users WHERE id=events.user_id)"
 
 func dateValue(v *domain.Date) any {
 	if v == nil {
@@ -45,7 +45,7 @@ func scanEvent(row scanner) (*domain.Event, error) {
 	var day, clock, source, external, deleted sql.NullString
 	var details, sharedParticipants string
 	var minutes int
-	if err := row.Scan(&e.ID, &kind, &e.Title, &day, &clock, &minutes, &status, &created, &updated, &source, &e.Description, &priority, &external, &e.Location, &e.MeetingURL, &details, &deleted, &e.OrganizerID, &e.Collaborative, &e.MeetingVersion, &sharedParticipants); err != nil {
+	if err := row.Scan(&e.ID, &kind, &e.Title, &day, &clock, &minutes, &status, &created, &updated, &source, &e.Description, &priority, &external, &e.Location, &e.MeetingURL, &details, &deleted, &e.OrganizerID, &e.Collaborative, &e.MeetingVersion, &sharedParticipants, &e.OrganizerName); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
@@ -181,6 +181,17 @@ func (r *Repo) Events(ctx context.Context, f domain.Filter) ([]domain.Event, err
 }
 
 func (r *Repo) sharedProjection(e *domain.Event) {
+	if e != nil && e.Collaborative {
+		names := []string{}
+		if e.OrganizerID != r.userID {
+			names = append(names, e.OrganizerName)
+		} else {
+			for _, p := range e.Participants {
+				names = append(names, p.Name)
+			}
+		}
+		e.DisplayTitle = domain.MeetingDisplayTitle(e.Title, names)
+	}
 	if e == nil || e.OrganizerID == r.userID {
 		return
 	}

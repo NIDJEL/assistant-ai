@@ -321,6 +321,18 @@ func (s *Session) notify(ctx context.Context, uid, key, text, kind string, event
 	sid := uuid.NewSHA1(uuid.NameSpaceOID, []byte("gena:social:"+uid)).String()
 	rid := uuid.NewSHA1(uuid.NameSpaceOID, []byte("gena:social:"+uid+":"+key)).String()
 	response := domain.Response{Reply: text, Action: domain.ActionList, Events: []domain.Event{}, SessionID: sid, RequestID: rid, Provider: "social", Timezone: s.Location.String(), Social: &domain.SocialNotice{Kind: kind, EventID: eventID}}
+	if kind == "meeting" && eventID > 0 {
+		viewer := *s
+		viewer.UserID = uid
+		m, err := viewer.Meeting(ctx, eventTx(ctx), eventID)
+		if err != nil {
+			return err
+		}
+		if domain.GenericMeetingTitle(m.Event.Title) {
+			response.Reply = strings.ReplaceAll(response.Reply, "«"+m.Event.Title+"»", "«"+m.Event.Label()+"»")
+		}
+		response.Events = []domain.Event{m.Event}
+	}
 	_, err := s.Q.ExecContext(ctx, `INSERT INTO dialogue_sessions(user_id,id,state,updated_at) VALUES($1,$2,'{}',$3) ON CONFLICT DO NOTHING`, uid, sid, now.Format(time.RFC3339Nano))
 	if err != nil {
 		return err
@@ -353,10 +365,14 @@ func (s *Session) Resolve(ctx context.Context, names []string, tag string) ([]st
 		matches := []Person{}
 		exact := []Person{}
 		for _, f := range p.Friends {
-			if strings.EqualFold(f.Name, strings.TrimSpace(name)) {
+			if SameName(f.Name, name) {
 				exact = append(exact, f)
 			}
-			if strings.Contains(strings.ToLower(f.Name), strings.ToLower(strings.TrimSpace(name))) && strings.TrimSpace(name) != "" {
+			matched := NameMatches(f.Name, name)
+			for _, t := range f.Tags {
+				matched = matched || strings.EqualFold(strings.TrimSpace(t), strings.TrimSpace(name))
+			}
+			if matched {
 				matches = append(matches, f)
 			}
 		}
@@ -387,6 +403,50 @@ func (s *Session) Resolve(ctx context.Context, names []string, tag string) ([]st
 	}
 	return out, nil
 }
+func nameWords(s string) []string {
+	return strings.Fields(strings.ReplaceAll(strings.ToLower(strings.TrimSpace(s)), "ё", "е"))
+}
+func SameName(a, b string) bool { return len(nameWords(a)) == len(nameWords(b)) && NameMatches(a, b) }
+func NameMatches(name, query string) bool {
+	a, b := nameWords(name), nameWords(query)
+	if len(b) == 0 {
+		return false
+	}
+	for _, word := range b {
+		found := false
+		for _, candidate := range a {
+			found = found || candidate == word
+		}
+		if !found {
+			return false
+		}
+	}
+	return true
+}
+
+// A tag used for one person must never silently invite an entire group.
+func (s *Session) ResolveInvitees(ctx context.Context, names []string, tag string, all bool) ([]string, error) {
+	ids, err := s.Resolve(ctx, names, tag)
+	if err != nil {
+		return nil, err
+	}
+	if tag != "" && len(ids) > 1 && !all {
+		p, err := s.People(ctx)
+		if err != nil {
+			return nil, err
+		}
+		labels := []string{}
+		for _, f := range p.Friends {
+			for _, id := range ids {
+				if id == f.ID {
+					labels = append(labels, f.Name)
+				}
+			}
+		}
+		return nil, domain.Validation("Уточните, с кем встретиться: " + strings.Join(labels, ", "))
+	}
+	return ids, nil
+}
 func meetingLabel(e domain.Event) string {
-	return fmt.Sprintf("«%s», %s в %s", e.Title, e.Date, e.StartTime)
+	return fmt.Sprintf("«%s», %s в %s", e.Label(), e.Date, e.StartTime)
 }

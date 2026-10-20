@@ -15,7 +15,7 @@ import (
 )
 
 func (s *Session) Meetings(ctx context.Context, tx repository.Tx) ([]Meeting, error) {
-	rows, err := s.Q.QueryContext(ctx, `SELECT cm.event_id FROM collaborative_meetings cm JOIN events e ON e.id=cm.event_id WHERE e.user_id=$1 OR EXISTS(SELECT 1 FROM meeting_participants p WHERE p.event_id=e.id AND p.user_id=$1) ORDER BY e.date DESC,e.time DESC LIMIT 200`, s.UserID)
+	rows, err := s.Q.QueryContext(ctx, `SELECT cm.event_id FROM collaborative_meetings cm JOIN events e ON e.id=cm.event_id WHERE e.user_id=$1 OR EXISTS(SELECT 1 FROM meeting_participants p WHERE p.event_id=e.id AND p.user_id=$1) ORDER BY e.date DESC,e.time DESC`, s.UserID)
 	if err != nil {
 		return nil, err
 	}
@@ -101,7 +101,24 @@ func (s *Session) Meeting(ctx context.Context, tx repository.Tx, id int64) (*Mee
 		}
 		m.Proposals = append(m.Proposals, p)
 	}
-	return m, rows.Err()
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+	m.Event.OrganizerName = m.Organizer.Name
+	if domain.ValidZoomJoinURL(m.Event.MeetingURL) {
+		m.Event.ConferenceProvider = "zoom"
+	}
+	names := []string{}
+	if m.Organizer.ID != s.UserID {
+		names = append(names, m.Organizer.Name)
+	}
+	for _, p := range m.Members {
+		if p.ID != s.UserID && p.Status != "cancelled" {
+			names = append(names, p.Name)
+		}
+	}
+	m.Event.DisplayTitle = domain.MeetingDisplayTitle(m.Event.Title, names)
+	return m, nil
 }
 func (s *Session) meetingOperation(ctx context.Context, op Operation, now time.Time) (Result, error) {
 	r := Result{EventID: op.EventID}
@@ -527,30 +544,9 @@ func (s *Session) BeforeChange(ctx context.Context, tx repository.Tx, e domain.E
 	return nil
 }
 func (s *Session) FindMeeting(ctx context.Context, tx repository.Tx, query string, names []string, date *domain.Date) (*Meeting, error) {
-	items, err := s.Meetings(ctx, tx)
+	matches, err := s.MatchingMeetings(ctx, tx, query, names, nil, date, nil)
 	if err != nil {
 		return nil, err
-	}
-	matches := []Meeting{}
-	for _, m := range items {
-		if m.Cancelled || date != nil && m.Event.Date.String() != date.String() {
-			continue
-		}
-		if query != "" && !strings.Contains(strings.ToLower(m.Event.Title), strings.ToLower(query)) {
-			continue
-		}
-		all := true
-		for _, name := range names {
-			name = strings.ToLower(strings.TrimSpace(name))
-			found := name != "" && strings.Contains(strings.ToLower(m.Organizer.Name), name)
-			for _, p := range m.Members {
-				found = found || name != "" && strings.Contains(strings.ToLower(p.Name), name)
-			}
-			all = all && found
-		}
-		if all {
-			matches = append(matches, m)
-		}
 	}
 	if len(matches) == 0 {
 		return nil, domain.Validation("Приглашение не найдено. Уточните название и дату.")
@@ -559,4 +555,54 @@ func (s *Session) FindMeeting(ctx context.Context, tx repository.Tx, query strin
 		return nil, domain.Validation("Найдено несколько встреч. Уточните название и дату в разделе «Встречи».")
 	}
 	return &matches[0], nil
+}
+
+func (s *Session) MatchingMeetings(ctx context.Context, tx repository.Tx, query string, names, ids []string, date *domain.Date, clock *domain.TimeOfDay) ([]Meeting, error) {
+	items, err := s.Meetings(ctx, tx)
+	if err != nil {
+		return nil, err
+	}
+	// Include owned, non-collaborative meetings as well as received invitations.
+	own, err := tx.Events(ctx, domain.Filter{Kind: domain.EventMeeting, Start: date})
+	if err != nil {
+		return nil, err
+	}
+	for _, e := range own {
+		if !e.Collaborative && e.OrganizerID == s.UserID {
+			items = append(items, Meeting{Event: e, Organizer: Person{ID: s.UserID, Name: e.OrganizerName}})
+		}
+	}
+	matches := []Meeting{}
+	for _, m := range items {
+		if m.Cancelled || m.Event.DeletedAt != nil || m.Event.Status != domain.StatusOpen || date != nil && m.Event.Date.String() != date.String() || clock != nil && m.Event.StartTime.String() != clock.String() {
+			continue
+		}
+		if !domain.GenericMeetingTitle(query) && !strings.Contains(strings.ToLower(m.Event.Label()), strings.ToLower(query)) {
+			continue
+		}
+		all := true
+		for _, name := range names {
+			found := NameMatches(m.Organizer.Name, name)
+			for _, p := range m.Members {
+				found = found || p.Status != "cancelled" && NameMatches(p.Name, name)
+			}
+			all = all && found
+		}
+		for _, id := range ids {
+			found := m.Organizer.ID == id
+			for _, p := range m.Members {
+				found = found || p.ID == id && p.Status != "cancelled"
+			}
+			all = all && found
+		}
+		for _, p := range m.Members {
+			if p.ID == s.UserID && (p.Status == "cancelled" || p.Status == "declined") {
+				all = false
+			}
+		}
+		if all {
+			matches = append(matches, m)
+		}
+	}
+	return matches, nil
 }

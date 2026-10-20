@@ -19,7 +19,7 @@ func operationName(c domain.Command) string {
 	return c.Action.String()
 }
 func compactItem(e domain.Event, index int) nlu.Item {
-	v := nlu.Item{Index: index, Kind: e.Kind.String(), Title: bounded(e.Title, 200), Status: e.Status.String()}
+	v := nlu.Item{Index: index, Kind: e.Kind.String(), Title: bounded(e.Label(), 200), Status: e.Status.String()}
 	if e.Date != nil {
 		v.Date = e.Date.String()
 	}

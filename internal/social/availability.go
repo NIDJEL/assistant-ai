@@ -151,9 +151,12 @@ func (s *Session) busy(ctx context.Context, id string, from, to time.Time, exclu
 		var raw string
 		var complete bool
 		err = s.Q.QueryRowContext(ctx, `SELECT busy,complete FROM availability_snapshots WHERE user_id=$1 AND provider=$2 AND starts_at<=$3 AND ends_at>=$4 AND checked_at>now()-interval '5 minutes'`, id, provider, from, to).Scan(&raw, &complete)
-		if err != nil || !complete {
+		if err != nil {
 			b.Complete = false
 			continue
+		}
+		if !complete {
+			b.Complete = false
 		}
 		var slots []BusySlot
 		if json.Unmarshal([]byte(raw), &slots) != nil {

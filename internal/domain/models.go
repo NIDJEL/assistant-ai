@@ -11,6 +11,8 @@ import (
 )
 
 type Event struct {
+	DisplayTitle   string `json:"display_title,omitempty"`
+	OrganizerName  string `json:"organizer_name,omitempty"`
 	OrganizerID    string `json:"organizer_id,omitempty"`
 	Collaborative  bool   `json:"collaborative,omitempty"`
 	MeetingVersion int    `json:"meeting_version,omitempty"`
@@ -279,17 +281,18 @@ func inBatchAction(a Action) bool {
 }
 
 type Pending struct {
-	SocialOperation   json.RawMessage `json:"social_operation,omitempty"`
-	TargetSnapshot    *Event          `json:"target_snapshot,omitempty"`
-	RequiredSlot      string          `json:"required_slot,omitempty"`
-	ConfirmationState string          `json:"confirmation_state,omitempty"`
-	EvidenceVersion   int             `json:"evidence_version,omitempty"`
-	BatchAfter        []Event         `json:"batch_after,omitempty"`
-	BatchConflicts    []Event         `json:"batch_conflicts,omitempty"`
-	Command           Command         `json:"command"`
-	Expectation       string          `json:"expectation"`
-	At                time.Time       `json:"at"`
-	Candidates        []Event         `json:"candidates,omitempty"`
+	Scheduling        *SchedulingPending `json:"scheduling,omitempty"`
+	SocialOperation   json.RawMessage    `json:"social_operation,omitempty"`
+	TargetSnapshot    *Event             `json:"target_snapshot,omitempty"`
+	RequiredSlot      string             `json:"required_slot,omitempty"`
+	ConfirmationState string             `json:"confirmation_state,omitempty"`
+	EvidenceVersion   int                `json:"evidence_version,omitempty"`
+	BatchAfter        []Event            `json:"batch_after,omitempty"`
+	BatchConflicts    []Event            `json:"batch_conflicts,omitempty"`
+	Command           Command            `json:"command"`
+	Expectation       string             `json:"expectation"`
+	At                time.Time          `json:"at"`
+	Candidates        []Event            `json:"candidates,omitempty"`
 }
 type State struct {
 	Pending  *Pending       `json:"pending,omitempty"`
@@ -341,20 +344,22 @@ func (s State) MarshalJSON() ([]byte, error) {
 }
 
 type Response struct {
-	Social       *SocialNotice `json:"social,omitempty"`
-	ZoomMeetings []ZoomMeeting `json:"zoom_meetings,omitempty"`
-	Reply        string        `json:"reply"`
-	Action       Action        `json:"action"`
-	Events       []Event       `json:"events"`
-	Candidates   []Event       `json:"candidates"`
-	Conflicts    []Event       `json:"conflicts"`
-	Total        *int          `json:"total,omitempty"`
-	SessionID    string        `json:"session_id"`
-	RequestID    string        `json:"request_id"`
-	Provider     string        `json:"provider"`
-	Timezone     string        `json:"timezone"`
-	Pending      bool          `json:"pending"`
-	Suggestions  []string      `json:"suggestions,omitempty"`
+	Scheduling      *SchedulingCard `json:"scheduling,omitempty"`
+	SubmittedChoice *ChatChoice     `json:"submitted_choice,omitempty"`
+	Social          *SocialNotice   `json:"social,omitempty"`
+	ZoomMeetings    []ZoomMeeting   `json:"zoom_meetings,omitempty"`
+	Reply           string          `json:"reply"`
+	Action          Action          `json:"action"`
+	Events          []Event         `json:"events"`
+	Candidates      []Event         `json:"candidates"`
+	Conflicts       []Event         `json:"conflicts"`
+	Total           *int            `json:"total,omitempty"`
+	SessionID       string          `json:"session_id"`
+	RequestID       string          `json:"request_id"`
+	Provider        string          `json:"provider"`
+	Timezone        string          `json:"timezone"`
+	Pending         bool            `json:"pending"`
+	Suggestions     []string        `json:"suggestions,omitempty"`
 }
 type Exchange struct {
 	Notification bool      `json:"notification,omitempty"`
