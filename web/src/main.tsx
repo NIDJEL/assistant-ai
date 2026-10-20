@@ -8,6 +8,7 @@ import './styles/parity.css';
 import './styles/motion.css';
 import './styles/layout.css';
 import './styles/auth.css';
+import './styles/auth-premium.css';
 import './styles/notifications.css';
 import './styles/zoom.css';
 import './styles/social.css';

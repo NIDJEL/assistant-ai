@@ -43,7 +43,8 @@ test('auth tabs visibly slide in both directions and preserve entered values', a
     return { from, to: positions.at(-1)!, positions };
    });
    expect(Math.abs(movement.to - movement.from)).toBeGreaterThan(50);
-   expect(movement.positions.some(position => position > Math.min(movement.from, movement.to) + 2 && position < Math.max(movement.from, movement.to) - 2)).toBe(true);
+   if (reducedMotion === 'no-preference') expect(movement.positions.some(position => position > Math.min(movement.from, movement.to) + 2 && position < Math.max(movement.from, movement.to) - 2)).toBe(true);
+   else expect(movement.positions.every(position => Math.abs(position - movement.to) < 1)).toBe(true);
    await expect(page.getByRole('tab', { name, exact: true })).toHaveAttribute('aria-selected', 'true');
    await expect(page.getByLabel('Почта', { exact: true })).toHaveValue('motion@example.test');
   }
@@ -114,7 +115,7 @@ test('login errors, pending state, session expiration and OAuth cancellation sta
 });
 test('auth mobile and reduced motion have no overflow or decorative animation', async ({ page }) => {
  await page.emulateMedia({ reducedMotion: 'reduce' }); await page.setViewportSize({ width: 390, height: 844 }); await page.goto('/auth'); await expect(page.locator('.auth-mobile-brand')).toBeVisible(); await expect(page.locator('.auth-information')).toBeHidden(); await noOverflow(page);
- expect(await page.locator('.auth-wave-face').evaluate(element => getComputedStyle(element).animationName)).toBe('none');
+ expect(await page.locator('.auth-mobile-brand .gena-mascot-float').evaluate(element => getComputedStyle(element).animationName)).toBe('none');
  await page.getByRole('tab', { name: 'Создать аккаунт' }).click(); await expect(page.getByLabel('Повторите пароль')).toBeVisible(); await noOverflow(page);
 });
 test('two browser accounts never share events or preferences', async ({ browser, baseURL }) => {
