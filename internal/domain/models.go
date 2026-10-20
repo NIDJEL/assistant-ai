@@ -247,6 +247,9 @@ func (c Command) Validate() error {
 		if ch.TimeShiftMinutes != nil && (*ch.TimeShiftMinutes == 0 || *ch.TimeShiftMinutes < -525600 || *ch.TimeShiftMinutes > 525600 || c.Date != nil || c.Time != nil || c.ExactAt != nil) {
 			return errors.New("invalid execution shift")
 		}
+		if ch.DurationMinutes != nil && (*ch.DurationMinutes < 5 || *ch.DurationMinutes > 1440) {
+			return errors.New("invalid execution duration")
+		}
 	}
 	if err := (EventDetails{Participants: c.Participants, ReminderEnabled: c.ReminderEnabled, ReminderMinutes: c.ReminderMinutes, StartSecond: c.StartSecond, Recurrence: c.Recurrence}).Validate(); err != nil {
 		return err

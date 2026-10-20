@@ -52,6 +52,9 @@ func simpleDate(c *domain.Command, t *nlu.Temporal, clock *string, now time.Time
 	return nil
 }
 func simpleChanges(c *domain.Command, ch nlu.Changes, now time.Time) error {
+	if ch.DurationMinutes != nil && (*ch.DurationMinutes < 5 || *ch.DurationMinutes > 1440) {
+		return errors.New("Длительность должна быть от 5 минут до суток.")
+	}
 	if ch.Title != nil {
 		if strings.TrimSpace(*ch.Title) == "" {
 			return errors.New("Название не должно быть пустым.")
@@ -70,8 +73,21 @@ func simpleChanges(c *domain.Command, ch nlu.Changes, now time.Time) error {
 	if ch.ReminderEnabled != nil {
 		c.ReminderEnabled = ch.ReminderEnabled
 	}
-	if ch.ShiftMinutes != nil || ch.Status != nil {
-		c.Changes = &domain.ExecutionChanges{TimeShiftMinutes: ch.ShiftMinutes}
+	if ch.DurationMinutes != nil && c.Action == domain.ActionCreate {
+		c.Duration = time.Duration(*ch.DurationMinutes) * time.Minute
+	}
+	if ch.ShiftMinutes != nil || ch.Status != nil || ch.DurationMinutes != nil && c.Action != domain.ActionCreate {
+		changes := domain.ExecutionChanges{}
+		if c.Changes != nil {
+			changes = *c.Changes
+		}
+		c.Changes = &changes
+		if ch.ShiftMinutes != nil {
+			c.Changes.TimeShiftMinutes = ch.ShiftMinutes
+		}
+		if ch.DurationMinutes != nil {
+			c.Changes.DurationMinutes = ch.DurationMinutes
+		}
 		if ch.Status != nil {
 			status, err := domain.ParseStatus(*ch.Status)
 			if err != nil || status == domain.StatusUnknown {
@@ -158,6 +174,7 @@ func displayChanges(c domain.Command) *nlu.Changes {
 		v.Time = &clock
 	}
 	if c.Changes != nil {
+		v.DurationMinutes = c.Changes.DurationMinutes
 		v.ShiftMinutes = c.Changes.TimeShiftMinutes
 		if c.Changes.Status != nil {
 			status := c.Changes.Status.String()

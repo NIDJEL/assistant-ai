@@ -155,7 +155,7 @@ func (s *Service) respondSimple(ctx context.Context, interpreter operationInterp
 				response = answer(parseErr.Error(), domain.ActionClarify)
 			} else {
 				// A failed new request must not leave an older destructive preview armed.
-				if state.Pending == nil || len(state.Pending.SocialOperation) == 0 {
+				if state.Pending == nil || len(state.Pending.SocialOperation) == 0 && !in(state.Pending.Expectation, "fields", "reminder") {
 					state.Pending = nil
 				}
 				response = answer("Не удалось понять запрос. Уточните, что нужно сделать. Ничего не изменено.", domain.ActionClarify)
@@ -512,7 +512,8 @@ func (s *Service) applySimple(ctx context.Context, tx repository.Tx, state *doma
 		c = p.Command
 		c.Error = ""
 		if err = simpleChanges(&c, a.Changes, now); err != nil {
-			return clarify("Уточните дату, время или настройки напоминания.")
+			state.Pending = p
+			return clarify("Уточните дату, время, длительность или настройки напоминания.")
 		}
 		if p.RequiredSlot == "date" && a.Changes.Date == nil || p.RequiredSlot == "time" && a.Changes.Time == nil && (a.Changes.Date == nil || a.Changes.Date.Type != "relative_delay") {
 			state.Pending = p

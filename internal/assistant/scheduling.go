@@ -111,6 +111,9 @@ func socialContinuation(p *domain.Pending, op nlu.Operation, args any, now time.
 			return op, args, nil
 		}
 	}
+	if changes.DurationMinutes != nil && (*changes.DurationMinutes < 5 || *changes.DurationMinutes > 1440) {
+		return op, args, domain.Validation("Длительность должна быть от 5 минут до суток.")
+	}
 	q := p.Scheduling
 	if q == nil {
 		q = &domain.SchedulingPending{}
@@ -181,6 +184,14 @@ func socialContinuation(p *domain.Pending, op nlu.Operation, args any, now time.
 		q.Selected = nil
 		q.Meetings = nil
 		c.Time = changes.Time
+		q.After = nil
+		q.Slots = nil
+	}
+	if changes.DurationMinutes != nil {
+		c.DurationMinutes = changes.DurationMinutes
+		q.SlotChosen = q.Preview
+		q.Selected = nil
+		q.Meetings = nil
 		q.After = nil
 		q.Slots = nil
 	}

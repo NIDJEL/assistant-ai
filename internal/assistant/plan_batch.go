@@ -16,6 +16,12 @@ func applyExecutionChanges(e *domain.Event, ch *domain.ExecutionChanges, loc *ti
 	if ch == nil {
 		return nil
 	}
+	if ch.DurationMinutes != nil {
+		if *ch.DurationMinutes < 5 || *ch.DurationMinutes > 1440 {
+			return errors.New("Длительность должна быть от 5 минут до суток.")
+		}
+		e.Duration = time.Duration(*ch.DurationMinutes) * time.Minute
+	}
 	if ch.Status != nil {
 		if *ch.Status != domain.StatusOpen && *ch.Status != domain.StatusDone {
 			return errors.New("Некорректный статус.")

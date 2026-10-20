@@ -50,6 +50,7 @@ type Target struct {
 	Filter *Filter `json:"filter,omitempty"`
 }
 type Changes struct {
+	DurationMinutes *int      `json:"duration_minutes,omitempty"`
 	Title           *string   `json:"title,omitempty"`
 	Date            *Temporal `json:"date,omitempty"`
 	Time            *string   `json:"time,omitempty"`

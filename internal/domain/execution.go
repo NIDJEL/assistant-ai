@@ -20,6 +20,7 @@ type ExecutionFilter struct {
 }
 
 type ExecutionChanges struct {
+	DurationMinutes  *int      `json:"duration_minutes,omitempty"`
 	Priority         *Priority `json:"priority,omitempty"`
 	Status           *Status   `json:"status,omitempty"`
 	TimeShiftMinutes *int      `json:"time_shift_minutes,omitempty"`
