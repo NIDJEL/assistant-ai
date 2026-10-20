@@ -20,7 +20,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value: Auth = { user, loading, error, refresh,
     login: (email, password, acceptance) => authenticate('/api/auth/login', { email, password, ...acceptance }),
     register: (name, email, password, password_confirmation, acceptance) => authenticate('/api/auth/register', { name, email, password, password_confirmation, ...acceptance }),
-    logout: async () => { ++generation.current; if (user) await releasePushOnLogout(user.id); await request('/api/auth/logout', { method: 'POST', body: '{}' }); setUser(null); channel.current?.postMessage('changed'); },
+    logout: async () => {
+      ++generation.current;
+      // Optional browser notification cleanup must never prevent server logout.
+      if (user) await releasePushOnLogout(user.id).catch(() => {});
+      await request('/api/auth/logout', { method: 'POST', body: '{}' });
+      setUser(null); channel.current?.postMessage('changed');
+    },
     updateProfile: async profile => { const data = await request<{ user: User }>('/api/auth/me', { method: 'PATCH', body: JSON.stringify(profile) }); setUser(data.user); channel.current?.postMessage('changed'); },
     completeOnboarding: async () => { const data = await request<{ user: User }>('/api/auth/onboarding', { method: 'POST', body: '{}' }); setUser(data.user); },
   };

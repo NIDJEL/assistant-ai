@@ -39,7 +39,11 @@ test('desktop and mobile layouts keep the form, illustrations and consents intac
           return b.right <= head.left || b.left >= head.right || b.bottom <= head.top || b.top >= head.bottom;
         });
       })).toBe(true);
-    } else await expect(page.locator('.auth-mobile-brand .gena-mascot')).toBeVisible();
+    } else {
+      await expect(page.locator('.auth-mobile-brand')).toHaveCount(0);
+      await expect(page.locator('.gena-mascot')).toBeHidden();
+      await expect(page.locator('.auth-brand')).toBeHidden();
+    }
     for (const text of ['Ваши планы в надёжных руках', 'Гена. Всё сложится.', 'Конфиденциальность', 'Чуть меньше рутины. Чуть больше жизни.', 'На вашей стороне']) await expect(page.getByText(text, { exact: true })).toHaveCount(0);
     for (const mode of ['login', 'register']) {
       if (mode === 'register') await page.getByRole('tab', { name: 'Создать аккаунт' }).click();
@@ -173,13 +177,16 @@ test('an inactive document pauses the whole scene and clears pointer motion', as
   expect(await page.locator('.auth-orbit-front').evaluate(e => getComputedStyle(e).animationPlayState)).toBe('running');
 });
 
-test('touch devices retain the mascot without pointer parallax', async ({ browser, baseURL }) => {
+test('touch devices show only the form without mobile branding or pointer parallax', async ({ browser, baseURL }) => {
   const context = await browser.newContext({ baseURL, viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   const page = await context.newPage();
   try {
     await page.route('**/api/auth/me', route => route.fulfill({ status: 401, json: {} }));
     await page.goto('/auth'); await settle(page);
-    await expect(page.locator('.auth-mobile-brand .gena-mascot')).toBeVisible();
+    await expect(page.locator('.auth-mobile-brand')).toHaveCount(0);
+    await expect(page.locator('.gena-mascot')).toBeHidden();
+    await expect(page.locator('.auth-brand')).toBeHidden();
+    expect(await page.locator('.auth-form').evaluate(e => parseFloat(getComputedStyle(e).rowGap))).toBeGreaterThanOrEqual(12);
     await page.getByLabel('Почта', { exact: true }).tap();
     expect(await page.locator('.auth-premium').evaluate(e => Number(e.style.getPropertyValue('--pointer-x')))).toBe(0);
   } finally { await context.close(); }

@@ -87,6 +87,27 @@ test('logout clears protected content in another tab sharing the session', async
  await page.goto('/tasks'); await expect(page.locator('.profile-name')).toHaveText('Две вкладки'); const other = await context.newPage(); await other.goto('/settings'); await other.getByRole('button', { name: 'Выйти', exact: true }).click();
  await expect(page).toHaveURL(/\/auth$/); await expect(page.locator('.app-shell')).toHaveCount(0); await other.close();
 });
+
+test('mobile logout completes when Service Workers exist without Push API', async ({ page, context }) => {
+ await page.setViewportSize({ width: 390, height: 844 });
+ await page.addInitScript(() => {
+  delete (window as unknown as Record<string, unknown>).PushManager;
+  Object.defineProperty(ServiceWorkerRegistration.prototype, 'pushManager', { configurable: true, get: () => undefined });
+ });
+ const registered = await context.request.post('/api/auth/register', { data: { ...legalAcceptance, name: 'Мобильный выход', email: `mobile-logout-${Date.now()}@example.test`, password, password_confirmation: password } });
+ expect(registered.status()).toBe(201); await context.request.post('/api/auth/onboarding', { data: {} });
+ await page.goto('/settings'); await expect(page.locator('.account-card')).toContainText('Мобильный выход');
+ expect(await page.evaluate(async () => (await navigator.serviceWorker.ready).pushManager === undefined)).toBe(true);
+ const message = `Временно недоступно: ${'unavailable/'.repeat(25)}`;
+ await page.route('**/api/auth/logout', route => route.fulfill({ status: 503, json: { error: { message } } }));
+ await page.locator('.account-card').getByRole('button', { name: 'Выйти', exact: true }).click();
+ await expect(page.locator('.account-card [role=alert]')).toHaveText(message); await noOverflow(page);
+ await page.unroute('**/api/auth/logout');
+ await page.locator('.account-card').getByRole('button', { name: 'Выйти', exact: true }).click();
+ await expect(page).toHaveURL(/\/auth$/); await expect(page.locator('.app-shell')).toHaveCount(0);
+ expect((await context.request.get('/api/auth/me')).status()).toBe(401);
+ await expect(page.locator('.auth-mobile-brand')).toHaveCount(0); await noOverflow(page);
+});
 test('approved auth experience, registration, onboarding, session refresh, account and logout', async ({ page, context }) => {
  await page.setViewportSize({ width: 1536, height: 1024 }); await page.goto('/tasks'); await expect(page).toHaveURL(/\/auth$/);
  await expect(page).toHaveTitle('Ассистент Гена'); await expect(page.getByRole('heading', { name: 'Добро пожаловать! Я Гена' })).toBeVisible(); await expect(page.getByRole('button', { name: 'Войти через Яндекс' })).toBeVisible(); await expect(page.getByRole('button', { name: /VK/ })).toHaveCount(0); await noOverflow(page);
@@ -114,8 +135,8 @@ test('login errors, pending state, session expiration and OAuth cancellation sta
  await page.getByRole('button', { name: 'Войти через Яндекс' }).click(); await expect(page.getByRole('alert')).toContainText('ещё не настроен');
 });
 test('auth mobile and reduced motion have no overflow or decorative animation', async ({ page }) => {
- await page.emulateMedia({ reducedMotion: 'reduce' }); await page.setViewportSize({ width: 390, height: 844 }); await page.goto('/auth'); await expect(page.locator('.auth-mobile-brand')).toBeVisible(); await expect(page.locator('.auth-information')).toBeHidden(); await noOverflow(page);
- expect(await page.locator('.auth-mobile-brand .gena-mascot-float').evaluate(element => getComputedStyle(element).animationName)).toBe('none');
+ await page.emulateMedia({ reducedMotion: 'reduce' }); await page.setViewportSize({ width: 390, height: 844 }); await page.goto('/auth'); await expect(page.locator('.auth-mobile-brand')).toHaveCount(0); await expect(page.locator('.auth-information')).toBeHidden(); await noOverflow(page);
+ expect(await page.locator('.auth-orbit-front').evaluate(element => getComputedStyle(element).animationName)).toBe('none');
  await page.getByRole('tab', { name: 'Создать аккаунт' }).click(); await expect(page.getByLabel('Повторите пароль')).toBeVisible(); await noOverflow(page);
 });
 test('two browser accounts never share events or preferences', async ({ browser, baseURL }) => {

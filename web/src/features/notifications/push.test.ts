@@ -1,4 +1,4 @@
-import { enablePush, disablePush, getDevices, pushCapability, deviceID, type Device } from './push';
+import { enablePush, disablePush, releasePushOnLogout, getDevices, pushCapability, deviceID, type Device } from './push';
 import { registerNotifications } from './notifications';
 vi.mock('./notifications', () => ({ registerNotifications: vi.fn() }));
 const device: Device = { id: 'device-1', platform: 'Windows', disabled_at: null, last_success_at: null, failure_count: 0 };
@@ -50,6 +50,36 @@ it('renews a subscription disabled by the server after a dead endpoint', async (
   await enablePush('alice');expect(unsubscribe).toHaveBeenCalledOnce();expect(subscribe).toHaveBeenCalledOnce();
 });
 it('removes the backend subscription and unsubscribes locally', async () => { await enablePush('alice'); await disablePush('alice'); expect(fetch).toHaveBeenCalledWith('/api/notifications/push/subscriptions/device-1', expect.objectContaining({ method: 'DELETE' })); expect(unsubscribe).toHaveBeenCalledOnce(); expect(deviceID('alice')).toBeNull(); });
+it.each(['no-service-worker', 'no-registration', 'no-push-manager', 'registration-error', 'subscription-error'] as const)('allows logout when the browser has %s', async capability => {
+  localStorage.setItem('gena.push.device.alice', device.id);
+  if (capability === 'no-service-worker') delete (navigator as unknown as Record<string, unknown>).serviceWorker;
+  else Object.defineProperty(navigator, 'serviceWorker', { configurable: true, value: { getRegistration: async () => {
+    if (capability === 'registration-error') throw new Error('Service Worker unavailable');
+    if (capability === 'no-registration') return undefined;
+    if (capability === 'no-push-manager') return { active: {} };
+    return { pushManager: { getSubscription: async () => { throw new Error('Push unavailable'); } } };
+  } } });
+  await expect(releasePushOnLogout('alice')).resolves.toBeUndefined();
+  expect(deviceID('alice')).toBeNull();
+  expect(fetch).toHaveBeenCalledWith('/api/notifications/push/subscriptions/device-1', expect.objectContaining({ method: 'DELETE' }));
+  expect(requestPermission).not.toHaveBeenCalled();
+});
+it('still unsubscribes on logout when removing the backend device fails', async () => {
+  const registration = await navigator.serviceWorker.getRegistration('/');
+  const postMessage = vi.spyOn(registration!.active!, 'postMessage');
+  subscription = fakeSubscription(); localStorage.setItem('gena.push.device.alice', device.id);
+  fetch.mockResolvedValue(new Response(JSON.stringify({ error: { message: 'Сервер недоступен' } }), { status: 503 }));
+  await expect(releasePushOnLogout('alice')).resolves.toBeUndefined();
+  expect(unsubscribe).toHaveBeenCalledOnce(); expect(deviceID('alice')).toBeNull();
+  expect(postMessage).toHaveBeenCalledWith({ type: 'GENA_USER', userId: null }, expect.any(Array));
+});
+it('does not block logout when unsubscribing and resetting the worker both fail', async () => {
+  subscription = fakeSubscription(); localStorage.setItem('gena.push.device.alice', device.id);
+  unsubscribe.mockRejectedValue(new Error('Unsubscribe unavailable'));
+  vi.mocked(registerNotifications).mockRejectedValue(new Error('Worker unavailable'));
+  await expect(releasePushOnLogout('alice')).resolves.toBeUndefined();
+  expect(deviceID('alice')).toBeNull();
+});
 it('requires installation on iPhone before asking permission', async () => { vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue('iPhone'); vi.stubGlobal('matchMedia', () => ({ matches: false })); expect(pushCapability()).toBe('ios-install'); await expect(enablePush('alice')).rejects.toThrow(); expect(requestPermission).not.toHaveBeenCalled(); });
 it('supports iPhone and iPad standalone mode', async () => { vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue('iPad'); vi.stubGlobal('matchMedia', () => ({ matches: true })); expect(pushCapability()).toBe('supported'); await enablePush('alice'); expect(requestPermission).toHaveBeenCalledOnce(); });
 it('rolls back a newly created subscription when the backend rejects it', async () => {

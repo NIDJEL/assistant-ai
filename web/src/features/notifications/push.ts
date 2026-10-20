@@ -66,17 +66,24 @@ export async function enablePush(userId: string): Promise<Device | undefined> {
 export async function disablePush(userId: string) {
   const id = deviceID(userId);
   if (id) await request(`/api/notifications/push/subscriptions/${encodeURIComponent(id)}`, { method: 'DELETE' });
-  const registration = navigator.serviceWorker ? await navigator.serviceWorker.getRegistration('/') : undefined;
-  const subscription = await registration?.pushManager.getSubscription();
-  if (subscription && !await subscription.unsubscribe()) throw new Error('Не удалось отключить уведомления в браузере. Повторите действие.');
+  await unsubscribePush();
   saveDevice(userId, null);
 }
+async function unsubscribePush() {
+  const registration = navigator.serviceWorker ? await navigator.serviceWorker.getRegistration('/') : undefined;
+  // iOS browser tabs can expose Service Workers without exposing PushManager.
+  const subscription = await registration?.pushManager?.getSubscription();
+  if (subscription && !await subscription.unsubscribe()) throw new Error('Не удалось отключить уведомления в браузере. Повторите действие.');
+}
 export async function releasePushOnLogout(userId: string) {
-  await disablePush(userId).catch(async () => {
-    const registration = await navigator.serviceWorker?.getRegistration('/');
-    await (await registration?.pushManager.getSubscription())?.unsubscribe();
+  try {
+    await disablePush(userId);
+  } catch {
+    // Still remove the browser subscription if the device DELETE failed.
+    await unsubscribePush().catch(() => {});
+  } finally {
     saveDevice(userId, null);
-  });
-  await setPushUser(null).catch(() => {});
+    await setPushUser(null).catch(() => {});
+  }
 }
 export const testPush = (id: string) => request('/api/notifications/push/test', { method: 'POST', body: JSON.stringify({ subscription_id: id }) });

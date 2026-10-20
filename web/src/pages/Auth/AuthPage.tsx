@@ -1,13 +1,12 @@
 import { useRef, useState, type InputHTMLAttributes, type ReactNode } from 'react';
 import { Mail, LockKeyhole, UserRound, Eye, EyeOff, ChevronRight, LoaderCircle, type LucideIcon } from 'lucide-react';
 import { Navigate, useSearchParams } from 'react-router-dom';
-import { BrandMark } from '../../components/Brand';
 import { useAuth } from '../../app/AuthContext';
 import { LEGAL_VERSION, type LegalAcceptance } from '../Legal/documents';
 import { errorMessage, request } from '../../api/client';
 import { AutoHeight } from '../../components/motion/AutoHeight';
 import yandexLogo from '../../assets/oauth/yandex.svg';
-import { AuthBackdrop, AuthScene, GenaMascot } from './AuthScene';
+import { AuthBackdrop, AuthScene } from './AuthScene';
 import { usePointerSpring } from './useAuthMotion';
 export function AuthWaves({ variant = 'auth' }: { variant?: 'auth' | 'onboarding' }) {
   // The compact scene keeps the mascot at a uniform scale; surrounding waves span the card.
@@ -37,7 +36,7 @@ export function AuthPage() {
   const passwordInput = (repeat = false) => <AuthField id={repeat ? 'auth-password-confirmation' : 'auth-password'} label={repeat ? 'Повторите пароль' : 'Пароль'} icon={LockKeyhole} type={visible ? 'text' : 'password'} autoComplete={isRegister ? 'new-password' : 'current-password'} value={repeat ? confirmation : password} onChange={e => repeat ? setConfirmation(e.target.value) : setPassword(e.target.value)} required maxLength={1024} aria-invalid={!!error} action={!repeat && <button type="button" aria-label={visible ? 'Скрыть пароль' : 'Показать пароль'} onClick={() => setVisible(!visible)}>{visible ? <Eye size={21}/> : <EyeOff size={21}/>}</button>}/>;
   return <main ref={sceneRef} className="auth-page auth-premium" data-feedback={phase === 'success' ? 'success' : error ? 'error' : busy ? 'busy' : 'idle'}><AuthBackdrop/><div className={`auth-container ${isRegister ? 'auth-register' : ''} ${phase === 'success' ? 'auth-success' : ''}`}>
     <AuthScene/>
-    <section className="auth-card" aria-label="Авторизация"><div className="auth-mobile-brand"><BrandMark gradient/><span>Гена</span><GenaMascot compact/></div><div className="auth-segment" role="tablist" aria-label="Способ авторизации" onKeyDown={event => {
+    <section className="auth-card" aria-label="Авторизация"><div className="auth-segment" role="tablist" aria-label="Способ авторизации" onKeyDown={event => {
       if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key) || busy || phase) return;
       event.preventDefault(); const next = event.key === 'Home' ? 'login' : event.key === 'End' ? 'register' : isRegister ? 'login' : 'register';
       switchMode(next); document.getElementById(`auth-tab-${next}`)?.focus();

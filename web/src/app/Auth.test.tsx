@@ -10,7 +10,7 @@ it('keeps the dashboard unmounted while checking the session, then redirects to 
  history.pushState({}, '', '/tasks'); let done!: (value: Response) => void; const pending = new Promise<Response>(resolve => { done = resolve; }); server(() => pending); render(<App/>);
  expect(document.querySelector('.app-shell')).not.toBeInTheDocument(); expect(document.querySelector('.auth-splash')).toBeInTheDocument();
  await act(async () => done(response({ error: { message: 'Войдите' } }, 401))); await screen.findByRole('heading', { name: 'Добро пожаловать! Я Гена' }); expect(location.pathname).toBe('/auth');
- expect(screen.getAllByText('Гена')).toHaveLength(2); expect(screen.getByRole('button', { name: 'Войти через Яндекс' })).toBeInTheDocument(); expect(screen.queryByRole('button', { name: /VK/ })).not.toBeInTheDocument();
+ expect(screen.getAllByText('Гена')).toHaveLength(1); expect(screen.getByRole('button', { name: 'Войти через Яндекс' })).toBeInTheDocument(); expect(screen.queryByRole('button', { name: /VK/ })).not.toBeInTheDocument();
 });
 it('switches forms in one auth card, validates confirmation and toggles password visibility', async () => {
  history.pushState({}, '', '/auth'); server(); const user = userEvent.setup(); render(<App/>); await screen.findByRole('heading', { name: 'Добро пожаловать! Я Гена' });

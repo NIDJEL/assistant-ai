@@ -9,10 +9,10 @@ import integrations from '../../assets/auth/integrations.webp';
 const illustrations = { gena, calendar, tasks, integrations };
 const asset = (name: keyof typeof illustrations) => illustrations[name];
 
-export function GenaMascot({ compact = false }: { compact?: boolean }) {
-  return <div className={`gena-mascot ${compact ? 'gena-mascot-compact' : ''}`} aria-hidden="true">
+function GenaMascot() {
+  return <div className="gena-mascot" aria-hidden="true">
     <div className="gena-mascot-turn"><div className="gena-mascot-float">
-      <img src={asset('gena')} width="640" height="640" alt="" fetchPriority={compact ? 'auto' : 'high'} draggable="false"/>
+      <img src={asset('gena')} width="640" height="640" alt="" fetchPriority="high" draggable="false"/>
       <div className="gena-face"><span className="gena-eye"/><span className="gena-eye"/><span className="gena-smile"/></div>
     </div></div>
   </div>;
