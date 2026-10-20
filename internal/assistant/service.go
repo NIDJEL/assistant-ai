@@ -486,7 +486,7 @@ func (s *Service) executeValidated(ctx context.Context, tx repository.Tx, state 
 		if kind == domain.EventUnknown {
 			kind = domain.EventTask
 		}
-		e := domain.Event{EventDetails: domain.EventDetails{CalendarProvider: cmd.CalendarProvider, ConferenceProvider: cmd.ConferenceProvider, ReminderMinutes: cmd.ReminderMinutes, ReminderEnabled: cmd.ReminderEnabled, StartSecond: cmd.StartSecond, Recurrence: cmd.Recurrence, OccurrenceAt: cmd.ExactAt}, Kind: kind, Title: cmd.Title, Date: cmd.Date, StartTime: cmd.Time, Duration: cmd.Duration, Status: domain.StatusOpen, Priority: domain.PriorityNormal}
+		e := domain.Event{EventDetails: domain.EventDetails{Participants: cmd.Participants, CalendarProvider: cmd.CalendarProvider, ConferenceProvider: cmd.ConferenceProvider, ReminderMinutes: cmd.ReminderMinutes, ReminderEnabled: cmd.ReminderEnabled, StartSecond: cmd.StartSecond, Recurrence: cmd.Recurrence, OccurrenceAt: cmd.ExactAt}, Kind: kind, Title: cmd.Title, Date: cmd.Date, StartTime: cmd.Time, Duration: cmd.Duration, Status: domain.StatusOpen, Priority: domain.PriorityNormal}
 		if err := e.Validate(); err != nil {
 			return answer(err.Error(), domain.ActionClarify), nil
 		}

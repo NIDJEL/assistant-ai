@@ -341,6 +341,21 @@ func (s *Session) notify(ctx context.Context, uid, key, text, kind string, event
 	return err
 }
 
+// MissingFriendsError distinguishes absent contacts from ambiguous names and
+// storage failures. Only ordinary personal meeting creation may recover from it.
+type MissingFriendsError struct {
+	Names []string
+}
+
+func (e *MissingFriendsError) Error() string {
+	if len(e.Names) == 1 {
+		return "Друг «" + e.Names[0] + "» не найден. Добавьте его по коду в разделе «Друзья»."
+	}
+	return "Не найдены в друзьях: «" + strings.Join(e.Names, "», «") + "». Добавьте их по коду в разделе «Друзья»."
+}
+
+func (e *MissingFriendsError) Unwrap() error { return domain.Validation(e.Error()) }
+
 // Resolve never exposes account search: candidates come only from confirmed friends.
 func (s *Session) Resolve(ctx context.Context, names []string, tag string) ([]string, error) {
 	p, err := s.People(ctx)
@@ -348,6 +363,10 @@ func (s *Session) Resolve(ctx context.Context, names []string, tag string) ([]st
 		return nil, err
 	}
 	ids := []string{}
+	missing := []string{}
+	if len(names) > 30 {
+		return nil, domain.Validation("Выберите не больше 30 друзей")
+	}
 	if tag != "" {
 		for _, f := range p.Friends {
 			for _, t := range f.Tags {
@@ -362,6 +381,9 @@ func (s *Session) Resolve(ctx context.Context, names []string, tag string) ([]st
 		}
 	}
 	for _, name := range names {
+		if strings.TrimSpace(name) == "" {
+			return nil, domain.Validation("Укажите имя участника")
+		}
 		matches := []Person{}
 		exact := []Person{}
 		for _, f := range p.Friends {
@@ -380,7 +402,8 @@ func (s *Session) Resolve(ctx context.Context, names []string, tag string) ([]st
 			matches = exact
 		}
 		if len(matches) == 0 {
-			return nil, domain.Validation("Друг «" + name + "» не найден. Добавьте его по коду в разделе «Друзья».")
+			missing = append(missing, name)
+			continue
 		}
 		if len(matches) > 1 {
 			labels := []string{}
@@ -390,6 +413,9 @@ func (s *Session) Resolve(ctx context.Context, names []string, tag string) ([]st
 			return nil, domain.Validation("Уточните полное имя: " + strings.Join(labels, ", "))
 		}
 		ids = append(ids, matches[0].ID)
+	}
+	if len(missing) > 0 {
+		return nil, &MissingFriendsError{Names: missing}
 	}
 	sort.Strings(ids)
 	out := []string{}

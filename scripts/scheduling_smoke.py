@@ -60,8 +60,12 @@ def main():
     second = dt.datetime.fromisoformat(r['scheduling']['slots'][1]['start'])
     r = b.chat('Давай второй')
     assert not r['pending'] and r['events'][0]['date'] == second.date().isoformat() and r['events'][0]['time'] == second.strftime('%H:%M'), 'E: ordinal lost offer'
+    before = count(b)
     r = b.chat('Назначь встречу с Евгением Незнакомцевым завтра в 14')
-    assert r['pending'] and not r['events'], 'F: invented friend'
+    assert not r['pending'] and len(r['events']) == 1 and not r['events'][0].get('collaborative'), 'F: personal meeting not saved'
+    assert 'Приглашения не отправлены' in r['reply'] and count(b) == before, 'F: unknown person was invited'
+    r = b.chat('Пригласи Евгения Незнакомцева на новую встречу послезавтра в 14')
+    assert r['pending'] and not r['events'], 'F: explicit invitation silently became personal'
     b.chat('Отмена')
     before = count(b)
     r = b.chat('Создай встречу с коллегой завтра в 12:00')
@@ -71,7 +75,7 @@ def main():
     assert r['pending'] and 'по какому поводу' in r['reply'], 'H: generic title accepted'
     r = b.chat('Обсудим дизайн приложения')
     assert not r['pending'] and r['events'][0]['time'] == '10:00' and 'дизайн' in r['events'][0]['title'].lower(), 'H: subject continuation lost schedule'
-    print(json.dumps({'status': 'PASS', 'accounts': 3, 'A_existing_and_roles': 'PASS', 'B_name': 'PASS', 'C_inflected_private_tag': 'PASS', 'D_conflict_and_structured_choice': 'PASS', 'E_ordinal_continuation': 'PASS', 'F_unknown_friend': 'PASS', 'G_ambiguous_tag': 'PASS', 'H_subject_continuation': 'PASS', 'I_zoom_organizer_permissions': 'PASS', 'J_live_zoom_oauth': 'NOT_CONFIGURED'}, ensure_ascii=False), flush=True)
+    print(json.dumps({'status': 'PASS', 'accounts': 3, 'A_existing_and_roles': 'PASS', 'B_name': 'PASS', 'C_inflected_private_tag': 'PASS', 'D_conflict_and_structured_choice': 'PASS', 'E_ordinal_continuation': 'PASS', 'F_unknown_person_and_explicit_invitation': 'PASS', 'G_ambiguous_tag': 'PASS', 'H_subject_continuation': 'PASS', 'I_zoom_organizer_permissions': 'PASS', 'J_live_zoom_oauth': 'NOT_CONFIGURED'}, ensure_ascii=False), flush=True)
 
 
 if __name__ == '__main__':

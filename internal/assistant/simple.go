@@ -333,6 +333,21 @@ func (s *Service) applySimple(ctx context.Context, tx repository.Tx, state *doma
 		}
 		return clarify(q)
 	}
+	if create, ok := args.(*nlu.Create); ok && op.Intent == "create_meeting" {
+		invite, decline := invitationIntent(message)
+		if invite && decline {
+			return clarify("Сохранить встречу только в вашем плане или отправить приглашения? Уточните участников.")
+		}
+		if decline {
+			create.Personal, create.Invite = true, false
+		} else if invite {
+			create.Invite = true
+		}
+		if create.Personal && create.Invite {
+			return clarify("Сохранить личную запись или отправить приглашения участникам?")
+		}
+		op.Arguments, _ = json.Marshal(create)
+	}
 	if handled, reply, e := s.applySocial(ctx, tx, state, op, args, now); handled {
 		return c, reply, e
 	}

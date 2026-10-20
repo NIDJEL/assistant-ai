@@ -25,7 +25,7 @@ func (s *Service) applySocial(ctx context.Context, tx repository.Tx, state *doma
 	}
 	if op.Intent == "meeting_zoom" {
 		a := args.(*nlu.Social)
-		args = &nlu.Create{Friends: a.Friends, FriendTag: a.Tag, Title: a.Query, Date: a.Date, Conference: "zoom"}
+		args = &nlu.Create{Invite: true, Friends: a.Friends, FriendTag: a.Tag, Title: a.Query, Date: a.Date, Conference: "zoom"}
 		op.Intent = "create_meeting"
 		op.Arguments, _ = json.Marshal(args)
 	}

@@ -3,6 +3,7 @@ package assistant
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -201,6 +202,9 @@ func (s *Service) createSocialMeeting(ctx context.Context, tx repository.Tx, sta
 	if prior != nil && prior.Scheduling != nil {
 		q = prior.Scheduling
 	}
+	if a.Personal {
+		q.Personal = true
+	}
 	question := func(text string) (domain.Response, error) {
 		// Relative dates belong to the original turn. Freeze the resolved civil
 		// day so a reply after midnight does not move the pending meeting again.
@@ -233,7 +237,10 @@ func (s *Service) createSocialMeeting(ctx context.Context, tx repository.Tx, sta
 	if err = simpleDate(&c, a.Date, a.Time, now); err != nil {
 		return question("Уточните дату и время встречи.")
 	}
-	ids, err := session.ResolveInvitees(ctx, a.Friends, a.FriendTag, a.AllWithTag)
+	var ids []string
+	if !q.Personal {
+		ids, err = session.ResolveInvitees(ctx, a.Friends, a.FriendTag, a.AllWithTag)
+	}
 	if err != nil {
 		// An invitation remains accessible after a friendship ends. Resolve it
 		// using the actual participants rather than global account search.
@@ -246,7 +253,20 @@ func (s *Service) createSocialMeeting(ctx context.Context, tx repository.Tx, sta
 				return s.useExistingMeeting(ctx, tx, state, &matches[0], a.Conference, now)
 			}
 		}
-		return question(err.Error())
+		var missing *social.MissingFriendsError
+		if !errors.As(err, &missing) || a.Invite || a.FriendTag != "" || a.AllWithTag || prior != nil {
+			return question(err.Error())
+		}
+		// Keep the entire request personal, including mixed known/unknown names.
+		// Never send a partial set of invitations or convert a stale social offer.
+		q.Personal, q.Uninvited = true, append([]string(nil), missing.Names...)
+		ids = nil
+	}
+	if q.Personal {
+		a.Title = domain.MeetingDisplayTitle(a.Title, a.Friends)
+		for _, name := range a.Friends {
+			c.Participants = append(c.Participants, domain.Participant{Name: name})
+		}
 	}
 	if q.Selected != nil {
 		var m *social.Meeting
@@ -278,6 +298,15 @@ func (s *Service) createSocialMeeting(ctx context.Context, tx repository.Tx, sta
 		if e != nil {
 			return domain.Response{}, e
 		}
+		if q.Personal {
+			personal := matches[:0]
+			for _, m := range matches {
+				if !m.Event.Collaborative {
+					personal = append(personal, m)
+				}
+			}
+			matches = personal
+		}
 		if len(matches) > 0 {
 			if len(matches) == 1 {
 				m := matches[0]
@@ -297,22 +326,38 @@ func (s *Service) createSocialMeeting(ctx context.Context, tx repository.Tx, sta
 			return card("Нашёл несколько подходящих встреч. Выберите нужную или уточните дату и название.", "meetings", true)
 		}
 	}
-	if len(ids) == 0 && strings.HasPrefix(strings.ToLower(a.Title), "встреча с ") {
+	if len(ids) == 0 && !q.Personal && strings.HasPrefix(strings.ToLower(a.Title), "встреча с ") {
 		people, e := session.People(ctx)
 		if e != nil {
 			return domain.Response{}, e
 		}
 		labels := []string{}
+		person := strings.TrimSpace(a.Title[len("Встреча с "):])
+		known := false
 		for _, f := range people.Friends {
+			// A dropped model field must not turn an existing friend/tag into
+			// an uninvited guest. Compare display forms, never choose an ID.
+			candidates := append([]string{f.Name}, strings.Fields(f.Name)...)
+			candidates = append(candidates, f.Tags...)
+			for _, label := range candidates {
+				for _, form := range []string{label, domain.InstrumentalName(label)} {
+					known = known || strings.Contains(" "+strings.ToLower(person)+" ", " "+strings.ToLower(form)+" ")
+				}
+			}
 			if len(labels) < 8 {
 				labels = append(labels, f.Name)
 			}
 		}
-		text := "Уточните полное имя или личный тег участника встречи."
-		if len(labels) > 0 {
-			text += " Ваши друзья: " + strings.Join(labels, ", ") + "."
+		if known || a.Invite || prior != nil || person == "" {
+			text := "Уточните полное имя или личный тег участника встречи."
+			if len(labels) > 0 {
+				text += " Ваши друзья: " + strings.Join(labels, ", ") + "."
+			}
+			return question(text)
 		}
-		return question(text)
+		q.Personal, q.Uninvited = true, []string{person}
+		a.Friends = []string{person}
+		c.Participants = []domain.Participant{{Name: person}}
 	}
 	if domain.GenericMeetingTitle(a.Title) {
 		if len(ids) == 0 {
@@ -433,7 +478,14 @@ func (s *Service) createSocialMeeting(ctx context.Context, tx repository.Tx, sta
 	c.ReminderMinutes = a.ReminderMinutes
 	if len(ids) == 0 {
 		state.Pending = nil
-		return s.executeValidated(ctx, tx, state, c, now, false)
+		r, e := s.executeValidated(ctx, tx, state, c, now, false)
+		if e == nil && !r.Pending && r.Action == domain.ActionCreate && q.Personal {
+			r.Reply += " Встреча сохранена только в вашем плане. Приглашения не отправлены."
+			if len(q.Uninvited) > 0 {
+				r.Reply += " Если участники («" + strings.Join(q.Uninvited, "», «") + "») ещё не добавлены в друзья, добавьте их в разделе «Друзья». Отправить им приглашение можно отдельным действием."
+			}
+		}
+		return r, e
 	}
 	event := domain.Event{Title: a.Title, Kind: domain.EventMeeting, Date: c.Date, StartTime: c.Time, Duration: c.Duration, Status: domain.StatusOpen, Priority: domain.PriorityNormal}
 	event.CalendarProvider = a.Calendar

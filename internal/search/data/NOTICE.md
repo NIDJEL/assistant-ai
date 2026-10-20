@@ -9,3 +9,5 @@ Sources: the supplied 1000-event CSV, the shared parity corpus, pymorphy3 and `p
 - https://opencorpora.org/dict.php
 
 Unknown vocabulary uses the Unicode Russian Snowball stemmer. The shipped lexicon covers the corpus/CSV vocabulary and its inflections; it does not claim to replace the full OpenCorpora morphological analyzer for every Russian word. `SearchEngine` remains replaceable for future richer morphology/vector retrieval.
+
+`synonyms.json` supplements the original dictionary with curated related vocabulary for presentations, contracts, calls, budgets and design. Aliases use the same normalization as queries, including unknown inflections. These groups affect retrieval suggestions; they do not count as exact matches for mutation target selection.

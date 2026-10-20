@@ -15,6 +15,9 @@ import (
 //go:embed data/russian.json
 var dictionary []byte
 
+//go:embed data/synonyms.json
+var synonymData []byte
+
 type lexicon struct {
 	Lemmas   map[string]string `json:"lemmas"`
 	Concepts map[string]string `json:"concepts"`
@@ -33,6 +36,16 @@ func New() (*Engine, error) {
 	}
 	for _, w := range e.dict.Stop {
 		e.stop[w] = true
+	}
+	var synonyms map[string][]string
+	if err := json.Unmarshal(synonymData, &synonyms); err != nil {
+		return nil, err
+	}
+	for canonical, aliases := range synonyms {
+		concept := e.dict.Concepts[canonical]
+		for _, alias := range aliases {
+			e.dict.Concepts[e.tokenLemma(alias)] = concept
+		}
 	}
 	for w := range e.dict.Concepts {
 		e.conceptWords = append(e.conceptWords, w)
@@ -53,19 +66,22 @@ func (e *Engine) lemma(word string) string {
 	}
 	return word
 }
+
+func (e *Engine) tokenLemma(word string) string {
+	value := e.lemma(word)
+	// Unknown inflections may need the same second stem as strict TitleMatches.
+	if _, known := e.dict.Lemmas[word]; !known {
+		if stem, err := snowball.Stem(value, "russian", true); err == nil {
+			value = stem
+		}
+	}
+	return value
+}
+
 func (e *Engine) Tokens(text string) map[string]bool {
 	result := map[string]bool{}
 	for _, word := range words.FindAllString(Normalize(text), -1) {
-		value := e.lemma(word)
-		// For words outside the finite dictionary, Snowball can leave an
-		// inflection one pass behind its singular form. Match the second stem
-		// already used by strict TitleMatches, without changing dictionary
-		// lemmas, concepts or mutation candidate selection.
-		if _, known := e.dict.Lemmas[word]; !known {
-			if stem, err := snowball.Stem(value, "russian", true); err == nil {
-				value = stem
-			}
-		}
+		value := e.tokenLemma(word)
 		if e.stop[value] {
 			continue
 		}

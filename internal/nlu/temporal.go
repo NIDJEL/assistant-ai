@@ -116,6 +116,15 @@ func (t Temporal) Resolve(now time.Time) (start, end *domain.Date, exact *time.T
 			break
 		}
 		start, exact = domain.Day(at), &at
+	case "period_end":
+		if t.Value != 0 || t.Date != "" || t.Weekday != "" || t.Direction != "" {
+			return nil, nil, nil, errTemporal
+		}
+		_, boundary, _, e := (Temporal{Type: "calendar_period", Unit: t.Unit, Offset: t.Offset}).Resolve(now)
+		if e != nil {
+			return nil, nil, nil, e
+		}
+		start = boundary.AddDays(-1)
 	case "calendar_period", "rolling_period":
 		if t.Date != "" || t.Weekday != "" || t.Direction != "" {
 			err = errTemporal

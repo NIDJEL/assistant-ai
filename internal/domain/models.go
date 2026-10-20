@@ -135,7 +135,8 @@ func (e *Event) UnmarshalJSON(b []byte) error {
 }
 
 type Command struct {
-	Next                                 bool `json:"next,omitempty"`
+	Participants                         []Participant `json:"participants,omitempty"`
+	Next                                 bool          `json:"next,omitempty"`
 	CalendarProvider, ConferenceProvider string
 	Filter                               *ExecutionFilter
 	Changes                              *ExecutionChanges
@@ -247,7 +248,7 @@ func (c Command) Validate() error {
 			return errors.New("invalid execution shift")
 		}
 	}
-	if err := (EventDetails{ReminderEnabled: c.ReminderEnabled, ReminderMinutes: c.ReminderMinutes, StartSecond: c.StartSecond, Recurrence: c.Recurrence}).Validate(); err != nil {
+	if err := (EventDetails{Participants: c.Participants, ReminderEnabled: c.ReminderEnabled, ReminderMinutes: c.ReminderMinutes, StartSecond: c.StartSecond, Recurrence: c.Recurrence}).Validate(); err != nil {
 		return err
 	}
 	if !c.Action.Interpretable() {

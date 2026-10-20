@@ -5,6 +5,31 @@ import (
 	"time"
 )
 
+func TestPeriodEndUsesCalendarDates(t *testing.T) {
+	for _, tc := range []struct {
+		now, unit, want string
+		offset          int
+	}{
+		{"2026-10-20T12:00:00+03:00", "week", "2026-10-25", 0},
+		{"2026-10-25T23:59:00+03:00", "week", "2026-10-25", 0},
+		{"2026-10-20T12:00:00+03:00", "week", "2026-11-01", 1},
+		{"2028-02-01T12:00:00+03:00", "month", "2028-02-29", 0},
+		{"2026-12-30T12:00:00+03:00", "month", "2027-01-31", 1},
+		{"2026-10-20T12:00:00+03:00", "year", "2026-12-31", 0},
+	} {
+		now, _ := time.Parse(time.RFC3339, tc.now)
+		start, end, exact, err := (Temporal{Type: "period_end", Unit: tc.unit, Offset: tc.offset}).Resolve(now)
+		if err != nil || start.String() != tc.want || end.String() != start.AddDays(1).String() || exact != nil {
+			t.Fatal(tc, start, end, exact, err)
+		}
+	}
+	for _, bad := range []Temporal{{Type: "period_end", Unit: "hour"}, {Type: "period_end", Unit: "week", Value: 2}, {Type: "period_end", Unit: "week", Day: 20}, {Type: "period_end", Unit: "week", Date: "2026-10-20"}} {
+		if _, _, _, err := bad.Resolve(time.Now()); err == nil {
+			t.Fatal("invalid period boundary accepted", bad)
+		}
+	}
+}
+
 func TestDayOfMonth(t *testing.T) {
 	for _, tc := range []struct {
 		name, now, want string

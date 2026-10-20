@@ -53,3 +53,25 @@ func TestTopicInflectionsAcrossKinds(t *testing.T) {
 		}
 	}
 }
+
+func TestSemanticParaphrasesDoNotBroadenMutationSelection(t *testing.T) {
+	e, err := search.New()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, tc := range []struct{ title, query string }{
+		{"Подготовить презентацию", "подготовить слайды для выступления"},
+		{"Проверить документы по договору", "контрактные документы"},
+		{"Согласовать бюджет", "согласовать смету"},
+	} {
+		items := []domain.Event{{ID: 1, Title: tc.title, Kind: domain.EventTask}, {ID: 2, Title: "Купить хлеб", Kind: domain.EventTask}}
+		got := e.Search(items, tc.query, 10)
+		if len(got) != 1 || got[0].ID != 1 {
+			t.Errorf("%s: %+v", tc.query, got)
+		}
+	}
+	items := []domain.Event{{ID: 1, Title: "Подготовить презентацию", Kind: domain.EventTask}}
+	if got, trusted := e.TitleMatches(items, "выступление", false); len(got) > 0 && trusted {
+		t.Fatal("semantic aliases silently selected a mutation target", got)
+	}
+}

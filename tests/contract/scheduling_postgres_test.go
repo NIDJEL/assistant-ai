@@ -339,7 +339,7 @@ func TestPostgresSchedulingMoreCorrectionCancelAndTagAmbiguity(t *testing.T) {
 		t.Fatal(r)
 	}
 	r = h.say(h.a, "create_meeting", `{"title":"","friends":["Неизвестный"]}`, "Назначь с неизвестным")
-	if !r.Pending || !strings.Contains(r.Reply, "не найден") {
+	if !r.Pending || !strings.Contains(r.Reply, "В какой день") {
 		t.Fatal(r)
 	}
 	r = h.say(h.a, "cancel", `{}`, "Отмена")
@@ -468,6 +468,7 @@ func TestPostgresSchedulingNewCommandDoesNotReusePreviouslySelectedMeeting(t *te
 
 func TestPostgresSchedulingPersonTitleWithoutResolvedPersonDoesNotCreatePersonalEvent(t *testing.T) {
 	h := schedulingFixture(t)
+	h.execute(h.a, social.Operation{Action: "tags", UserID: h.bid, Tags: []string{"Коллега"}})
 	r := h.say(h.a, "create_meeting", `{"title":"Встреча с коллегой","date":{"type":"relative_day","offset":1},"time":"12:00"}`, "Встреча с коллегой завтра в 12")
 	if !r.Pending || len(r.Events) != 0 || !strings.Contains(r.Reply, "Матвей Лапин") {
 		t.Fatal(r)

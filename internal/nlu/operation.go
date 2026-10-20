@@ -16,6 +16,8 @@ type Operation struct {
 	Clarification *string         `json:"clarification"`
 }
 type Create struct {
+	Personal        bool      `json:"personal,omitempty"`
+	Invite          bool      `json:"invite,omitempty"`
 	AllWithTag      bool      `json:"all_with_tag,omitempty"`
 	Friends         []string  `json:"friends,omitempty"`
 	FriendTag       string    `json:"friend_tag,omitempty"`
