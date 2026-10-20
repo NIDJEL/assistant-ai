@@ -56,5 +56,5 @@ export function AuthPage() {
         <AutoHeight className="auth-message-size">{(error || help) && <p id="auth-message" className={error ? 'auth-error' : 'auth-help'} role={error ? 'alert' : 'status'}>{error || help}</p>}</AutoHeight>
         <button type="submit" className="auth-primary" disabled={!!busy || !!phase || !agreed}><span>{busy === 'email' ? isRegister ? 'Создаём аккаунт…' : 'Входим…' : phase === 'success' ? 'Готово' : isRegister ? 'Создать аккаунт' : 'Войти'}</span>{busy === 'email' && <LoaderCircle className="auth-spinner" size={20}/>}</button>
       </form><p className="auth-alternate">{isRegister ? 'Уже есть аккаунт?' : 'Нет аккаунта?'} <button type="button" disabled={!!busy || !!phase} onClick={() => switchMode(isRegister ? 'login' : 'register')}>{isRegister ? 'Войти' : 'Создать аккаунт'}</button></p></div></AutoHeight>
-    </section></div><footer className="auth-page-footer"><span>Гена. Всё сложится.</span><a href="/privacy" target="_blank" rel="noopener noreferrer">Конфиденциальность <span aria-hidden="true">↗</span></a></footer></main>;
+    </section></div></main>;
 }

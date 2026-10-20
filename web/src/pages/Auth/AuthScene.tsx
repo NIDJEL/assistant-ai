@@ -1,4 +1,4 @@
-import { CalendarDays, Check, Link2, ShieldCheck, SquareCheck, type LucideIcon } from 'lucide-react';
+import { CalendarDays, Check, Link2, SquareCheck, type LucideIcon } from 'lucide-react';
 import { BrandMark } from '../../components/Brand';
 import { usePointerSpring } from './useAuthMotion';
 import gena from '../../assets/auth/gena.webp';
@@ -40,10 +40,9 @@ export function AuthBackdrop() {
 
 export function AuthScene() {
   return <section className="auth-information" aria-label="Ваш помощник Гена">
-    <div className="auth-brand"><BrandMark gradient/><span>Гена</span><span className="auth-brand-caption">На вашей стороне</span></div>
-    <div className="auth-pitch"><p className="auth-eyebrow"><span/> Чуть меньше рутины. Чуть больше жизни.</p><h1><span>Ваш личный</span><span>ИИ-помощник</span></h1><p className="auth-description">Планируйте, управляйте задачами<br/>и ничего не забывайте</p></div>
+    <div className="auth-brand"><BrandMark gradient/><span>Гена</span></div>
+    <div className="auth-pitch"><h1><span>Ваш личный</span><span>ИИ-помощник</span></h1><p className="auth-description">Планируйте, управляйте задачами<br/>и ничего не забывайте</p></div>
     <div className="auth-mascot-scene"><GenaMascot/><span className="auth-floating-check" aria-hidden="true"><Check strokeWidth={4}/></span><span className="auth-spark auth-spark-one" aria-hidden="true"/><span className="auth-spark auth-spark-two" aria-hidden="true"/></div>
     <ul className="auth-features">{features.map((feature, index) => <FeatureCard key={feature.image} {...feature} index={index}/>)}</ul>
-    <p className="auth-scene-note"><ShieldCheck size={15} aria-hidden="true"/> Ваши планы в надёжных руках</p>
   </section>;
 }

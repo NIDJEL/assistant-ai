@@ -21,7 +21,7 @@ async function settle(page: Page) {
 
 test('desktop and mobile layouts keep the form, illustrations and consents intact', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  for (const viewport of [{ width: 1920, height: 1080 }, { width: 1440, height: 900 }, { width: 1366, height: 768 }, { width: 1280, height: 720 }, { width: 1024, height: 768 }, { width: 768, height: 1024 }, { width: 593, height: 932 }, { width: 390, height: 844 }, { width: 360, height: 740 }, { width: 320, height: 740 }]) {
+  for (const viewport of [{ width: 1920, height: 918 }, { width: 1920, height: 1080 }, { width: 1440, height: 900 }, { width: 1366, height: 768 }, { width: 1280, height: 720 }, { width: 1024, height: 768 }, { width: 768, height: 1024 }, { width: 593, height: 932 }, { width: 390, height: 844 }, { width: 360, height: 740 }, { width: 320, height: 740 }]) {
     await page.setViewportSize(viewport);
     await page.goto('/auth');
     await expect(page.getByRole('heading', { name: 'Добро пожаловать! Я Гена' })).toBeVisible();
@@ -30,21 +30,34 @@ test('desktop and mobile layouts keep the form, illustrations and consents intac
       await expect(page.locator('.auth-feature-card')).toHaveCount(3);
       await expect(page.locator('.auth-pitch h1')).toHaveCSS('opacity', '1');
       await expect(page.locator('.auth-mascot-scene')).toHaveCSS('opacity', '1');
+      expect(await page.evaluate(() => {
+        const image = document.querySelector('.auth-mascot-scene img')!.getBoundingClientRect();
+        // The head occupies this area of the transparent illustration; allow for its float/parallax.
+        const head = { left: image.left + image.width * .21 - 12, right: image.left + image.width * .74 + 12, top: image.top + image.height * .04 - 12, bottom: image.top + image.height * .44 };
+        return [...document.querySelectorAll('.auth-pitch h1>span,.auth-description')].every(e => {
+          const b = e.getBoundingClientRect();
+          return b.right <= head.left || b.left >= head.right || b.bottom <= head.top || b.top >= head.bottom;
+        });
+      })).toBe(true);
     } else await expect(page.locator('.auth-mobile-brand .gena-mascot')).toBeVisible();
+    for (const text of ['Ваши планы в надёжных руках', 'Гена. Всё сложится.', 'Конфиденциальность', 'Чуть меньше рутины. Чуть больше жизни.', 'На вашей стороне']) await expect(page.getByText(text, { exact: true })).toHaveCount(0);
     for (const mode of ['login', 'register']) {
       if (mode === 'register') await page.getByRole('tab', { name: 'Создать аккаунт' }).click();
       await settle(page);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      expect(await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight)).toBe(true);
       expect(await page.locator('.auth-card').evaluate(e => e.scrollWidth <= e.clientWidth && e.scrollHeight <= e.clientHeight + 1)).toBe(true);
       expect(await page.locator('.auth-legal').evaluate(e => parseFloat(getComputedStyle(e).fontSize))).toBeGreaterThanOrEqual(13);
       for (const field of await page.locator('.auth-form input:not([type=checkbox])').all()) {
         await field.scrollIntoViewIfNeeded();
         await expect(field).toBeInViewport({ ratio: 1 });
-        expect(await field.evaluate(e => e.closest('.auth-input')!.getBoundingClientRect().height)).toBeGreaterThanOrEqual(48);
+        expect(await field.evaluate(e => e.closest('.auth-input')!.getBoundingClientRect().height)).toBeGreaterThanOrEqual(viewport.width <= 900 && viewport.height <= 760 ? 44 : 48);
       }
       const submit = page.getByRole('button', { name: mode === 'login' ? 'Войти' : 'Создать аккаунт', exact: true });
       await submit.scrollIntoViewIfNeeded();
       await expect(submit).toBeInViewport({ ratio: 1 });
+      await page.evaluate(() => window.scrollTo(0, 1000));
+      expect(await page.evaluate(() => scrollY)).toBe(0);
       expect(await page.locator('.auth-premium img').evaluateAll(images => images.every(image => image instanceof HTMLImageElement && image.complete && image.naturalWidth > 0))).toBe(true);
     }
   }
