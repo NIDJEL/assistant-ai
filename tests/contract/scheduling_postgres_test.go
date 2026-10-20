@@ -357,6 +357,21 @@ func TestPostgresSchedulingMissingSubjectKeepsDateAndTime(t *testing.T) {
 	}
 }
 
+func TestPostgresSchedulingContinuationAcrossMidnightKeepsOriginalDay(t *testing.T) {
+	h := schedulingFixture(t)
+	h.now = h.now.Add(11*time.Hour + 55*time.Minute)
+	r := h.say(h.a, "create_meeting", `{"title":"Встреча","friends":["Матвей"],"date":{"type":"relative_day","offset":1}}`, "Завтра встреча с Матвеем")
+	if !r.Pending {
+		t.Fatal(r)
+	}
+	want := domain.Day(h.now.AddDate(0, 0, 1)).String()
+	h.now = h.now.Add(10 * time.Minute)
+	r = h.say(h.a, "continue", `{"changes":{"time":"15:00"}}`, "В 15")
+	if r.Pending || len(r.Events) != 1 || r.Events[0].Date.String() != want {
+		t.Fatal(r)
+	}
+}
+
 func TestPostgresSchedulingAmbiguousTagAndRevokedFriendship(t *testing.T) {
 	h := schedulingFixture(t)
 	c, err := h.auth.Register(t.Context(), "Алиса Проверка", "schedule-c@example.test", "password 12345", "password 12345")

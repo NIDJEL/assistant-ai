@@ -194,6 +194,20 @@ func (s *Service) createSocialMeeting(ctx context.Context, tx repository.Tx, sta
 		q = prior.Scheduling
 	}
 	question := func(text string) (domain.Response, error) {
+		// Relative dates belong to the original turn. Freeze the resolved civil
+		// day so a reply after midnight does not move the pending meeting again.
+		saved := *a
+		resolved := neutral("simple_llm")
+		if simpleDate(&resolved, a.Date, a.Time, now) == nil {
+			if resolved.Date != nil {
+				saved.Date = &nlu.Temporal{Type: "absolute", Date: resolved.Date.String()}
+			}
+			if resolved.Time != nil {
+				clock := resolved.Time.String()
+				saved.Time = &clock
+			}
+		}
+		op.Arguments, _ = json.Marshal(saved)
 		raw, _ := json.Marshal(op)
 		state.Pending = &domain.Pending{Command: neutral("simple_llm"), Expectation: "social", At: now, SocialOperation: raw, Scheduling: q}
 		return answer(text, domain.ActionClarify), nil
