@@ -20,10 +20,10 @@ class Account:
         self.sid = str(uuid.uuid4())
         password = secrets.token_urlsafe(24)
         self.user = self.call('/api/auth/register', {'name': name, 'email': f'social-smoke-{suffix}-{uuid.uuid4().hex[:14]}@example.test', 'password': password, 'password_confirmation': password})['user']
-        self.call('/api/auth/onboarding', {})
+        self.call('/api/auth/onboarding', method='POST')
 
-    def call(self, path, body=None):
-        req = urllib.request.Request(self.base + path, data=None if body is None else json.dumps(body, ensure_ascii=False).encode(), headers={'Content-Type': 'application/json', 'Origin': self.base})
+    def call(self, path, body=None, method=None):
+        req = urllib.request.Request(self.base + path, data=None if body is None else json.dumps(body, ensure_ascii=False).encode(), method=method, headers={'Content-Type': 'application/json', 'Origin': self.base})
         try:
             with self.client.open(req, timeout=55) as r:
                 return json.load(r)
@@ -56,7 +56,7 @@ def main():
     assert b.call('/api/social/people')['friends'][0]['tags'] == []
     a.chat('Покажи мои заявки в друзья')
     avail = a.chat('Найди время, когда мы с Алисой Проверка оба свободны завтра')
-    assert 'свободн' in avail['reply'].lower() and not avail['pending'], 'NLU availability failed'
+    assert 'свободн' in avail['reply'].lower() and avail.get('scheduling', {}).get('slots'), 'NLU availability failed'
     rid = str(uuid.uuid4())
     command = 'Назначь встречу с Алисой Проверка завтра в 15:00 на 30 минут'
     a.chat(command, rid)

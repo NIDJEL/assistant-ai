@@ -18,3 +18,9 @@ test('stale and busy cards disable actions and expose partial availability', () 
 test('relative labels use the offer timezone across the device midnight', () => {
   expect(planningSlotLabel({ start: '2026-10-20T22:00:00Z', end: '2026-10-20T23:00:00Z' }, 'Europe/Moscow', '2026-10-20')).toBe('Завтра, 01:00–02:00');
 });
+test('availability preview confirms invitations separately', async () => {
+  const onChoose = vi.fn(); render(<SchedulingCard card={{ ...card, kind: 'confirm', slots: [] }} active busy={false} onChoose={onChoose}/>);
+  expect(screen.queryByRole('button', { name: 'Создать отдельную' })).toBeNull();
+  await userEvent.setup().click(screen.getByRole('button', { name: 'Отправить приглашения' }));
+  expect(onChoose).toHaveBeenCalledWith('Подтверждаю создание встречи и отправку приглашений', { token: card.token, action: 'confirm', index: undefined, slot: undefined });
+});

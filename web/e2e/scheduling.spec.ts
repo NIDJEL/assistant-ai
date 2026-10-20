@@ -26,5 +26,11 @@ test('live simple_llm conflict card survives reload and sends an exact slot', as
     await expect(page.locator('.reply-text').last()).toContainText('приглашения');
     const meetings = (await (await a.request.get('/api/social/meetings')).json()).meetings; expect(meetings).toHaveLength(1); expect(meetings[0].organizer.id).toBe(au.id); expect(meetings[0].members[0]).toMatchObject({ id: bu.id, status: 'pending' }); expect(meetings[0].event.time).toBe('17:00');
     for (const button of await card.getByRole('button').all()) await expect(button).toBeDisabled(); await noOverflow(page);
+    await page.getByRole('textbox', { name: 'Сообщение ассистенту' }).fill('Когда мы с Борисом оба свободны послезавтра?'); await page.getByRole('button', { name: 'Отправить сообщение' }).click();
+    const preview = page.getByRole('region', { name: 'Выбор времени встречи' }).last(); await expect(preview.getByRole('button').first()).toBeEnabled(); await preview.getByRole('button').first().click();
+    const confirmation = page.getByRole('region', { name: 'Подтверждение встречи' }); await expect(confirmation).toBeVisible();
+    expect((await (await a.request.get('/api/social/meetings')).json()).meetings).toHaveLength(1);
+    await confirmation.getByRole('button', { name: 'Отправить приглашения' }).click(); await expect(page.locator('.reply-text').last()).toContainText('приглашения');
+    expect((await (await a.request.get('/api/social/meetings')).json()).meetings).toHaveLength(2);
   } finally { await a.close(); await b.close(); }
 });

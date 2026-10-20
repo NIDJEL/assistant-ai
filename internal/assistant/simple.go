@@ -27,7 +27,7 @@ func simpleControl(state domain.State, message string) string {
 	if in(text, "нет", "отмена", "не надо") {
 		return "cancel"
 	}
-	if in(state.Pending.Expectation, "delete", "delete_many", "batch", "conflict") && in(text, "да", "подтверждаю", "удаляй") {
+	if in(state.Pending.Expectation, "delete", "delete_many", "batch", "conflict", "confirm_meeting") && in(text, "да", "подтверждаю", "удаляй") {
 		return "confirm"
 	}
 	return ""
@@ -116,7 +116,7 @@ func (s *Service) respondSimple(ctx context.Context, interpreter operationInterp
 	if parseErr == nil && s.RefreshPlanning != nil {
 		prepared := op
 		var planningAfter *time.Time
-		if snapshot.Pending != nil {
+		if snapshot.Pending != nil && in(op.Intent, "choose_time", "continue", "select", "confirm") {
 			raw, _ := json.Marshal(snapshot.Pending)
 			var p domain.Pending
 			_ = json.Unmarshal(raw, &p)

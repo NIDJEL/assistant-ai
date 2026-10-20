@@ -17,6 +17,7 @@ import (
 
 func (s *Service) applySocial(ctx context.Context, tx repository.Tx, state *domain.State, op nlu.Operation, args any, now time.Time) (bool, domain.Response, error) {
 	prior := state.Pending
+	continuing := in(op.Intent, "choose_time", "continue", "select", "confirm")
 	var continuationErr error
 	op, args, continuationErr = socialContinuation(prior, op, args, now)
 	if continuationErr != nil {
@@ -66,6 +67,9 @@ func (s *Service) applySocial(ctx context.Context, tx repository.Tx, state *doma
 	}
 	operation := social.Operation{RequestID: uuid.NewString()}
 	if isCreate {
+		if !continuing {
+			prior = nil
+		}
 		r, e := s.createSocialMeeting(ctx, tx, state, prior, session, op, create, now)
 		return true, r, e
 	}
@@ -123,6 +127,9 @@ func (s *Service) applySocial(ctx context.Context, tx repository.Tx, state *doma
 			}
 			start = c.Date.At(clock, s.Calendar.Location)
 		}
+		if start.Before(now) {
+			start = now.Truncate(15 * time.Minute).Add(15 * time.Minute)
+		}
 		duration := 30
 		if a.DurationMinutes != nil {
 			duration = *a.DurationMinutes
@@ -140,7 +147,8 @@ func (s *Service) applySocial(ctx context.Context, tx repository.Tx, state *doma
 			}
 			av.Slots = slots
 		}
-		return finish(social.Result{Message: availabilityText(av, s.Calendar.Location)}, nil)
+		r, e := s.planningPreview(ctx, state, session, a, ids, av, start, duration, periodEnd, now)
+		return true, r, e
 	default:
 		var date *domain.Date
 		if a.Date != nil {
@@ -193,33 +201,6 @@ func (s *Service) applySocial(ctx context.Context, tx repository.Tx, state *doma
 	}
 	result, e := session.Execute(ctx, operation, now)
 	return finish(result, e)
-}
-func availabilityText(a social.Availability, loc *time.Location) string {
-	text := "Выбранное время свободно."
-	for _, p := range a.Users {
-		if p.Status == "busy" {
-			text = "В выбранное время есть занятость."
-			break
-		}
-	}
-	if !a.Complete {
-		busy := false
-		for _, p := range a.Users {
-			busy = busy || p.Status == "busy"
-		}
-		if !busy {
-			text = "Доступность выбранного времени неизвестна."
-		}
-		text += " Доступность внешних календарей проверена не полностью; свободные варианты предварительные."
-	}
-	if len(a.Slots) == 0 {
-		return text + " Общих свободных интервалов в ближайшие 14 дней не найдено."
-	}
-	text += "\nОбщее свободное время (" + loc.String() + "):\n"
-	for i, slot := range a.Slots {
-		text += fmt.Sprintf("%d. %s–%s\n", i+1, slot.Start.In(loc).Format("02.01 15:04"), slot.End.In(loc).Format("15:04"))
-	}
-	return strings.TrimSpace(text) + "\nВыберите время; встреча пока не создана."
 }
 
 // Prepare external availability outside the write transaction. Resolution here

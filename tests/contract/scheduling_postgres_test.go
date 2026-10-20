@@ -430,6 +430,48 @@ func TestPostgresSchedulingGroupDisplayTitleMatchesCalendarAndRevokedHistory(t *
 	}
 }
 
+func TestPostgresSchedulingAvailabilityChoiceRequiresConfirmation(t *testing.T) {
+	h := schedulingFixture(t)
+	h.personal(h.b, domain.Day(h.now.AddDate(0, 0, 1)), 16, 60)
+	r := h.say(h.a, "friend_availability", `{"friends":["Матвей"],"date":{"type":"relative_day","offset":1},"time":"16:00","duration_minutes":30}`, "Когда мы с Матвеем свободны завтра после 16?")
+	if !r.Pending || r.Scheduling == nil || r.Scheduling.Kind != "availability" || len(r.Scheduling.Slots) == 0 || h.count() != 0 {
+		t.Fatal(r)
+	}
+	r = h.say(h.a, "choose_time", `{"option":1}`, "Первый вариант")
+	if !r.Pending || r.Scheduling == nil || r.Scheduling.Kind != "confirm" || h.count() != 0 {
+		t.Fatal(r)
+	}
+	r = h.say(h.a, "confirm", `{}`, "Да")
+	if r.Pending || len(r.Events) != 1 || h.count() != 1 || r.Events[0].StartTime.Hour != 17 || r.Events[0].Duration != 30*time.Minute {
+		t.Fatal(r)
+	}
+}
+
+func TestPostgresSchedulingNewCommandDoesNotReusePreviouslySelectedMeeting(t *testing.T) {
+	h := schedulingFixture(t)
+	old := h.shared(h.a, h.bid, domain.Day(h.now.AddDate(0, 0, 1)), 17)
+	r := h.say(h.a, "meeting_zoom", `{"friends":["Матвей"],"date":{"type":"relative_day","offset":1}}`, "Добавь Zoom к встрече завтра")
+	if !r.Pending || r.Scheduling == nil || r.Scheduling.Kind != "existing" {
+		t.Fatal(r)
+	}
+	r = h.say(h.a, "create_meeting", `{"title":"Обсуждение сметы","friends":["Матвей"],"date":{"type":"relative_day","offset":1},"time":"14:00"}`, "Создай встречу по смете с Матвеем завтра в 14")
+	if r.Pending || len(r.Events) != 1 || r.Events[0].ID == old || h.count() != 2 || r.Events[0].ConferenceProvider != "" {
+		t.Fatal(r)
+	}
+}
+
+func TestPostgresSchedulingPersonTitleWithoutResolvedPersonDoesNotCreatePersonalEvent(t *testing.T) {
+	h := schedulingFixture(t)
+	r := h.say(h.a, "create_meeting", `{"title":"Встреча с коллегой","date":{"type":"relative_day","offset":1},"time":"12:00"}`, "Встреча с коллегой завтра в 12")
+	if !r.Pending || len(r.Events) != 0 || !strings.Contains(r.Reply, "Матвей Лапин") {
+		t.Fatal(r)
+	}
+	var count int
+	if err := h.db.DB.QueryRow(`SELECT count(*) FROM events`).Scan(&count); err != nil || count != 0 {
+		t.Fatal(count, err)
+	}
+}
+
 func TestPostgresSchedulingAmbiguousTagAndRevokedFriendship(t *testing.T) {
 	h := schedulingFixture(t)
 	c, err := h.auth.Register(t.Context(), "Алиса Проверка", "schedule-c@example.test", "password 12345", "password 12345")

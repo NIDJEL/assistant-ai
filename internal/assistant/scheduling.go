@@ -123,8 +123,12 @@ func socialContinuation(p *domain.Pending, op nlu.Operation, args any, now time.
 		q.Selected = nil
 		q.Meetings = nil
 	}
-	if confirm && q.Selected == nil {
+	if confirm && q.Selected == nil && !q.SlotChosen {
 		return op, args, domain.Validation("Сначала выберите встречу")
+	}
+	if confirm && q.SlotChosen {
+		q.Preview = false
+		q.SlotChosen = false
 	}
 	if more {
 		if len(q.Slots) == 0 {
@@ -150,6 +154,7 @@ func socialContinuation(p *domain.Pending, op nlu.Operation, args any, now time.
 			q.Selected = &e
 			q.Meetings = nil
 		} else {
+			q.SlotChosen = q.Preview
 			slot := q.Slots[option-1]
 			if slot.Start.Before(now) {
 				return op, args, domain.Validation("Это время уже прошло. Запросите новые варианты.")
@@ -162,6 +167,8 @@ func socialContinuation(p *domain.Pending, op nlu.Operation, args any, now time.
 		}
 	}
 	if changes.Date != nil {
+		q.SlotChosen = q.Preview
+		q.SearchEnd = nil
 		q.Selected = nil
 		q.Meetings = nil
 		c.Date = changes.Date
@@ -169,6 +176,7 @@ func socialContinuation(p *domain.Pending, op nlu.Operation, args any, now time.
 		q.Slots = nil
 	}
 	if changes.Time != nil {
+		q.SlotChosen = q.Preview
 		q.Selected = nil
 		q.Meetings = nil
 		c.Time = changes.Time
@@ -289,6 +297,23 @@ func (s *Service) createSocialMeeting(ctx context.Context, tx repository.Tx, sta
 			return card("Нашёл несколько подходящих встреч. Выберите нужную или уточните дату и название.", "meetings", true)
 		}
 	}
+	if len(ids) == 0 && strings.HasPrefix(strings.ToLower(a.Title), "встреча с ") {
+		people, e := session.People(ctx)
+		if e != nil {
+			return domain.Response{}, e
+		}
+		labels := []string{}
+		for _, f := range people.Friends {
+			if len(labels) < 8 {
+				labels = append(labels, f.Name)
+			}
+		}
+		text := "Уточните полное имя или личный тег участника встречи."
+		if len(labels) > 0 {
+			text += " Ваши друзья: " + strings.Join(labels, ", ") + "."
+		}
+		return question(text)
+	}
 	if domain.GenericMeetingTitle(a.Title) {
 		if len(ids) == 0 {
 			return question("С кем встреча или по какому поводу?")
@@ -349,6 +374,9 @@ func (s *Service) createSocialMeeting(ctx context.Context, tx repository.Tx, sta
 	if busy {
 		q.Slots = nil
 		for _, slot := range av.Slots {
+			if q.SearchEnd != nil && slot.End.After(*q.SearchEnd) {
+				continue
+			}
 			if len(q.Slots) >= 4 {
 				break
 			}
@@ -363,6 +391,9 @@ func (s *Service) createSocialMeeting(ctx context.Context, tx repository.Tx, sta
 		}
 		if len(q.Slots) == 0 {
 			text = "Общего свободного времени в ближайшие 14 дней не нашёл. Попробуйте другую дату или длительность."
+			if q.SearchEnd != nil {
+				text = "В выбранном периоде общих свободных интервалов не нашёл. Попробуйте другую дату или длительность."
+			}
 		} else if domain.Day(q.Slots[0].Start.In(s.Calendar.Location)).String() != c.Date.String() {
 			text += " На выбранную дату вариантов больше нет; показываю следующие дни."
 		} else if domain.Day(q.Slots[len(q.Slots)-1].Start.In(s.Calendar.Location)).String() != c.Date.String() {
@@ -372,6 +403,13 @@ func (s *Service) createSocialMeeting(ctx context.Context, tx repository.Tx, sta
 			text += " Доступность внешних календарей проверена не полностью; варианты предварительные."
 		}
 		return card(text, "slots", av.Complete)
+	}
+	if q.Preview {
+		q.Requested = &domain.PlanningSlot{Start: start, End: end}
+		q.SlotChosen = true
+		r, e := card(fmt.Sprintf("Выбрано время для встречи «%s»: %s в %s. Отправить приглашения?", a.Title, c.Date, c.Time), "confirm", av.Complete)
+		state.Pending.Expectation = "confirm_meeting"
+		return r, e
 	}
 	for _, provider := range []string{a.Calendar, a.Conference} {
 		if provider == "" {
@@ -416,6 +454,62 @@ func (s *Service) createSocialMeeting(ctx context.Context, tx repository.Tx, sta
 	if created != nil {
 		r.Events = []domain.Event{*created}
 	}
+	return r, nil
+}
+
+// A free/busy query offers interactive slots, but choosing one only previews an
+// invitation. An explicit confirmation is required to turn a read into a create.
+func (s *Service) planningPreview(ctx context.Context, state *domain.State, session *social.Session, a *nlu.Social, ids []string, av social.Availability, start time.Time, duration int, periodEnd *domain.Date, now time.Time) (domain.Response, error) {
+	people, err := session.People(ctx)
+	if err != nil {
+		return domain.Response{}, err
+	}
+	names := []string{}
+	for _, id := range ids {
+		for _, f := range people.Friends {
+			if f.ID == id {
+				names = append(names, f.Name)
+			}
+		}
+	}
+	clock := start.In(s.Calendar.Location).Format("15:04")
+	create := nlu.Create{Friends: names, Title: domain.MeetingDisplayTitle("Встреча", names), Date: &nlu.Temporal{Type: "absolute", Date: domain.Day(start.In(s.Calendar.Location)).String()}, Time: &clock, DurationMinutes: &duration}
+	args, _ := json.Marshal(create)
+	op := nlu.Operation{Intent: "create_meeting", Confidence: "high", Arguments: args}
+	raw, _ := json.Marshal(op)
+	q := &domain.SchedulingPending{Token: uuid.NewString(), Preview: true}
+	if periodEnd != nil {
+		end := periodEnd.At(domain.TimeOfDay{}, s.Calendar.Location)
+		q.SearchEnd = &end
+	}
+	for _, slot := range av.Slots {
+		if len(q.Slots) >= 4 {
+			break
+		}
+		if q.SearchEnd != nil && slot.End.After(*q.SearchEnd) {
+			continue
+		}
+		q.Slots = append(q.Slots, domain.PlanningSlot{Start: slot.Start, End: slot.End})
+	}
+	state.Pending = &domain.Pending{Command: neutral("simple_llm"), Expectation: "social", At: now, SocialOperation: raw, Scheduling: q}
+	text := "Нашёл общие свободные варианты. Выберите время; перед отправкой приглашений попрошу подтверждение."
+	if a.Time != nil {
+		q.Requested = &domain.PlanningSlot{Start: start, End: start.Add(time.Duration(duration) * time.Minute)}
+		for _, u := range av.Users {
+			if u.Status == "busy" {
+				text = "В это время у вас или участников уже есть планы. " + text
+				break
+			}
+		}
+	}
+	if len(q.Slots) == 0 {
+		text = "В выбранном периоде общих свободных интервалов не нашёл. Уточните дату или длительность."
+	}
+	if !av.Complete {
+		text += " Внешние календари проверены не полностью; варианты предварительные."
+	}
+	r := answer(text, domain.ActionList)
+	r.Scheduling = &domain.SchedulingCard{Token: q.Token, Kind: "availability", Title: create.Title, Requested: q.Requested, Slots: q.Slots, Complete: av.Complete, Timezone: s.Calendar.Location.String(), Today: domain.Day(now).String()}
 	return r, nil
 }
 

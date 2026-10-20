@@ -16,6 +16,9 @@ type ChatChoice struct {
 	Slot   *PlanningSlot `json:"slot,omitempty"`
 }
 type SchedulingPending struct {
+	Preview      bool           `json:"preview,omitempty"`
+	SlotChosen   bool           `json:"slot_chosen,omitempty"`
+	SearchEnd    *time.Time     `json:"search_end,omitempty"`
 	ConfirmedNew bool           `json:"confirmed_new,omitempty"`
 	Token        string         `json:"token"`
 	Slots        []PlanningSlot `json:"slots,omitempty"`

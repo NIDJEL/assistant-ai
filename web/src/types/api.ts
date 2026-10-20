@@ -28,7 +28,7 @@ export interface EventQuery { start?: string; end?: string; kind?: EventKind; st
 export interface Health { status: string; backend: string; events: number; timezone: string; now: string; nlp_provider: string; schema_version: number }
 export interface PlanningSlot { start: string; end: string }
 export interface ChatChoice { token: string; action: 'slot' | 'more' | 'cancel' | 'meeting' | 'confirm' | 'new'; index?: number; slot?: PlanningSlot }
-export interface SchedulingCard { token: string; kind: 'slots' | 'meetings' | 'existing'; title: string; requested?: PlanningSlot; slots?: PlanningSlot[]; meetings?: RhythmEvent[]; complete: boolean; timezone: string; today: string }
+export interface SchedulingCard { token: string; kind: 'slots' | 'meetings' | 'existing' | 'availability' | 'confirm'; title: string; requested?: PlanningSlot; slots?: PlanningSlot[]; meetings?: RhythmEvent[]; complete: boolean; timezone: string; today: string }
 export interface ChatInput { message: string; session_id: string; request_id: string; source?: 'text' | 'voice'; choice?: ChatChoice }
 export interface ChatResponse {
 	 scheduling?: SchedulingCard;
