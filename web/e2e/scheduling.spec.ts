@@ -30,7 +30,9 @@ test('live simple_llm conflict card survives reload and sends an exact slot', as
     const preview = page.getByRole('region', { name: 'Выбор времени встречи' }).last(); await expect(preview.getByRole('button').first()).toBeEnabled(); await preview.getByRole('button').first().click();
     const confirmation = page.getByRole('region', { name: 'Подтверждение встречи' }); await expect(confirmation).toBeVisible();
     expect((await (await a.request.get('/api/social/meetings')).json()).meetings).toHaveLength(1);
-    await confirmation.getByRole('button', { name: 'Отправить приглашения' }).click(); await expect(page.locator('.reply-text').last()).toContainText('приглашения');
+    const invited = page.waitForResponse(r => r.url().endsWith('/api/chat') && r.request().method() === 'POST' && r.request().postDataJSON().choice?.action === 'confirm');
+    await confirmation.getByRole('button', { name: 'Отправить приглашения' }).click(); const invitationResponse = await invited;
+    expect(invitationResponse.status()).toBe(200); expect((await invitationResponse.json()).action).toBe('create');
     expect((await (await a.request.get('/api/social/meetings')).json()).meetings).toHaveLength(2);
   } finally { await a.close(); await b.close(); }
 });
