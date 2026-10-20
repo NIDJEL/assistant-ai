@@ -58,10 +58,10 @@ html:not([data-native-motion]) .page { animation: motion-fade-in var(--motion-no
 }
 .nav-link, .segments button { position: relative; isolation: isolate; transition: color var(--motion-fast) ease, background-color var(--motion-fast) ease, box-shadow var(--motion-fast) ease, border-color var(--motion-fast) ease; }
 .nav-link::before, .segments button::before { content: ''; position: absolute; inset: 0; border-radius: inherit; z-index: -1; pointer-events: none; opacity: 0; transition: opacity var(--motion-normal) var(--motion-ease); }
-.nav-link::before { background: linear-gradient(110deg, #e9f4ff, #e8f2ff); }
+.nav-link::before { background: var(--surface-hover); }
 .nav-link.active { background: transparent; }
 .nav-link.active::before, .segments button[aria-pressed='true']::before { opacity: 1; }
-.segments button::before { background: linear-gradient(120deg, #2c89ff, #0870fc); }
+.segments button::before { background: var(--surface-selected); }
 .segments button[aria-pressed='true'] { background: transparent; }
 .segments .count { transition: color var(--motion-fast) ease, background-color var(--motion-fast) ease; }
 .switch-row input::after { transition: transform var(--motion-normal) var(--motion-ease), box-shadow var(--motion-normal) ease; }

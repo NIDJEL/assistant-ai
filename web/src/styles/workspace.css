@@ -5,13 +5,15 @@ html[data-surface] { background: #080f21; }
 html[data-surface='auth'] body { background: #080f21; }
 html[data-surface='workspace'] {
   color-scheme: dark;
-  --text: #edf2fc; --muted: #9baac4; --accent: #77acff; --accent-soft: #1b3051;
-  --border: #25334c; --surface: #111c30; --surface-raised: #19263d;
+  --text: #e9eef6; --muted: #a0adbf; --accent: #9bc0f1; --accent-soft: #243953;
+  --canvas: #0c1220; --border: #2a3546; --border-subtle: #202c3f;
+  --surface: #141d2c; --surface-raised: #1b2739; --surface-inset: #101827;
+  --surface-hover: #223147; --surface-selected: #243953; --control-bg: #101827;
+  --danger-soft: #352235; --success: #92c9ae; --success-soft: #1d332e;
   --danger: #ff94a4; --radius: 20px; --shadow: none;
-  color: var(--text); background: #080f21;
+  color: var(--text); background: var(--canvas);
 }
-html[data-surface='workspace'] body { background: #080f21; color: var(--text); }
-html[data-surface='workspace'] :is(input:not([type='checkbox']):not([type='range']), textarea, select) { color: var(--text); background: #101b30; border-color: var(--border); box-shadow: none; }
+html[data-surface='workspace'] body { background: var(--canvas); color: var(--text); }
 html[data-surface='workspace'] :is(input, textarea)::placeholder { color: #8f9eb9; }
 html[data-surface='workspace'] :focus-visible { outline-color: #81b6ff; }
 html[data-surface='workspace'] .app-shell { padding: calc(16px + var(--safe-top)) max(16px, var(--safe-right)) calc(16px + var(--safe-bottom)) max(16px, var(--safe-left)); }
@@ -22,38 +24,38 @@ html[data-surface='workspace'] .sidebar-inner { padding-top: 22px; }
 html[data-surface='workspace'] .brand { color: var(--text); font-size: 28px; }
 html[data-surface='workspace'] .sidebar nav { margin-top: 48px; gap: 5px; }
 html[data-surface='workspace'] .nav-link { color: #b0bdd3; font-size: 15px; gap: 14px; padding-block: 13px; border-radius: 12px; }
-html[data-surface='workspace'] .nav-link:is(:hover, .active) { background: #15253f; color: #f3f7ff; }
+html[data-surface='workspace'] .nav-link:is(:hover, .active) { background: var(--surface-hover); color: #f3f7ff; }
 html[data-surface='workspace'] .nav-link.active svg { color: #80b5ff; }
-html[data-surface='workspace'] .nav-link::before { background: #15253f; }
+html[data-surface='workspace'] .nav-link::before { background: var(--surface-hover); }
 html[data-surface='workspace'] :is(.sidebar-footer, .profile-name) { color: var(--text); font-size: 14px; }
 html[data-surface='workspace'] :is(.settings-link, .sidebar-collapse, .drawer-widget-button) { color: var(--muted); background: transparent; }
 html[data-surface='workspace'] .page-header { min-height: 110px; padding: 12px 0 24px; margin-bottom: 18px; }
 html[data-surface='workspace'] .page-header h1 { font-size: clamp(29px, 2.7vw, 40px); font-weight: 650; letter-spacing: -1.25px; }
 html[data-surface='workspace'] .page-header p { color: var(--muted); font-size: 15px; margin-top: 9px; line-height: 1.5; }
 html[data-surface='workspace'] :is(.button, .icon-button) { box-shadow: none; border-radius: 11px; }
-html[data-surface='workspace'] .button.primary { background: #347df4; color: white; border-color: #4d8ef8; }
+html[data-surface='workspace'] .button.primary { background: var(--accent-strong); color: white; border-color: var(--accent-strong); }
 html[data-surface='workspace'] .button.primary:hover:not(:disabled) { background: #478bfa; }
-html[data-surface='workspace'] :is(.button.soft, .button.ghost, .icon-button) { color: #a9c9ff; background: #13223a; border-color: var(--border); }
-html[data-surface='workspace'] :is(.button.soft, .button.ghost, .icon-button):hover:not(:disabled) { background: #1d3152; box-shadow: none; }
+html[data-surface='workspace'] :is(.button.soft, .button.ghost, .icon-button) { color: #a9c9ff; background: var(--surface); border-color: var(--border); }
+html[data-surface='workspace'] :is(.button.soft, .button.ghost, .icon-button):hover:not(:disabled) { background: var(--surface-hover); box-shadow: none; }
 html[data-surface='workspace'] .button.danger { color: #ffa1af; background: #352034; border-color: #563046; }
 html[data-surface='workspace'] .button[aria-pressed='true'] { background: var(--accent-soft); color: var(--text); }
 html[data-surface='workspace'] .search-box { background: var(--surface); border-color: var(--border); color: var(--muted); }
 html[data-surface='workspace'] .search-box input { background: transparent; }
-html[data-surface='workspace'] .segments { background: #0c1628; border-color: var(--border); }
+html[data-surface='workspace'] .segments { background: var(--surface-inset); border-color: var(--border); }
 html[data-surface='workspace'] .segments button { color: var(--muted); }
 html[data-surface='workspace'] .segments button[aria-pressed='true'] { background: #244675; color: #f0f5ff; box-shadow: none; }
-html[data-surface='workspace'] .count { background: #213552; color: #b1ccf7; }
+html[data-surface='workspace'] .count { background: var(--surface-selected); color: #b1ccf7; }
 html[data-surface='workspace'] :is(.settings-card, .integration-card, .sync-card, .meeting-details, .meeting-tile, .task-card, .reminder-card, .event-group, .event-row, .archive-deleted, .selected-day, .week-day, .friend-profile, .friend-card, .zoom-meeting-card, .collection-editor, .reminder-settings) { background: var(--surface); border-color: var(--border); box-shadow: none; }
-html[data-surface='workspace'] :is(.task-card.expanded, .meeting-tile.selected, .calendar-cell.selected, .week-day.selected) { background: #182a47; border-color: #3a5b8a; }
+html[data-surface='workspace'] :is(.task-card.expanded, .meeting-tile.selected) { background: var(--surface-selected); border-color: #3a5b8a; }
 html[data-surface='workspace'] :is(.calendar-weekdays, .archive-results, .period-control, .sync-icon) { background: var(--surface); border-color: var(--border); }
-html[data-surface='workspace'] :is(.event-symbol, .reminder-icon, .detail-chips>span, .friend-profile-avatar, .friend-avatar, .account-avatar, .day-event, .week-event, .friend-add, .friend-add-icon, .friend-code, .coming-soon, .integration-state, .quick-planning, .mini-month-heading, .participant-avatars .extra) { background: var(--surface-raised); border-color: var(--border); color: #a6c4f4; box-shadow: none; }
+html[data-surface='workspace'] :is(.event-symbol, .reminder-icon, .detail-chips>span, .friend-profile-avatar, .friend-avatar, .account-avatar, .day-event, .week-event, .friend-add, .friend-add-icon, .friend-code, .coming-soon, .integration-state, .quick-planning, .participant-avatars .extra) { background: var(--surface-raised); border-color: var(--border); color: #a6c4f4; box-shadow: none; }
 html[data-surface='workspace'] :is(.day-event .event-menu>.icon-button, .mini-calendar button:hover) { background: #203454; }
-html[data-surface='workspace'] :is(.calendar-cell, .calendar-board, .month-calendar) { color: var(--text); background: #0d182b; border-color: var(--border); }
-html[data-surface='workspace'] .calendar-cell:hover { background: #192d4c; }
+
+
 html[data-surface='workspace'] .calendar-cell.outside { color: #7789a6; }
 html[data-surface='workspace'] :is(.week-date, .mini-calendar button, .widget-event button, .widget-task button) { color: var(--text); }
 html[data-surface='workspace'] .mini-calendar button.outside { color: #7789a6; }
-html[data-surface='workspace'] .mini-calendar button.today { color: white; background: #347df4; }
+
 html[data-surface='workspace'] .timeline-day::before { background: var(--border); }
 html[data-surface='workspace'] .timeline-time i { box-shadow: 0 0 0 3px #080f21; }
 html[data-surface='workspace'] :is(.page-header p, .event-date, .task-due, .task-expanded, .day-event time, .day-event small, .meeting-provider, .meeting-details>header, .meeting-tile small, .meeting-tile-meta small, .participant small, .reminder-time, .reminder-time small, .settings-info dt, .account-methods span, .integration-card p, .integration-detail p, .widget-time, .widget-event small, .mini-calendar .weekday, .calendar-weekdays span, .empty-state, .conversation-empty, .archive-filters label, .settings-card form label, .event-form label:not(.switch-row), .inline-fields label, .sync-setting, .field-label, .profile-menu>p) { color: var(--muted); }
@@ -71,9 +73,9 @@ html[data-surface='workspace'] .tag-tone-5 { background: #3a3020; color: #e7c58b
 html[data-surface='workspace'] .priority.high { color: #ffb0bf; background: #3b2537; }
 html[data-surface='workspace'] .priority.low { color: #a9bddd; background: #21314b; }
 html[data-surface='workspace'] input[type='checkbox']:not([role='switch']) { background: #0d182b; border-color: #6880a7; }
-html[data-surface='workspace'] input[type='checkbox']:not([role='switch']):checked { background: #347df4; border-color: #347df4; }
+html[data-surface='workspace'] input[type='checkbox']:not([role='switch']):checked { background: var(--accent-strong); border-color: var(--accent-strong); }
 html[data-surface='workspace'] .switch-row input { background: #34435f; }
-html[data-surface='workspace'] .switch-row input:checked { background: #347df4; }
+html[data-surface='workspace'] .switch-row input:checked { background: var(--accent-strong); }
 html[data-surface='workspace'] .widgets-region { top: calc(16px + var(--safe-top)); max-height: calc(100dvh - 32px - var(--safe-top) - var(--safe-bottom)); }
 html[data-surface='workspace'] .widgets-panel { max-height: calc(100dvh - 32px - var(--safe-top) - var(--safe-bottom)); padding-top: 24px; }
 html[data-surface='workspace'] .widgets-heading { grid-template-columns: minmax(0, 1fr) 32px; padding-bottom: 20px; }
@@ -83,10 +85,10 @@ html[data-surface='workspace'] .widget { background: var(--surface); border-colo
 html[data-surface='workspace'] .widget>header .icon-button { background: transparent; color: #90a9cf; }
 html[data-surface='workspace'] .widget-link { background: #182a46; color: #a7c9ff; }
 html[data-surface='workspace'] .progress-ring>div { background: var(--surface); }
-html[data-surface='workspace'] :is(.dialog, .row-menu, .profile-menu, .action-notice, .reminder-notice, .social-notice, .widget-drag-overlay .widget) { color: var(--text); background: #142039; border-color: #31435f; box-shadow: 0 16px 60px #0005; }
+html[data-surface='workspace'] :is(.dialog, .row-menu, .profile-menu, .action-notice, .reminder-notice, .social-notice, .widget-drag-overlay .widget) { color: var(--text); background: var(--surface); border-color: var(--border); box-shadow: 0 16px 60px #0005; }
 html[data-surface='workspace'] .dialog::backdrop { background: #020715a8; backdrop-filter: blur(8px); }
 html[data-surface='workspace'] .dialog.drawer { padding-top: calc(24px + var(--safe-top)); padding-bottom: calc(24px + var(--safe-bottom)); }
-html[data-surface='workspace'] .profile-menu>[role='menuitem']:hover { background: #213552; }
+html[data-surface='workspace'] .profile-menu>[role='menuitem']:hover { background: var(--surface-selected); }
 html[data-surface='workspace'] .profile-menu>.profile-logout { color: var(--danger); }
 html[data-surface='workspace'] :is(.alert, .auth-error, .conflict-list) { background: #352235; border-color: #56374c; color: #ffc0cd; }
 html[data-surface='workspace'] .auth-help { background: #1c3150; color: #bcd8ff; }
@@ -110,7 +112,7 @@ html[data-surface='workspace'] .composer .microphone { background: transparent; 
 html[data-surface='workspace'] .composer button:focus-visible { outline: 2px solid #81b6ff; }
 html[data-surface='workspace'] .composer .microphone::before { display: none; }
 html[data-surface='workspace'] .composer .microphone.listening { background: #3c2840; color: #ffb6c5; }
-html[data-surface='workspace'] .composer .send-button { color: white; background: #347df4; }
+html[data-surface='workspace'] .composer .send-button { color: white; background: var(--accent-strong); }
 html[data-surface='workspace'] .composer .send-button:disabled { background: #2b3c57; color: #92a4c0; opacity: 1; }
 html[data-surface='workspace'] .composer :is(.microphone, .send-button) svg { width: 21px; height: 21px; }
 html[data-surface='workspace'] .composer-status { padding: 8px 0 3px; margin: 0; min-height: 0; color: #b1c3df; font-size: 12px; line-height: 1.5; }

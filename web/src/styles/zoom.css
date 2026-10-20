@@ -14,5 +14,5 @@
 .zoom-copy-notice:empty { display: none; }
 .chat-unread-marker { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: var(--accent); font-size: 12px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
 .chat-unread-marker .button { font-size: 12px; }
-.zoom-chat-notice { position: fixed; bottom: 20px; right: 20px; z-index: 60; background: var(--surface); color: var(--accent); border: 1px solid var(--accent); border-radius: 14px; padding: 14px 18px; box-shadow: var(--shadow); }
-@media (max-width: 480px) { .zoom-meeting-card { padding: 12px; } .zoom-card-actions .button { flex: 1 1 150px; } .zoom-chat-notice { left: 16px; right: 16px; bottom: 16px; } }
+.zoom-chat-notice { position: fixed; bottom: 20px; right: 20px; z-index: 60; background: var(--surface); color: var(--accent); border: 1px solid var(--border); border-radius: 12px; padding: 11px 15px; font-size: 13px; max-width: calc(100vw - 32px); text-align: left; box-shadow: var(--shadow); }
+@media (max-width: 480px) { .zoom-meeting-card { padding: 12px; } .zoom-card-actions .button { flex: 0 1 auto; } .zoom-chat-notice { left: auto; right: 16px; bottom: 16px; } }

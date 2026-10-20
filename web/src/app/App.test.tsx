@@ -1,12 +1,27 @@
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { App } from './App';
-import { mockServer } from '../test/server';
+import { fixture, mockServer } from '../test/server';
 
 async function start(path = '/', options: Parameters<typeof mockServer>[0] = {}) {
   history.pushState({}, '', path); const server = mockServer(options); render(<App/>);
   await screen.findByRole('heading', { level: 1 }); return { ...server, user: userEvent.setup() };
 }
+it('expands reminder groups independently and retains expansion after an item update', async () => {
+  history.pushState({}, '', '/reminders'); const server = mockServer();
+  for (let i = 0; i < 9; i++) server.events().push(fixture(100 + i, 'reminder', `Напомнить ${i}`, { date: '2026-10-15', time: i < 3 ? '09:00' : i < 6 ? '15:00' : '20:00' }));
+  render(<App/>); await screen.findByRole('heading', { level: 1 }); const user = userEvent.setup();
+  const morning = screen.getByRole('region', { name: 'Утро' }); const day = screen.getByRole('region', { name: 'День' }); const evening = screen.getByRole('region', { name: 'Вечер' });
+  const count = (region: HTMLElement) => region.querySelectorAll('.reminder-card').length;
+  expect([count(morning), count(day), count(evening)]).toEqual([2, 2, 2]);
+  await user.click(within(morning).getByRole('button', { name: 'Показать ещё: Утро' }));
+  await waitFor(() => expect(count(morning)).toBe(4)); expect([count(day), count(evening)]).toEqual([2, 2]);
+  await user.click(within(morning).getAllByRole('switch')[0]); expect([count(morning), count(day), count(evening)]).toEqual([4, 2, 2]);
+  await user.click(within(morning).getByRole('button', { name: 'Свернуть: Утро' })); await waitFor(() => expect(count(morning)).toBe(2));
+});
+it('offers settings only for widgets with an adjustable record count', async () => {
+  await start('/calendar'); expect(screen.queryByRole('button', { name: 'Настройки: Календарь' })).not.toBeInTheDocument(); expect(screen.getByRole('button', { name: 'Настройки: Сегодня' })).toBeInTheDocument();
+});
 function deferred() { let resolve!: () => void; const promise = new Promise<void>(done => { resolve = done; }); return { promise, resolve }; }
 it('shows a recurring task rule from structured API data', async () => {
   history.pushState({}, '', '/tasks'); const server = mockServer();
