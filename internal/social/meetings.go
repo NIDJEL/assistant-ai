@@ -602,7 +602,7 @@ func (s *Session) MatchingMeetings(ctx context.Context, tx repository.Tx, query 
 			all = all && found
 		}
 		for _, p := range m.Members {
-			if p.ID == s.UserID && (p.Status == "cancelled" || p.Status == "declined") {
+			if p.ID == s.UserID && p.Status == "cancelled" {
 				all = false
 			}
 		}

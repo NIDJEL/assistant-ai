@@ -236,6 +236,12 @@ func TestPostgresSchedulingExistingMeetingRolesAndDisplayTitle(t *testing.T) {
 	}); err != nil {
 		t.Fatal(err)
 	}
+	// Declining does not revoke the invitation: a participant may change their mind.
+	h.execute(h.a, social.Operation{Action: "respond", EventID: id, Version: 1, Status: "declined"})
+	r = h.say(h.a, "respond_invitation", `{"friends":["Матвей Лапин"],"date":{"type":"day_of_month","day":22},"status":"accepted"}`, "Я передумал, прими приглашение от Матвея на 22 число")
+	if r.Pending || !strings.Contains(r.Reply, "подтвердили") || h.count() != 1 {
+		t.Fatal(r)
+	}
 	// Accessible invitations still resolve after the friendship was removed.
 	h.execute(h.b, social.Operation{Action: "remove_friend", UserID: h.aid})
 	r = h.say(h.a, "meeting_zoom", `{"friends":["Матвей Лапин"],"date":{"type":"day_of_month","day":22}}`, "Добавь Zoom к этой встрече")
