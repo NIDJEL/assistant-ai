@@ -1,6 +1,8 @@
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './AuthContext';
 import { AuthPage } from '../pages/Auth/AuthPage';
+import { LegalPage } from '../pages/Legal/LegalPage';
+import { legalDocumentAt } from '../pages/Legal/documents';
 import { OnboardingPage } from '../pages/Auth/OnboardingPage';
 import { BrandMark } from '../components/Brand';
 import { DataProvider } from './DataContext';
@@ -22,8 +24,9 @@ export function App() {
 }
 function AuthGate() {
   const { user, loading, error, refresh } = useAuth(); const location = useLocation();
+  const legalDocument = legalDocumentAt(location.pathname);
+  if (legalDocument) return <LegalPage document={legalDocument}/>;
   if (loading || error) return <main className="auth-splash"><BrandMark/><span>{error || 'Гена'}</span>{error && <button className="auth-primary" onClick={() => void refresh()}>Повторить</button>}</main>;
-  if (location.pathname === '/terms' || location.pathname === '/privacy') return <main className="auth-page"><article className="auth-policy"><h1>{location.pathname === '/terms' ? 'Условия использования' : 'Конфиденциальность'}</h1><p>Гена — приложение для личного планирования. Вы управляете своими задачами, встречами и напоминаниями.</p><p>Данные аккаунта и история сохраняются на сервере владельца этой установки. Для входа используются почта и хеш пароля либо идентификатор выбранного OAuth-сервиса. Календарь подключается отдельно. Cookies нужны для сессии и безопасного входа; рекламные cookies не используются.</p><p>Перед использованием с личными данными уточните у владельца установки условия хранения и удаления данных. Эти сведения описывают работу приложения и должны быть дополнены оператором публичной установки.</p><a href="/auth">Вернуться к Гене</a></article></main>;
   if (location.pathname === '/auth') return <AuthPage/>;
   if (!user) return <Navigate to="/auth" replace/>;
   if (!user.onboarding_completed || location.pathname === '/onboarding') return <OnboardingPage/>;

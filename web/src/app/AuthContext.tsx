@@ -1,8 +1,9 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
+import type { LegalAcceptance } from '../pages/Legal/documents';
 import { ApiError, request } from '../api/client';
 import { releasePushOnLogout, setPushUser } from '../features/notifications/push';
 export interface User { id: string; email: string; name: string; avatar_url: string; onboarding_completed: boolean; providers: string[] }
-interface Auth { user: User | null; loading: boolean; error: string; refresh: () => Promise<void>; login: (email: string, password: string) => Promise<User>; register: (name: string, email: string, password: string, confirmation: string) => Promise<User>; logout: () => Promise<void>; updateProfile: (profile: { name?: string; avatar_url?: string }) => Promise<void>; completeOnboarding: () => Promise<void> }
+interface Auth { user: User | null; loading: boolean; error: string; refresh: () => Promise<void>; login: (email: string, password: string, acceptance: LegalAcceptance) => Promise<User>; register: (name: string, email: string, password: string, confirmation: string, acceptance: LegalAcceptance) => Promise<User>; logout: () => Promise<void>; updateProfile: (profile: { name?: string; avatar_url?: string }) => Promise<void>; completeOnboarding: () => Promise<void> }
 const Context = createContext<Auth | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null); const [loading, setLoading] = useState(true); const [error, setError] = useState('');
@@ -17,8 +18,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
   async function authenticate(path: string, body: object) { ++generation.current; const data = await request<{ user: User }>(path, { method: 'POST', body: JSON.stringify(body) }); setUser(data.user); channel.current?.postMessage('changed'); return data.user; }
   const value: Auth = { user, loading, error, refresh,
-    login: (email, password) => authenticate('/api/auth/login', { email, password }),
-    register: (name, email, password, password_confirmation) => authenticate('/api/auth/register', { name, email, password, password_confirmation }),
+    login: (email, password, acceptance) => authenticate('/api/auth/login', { email, password, ...acceptance }),
+    register: (name, email, password, password_confirmation, acceptance) => authenticate('/api/auth/register', { name, email, password, password_confirmation, ...acceptance }),
     logout: async () => { ++generation.current; if (user) await releasePushOnLogout(user.id); await request('/api/auth/logout', { method: 'POST', body: '{}' }); setUser(null); channel.current?.postMessage('changed'); },
     updateProfile: async profile => { const data = await request<{ user: User }>('/api/auth/me', { method: 'PATCH', body: JSON.stringify(profile) }); setUser(data.user); channel.current?.postMessage('changed'); },
     completeOnboarding: async () => { const data = await request<{ user: User }>('/api/auth/onboarding', { method: 'POST', body: '{}' }); setUser(data.user); },

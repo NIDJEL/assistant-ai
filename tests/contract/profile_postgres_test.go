@@ -60,11 +60,10 @@ func TestYandexDoubleSlashCallback(t *testing.T) {
 	db, service, _, now := pgFixture(t)
 	app := &api.API{Auth: service, Config: config.Config{Root: root(), PublicURL: "https://rhythm.test", YandexRedirectURI: "https://rhythm.test//api/auth/yandex/callback"}, Clock: clock.Func(func() time.Time { return now }), Calendar: &calendar.Service{Store: db}, Logger: slog.New(slog.NewTextHandler(io.Discard, nil))}
 	router := app.Router()
-	start := httptest.NewRecorder()
-	router.ServeHTTP(start, httptest.NewRequest("GET", "https://rhythm.test/api/auth/yandex/start", nil))
-	redirect, _ := url.Parse(start.Header().Get("Location"))
+	startData, start := call(t, router, nil, "POST", "/api/auth/yandex/start", withLegal(nil), 200)
+	redirect, _ := url.Parse(startData["redirect_url"].(string))
 	cookies := start.Result().Cookies()
-	if start.Code != 303 || len(cookies) != 1 || cookies[0].Path != "//api/auth/yandex" {
+	if start.Code != 200 || len(cookies) != 1 || cookies[0].Path != "//api/auth/yandex" {
 		t.Fatal("callback cookie does not match registered path")
 	}
 	callback := httptest.NewRequest("GET", "https://rhythm.test//api/auth/yandex/callback?code=valid&state="+redirect.Query().Get("state"), nil)

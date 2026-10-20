@@ -1,8 +1,9 @@
+import { legalAcceptance } from './legal-acceptance';
 import { test, expect } from '@playwright/test';
 
 test('a new account imports history from settings and can safely repeat it', async ({ page, context }) => {
   const email = `demo-import-${Date.now()}@example.test`;
-  const registration = await context.request.post('/api/auth/register', { data: { name: 'Проверка истории', email, password: 'test password 12345', password_confirmation: 'test password 12345' } });
+  const registration = await context.request.post('/api/auth/register', { data: { ...legalAcceptance, name: 'Проверка истории', email, password: 'test password 12345', password_confirmation: 'test password 12345' } });
   expect(registration.status()).toBe(201);
   const onboarding = await context.request.post('/api/auth/onboarding', { data: {} });
   expect(onboarding.status()).toBe(200);
@@ -24,7 +25,7 @@ test('a new account imports history from settings and can safely repeat it', asy
 
 test('custom CSV imports atomically and can be repeated under another name', async ({ page, context }) => {
   const email = `csv-import-${Date.now()}@example.test`;
-  const registration = await context.request.post('/api/auth/register', { data: { name: 'Проверка CSV', email, password: 'test password 12345', password_confirmation: 'test password 12345' } });
+  const registration = await context.request.post('/api/auth/register', { data: { ...legalAcceptance, name: 'Проверка CSV', email, password: 'test password 12345', password_confirmation: 'test password 12345' } });
   expect(registration.status()).toBe(201);
   await context.request.post('/api/auth/onboarding', { data: {} });
   await page.setViewportSize({ width: 390, height: 844 });

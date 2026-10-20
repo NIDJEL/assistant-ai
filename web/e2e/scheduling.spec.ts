@@ -1,3 +1,4 @@
+import { legalAcceptance } from './legal-acceptance';
 import { test, expect } from '@playwright/test';
 import { randomUUID } from 'node:crypto';
 import { noOverflow } from './helpers';
@@ -6,7 +7,7 @@ test('live simple_llm conflict card survives reload and sends an exact slot', as
   test.setTimeout(90000);
   const baseURL = process.env.P1_BASE_URL!;
   const a = await browser.newContext({ baseURL }); const b = await browser.newContext({ baseURL });
-  const register = async (context: typeof a, name: string) => { const password = randomUUID(); const r = await context.request.post('/api/auth/register', { data: { name, email: `scheduling-ui-${randomUUID()}@example.test`, password, password_confirmation: password } }); expect(r.status()).toBe(201); const user = (await r.json()).user; expect((await context.request.post('/api/auth/onboarding', { data: {} })).status()).toBe(200); await context.request.put(`/api/preferences/${user.id}`, { data: { widgets: false, revision: 1 } }); return user; };
+  const register = async (context: typeof a, name: string) => { const password = randomUUID(); const r = await context.request.post('/api/auth/register', { data: { ...legalAcceptance, name, email: `scheduling-ui-${randomUUID()}@example.test`, password, password_confirmation: password } }); expect(r.status()).toBe(201); const user = (await r.json()).user; expect((await context.request.post('/api/auth/onboarding', { data: {} })).status()).toBe(200); await context.request.put(`/api/preferences/${user.id}`, { data: { widgets: false, revision: 1 } }); return user; };
   const op = async (context: typeof a, action: string, fields: object) => { const r = await context.request.post('/api/social/operations', { data: { action, request_id: randomUUID(), ...fields } }); expect(r.status()).toBe(200); return r.json(); };
   try {
     const au = await register(a, 'Алиса Проверка'); const bu = await register(b, 'Борис Проверка');

@@ -9,6 +9,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"github.com/NIDJEL/assistant-ai/internal/domain"
+	"github.com/NIDJEL/assistant-ai/internal/legal"
 	"github.com/NIDJEL/assistant-ai/internal/repository"
 	"github.com/NIDJEL/assistant-ai/internal/user"
 	"github.com/google/uuid"
@@ -68,7 +69,7 @@ func (s *Service) passwordWork(ctx context.Context, fn func() error) error {
 		return ctx.Err()
 	}
 }
-func (s *Service) Register(ctx context.Context, name, email, password, confirmation string) (*user.User, error) {
+func (s *Service) Register(ctx context.Context, name, email, password, confirmation string, accepted ...legal.Acceptance) (*user.User, error) {
 	email, err := NormalizeEmail(email)
 	if err != nil {
 		return nil, err
@@ -89,7 +90,7 @@ func (s *Service) Register(ctx context.Context, name, email, password, confirmat
 		return nil, err
 	}
 	u := &user.User{ID: uuid.NewString(), Email: email, Name: name, Providers: []string{"email"}}
-	if err = s.Users.CreateEmail(ctx, *u, hash); errors.Is(err, repository.ErrConflict) {
+	if err = s.Users.CreateEmail(ctx, *u, hash, accepted...); errors.Is(err, repository.ErrConflict) {
 		return nil, &domain.AppError{Code: "email_in_use", Message: "Этот email уже используется", Status: 409}
 	}
 	return u, err

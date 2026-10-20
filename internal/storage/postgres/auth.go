@@ -3,7 +3,9 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
+	"github.com/NIDJEL/assistant-ai/internal/legal"
 	"github.com/NIDJEL/assistant-ai/internal/repository"
 	"github.com/NIDJEL/assistant-ai/internal/user"
 	"github.com/google/uuid"
@@ -18,7 +20,7 @@ func conflict(err error) error {
 	}
 	return err
 }
-func (d *Database) CreateEmailUser(ctx context.Context, u user.User, hash string) error {
+func (d *Database) CreateEmailUser(ctx context.Context, u user.User, hash string, accepted ...legal.Acceptance) error {
 	tx, err := d.DB.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -30,7 +32,30 @@ func (d *Database) CreateEmailUser(ctx context.Context, u user.User, hash string
 	if _, err = tx.ExecContext(ctx, "INSERT INTO auth_identities(id,user_id,provider,provider_subject,email,password_hash) VALUES($1,$2,'email',$3,$3,$4)", uuid.NewString(), u.ID, u.Email, hash); err != nil {
 		return conflict(err)
 	}
+	if err = recordLegalAcceptances(ctx, tx, u.ID, accepted); err != nil {
+		return err
+	}
 	return tx.Commit()
+}
+
+type legalExecutor interface {
+	ExecContext(context.Context, string, ...any) (sql.Result, error)
+}
+
+func recordLegalAcceptances(ctx context.Context, db legalExecutor, uid string, accepted []legal.Acceptance) error {
+	for _, a := range accepted {
+		if a.Version == "" || a.AcceptedAt.IsZero() {
+			return errors.New("invalid legal acceptance")
+		}
+		if _, err := db.ExecContext(ctx, "INSERT INTO user_legal_acceptances(user_id,document_version,accepted_at,action) VALUES($1,$2,$3,$4)", uid, a.Version, a.AcceptedAt, a.Action); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (d *Database) RecordLegalAcceptance(ctx context.Context, uid string, accepted legal.Acceptance) error {
+	return recordLegalAcceptances(ctx, d.DB, uid, []legal.Acceptance{accepted})
 }
 
 const userColumns = "u.id,coalesce(u.email,''),u.display_name,u.avatar_url,u.onboarding_completed,u.created_at"
@@ -75,7 +100,7 @@ func (d *Database) EmailIdentity(ctx context.Context, email string) (*user.User,
 	err = d.providers(ctx, &u)
 	return &u, hash, err
 }
-func (d *Database) OAuthUser(ctx context.Context, i repository.Identity, link string) (*user.User, error) {
+func (d *Database) OAuthUser(ctx context.Context, i repository.Identity, link string, accepted ...legal.Acceptance) (*user.User, error) {
 	tx, err := d.DB.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
@@ -116,6 +141,9 @@ func (d *Database) OAuthUser(ctx context.Context, i repository.Identity, link st
 			return nil, err
 		}
 	}
+	if err = recordLegalAcceptances(ctx, tx, u.ID, accepted); err != nil {
+		return nil, err
+	}
 	if err = tx.Commit(); err != nil {
 		return nil, err
 	}
@@ -150,16 +178,24 @@ func (d *Database) SaveOAuthState(ctx context.Context, s repository.OAuthState) 
 	if _, err = tx.ExecContext(ctx, "DELETE FROM oauth_states WHERE expires_at<now()"); err != nil {
 		return err
 	}
-	if _, err = tx.ExecContext(ctx, "INSERT INTO oauth_states(id,provider,browser_hash,verifier,link_user_id,expires_at,purpose,source) VALUES($1,$2,$3,$4,nullif($5,'')::uuid,$6,$7,$8)", s.ID, s.Provider, s.BrowserHash, s.Verifier, s.LinkUserID, s.ExpiresAt, s.Purpose, s.Source); err != nil {
+	accepted, err := json.Marshal(s.LegalAcceptance)
+	if err != nil {
+		return err
+	}
+	if _, err = tx.ExecContext(ctx, "INSERT INTO oauth_states(id,provider,browser_hash,verifier,link_user_id,expires_at,purpose,source,legal_acceptance) VALUES($1,$2,$3,$4,nullif($5,'')::uuid,$6,$7,$8,$9)", s.ID, s.Provider, s.BrowserHash, s.Verifier, s.LinkUserID, s.ExpiresAt, s.Purpose, s.Source, accepted); err != nil {
 		return err
 	}
 	return tx.Commit()
 }
 func (d *Database) ConsumeOAuthState(ctx context.Context, id, provider, browser string, now time.Time) (*repository.OAuthState, error) {
 	var s repository.OAuthState
-	err := d.DB.QueryRowContext(ctx, "DELETE FROM oauth_states WHERE id=$1 AND provider=$2 AND browser_hash=$3 AND expires_at>$4 RETURNING id,provider,browser_hash,verifier,coalesce(link_user_id::text,''),expires_at,purpose,source", id, provider, browser, now).Scan(&s.ID, &s.Provider, &s.BrowserHash, &s.Verifier, &s.LinkUserID, &s.ExpiresAt, &s.Purpose, &s.Source)
+	var accepted []byte
+	err := d.DB.QueryRowContext(ctx, "DELETE FROM oauth_states WHERE id=$1 AND provider=$2 AND browser_hash=$3 AND expires_at>$4 RETURNING id,provider,browser_hash,verifier,coalesce(link_user_id::text,''),expires_at,purpose,source,legal_acceptance", id, provider, browser, now).Scan(&s.ID, &s.Provider, &s.BrowserHash, &s.Verifier, &s.LinkUserID, &s.ExpiresAt, &s.Purpose, &s.Source, &accepted)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil
+	}
+	if err == nil && len(accepted) > 0 {
+		err = json.Unmarshal(accepted, &s.LegalAcceptance)
 	}
 	return &s, err
 }

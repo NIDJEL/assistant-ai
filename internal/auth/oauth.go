@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/NIDJEL/assistant-ai/internal/domain"
+	"github.com/NIDJEL/assistant-ai/internal/legal"
 	"github.com/NIDJEL/assistant-ai/internal/repository"
 	"github.com/NIDJEL/assistant-ai/internal/user"
 )
@@ -38,8 +39,8 @@ func (s *Service) StartIntegrationOAuth(ctx context.Context, provider, userID st
 	return s.startOAuth(ctx, provider, userID, "integration", "integrations", now)
 }
 
-func (s *Service) StartOAuth(ctx context.Context, provider, link string, now time.Time) (string, string, error) {
-	return s.startOAuth(ctx, provider, link, "", "", now)
+func (s *Service) StartOAuth(ctx context.Context, provider, link string, now time.Time, accepted ...legal.Acceptance) (string, string, error) {
+	return s.startOAuth(ctx, provider, link, "", "", now, accepted...)
 }
 func (s *Service) StartCalendarOAuth(ctx context.Context, userID string, now time.Time) (string, string, error) {
 	return s.StartCalendarOAuthFrom(ctx, userID, "integrations", now)
@@ -53,7 +54,7 @@ func (s *Service) StartCalendarOAuthFrom(ctx context.Context, userID, source str
 	}
 	return s.startOAuth(ctx, "yandex", userID, "calendar", source, now)
 }
-func (s *Service) startOAuth(ctx context.Context, provider, link, purpose, source string, now time.Time) (redirect, browser string, err error) {
+func (s *Service) startOAuth(ctx context.Context, provider, link, purpose, source string, now time.Time, accepted ...legal.Acceptance) (redirect, browser string, err error) {
 	p := s.Providers[provider]
 	if p == nil {
 		return "", "", &domain.AppError{Code: "oauth_unavailable", Message: "Этот способ входа ещё не настроен. Используйте почту.", Status: 503}
@@ -84,7 +85,11 @@ func (s *Service) startOAuth(ctx context.Context, provider, link, purpose, sourc
 	} else {
 		redirect = p.AuthorizationURL(state, encoded)
 	}
-	err = s.Store.SaveOAuthState(ctx, repository.OAuthState{ID: s.digest(state), Provider: provider, BrowserHash: s.digest(browser), Verifier: verifier, LinkUserID: link, Purpose: purpose, Source: source, ExpiresAt: now.Add(10 * time.Minute)})
+	var acceptance *legal.Acceptance
+	if len(accepted) == 1 && link == "" && purpose == "" {
+		acceptance = &accepted[0]
+	}
+	err = s.Store.SaveOAuthState(ctx, repository.OAuthState{ID: s.digest(state), Provider: provider, BrowserHash: s.digest(browser), Verifier: verifier, LinkUserID: link, Purpose: purpose, Source: source, ExpiresAt: now.Add(10 * time.Minute), LegalAcceptance: acceptance})
 	return redirect, browser, err
 }
 func (s *Service) FinishOAuth(ctx context.Context, provider, browser, currentUser string, q url.Values, now time.Time) (*user.User, bool, error) {
@@ -106,6 +111,9 @@ func (s *Service) FinishOAuthFlow(ctx context.Context, provider, browser, curren
 	result.Calendar = state.Purpose == "calendar"
 	result.Integration = state.Purpose == "integration"
 	result.Source = state.Source
+	if state.LinkUserID == "" && state.Purpose == "" && (state.LegalAcceptance == nil || state.LegalAcceptance.Version != legal.Version || state.LegalAcceptance.Action != "yandex_login") {
+		return result, &domain.AppError{Code: "legal_acceptance_required", Message: "Прочитайте документы и подтвердите согласие перед входом.", Status: 422}
+	}
 	if q.Get("error") != "" {
 		return result, &domain.AppError{Code: "oauth_cancelled", Message: "Авторизация была отменена", Status: 400}
 	}
@@ -147,7 +155,11 @@ func (s *Service) FinishOAuthFlow(ctx context.Context, provider, browser, curren
 	if identity.Name == "" {
 		identity.Name = "Пользователь"
 	}
-	u, err := s.Users.ResolveIdentity(ctx, identity, state.LinkUserID)
+	var accepted []legal.Acceptance
+	if state.LegalAcceptance != nil && state.LinkUserID == "" && state.Purpose == "" {
+		accepted = append(accepted, *state.LegalAcceptance)
+	}
+	u, err := s.Users.ResolveIdentity(ctx, identity, state.LinkUserID, accepted...)
 	if errors.Is(err, repository.ErrConflict) {
 		return result, &domain.AppError{Code: "oauth_account_exists", Message: "Войдите в существующий аккаунт и подключите этот способ входа в настройках.", Status: 409}
 	}

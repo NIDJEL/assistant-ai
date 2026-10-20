@@ -21,7 +21,7 @@ func (a *API) frontendRoutes(r chi.Router) {
 		}
 		http.ServeFile(w, req, index)
 	}
-	for _, path := range []string{"/auth", "/onboarding", "/terms", "/privacy", "/", "/calendar", "/tasks", "/meetings", "/friends", "/reminders", "/archive", "/integrations", "/settings"} {
+	for _, path := range []string{"/auth", "/onboarding", "/terms", "/privacy", "/privacy-policy", "/personal-data-consent", "/", "/calendar", "/tasks", "/meetings", "/friends", "/reminders", "/archive", "/integrations", "/settings"} {
 		r.Get(path, serve)
 	}
 	r.Handle("/assets/*", http.StripPrefix("/assets/", http.FileServer(http.Dir(filepath.Join(root, "assets")))))

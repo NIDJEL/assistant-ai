@@ -19,7 +19,7 @@ class Account:
         self.client = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
         self.sid = str(uuid.uuid4())
         password = secrets.token_urlsafe(24)
-        self.user = self.call('/api/auth/register', {'name': name, 'email': f'social-smoke-{suffix}-{uuid.uuid4().hex[:14]}@example.test', 'password': password, 'password_confirmation': password})['user']
+        self.user = self.call('/api/auth/register', {'terms_accepted': True, 'personal_data_consent': True, 'legal_version': '2026-10-20', 'name': name, 'email': f'social-smoke-{suffix}-{uuid.uuid4().hex[:14]}@example.test', 'password': password, 'password_confirmation': password})['user']
         self.call('/api/auth/onboarding', method='POST')
 
     def call(self, path, body=None, method=None):

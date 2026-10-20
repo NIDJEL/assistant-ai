@@ -3,6 +3,7 @@ package api
 import (
 	"github.com/NIDJEL/assistant-ai/internal/auth"
 	"github.com/NIDJEL/assistant-ai/internal/domain"
+	"github.com/NIDJEL/assistant-ai/internal/legal"
 	"github.com/NIDJEL/assistant-ai/internal/repository"
 	"github.com/NIDJEL/assistant-ai/internal/user"
 	"github.com/go-chi/chi/v5"
@@ -143,6 +144,7 @@ func (a *API) authRoutes(r chi.Router) {
 		r.With(a.requireUser).Patch("/me", a.updateProfile)
 		r.With(a.requireUser).Post("/onboarding", a.completeOnboarding)
 		r.Get("/yandex/start", a.oauthStart)
+		r.Post("/yandex/start", a.oauthStart)
 		r.Get("/yandex/callback", a.oauthCallback)
 		r.Get("/{provider:google|zoom}/start", a.cloudOAuthStart)
 		r.Get("/{provider:google|zoom}/callback", a.cloudOAuthCallback)
@@ -178,12 +180,18 @@ func (a *API) register(w http.ResponseWriter, r *http.Request) {
 		Email        string `json:"email"`
 		Password     string `json:"password"`
 		Confirmation string `json:"password_confirmation"`
+		legal.Input
 	}
 	if err := decode(w, r, &body); err != nil {
 		a.fail(w, r, domain.Validation("Проверьте поля регистрации"))
 		return
 	}
-	u, err := a.Auth.Register(r.Context(), body.Name, body.Email, body.Password, body.Confirmation)
+	accepted, err := body.Confirm(a.Clock.Now(), "email_register")
+	if err != nil {
+		a.fail(w, r, err)
+		return
+	}
+	u, err := a.Auth.Register(r.Context(), body.Name, body.Email, body.Password, body.Confirmation, accepted)
 	if err != nil {
 		a.fail(w, r, err)
 		return
@@ -195,13 +203,23 @@ func (a *API) login(w http.ResponseWriter, r *http.Request) {
 	var body struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
+		legal.Input
 	}
 	if err := decode(w, r, &body); err != nil {
 		a.fail(w, r, domain.Validation("Проверьте почту и пароль"))
 		return
 	}
+	accepted, err := body.Confirm(a.Clock.Now(), "email_login")
+	if err != nil {
+		a.fail(w, r, err)
+		return
+	}
 	u, err := a.Auth.Login(r.Context(), body.Email, body.Password)
 	if err != nil {
+		a.fail(w, r, err)
+		return
+	}
+	if err = a.Auth.Store.RecordLegalAcceptance(r.Context(), u.ID, accepted); err != nil {
 		a.fail(w, r, err)
 		return
 	}
@@ -276,12 +294,35 @@ func (a *API) oauthStart(w http.ResponseWriter, r *http.Request) {
 	}
 	var redirect, browser string
 	var err error
+	var accepted []legal.Acceptance
+	if link == "" {
+		if r.Method != http.MethodPost {
+			http.Redirect(w, r, "/auth?error=legal_acceptance_required", 303)
+			return
+		}
+		r.Body = http.MaxBytesReader(w, r.Body, 2048)
+		var body legal.Input
+		if err = decode(w, r, &body); err != nil {
+			a.fail(w, r, domain.Validation("Подтвердите ознакомление с документами"))
+			return
+		}
+		confirmation, confirmErr := body.Confirm(a.Clock.Now(), "yandex_login")
+		if confirmErr != nil {
+			a.fail(w, r, confirmErr)
+			return
+		}
+		accepted = append(accepted, confirmation)
+	}
 	if calendarFlow {
 		redirect, browser, err = a.Auth.StartCalendarOAuthFrom(r.Context(), link, source, a.Clock.Now())
 	} else {
-		redirect, browser, err = a.Auth.StartOAuth(r.Context(), provider, link, a.Clock.Now())
+		redirect, browser, err = a.Auth.StartOAuth(r.Context(), provider, link, a.Clock.Now(), accepted...)
 	}
 	if err != nil {
+		if r.Method == http.MethodPost {
+			a.fail(w, r, err)
+			return
+		}
 		destination := "/auth"
 		if link != "" {
 			destination = "/settings"
@@ -299,6 +340,10 @@ func (a *API) oauthStart(w http.ResponseWriter, r *http.Request) {
 	}
 	a.cookie(w, "rhythm_oauth_"+provider, browser, a.oauthCookiePath(provider), 600)
 	w.Header().Set("Cache-Control", "no-store")
+	if r.Method == http.MethodPost {
+		write(w, 200, map[string]string{"redirect_url": redirect})
+		return
+	}
 	http.Redirect(w, r, redirect, 303)
 }
 func (a *API) oauthCallback(w http.ResponseWriter, r *http.Request) {

@@ -13,6 +13,7 @@ import (
 	"github.com/NIDJEL/assistant-ai/internal/clock"
 	"github.com/NIDJEL/assistant-ai/internal/config"
 	"github.com/NIDJEL/assistant-ai/internal/domain"
+	"github.com/NIDJEL/assistant-ai/internal/legal"
 	"github.com/NIDJEL/assistant-ai/internal/nlp"
 	"github.com/NIDJEL/assistant-ai/internal/repository"
 	"github.com/NIDJEL/assistant-ai/internal/search"
@@ -106,7 +107,7 @@ func call(t *testing.T, router http.Handler, cookie *http.Cookie, method, path s
 	return data, w
 }
 func registerHTTP(t *testing.T, r http.Handler, email string) (string, *http.Cookie) {
-	data, w := call(t, r, nil, "POST", "/api/auth/register", map[string]string{"name": "Пользователь", "email": email, "password": "correct password 123", "password_confirmation": "correct password 123"}, 201)
+	data, w := call(t, r, nil, "POST", "/api/auth/register", withLegal(map[string]string{"name": "Пользователь", "email": email, "password": "correct password 123", "password_confirmation": "correct password 123"}), 201)
 	cookies := w.Result().Cookies()
 	if len(cookies) != 1 || !cookies[0].HttpOnly || !cookies[0].Secure || cookies[0].SameSite != http.SameSiteLaxMode || cookies[0].Path != "/" {
 		t.Fatal("insecure session cookie", cookies)
@@ -122,14 +123,14 @@ func TestPostgresAuthenticationAndIsolation(t *testing.T) {
 		call(t, router, nil, "GET", path, nil, 401)
 	}
 	call(t, router, nil, "POST", "/api/chat", map[string]string{"message": "Помощь"}, 401)
-	call(t, router, nil, "POST", "/api/auth/login", map[string]string{"email": "alice@example.test", "password": "wrong"}, 401)
-	data, w := call(t, router, nil, "POST", "/api/auth/login", map[string]string{"email": "ALICE@example.test", "password": "correct password 123"}, 200)
+	call(t, router, nil, "POST", "/api/auth/login", withLegal(map[string]string{"email": "alice@example.test", "password": "wrong"}), 401)
+	data, w := call(t, router, nil, "POST", "/api/auth/login", withLegal(map[string]string{"email": "ALICE@example.test", "password": "correct password 123"}), 200)
 	if data["user"].(map[string]any)["id"] != aliceID {
 		t.Fatal("normalized email failed")
 	}
 	alice = w.Result().Cookies()[0]
 	call(t, router, alice, "GET", "/api/auth/me", nil, 200)
-	call(t, router, nil, "POST", "/api/auth/register", map[string]string{"name": "Duplicate", "email": "alice@example.test", "password": "correct password 123", "password_confirmation": "correct password 123"}, 409)
+	call(t, router, nil, "POST", "/api/auth/register", withLegal(map[string]string{"name": "Duplicate", "email": "alice@example.test", "password": "correct password 123", "password_confirmation": "correct password 123"}), 409)
 	task, _ := call(t, router, alice, "POST", "/api/events", map[string]string{"kind": "task", "title": "Секретный договор Алисы"}, 201)
 	meeting, _ := call(t, router, alice, "POST", "/api/events", map[string]string{"kind": "meeting", "title": "Личная встреча", "date": "2026-10-13", "time": "15:00"}, 201)
 	for _, record := range []map[string]any{task, meeting} {
@@ -195,7 +196,11 @@ func TestPostgresOAuthStatesAndLinking(t *testing.T) {
 		t.Fatal(err)
 	}
 	start := func(link string) (url.Values, string) {
-		redirect, browser, err := svc.StartOAuth(ctx, "yandex", link, now)
+		accepted, err := (legal.Input{TermsAccepted: true, PersonalDataConsent: true, LegalVersion: legal.Version}).Confirm(now, "yandex_login")
+		if err != nil {
+			t.Fatal(err)
+		}
+		redirect, browser, err := svc.StartOAuth(ctx, "yandex", link, now, accepted)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -318,4 +323,12 @@ func TestPostgresConstraintsRollbackConcurrency(t *testing.T) {
 		}
 		return nil
 	})
+}
+
+func withLegal(body map[string]string) map[string]any {
+	result := map[string]any{"terms_accepted": true, "personal_data_consent": true, "legal_version": legal.Version}
+	for k, v := range body {
+		result[k] = v
+	}
+	return result
 }

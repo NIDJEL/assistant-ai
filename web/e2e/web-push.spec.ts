@@ -1,3 +1,4 @@
+import { legalAcceptance } from './legal-acceptance';
 import { test, expect, type Page } from '@playwright/test';
 import { createECDH } from 'node:crypto';
 import { execFile } from 'node:child_process';
@@ -10,7 +11,7 @@ async function probe(userId: string, event: number | 'test') {
   return JSON.parse(stdout) as { payload?: Record<string, unknown>; deliveries?: number };
 }
 test.beforeEach(async ({ context }) => {
-  const response = await context.request.post('/api/auth/register', { data: { name: 'Уведомления', email: `push-${crypto.randomUUID()}@example.test`, password: 'test password 12345', password_confirmation: 'test password 12345' } });
+  const response = await context.request.post('/api/auth/register', { data: { ...legalAcceptance, name: 'Уведомления', email: `push-${crypto.randomUUID()}@example.test`, password: 'test password 12345', password_confirmation: 'test password 12345' } });
   expect(response.status()).toBe(201); expect((await context.request.post('/api/auth/onboarding', { data: {} })).status()).toBe(200);
 });
 async function mockSubscription(page: Page) {

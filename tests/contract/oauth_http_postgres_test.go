@@ -19,17 +19,16 @@ import (
 )
 
 func TestPostgresOAuthHTTPCallbackAndSession(t *testing.T) {
-	_, _, router, _ := pgFixture(t)
-	start := httptest.NewRecorder()
-	router.ServeHTTP(start, httptest.NewRequest("GET", "/api/auth/yandex/start", nil))
-	if start.Code != 303 {
+	db, _, router, now := pgFixture(t)
+	startData, start := call(t, router, nil, "POST", "/api/auth/yandex/start", withLegal(nil), 200)
+	if start.Code != 200 {
 		t.Fatal(start.Code)
 	}
 	browser := start.Result().Cookies()[0]
 	if !browser.HttpOnly || !browser.Secure || browser.MaxAge != 600 || browser.Path != "/api/auth/yandex" {
 		t.Fatal("unsafe OAuth cookie")
 	}
-	target, _ := url.Parse(start.Header().Get("Location"))
+	target, _ := url.Parse(startData["redirect_url"].(string))
 	query := target.Query()
 	query.Set("code", "valid")
 	req := httptest.NewRequest("GET", "/api/auth/yandex/callback?"+query.Encode(), nil)
@@ -55,9 +54,8 @@ func TestPostgresOAuthHTTPCallbackAndSession(t *testing.T) {
 	if replay.Header().Get("Location") != "/auth?error=oauth_invalid" {
 		t.Fatal("OAuth callback replay accepted")
 	}
-	start = httptest.NewRecorder()
-	router.ServeHTTP(start, httptest.NewRequest("GET", "/api/auth/yandex/start", nil))
-	target, _ = url.Parse(start.Header().Get("Location"))
+	startData, start = call(t, router, nil, "POST", "/api/auth/yandex/start", withLegal(nil), 200)
+	target, _ = url.Parse(startData["redirect_url"].(string))
 	query = target.Query()
 	query.Set("code", "valid")
 	req = httptest.NewRequest("GET", "/api/auth/yandex/callback?"+query.Encode(), nil)
@@ -72,6 +70,10 @@ func TestPostgresOAuthHTTPCallbackAndSession(t *testing.T) {
 	data, _ = call(t, router, session, "GET", "/api/auth/me", nil, 200)
 	if data["user"].(map[string]any)["id"] != firstID {
 		t.Fatal("existing identity duplicated")
+	}
+	var records int
+	if err := db.DB.QueryRow("SELECT count(*) FROM user_legal_acceptances WHERE user_id=$1 AND action='yandex_login' AND accepted_at=$2", firstID, now).Scan(&records); err != nil || records != 2 {
+		t.Fatalf("OAuth legal evidence missing: %d, %v", records, err)
 	}
 }
 func TestPostgresAuthRateLimitAndBodyLimit(t *testing.T) {

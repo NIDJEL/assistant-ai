@@ -37,7 +37,7 @@ def request(method, path, body=None, authenticated=True, status=200):
 if args.phase == 'prepare':
     request('GET', '/api/events', authenticated=False, status=401)
     password = os.environ.get('SMOKE_PASSWORD') or secrets.token_urlsafe(24)
-    user = request('POST', '/api/auth/register', {'name': 'Smoke user', 'email': f'smoke-{secrets.token_hex(8)}@example.test', 'password': password, 'password_confirmation': password}, status=201)['user']
+    user = request('POST', '/api/auth/register', {'terms_accepted': True, 'personal_data_consent': True, 'legal_version': '2026-10-20', 'name': 'Smoke user', 'email': f'smoke-{secrets.token_hex(8)}@example.test', 'password': password, 'password_confirmation': password}, status=201)['user']
     state['user_id'] = user['id']
     request('POST', '/api/auth/onboarding', {})
     event = request('POST', '/api/events', {'kind': 'task', 'title': 'PostgreSQL persistence smoke'}, status=201)

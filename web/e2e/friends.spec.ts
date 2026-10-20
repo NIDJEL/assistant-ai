@@ -1,10 +1,11 @@
+import { legalAcceptance } from './legal-acceptance';
 import { test, expect } from '@playwright/test';
 import { noOverflow } from './helpers';
 test('two real accounts plan, reschedule and confirm one canonical meeting', async ({ browser }, info) => {
   const baseURL = process.env.P1_BASE_URL || 'http://127.0.0.1:8083';
   const a = await browser.newContext({ baseURL, permissions: ['clipboard-read', 'clipboard-write'] }); const b = await browser.newContext({ baseURL });
   const password = 'friends e2e test password 12345'; const stamp = `${Date.now()}-${info.workerIndex}`;
-  const register = async (context: typeof a, name: string, suffix: string) => { const r = await context.request.post('/api/auth/register', { data: { name, email: `friends-${suffix}-${stamp}@example.test`, password, password_confirmation: password } }); expect(r.status()).toBe(201); const user = (await r.json()).user; expect((await context.request.post('/api/auth/onboarding', { data: {} })).status()).toBe(200); await context.request.put(`/api/preferences/${user.id}`, { data: { widgets: false, revision: 1 } }); return user; };
+  const register = async (context: typeof a, name: string, suffix: string) => { const r = await context.request.post('/api/auth/register', { data: { ...legalAcceptance, name, email: `friends-${suffix}-${stamp}@example.test`, password, password_confirmation: password } }); expect(r.status()).toBe(201); const user = (await r.json()).user; expect((await context.request.post('/api/auth/onboarding', { data: {} })).status()).toBe(200); await context.request.put(`/api/preferences/${user.id}`, { data: { widgets: false, revision: 1 } }); return user; };
   await register(a, 'Алиса Тест', 'alice'); await register(b, 'Борис Тест', 'boris'); const ap = await a.newPage(); const bp = await b.newPage();
   try {
     await ap.goto('/friends'); await expect(ap.getByRole('heading', { name: 'Друзья', exact: true })).toBeVisible();

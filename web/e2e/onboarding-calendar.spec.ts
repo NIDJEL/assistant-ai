@@ -1,6 +1,7 @@
+import { legalAcceptance } from './legal-acceptance';
 import { test, expect } from '@playwright/test';
 test.beforeEach(async ({ context }) => {
-  expect((await context.request.post('/api/auth/register', { data: { name: 'Знакомство', email: `onboarding-${crypto.randomUUID()}@example.test`, password: 'test password 12345', password_confirmation: 'test password 12345' } })).status()).toBe(201);
+  expect((await context.request.post('/api/auth/register', { data: { ...legalAcceptance, name: 'Знакомство', email: `onboarding-${crypto.randomUUID()}@example.test`, password: 'test password 12345', password_confirmation: 'test password 12345' } })).status()).toBe(201);
 });
 test('onboarding connect runs OAuth mock success and returns directly to chat', async ({ page, context }) => {
   let connected = false; const visits: string[] = [];
