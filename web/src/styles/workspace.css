@@ -139,7 +139,7 @@ html[data-surface='onboarding'] body { background: #080f21; color: #edf2fc; }
   .legal-page .legal-documents a:is(:hover, [aria-current='page']) { color: #c5ddff; background: #1b3051; }
 }
 @media print { html, body { background: white !important; } }
-@media (min-width: 1180px) { .widgets-hidden .tasks-top { padding-right: 48px; } }
+@media (min-width: 1180px) { .widgets-hidden .tasks-top { padding-top: 44px; } }
 @media (min-width: 761px) and (max-width: 1179px) { .tasks-top { padding-top: 44px; } }
 @media (max-width: 1179px) {
   html[data-surface='workspace'] .main-panel { padding: 24px; }

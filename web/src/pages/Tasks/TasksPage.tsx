@@ -27,14 +27,19 @@ export function TasksPage() {
     <div className="tasks-top">
       <PageHeader title="Задачи"/>
       <SearchBox value={query} onChange={setQuery} label="Поиск задач" placeholder="Поиск задач, проектов или меток..."/>
-      <div className="task-priority-control" data-active={!!priority}>
-        <select aria-label="Приоритет задач" value={priority} onChange={e => { const value = e.target.value as Priority | ''; motionUpdate(() => setPriority(value)); }}>
-          <option value="">Приоритет</option><option value="high">Высокий</option><option value="normal">Обычный</option><option value="low">Низкий</option>
-        </select>
-        <ChevronDown size={16} aria-hidden="true"/>
+    </div>
+    <div className="toolbar tasks-toolbar">
+      <Segments value={filter} onChange={setFilter} label="Фильтр задач" options={[{ value: 'all', label: 'Все', count: all.length }, { value: 'today', label: 'Сегодня', count: open.filter(e => e.date === today).length }, { value: 'soon', label: 'Скоро', count: open.filter(e => e.date && e.date > today && e.date <= addDays(today, 7)).length }, { value: 'done', label: 'Выполнено', count: done.length }]}/>
+      <div className="tasks-actions">
+        <div className="task-priority-control" data-active={!!priority}>
+          <select aria-label="Приоритет задач" value={priority} onChange={e => { const value = e.target.value as Priority | ''; motionUpdate(() => setPriority(value)); }}>
+            <option value="">Приоритет</option><option value="high">Высокий</option><option value="normal">Обычный</option><option value="low">Низкий</option>
+          </select>
+          <ChevronDown size={16} aria-hidden="true"/>
+        </div>
+        <NewButton onClick={() => actions.create('task')}>Новая задача</NewButton>
       </div>
     </div>
-    <div className="toolbar tasks-toolbar"><Segments value={filter} onChange={setFilter} label="Фильтр задач" options={[{ value: 'all', label: 'Все', count: all.length }, { value: 'today', label: 'Сегодня', count: open.filter(e => e.date === today).length }, { value: 'soon', label: 'Скоро', count: open.filter(e => e.date && e.date > today && e.date <= addDays(today, 7)).length }, { value: 'done', label: 'Выполнено', count: done.length }]}/><NewButton onClick={() => actions.create('task')}>Новая задача</NewButton></div>
     {result.error && <Alert>{result.error}</Alert>}
     <AnimatedList className="event-groups motion-content" items={groups.filter(group => group.events.length)} itemKey={group => group.title} renderItem={group => <TaskGroup {...group} selected={expanded} select={select}/>}/>{!items.length && !result.loading && <Empty>Подходящих задач нет</Empty>}
   </div>;
