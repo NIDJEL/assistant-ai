@@ -6,6 +6,30 @@ test.beforeEach(async ({ context }, info) => {
   const response = await context.request.post('/api/auth/register', { data: { ...legalAcceptance, name: 'Проверка интерфейса', email: `ui-${Date.now()}-${info.testId.replace(/\W/g, '').slice(-12)}@example.test`, password: 'ui test password 12345', password_confirmation: 'ui test password 12345' } });
   expect(response.status()).toBe(201); expect((await context.request.post('/api/auth/onboarding', { data: {} })).status()).toBe(200);
 });
+test('reference calendar keeps compact event pills and opens all remaining events for the chosen day', async ({ page, context }, info) => {
+  const selected = '2040-10-20'; const other = '2040-10-21';
+  await page.route('**/health', async route => { const response = await route.fetch(); await route.fulfill({ response, json: { ...await response.json(), now: `${selected}T12:00:00+03:00` } }); });
+  for (let i = 0; i < 8; i++) {
+    const created = await context.request.post('/api/events', { data: { kind: i % 3 === 0 ? 'task' : i % 3 === 1 ? 'meeting' : 'reminder', title: `Проверить подробный план следующего этапа проекта ${i}`, date: i < 5 ? selected : other, time: `1${i}:00`, duration_minutes: 30, priority: i === 2 ? 'high' : 'normal', force: true } });
+    expect(created.status()).toBe(201);
+  }
+  await ready(page, `/calendar?date=${selected}`);
+  const chosen = page.locator('.calendar-cell.selected'); const next = page.getByRole('button', { name: '21 октября, событий: 3', exact: true });
+  await expect(chosen.locator('.cell-event')).toHaveCount(2); await expect(chosen.locator('.cell-more')).toHaveText('+ ещё 3');
+  await expect(next.locator('.cell-event')).toHaveCount(1); await expect(next.locator('.cell-more')).toHaveText('+ ещё 2');
+  await expect(chosen.locator('.day-number')).toHaveClass(/today/); await expect(chosen.locator('.cell-event-title').first()).toHaveCSS('white-space', 'nowrap');
+  await expect(chosen.locator('.cell-event').first()).toHaveAttribute('title', /Проверить подробный план следующего этапа проекта/);
+  const initialHeight = (await page.locator('.month-calendar').boundingBox())!.height;
+  await next.locator('.cell-more').click(); await expect(page).toHaveURL(new RegExp(`date=${other}`)); await expect(page.locator('.selected-day .day-event')).toHaveCount(3); await expect(page.locator('.selected-day')).toBeInViewport();
+  expect((await page.locator('.month-calendar').boundingBox())!.height).toBe(initialHeight);
+  for (const width of [1440, 1080, 390]) {
+    await page.setViewportSize({ width, height: 900 }); await ready(page, `/calendar?date=${selected}`); await noOverflow(page);
+    const cell = (await chosen.boundingBox())!;
+    if (width > 760) { const more = (await chosen.locator('.cell-more').boundingBox())!; expect(more.y + more.height).toBeLessThanOrEqual(cell.y + cell.height); }
+    else await expect(chosen.locator('.cell-mobile-count')).toHaveText('5 соб.');
+    await page.locator('.month-calendar').screenshot({ path: info.outputPath(`calendar-reference-${width}.png`) });
+  }
+});
 for (const width of [1440, 390]) test(`custom date picker in a modal, keyboard, outside click and ISO save at ${width}px`, async ({ page }, info) => {
   await page.setViewportSize({ width, height: 900 }); await ready(page, '/calendar');
   await page.getByRole('button', { name: 'Новое событие' }).click(); const editor = page.getByRole('dialog', { name: 'Новая встреча' });
