@@ -1,3 +1,4 @@
+import { assistantReplyText } from '../src/features/assistant/replyText';
 import { test, expect, type Page } from './fixtures';
 import { ready, screenshot, noOverflow } from './helpers';
 import { addDays, dayKey } from '../src/features/calendar/dates';
@@ -9,7 +10,7 @@ async function send(page: Page, message: string) {
   const result = page.waitForResponse(r => r.url().endsWith('/api/chat') && r.request().method() === 'POST');
   await draft.press('Enter');
   const response = await (await result).json() as ChatResponse;
-  await expect(page.locator('.reply-text').last()).toHaveText(response.reply);
+  await expect(page.locator('.reply-text').last()).toHaveText(assistantReplyText(response));
   return response;
 }
 

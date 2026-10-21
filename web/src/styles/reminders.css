@@ -14,7 +14,7 @@ html[data-surface='workspace'] .reminders-page > .page-header { min-height: 0; p
 .reminders-page .reminder-time small { line-height: 1.45; overflow-wrap: anywhere; }
 .reminders-page .reminder-row > .switch-row { margin: 0; justify-self: end; }
 .reminders-page .reminder-row > .event-menu { justify-self: end; }
-.reminder-group-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.reminder-group-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
 .reminder-group-actions > .button { min-height: 36px; padding: 8px 14px; }
 .reminder-group-actions:empty { display: none; }
 @media (max-width: 760px) {

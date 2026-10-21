@@ -16,12 +16,14 @@ async function mockSchedule(page: Page) {
     else if (url.pathname === '/api/events') { const q = (url.searchParams.get('q') || '').toLowerCase(); const found = events.filter(e => e.title.toLowerCase().includes(q)); body = { events: found, total: found.length, limit: 200, offset: 0 }; }
     else if (url.pathname === '/api/social/people') body = { profile: { ...user, code: 'ABCD-EFGH', share_email: false, timezone: 'Europe/Moscow', start_hour: 9, end_hour: 21, tags: [] }, friends: [], incoming: [], outgoing: [] };
     else if (url.pathname === '/api/social/meetings') body = { meetings: [] };
+    else if (url.pathname === '/api/integrations') body = { connections: ['yandex', 'google', 'zoom'].map(provider => ({ provider, status: 'connected', last_sync: null, last_error: '', pending_events: 0 })), yandex_configured: true, google_configured: true, zoom_configured: true };
     else if (url.pathname === '/api/reminders/due') body = { events: [] };
     else if (url.pathname.includes('/history/') || url.pathname === '/api/chat/notifications') body = { exchanges: [], state: {} };
     else if (url.pathname === '/api/notifications/push/config') body = { enabled: false, public_key: '' };
     else if (url.pathname === '/api/notifications/push/subscriptions') body = { subscriptions: [] };
     await route.fulfill({ json: body });
   });
+  return events;
 }
 
 test('meeting list scrolls to its final entry without scrolling the page', async ({ page }, info) => {
@@ -86,6 +88,7 @@ test('reminder toolbar, dates and group expansion stay aligned at every width', 
     const positions = await page.locator('.reminder-time').evaluateAll(nodes => nodes.map(node => node.getBoundingClientRect().x));
     expect(Math.max(...positions) - Math.min(...positions)).toBeLessThan(1);
     for (const group of await page.locator('.reminder-groups section').all()) {
+      expect(await group.locator('.reminder-group-actions').evaluate(node => getComputedStyle(node).marginTop)).toBe('8px');
       const more = group.getByRole('button', { name: /Показать ещё:/ });
       const button = (await more.boundingBox())!; const parent = (await group.boundingBox())!;
       expect(Math.abs(button.x + button.width - parent.x - parent.width)).toBeLessThan(1);
@@ -95,6 +98,67 @@ test('reminder toolbar, dates and group expansion stay aligned at every width', 
       await page.locator('.reminders-page').screenshot({ path: info.outputPath(`reminders-${width}.png`) });
     }
   }
+  expect(errors).toEqual([]);
+});
+
+test('integrations starts close to its heading and home is named Главная', async ({ page }, info) => {
+  await mockSchedule(page); await page.goto('/integrations');
+  await expect(page.getByText('Подключите нужные сервисы')).toHaveCount(0);
+  await expect(page.locator('.integration-card')).toHaveCount(3);
+  await expect(page.getByRole('link', { name: 'Главная', exact: true })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Сегодня', exact: true })).toHaveCount(0);
+  for (const width of [1440, 390, 320]) {
+    await page.setViewportSize({ width, height: 900 });
+    const heading = (await page.locator('h1').boundingBox())!; const search = (await page.locator('.integrations-page .search-box').boundingBox())!;
+    expect(search.y - heading.y - heading.height).toBeLessThanOrEqual(25);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    if (width !== 320) await page.locator('.integrations-page').screenshot({ path: info.outputPath(`integrations-${width}.png`) });
+  }
+  await page.getByRole('button', { name: 'Открыть навигацию', exact: true }).click();
+  const drawer = page.getByRole('dialog', { name: 'Навигация', exact: true });
+  await drawer.getByRole('link', { name: 'Главная', exact: true }).click(); await expect(page).toHaveURL(/\/$/);
+});
+
+test('assistant reply shares one panel and speaks human text from its lower right edge', async ({ page }, info) => {
+  const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
+  const events = await mockSchedule(page); const event = events[0];
+  const rawReply = `Изменено: #${event.id} «${event.title}» — 21.10.2026 в 10:00.`;
+  const visibleReply = `Изменено: «${event.title}» — 21.10.2026 в 10:00.`;
+  const history = [
+    { message: 'Привет', created_at: '2026-10-21T09:20:00+03:00', response: { reply: 'Привет! Чем помочь?', request_id: 'plain-reply', events: [], action: 'help', pending: false } },
+    { message: 'Измени встречу', created_at: '2026-10-21T09:21:00+03:00', response: { reply: rawReply, request_id: 'zoom-reply', events: [event], action: 'update', pending: false, zoom_meetings: [{ event_id: event.id, title: event.title, scheduled_at: '2026-10-21T10:00:00+03:00', timezone: 'Europe/Moscow', status: 'scheduled', join_url: 'https://zoom.us/j/123456789' }] } },
+  ];
+  await page.route('**/api/history/**', route => route.fulfill({ json: { exchanges: history, state: {} } }));
+  let spoken = ''; await page.route('**/api/voice/synthesize', async route => {
+    spoken = route.request().postDataJSON().text;
+    await route.fulfill({ status: 503, json: { error: { message: 'Тестовая ошибка озвучки', code: 'tts_error' } } });
+  });
+  await page.goto('/');
+  const answer = page.locator('#chat-message-zoom-reply .assistant-reply'); const bubble = answer.locator(':scope > .message-bubble');
+  await expect(bubble.locator('.reply-text')).toHaveText(visibleReply);
+  await expect(bubble.getByRole('region', { name: `Zoom: ${event.title}` })).toBeVisible();
+  await expect(bubble.getByRole('link', { name: 'Подключиться', exact: true })).toHaveAttribute('href', 'https://zoom.us/j/123456789');
+  await expect(bubble.getByRole('link', { name: 'Открыть в календаре' })).toHaveAttribute('href', '/calendar?date=2026-10-21');
+  await expect(bubble.getByRole('button', { name: 'Скопировать ссылку' })).toBeEnabled();
+  const speech = answer.getByRole('button', { name: 'Озвучить ответ', exact: true });
+  await expect(bubble.locator('.tts-button')).toHaveCount(0);
+  await answer.evaluate(async root => { await Promise.all(root.getAnimations().map(animation => animation.finished)); });
+  for (const [width, height] of [[1440, 900], [768, 1024], [390, 844], [320, 568]]) {
+    await page.setViewportSize({ width, height });
+    const geometry = await answer.evaluate(root => {
+      const panel = root.querySelector('.message-bubble')!.getBoundingClientRect(); const audio = root.querySelector('.tts-button')!.getBoundingClientRect();
+      const children = [...root.querySelectorAll('.reply-text, .zoom-meeting-card, .calendar-link')].map(node => node.getBoundingClientRect());
+      return { right: panel.right - audio.right, gap: audio.top - panel.bottom, enclosed: children.every(rect => rect.top >= panel.top && rect.bottom <= panel.bottom && rect.left >= panel.left && rect.right <= panel.right), background: getComputedStyle(root.querySelector('.message-bubble')!).backgroundColor, docWidth: document.documentElement.scrollWidth, docHeight: document.documentElement.scrollHeight, composerBottom: document.querySelector('.composer')!.getBoundingClientRect().bottom };
+    });
+    expect(Math.abs(geometry.right)).toBeLessThanOrEqual(3); expect(geometry.gap).toBeGreaterThanOrEqual(5);
+    expect(geometry.enclosed).toBe(true); expect(geometry.background).not.toBe('rgba(0, 0, 0, 0)');
+    expect(geometry.docWidth).toBeLessThanOrEqual(width); expect(geometry.docHeight).toBeLessThanOrEqual(height + 1); expect(geometry.composerBottom).toBeLessThan(height);
+    await page.getByRole('log').evaluate(root => { root.scrollTop = root.scrollHeight; }); await expect(speech).toBeInViewport();
+    if ([1440, 390].includes(width)) await page.screenshot({ path: info.outputPath(`unified-answer-${width}.png`) });
+  }
+  await speech.click(); await expect.poll(() => spoken).toBe(visibleReply); await expect(answer.getByRole('alert')).toHaveText('Тестовая ошибка озвучки');
+  expect(history[1].response.reply).toBe(rawReply);
+  await bubble.getByRole('link', { name: 'Открыть в календаре' }).click(); await expect(page).toHaveURL(/calendar\?date=2026-10-21/);
   expect(errors).toEqual([]);
 });
 

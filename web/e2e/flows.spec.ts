@@ -62,5 +62,5 @@ for (const viewport of responsiveViewports) test(`responsive routes, drawers and
     }
   }
   if (viewport.width < 1180) { await page.getByRole('button', { name: 'Открыть виджеты' }).click(); await expect(page.getByRole('dialog', { name: 'Виджеты' })).toBeVisible(); await noOverflow(page); await page.keyboard.press('Escape'); }
-  if (viewport.width === 390) { await page.getByRole('button', { name: 'Открыть навигацию' }).click(); await page.getByRole('dialog').getByRole('link', { name: 'Сегодня', exact: true }).click({ timeout: 10000 }); await expect(page.locator('h1')).toHaveText('Чем помочь?'); await noOverflow(page); await screenshot(page, 'mobile', info); }
+  if (viewport.width === 390) { await page.getByRole('button', { name: 'Открыть навигацию' }).click(); await page.getByRole('dialog').getByRole('link', { name: 'Главная', exact: true }).click({ timeout: 10000 }); await expect(page.locator('h1')).toHaveText('Чем помочь?'); await noOverflow(page); await screenshot(page, 'mobile', info); }
 });
