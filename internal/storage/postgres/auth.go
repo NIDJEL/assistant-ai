@@ -100,6 +100,37 @@ func (d *Database) EmailIdentity(ctx context.Context, email string) (*user.User,
 	err = d.providers(ctx, &u)
 	return &u, hash, err
 }
+
+func (d *Database) EnableEmailLogin(ctx context.Context, uid, hash string) (*user.User, error) {
+	tx, err := d.DB.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+	u, err := scanUser(tx.QueryRowContext(ctx, "SELECT "+userColumns+" FROM users u WHERE u.id=$1 FOR UPDATE", uid))
+	if err != nil {
+		return nil, err
+	}
+	if u == nil || u.Email == "" {
+		return nil, repository.ErrConflict
+	}
+	var eligible bool
+	err = tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM auth_identities WHERE user_id=$1 AND provider='yandex' AND email=$2)
+		AND NOT EXISTS(SELECT 1 FROM auth_identities WHERE user_id=$1 AND provider='email')`, uid, u.Email).Scan(&eligible)
+	if err != nil {
+		return nil, err
+	}
+	if !eligible {
+		return nil, repository.ErrConflict
+	}
+	if _, err = tx.ExecContext(ctx, "INSERT INTO auth_identities(id,user_id,provider,provider_subject,email,password_hash) VALUES($1,$2,'email',$3,$3,$4)", uuid.NewString(), uid, u.Email, hash); err != nil {
+		return nil, conflict(err)
+	}
+	if err = tx.Commit(); err != nil {
+		return nil, err
+	}
+	return u, d.providers(ctx, u)
+}
 func (d *Database) OAuthUser(ctx context.Context, i repository.Identity, link string, accepted ...legal.Acceptance) (*user.User, error) {
 	tx, err := d.DB.BeginTx(ctx, nil)
 	if err != nil {

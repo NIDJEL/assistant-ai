@@ -20,6 +20,7 @@ export async function mockSchedule(page: Page) {
     else if (url.pathname === '/api/social/people') body = { profile: { ...user, code: 'ABCD-EFGH', share_email: false, timezone: 'Europe/Moscow', start_hour: 9, end_hour: 21, tags: [] }, friends: [], incoming: [], outgoing: [] };
     else if (url.pathname === '/api/social/meetings') body = { meetings: [] };
     else if (url.pathname === '/api/integrations') body = { connections: ['yandex', 'google', 'zoom'].map(provider => ({ provider, status: 'connected', last_sync: null, last_error: '', pending_events: 0 })), yandex_configured: true, google_configured: true, zoom_configured: true };
+    else if (url.pathname === '/api/voice/voices') body = { voices: [{ id: 'ru-RU-DmitryNeural', name: 'Гена, мужской' }], default_voice: 'ru-RU-DmitryNeural' };
     else if (url.pathname === '/api/integrations/google/calendars') body = { calendars: Array.from({ length: 45 }, (_, index) => ({ id: `calendar-${index}`, summary: `Календарь ${index + 1}: планы и встречи нашей команды`, primary: index === 0 })), selected: 'calendar-0' };
     else if (url.pathname === '/api/reminders/due') body = { events: [] };
     else if (url.pathname.includes('/history/') || url.pathname === '/api/chat/notifications') body = { exchanges: [], state: {} };

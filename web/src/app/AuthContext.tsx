@@ -3,7 +3,7 @@ import type { LegalAcceptance } from '../pages/Legal/documents';
 import { ApiError, request } from '../api/client';
 import { releasePushOnLogout, setPushUser } from '../features/notifications/push';
 export interface User { id: string; email: string; name: string; avatar_url: string; onboarding_completed: boolean; providers: string[] }
-interface Auth { user: User | null; loading: boolean; error: string; refresh: () => Promise<void>; login: (email: string, password: string, acceptance: LegalAcceptance) => Promise<User>; register: (name: string, email: string, password: string, confirmation: string, acceptance: LegalAcceptance) => Promise<User>; logout: () => Promise<void>; updateProfile: (profile: { name?: string; avatar_url?: string }) => Promise<void>; completeOnboarding: () => Promise<void> }
+interface Auth { user: User | null; loading: boolean; error: string; refresh: () => Promise<void>; login: (email: string, password: string, acceptance: LegalAcceptance) => Promise<User>; register: (name: string, email: string, password: string, confirmation: string, acceptance: LegalAcceptance) => Promise<User>; enableEmailLogin: (password: string, confirmation: string) => Promise<User>; logout: () => Promise<void>; updateProfile: (profile: { name?: string; avatar_url?: string }) => Promise<void>; completeOnboarding: () => Promise<void> }
 const Context = createContext<Auth | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null); const [loading, setLoading] = useState(true); const [error, setError] = useState('');
@@ -20,6 +20,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value: Auth = { user, loading, error, refresh,
     login: (email, password, acceptance) => authenticate('/api/auth/login', { email, password, ...acceptance }),
     register: (name, email, password, password_confirmation, acceptance) => authenticate('/api/auth/register', { name, email, password, password_confirmation, ...acceptance }),
+    enableEmailLogin: (password, password_confirmation) => authenticate('/api/auth/email/enable', { password, password_confirmation }),
     logout: async () => {
       ++generation.current;
       // Optional browser notification cleanup must never prevent server logout.

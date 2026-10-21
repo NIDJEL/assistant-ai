@@ -1,0 +1,66 @@
+html[data-surface='workspace'] .settings-page > .page-header { min-height: 0; padding: 12px 0 0; margin-bottom: 12px; }
+.settings-list { display: flex; flex-direction: column; min-width: 0; }
+.settings-page { container: settings / inline-size; }
+html[data-surface='workspace'] .settings-page .settings-card { padding: 26px 0; border: 0; border-bottom: 1px solid var(--border); border-radius: 0; background: transparent; box-shadow: none; }
+html[data-surface='workspace'] .settings-page .settings-card:first-child { padding-top: 12px; }
+.settings-page .settings-card:last-child { border-bottom: 0; }
+.settings-page .settings-card h2 { margin-bottom: 14px; font-size: 19px; }
+.settings-page .settings-row { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); align-items: center; gap: 24px; margin: 0; padding: 16px 0; min-width: 0; }
+.settings-row + .settings-row { border-top: 1px solid var(--border-subtle); }
+.settings-row-label { min-width: 0; }
+.settings-row-label > strong, .settings-row-label > label { display: block; font-size: 14px; font-weight: 600; color: var(--text); }
+.settings-row-label > :is(p, small) { display: block; margin-top: 6px; max-width: 520px; color: var(--muted); font-size: 13px; line-height: 1.6; }
+.settings-row-control { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 12px; min-width: 0; }
+.settings-row-control > .gena-select { width: min(100%, 240px); }
+.settings-page .account-profile { margin: 0; }
+.settings-page .account-profile strong { font-size: 15px; }
+.settings-page .account-profile p { margin-top: 5px; font-size: 13px; }
+.settings-page .account-avatar { width: 56px; height: 56px; }
+.account-photo-controls { text-align: right; }
+.settings-page .account-avatar-actions { justify-content: flex-end; }
+.settings-page .account-photo-hint { margin: 8px 0 0; }
+.settings-page .account-name-row input { flex: 1 1 150px; width: 100%; min-width: 0; }
+.settings-page .account-name-row .settings-row-control { flex-wrap: nowrap; }
+.settings-page .account-name-row .settings-row-label > label { color: var(--text); }
+.settings-page .account-card > h3 { margin-top: 18px; font-size: 15px; }
+.settings-page .account-methods { display: block; margin: 0; }
+.settings-page .account-methods > .settings-row { display: grid; }
+.settings-page .account-methods .settings-row-label > strong { display: flex; align-items: center; gap: 10px; }
+.settings-row-label > strong > svg { color: var(--muted); }
+.connection-status { display: inline-flex; align-items: center; gap: 7px; color: var(--muted); font-size: 13px; }
+.connection-status.connected { color: var(--success); }
+.connection-status svg { flex-shrink: 0; }
+.settings-page .account-methods .connection-status { color: var(--success); }
+.settings-page .account-password-form { display: grid; gap: 16px; padding: 18px; margin-bottom: 16px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface-inset); }
+.settings-page .account-password-form .form-grid { width: 100%; }
+.settings-page .account-password-form label { color: var(--muted); }
+.account-password-form > p { color: var(--muted); font-size: 13px; line-height: 1.6; }
+.account-password-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+.account-password-form { animation: motion-content-in var(--motion-fast) var(--motion-ease) both; }
+.account-password-form.closing { animation: motion-fade-out var(--motion-exit) ease both; }
+.settings-page .assistant-voice-option { margin: 0; }
+.settings-page .assistant-voice-volume { margin: 0; }
+.settings-page .assistant-voice-volume input { flex: 1 1 160px; width: auto; min-width: 0; max-width: 380px; padding: 0; }
+.settings-page .assistant-voice-volume output { width: 44px; text-align: right; color: var(--accent); font-size: 14px; font-variant-numeric: tabular-nums; }
+.settings-page .switch-row > input { justify-self: end; }
+.settings-page .settings-card > .muted { margin: 10px 0; }
+.settings-page .settings-card > .button + .button { margin-left: 8px; }
+.settings-page .csv-import-form { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; }
+.settings-page .csv-import-form > :is(p, a) { grid-column: 1 / -1; }
+.settings-page .csv-import-form > .button { grid-column: 2; grid-row: 1; }
+@media (max-width: 760px) {
+  html[data-surface='workspace'] .settings-page > .page-header { padding-top: 54px; margin-bottom: 12px; }
+}
+@container settings (max-width: 620px) {
+  .settings-page .settings-row { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .settings-page .settings-row.switch-row { grid-template-columns: minmax(0, 1fr) auto; }
+  .settings-row-control, .settings-page .account-avatar-actions { justify-content: flex-start; }
+  .account-photo-controls { text-align: left; }
+  .settings-page .account-name-row .settings-row-control { flex-wrap: wrap; }
+  .settings-page .account-name-row input { flex-basis: 100%; }
+  .settings-page .account-methods .settings-row { grid-template-columns: minmax(0, 1fr) auto; gap: 12px; }
+  .settings-page .account-methods .settings-row-control { justify-content: flex-end; }
+  .settings-page .account-methods .settings-row-control:has(.button) { flex-direction: column; align-items: flex-end; gap: 8px; }
+  .settings-page .csv-import-form { grid-template-columns: minmax(0, 1fr); }
+  .settings-page .csv-import-form > .button { grid-column: 1; grid-row: auto; justify-self: start; }
+}

@@ -21,6 +21,7 @@ type OAuthState struct {
 type AuthStore interface {
 	CreateEmailUser(context.Context, user.User, string, ...legal.Acceptance) error
 	EmailIdentity(context.Context, string) (*user.User, string, error)
+	EnableEmailLogin(context.Context, string, string) (*user.User, error)
 	OAuthUser(context.Context, Identity, string, ...legal.Acceptance) (*user.User, error)
 	RecordLegalAcceptance(context.Context, string, legal.Acceptance) error
 	CreateSession(context.Context, string, string, time.Time, time.Time) error

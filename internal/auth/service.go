@@ -117,6 +117,26 @@ func (s *Service) Login(ctx context.Context, email, password string) (*user.User
 	}
 	return u, nil
 }
+
+// EnableEmailLogin adds a password to the current OAuth account once. It never
+// changes an existing password or accepts a different email/account identifier.
+func (s *Service) EnableEmailLogin(ctx context.Context, uid, password, confirmation string) (*user.User, error) {
+	if utf8.RuneCountInString(password) < 10 || len(password) > 1024 {
+		return nil, domain.Validation("Пароль должен содержать от 10 символов")
+	}
+	if password != confirmation {
+		return nil, domain.Validation("Пароли не совпадают")
+	}
+	var hash string
+	if err := s.passwordWork(ctx, func() error { var err error; hash, err = HashPassword(password); return err }); err != nil {
+		return nil, err
+	}
+	u, err := s.Store.EnableEmailLogin(ctx, uid, hash)
+	if errors.Is(err, repository.ErrConflict) {
+		return nil, &domain.AppError{Code: "email_login_unavailable", Message: "Вход по почте уже настроен или недоступен для этого аккаунта", Status: 409}
+	}
+	return u, err
+}
 func (s *Service) Session(ctx context.Context, token string, now time.Time) (*user.User, error) {
 	if len(token) != 43 {
 		return nil, nil

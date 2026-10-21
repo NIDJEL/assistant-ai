@@ -109,7 +109,7 @@ it('ignores another legacy browser user’s dialogue and TTS preference', async 
  const { handler, user } = await start();
  await waitFor(() => expect(handler.mock.calls.some(([path]) => String(path).startsWith('/api/history/'))).toBe(true));
  expect(handler.mock.calls.some(([path]) => String(path).endsWith(`/api/history/${legacy}`))).toBe(false);
- await user.click(screen.getByRole('link', { name: 'Настройки' })); expect(await screen.findByText('Дмитрий, мужской')).toBeInTheDocument();
+ await user.click(screen.getByRole('link', { name: 'Настройки' })); expect(await screen.findByText('Гена, мужской')).toBeInTheDocument();
  expect(screen.getByText(/Автоматическая озвучка выключена/)).toBeInTheDocument();
 });
 it('replaces a corrupt stored session UUID instead of repeatedly failing history', async () => {

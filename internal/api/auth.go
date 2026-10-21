@@ -143,6 +143,7 @@ func (a *API) authRoutes(r chi.Router) {
 		r.Get("/me", a.me)
 		r.With(a.requireUser).Patch("/me", a.updateProfile)
 		r.With(a.requireUser).Post("/onboarding", a.completeOnboarding)
+		r.With(a.requireUser).Post("/email/enable", a.enableEmailLogin)
 		r.Get("/yandex/start", a.oauthStart)
 		r.Post("/yandex/start", a.oauthStart)
 		r.Get("/yandex/callback", a.oauthCallback)
@@ -271,6 +272,24 @@ func (a *API) completeOnboarding(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	write(w, 200, map[string]any{"user": u})
+}
+
+func (a *API) enableEmailLogin(w http.ResponseWriter, r *http.Request) {
+	r.Body = http.MaxBytesReader(w, r.Body, 8192)
+	var body struct {
+		Password     string `json:"password"`
+		Confirmation string `json:"password_confirmation"`
+	}
+	if err := decode(w, r, &body); err != nil {
+		a.fail(w, r, domain.Validation("Проверьте пароль и его подтверждение"))
+		return
+	}
+	u, err := a.Auth.EnableEmailLogin(r.Context(), repository.UserID(r.Context()), body.Password, body.Confirmation)
+	if err != nil {
+		a.fail(w, r, err)
+		return
+	}
+	a.signIn(w, r, u, 200)
 }
 func (a *API) oauthStart(w http.ResponseWriter, r *http.Request) {
 	provider := "yandex"

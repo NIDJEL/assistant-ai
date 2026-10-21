@@ -21,6 +21,7 @@ import './styles/segments.css';
 import './styles/reminders.css';
 import './styles/select.css';
 import './styles/focus.css';
+import './styles/settings.css';
 if (typeof document.startViewTransition === 'function') document.documentElement.dataset.nativeMotion = 'true';
 createRoot(document.getElementById('root')!).render(<StrictMode><App/></StrictMode>);
 if (window.isSecureContext && navigator.serviceWorker) void registerNotifications().catch(() => {});
