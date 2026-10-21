@@ -1,5 +1,6 @@
+import { Select } from '../../components/Select';
 import { useState } from 'react';
-import { Sun, CalendarDays, Clock3, CheckCircle2, AlertCircle, ChevronDown, type LucideIcon } from 'lucide-react';
+import { Sun, CalendarDays, Clock3, CheckCircle2, AlertCircle, type LucideIcon } from 'lucide-react';
 import { useData } from '../../app/DataContext';
 import { useEventActions } from '../../app/EventActionsContext';
 import { useEventSearch } from '../../hooks/useEventSearch';
@@ -32,10 +33,7 @@ export function TasksPage() {
       <Segments animated value={filter} onChange={setFilter} label="Фильтр задач" options={[{ value: 'all', label: 'Все', count: all.length }, { value: 'today', label: 'Сегодня', count: open.filter(e => e.date === today).length }, { value: 'soon', label: 'Скоро', count: open.filter(e => e.date && e.date > today && e.date <= addDays(today, 7)).length }, { value: 'done', label: 'Выполнено', count: done.length }]}/>
       <div className="tasks-actions">
         <div className="task-priority-control" data-active={!!priority}>
-          <select aria-label="Приоритет задач" value={priority} onChange={e => { const value = e.target.value as Priority | ''; motionUpdate(() => setPriority(value)); }}>
-            <option value="">Приоритет</option><option value="high">Высокий</option><option value="normal">Обычный</option><option value="low">Низкий</option>
-          </select>
-          <ChevronDown size={16} aria-hidden="true"/>
+          <Select aria-label="Приоритет задач" value={priority} onChange={value => motionUpdate(() => setPriority(value as Priority | ''))} options={[{ value: '', label: 'Приоритет' }, { value: 'high', label: 'Высокий' }, { value: 'normal', label: 'Обычный' }, { value: 'low', label: 'Низкий' }]}/>
         </div>
         <NewButton onClick={() => actions.create('task')}>Новая задача</NewButton>
       </div>

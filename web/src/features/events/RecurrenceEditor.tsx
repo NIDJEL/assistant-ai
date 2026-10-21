@@ -1,3 +1,4 @@
+import { Select } from '../../components/Select';
 import type { Recurrence } from '../../types/api';
 import { recurrenceLabel } from './recurrence';
 export function RecurrenceEditor({ value, date, time, timezone, disabled, onChange }: { value?: Recurrence | null; date?: string | null; time?: string | null; timezone: string; disabled?: boolean; onChange: (value: Recurrence | null) => void }) {
@@ -11,7 +12,5 @@ export function RecurrenceEditor({ value, date, time, timezone, disabled, onChan
     if (choice === 'hourly') { rule.frequency = 'hour'; delete rule.local_time; }
     onChange(rule);
   }
-  return <label>Повтор<select aria-label="Повтор напоминания" value={value ? 'current' : 'once'} disabled={disabled} onChange={e => select(e.target.value)}>
-    {value && <option value="current">{recurrenceLabel(value)}</option>}<option value="once">Без повтора</option><option value="daily">Каждый день</option><option value="workdays">По будням</option><option value="weekly">Каждую неделю</option><option value="monthly">Каждый месяц</option><option value="yearly">Каждый год</option><option value="hourly">Каждый час</option>
-  </select></label>;
+  return <label>Повтор<Select aria-label="Повтор напоминания" value={value ? 'current' : 'once'} disabled={disabled} onChange={select} options={[...(value ? [{ value: 'current', label: recurrenceLabel(value) }] : []), { value: 'once', label: 'Без повтора' }, { value: 'daily', label: 'Каждый день' }, { value: 'workdays', label: 'По будням' }, { value: 'weekly', label: 'Каждую неделю' }, { value: 'monthly', label: 'Каждый месяц' }, { value: 'yearly', label: 'Каждый год' }, { value: 'hourly', label: 'Каждый час' }]}/></label>;
 }

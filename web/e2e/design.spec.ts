@@ -1,3 +1,4 @@
+import { chooseOption } from './helpers';
 import { test, expect } from './fixtures';
 import { ready, noOverflow } from './helpers';
 import { dayKey, addDays, formatDay } from '../src/features/calendar/dates';
@@ -39,9 +40,9 @@ test('widget handle reorder, add/remove, per-page settings and PostgreSQL persis
   await expect.poll(async () => (await saved())?.order).toContain('progress');
   await page.reload(); await expect(page.locator('[data-widget="tasks"]')).toHaveCount(0); await expect(page.locator('[data-widget="progress"]')).toHaveCount(1);
   await page.getByRole('button', { name: 'Настройки: Сегодня', exact: true }).click();
-  await page.getByRole('dialog').getByRole('combobox').selectOption('5'); await page.getByRole('button', { name: 'Готово', exact: true }).click();
+  await chooseOption(page.getByRole('dialog').getByRole('combobox'), '5'); await page.getByRole('button', { name: 'Готово', exact: true }).click();
   await expect.poll(async () => (await saved())?.settings?.today?.limit).toBe(5);
-  await page.reload(); await page.getByRole('button', { name: 'Настройки: Сегодня', exact: true }).click(); await expect(page.getByRole('dialog').getByRole('combobox')).toHaveValue('5'); await page.keyboard.press('Escape');
+  await page.reload(); await page.getByRole('button', { name: 'Настройки: Сегодня', exact: true }).click(); await expect(page.getByRole('dialog').getByRole('combobox')).toHaveText('5'); await page.keyboard.press('Escape');
   await ready(page, '/tasks'); await expect(page.locator('[data-widget="tags"]')).toHaveCount(1); // Other page keeps its own layout.
 });
 

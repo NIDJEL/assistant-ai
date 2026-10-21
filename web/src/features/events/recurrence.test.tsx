@@ -16,7 +16,7 @@ it('preserves a custom rule until the user changes it and permits removing it', 
   const user = userEvent.setup(); const change = vi.fn();
   const rule: Recurrence = { frequency: 'week', interval: 2, weekdays: [2, 4], local_time: '18:00', timezone: 'Europe/Moscow' };
   render(<RecurrenceEditor value={rule} date="2026-10-14" time="18:00" timezone="Europe/Moscow" onChange={change}/>);
-  expect(change).not.toHaveBeenCalled(); expect(screen.getByRole('combobox')).toHaveValue('current');
-  await user.selectOptions(screen.getByRole('combobox'), 'once'); expect(change).toHaveBeenLastCalledWith(null);
-  await user.selectOptions(screen.getByRole('combobox'), 'workdays'); expect(change).toHaveBeenLastCalledWith({ frequency: 'week', interval: 1, weekdays: [1, 2, 3, 4, 5], local_time: '18:00', timezone: 'Europe/Moscow' });
+  expect(change).not.toHaveBeenCalled(); expect(screen.getByRole('combobox')).toHaveTextContent(recurrenceLabel(rule));
+  await user.click(screen.getByRole('combobox')); await user.click(screen.getByRole('option', { name: 'Без повтора' })); expect(change).toHaveBeenLastCalledWith(null);
+  await user.click(screen.getByRole('combobox')); await user.click(screen.getByRole('option', { name: 'По будням' })); expect(change).toHaveBeenLastCalledWith({ frequency: 'week', interval: 1, weekdays: [1, 2, 3, 4, 5], local_time: '18:00', timezone: 'Europe/Moscow' });
 });

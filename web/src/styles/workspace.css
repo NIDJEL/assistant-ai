@@ -10,7 +10,7 @@ html[data-surface='workspace'] {
   --surface: #141d2c; --surface-raised: #1b2739; --surface-inset: #101827;
   --surface-hover: #223147; --surface-selected: #243953; --control-bg: #101827;
   --danger-soft: #352235; --success: #92c9ae; --success-soft: #1d332e;
-  --danger: #ff94a4; --radius: 20px; --shadow: none;
+  --danger: #ff94a4; --radius: 20px; --shadow: none; --focus: #81b6ff;
   color: var(--text); background: var(--canvas);
 }
 html[data-surface='workspace'] body { background: var(--canvas); color: var(--text); }

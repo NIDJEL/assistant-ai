@@ -1,3 +1,4 @@
+import { Select } from '../../components/Select';
 import { DatePicker } from '../../components/DatePicker';
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
@@ -49,7 +50,7 @@ export function ProgressWidget() {
 }
 export function QuickWidget() {
   const actions = useEventActions(); const { today, health } = useData(); const [title, setTitle] = useState(''); const [date, setDate] = useState(today); const [time, setTime] = useState('10:00'); const [duration, setDuration] = useState(30);
-  return <Frame title="Быстрое планирование"><form className="quick-planning" onSubmit={e => { e.preventDefault(); actions.create('meeting', date, time, { title, duration }); }}><input aria-label="Название для быстрого планирования" placeholder="Опишите встречу..." value={title} maxLength={500} onChange={e => setTitle(e.target.value)}/><div><DatePicker aria-label="Дата быстрого планирования" value={date} onChange={setDate} timezone={health!.timezone} required/><input aria-label="Время быстрого планирования" type="time" value={time} onChange={e => setTime(e.target.value)} required/><select aria-label="Длительность быстрого планирования" value={duration} onChange={e => setDuration(Number(e.target.value))}><option value={30}>30 мин</option><option value={60}>1 ч</option></select><Button type="submit" aria-label="Создать из быстрого планирования"><ArrowRight size={18}/></Button></div></form></Frame>;
+  return <Frame title="Быстрое планирование"><form className="quick-planning" onSubmit={e => { e.preventDefault(); actions.create('meeting', date, time, { title, duration }); }}><input aria-label="Название для быстрого планирования" placeholder="Опишите встречу..." value={title} maxLength={500} onChange={e => setTitle(e.target.value)}/><div><DatePicker aria-label="Дата быстрого планирования" value={date} onChange={setDate} timezone={health!.timezone} required/><input aria-label="Время быстрого планирования" type="time" value={time} onChange={e => setTime(e.target.value)} required/><Select aria-label="Длительность быстрого планирования" value={duration} onChange={value => setDuration(Number(value))} options={[{ value: 30, label: '30 мин' }, { value: 60, label: '1 ч' }]}/><Button type="submit" aria-label="Создать из быстрого планирования"><ArrowRight size={18}/></Button></div></form></Frame>;
 }
 export function TagsWidget() {
   const { events } = useData(); const { limit } = useWidgetFrame();

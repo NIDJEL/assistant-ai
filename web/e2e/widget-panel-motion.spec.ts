@@ -1,3 +1,4 @@
+import { chooseOption } from './helpers';
 import { test, expect, type Page } from './fixtures';
 import { ready, noOverflow, screenshot } from './helpers';
 
@@ -25,7 +26,7 @@ for (const fallback of [false, true]) test(`widget animation stays independent o
   if (fallback) {
     await page.addInitScript(() => { Object.defineProperty(document, 'startViewTransition', { value: undefined, configurable: true }); });
     await page.emulateMedia({ reducedMotion: 'reduce' }); await ready(page, '/settings');
-    await page.getByLabel('Анимации интерфейса', { exact: true }).selectOption('full');
+    await chooseOption(page.getByLabel('Анимации интерфейса', { exact: true }), 'Плавные');
   }
   await ready(page, '/calendar'); await settle(page);
   const before = await page.locator('.widgets-panel').evaluate(node => ({ left: node.getBoundingClientRect().left, width: node.getBoundingClientRect().width, card: node.querySelector('.widget')!.getBoundingClientRect().width, navigation: document.querySelector('.sidebar')!.getBoundingClientRect().left, mainLeft: document.querySelector('.main-panel')!.getBoundingClientRect().left }));
@@ -73,7 +74,7 @@ for (const fallback of [false, true]) test(`widget animation stays independent o
   });
   await settle(page); await expect(page.getByRole('button', { name: 'Скрыть виджеты', exact: true })).toBeVisible(); await noOverflow(page);
   if (fallback) {
-    await ready(page, '/settings'); await page.getByLabel('Анимации интерфейса', { exact: true }).selectOption('reduced');
+    await ready(page, '/settings'); await chooseOption(page.getByLabel('Анимации интерфейса', { exact: true }), 'Без анимаций');
     await page.getByRole('button', { name: 'Скрыть виджеты', exact: true }).click(); await expect(page.locator('.widgets-panel')).toHaveCount(0);
     expect(await page.locator('.app-shell').evaluate(node => node.getAnimations().length)).toBe(0);
   }

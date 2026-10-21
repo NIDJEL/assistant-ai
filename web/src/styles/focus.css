@@ -1,0 +1,13 @@
+/* Keep the ring inside the control so scroll areas cannot crop it. */
+html:root body :is(button, a, input, textarea, select, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+html[data-surface='auth'] { --focus: #8bc8ff; }
+html:root body :is(.search-box, .auth-input):focus-within { outline: none; box-shadow: none; }
+html:root body :is(.search-box, .auth-input, .date-field):has(input:focus-visible),
+html:root body .composer:has(textarea:focus-visible) { outline: 2px solid var(--focus); outline-offset: -2px; }
+html:root body .period-control:has(.select-trigger:focus-visible) { outline: 2px solid var(--focus); outline-offset: -2px; }
+html:root body .period-control .select-trigger:focus-visible { outline: none; }
+html:root body :is(.search-box, .auth-input, .date-field, .composer) :is(input, textarea):focus-visible { outline: none; }
+.date-field { border-radius: var(--control-radius); }

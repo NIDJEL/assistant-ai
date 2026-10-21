@@ -1,6 +1,10 @@
-import { expect, type Page, type TestInfo } from '@playwright/test';
+import { expect, type Page, type TestInfo, type Locator } from '@playwright/test';
 import { mkdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
+export async function chooseOption(control: Locator, name: string) {
+  await control.click(); await control.page().getByRole('option', { name, exact: true }).click();
+  await expect(control).toHaveAttribute('aria-expanded', 'false');
+}
 export async function ready(page: Page, path = '/') {
   await page.goto(path);
   if (new URL(page.url()).pathname === '/') await expect(page.locator('.today-page')).toHaveAttribute('aria-busy', 'false');

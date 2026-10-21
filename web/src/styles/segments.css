@@ -27,7 +27,7 @@
   white-space: nowrap;
 }
 .segments.segments--sliding button::before { display: none; }
-html[data-surface='workspace'] .segments.segments--sliding button[aria-pressed='true'] { color: #f0f5ff; background: transparent; box-shadow: none; }
+.segments.segments--sliding button[aria-pressed='true'], html[data-surface='workspace'] .segments.segments--sliding button[aria-pressed='true'] { color: var(--text); background: transparent; box-shadow: none; }
 .segments.segments--sliding button:not([aria-pressed='true']):hover { color: var(--text); background: color-mix(in srgb, var(--surface-hover) 55%, transparent); }
 .segments--sliding button:focus-visible { outline-offset: -3px; }
 .segments--sliding .segment-label { min-width: 0; }
@@ -36,7 +36,7 @@ html[data-surface='workspace'] .segments.segments--sliding button[aria-pressed='
   top: 0;
   left: 0;
   z-index: 0;
-  border: 1px solid #395b86;
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--border));
   border-radius: 999px;
   background: var(--surface-selected);
   opacity: 0;
@@ -46,7 +46,7 @@ html[data-surface='workspace'] .segments.segments--sliding button[aria-pressed='
   opacity: 1;
   transition: transform var(--motion-normal) var(--motion-ease), width var(--motion-normal) var(--motion-ease), height var(--motion-normal) var(--motion-ease);
 }
-.segments.segments--sliding button[aria-pressed='true'] .count { color: #c9ddfa; background: #1a2c46; }
+.segments.segments--sliding button[aria-pressed='true'] .count { color: var(--text); background: color-mix(in srgb, var(--surface) 80%, var(--accent)); }
 @media (max-width: 760px) {
   .tasks-toolbar .segments.segments--sliding { width: max-content; }
   .segments.segments--sliding button { padding-inline: 11px; font-size: 12px; }

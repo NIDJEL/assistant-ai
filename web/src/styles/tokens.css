@@ -7,7 +7,7 @@
   --canvas: #edf5fc; --surface-inset: #f7faff; --surface-raised: #f2f6fc;
   --surface-hover: #eaf1fc; --surface-selected: #e1ecfc; --control-bg: #fff;
   --border-subtle: #edf2fb; --accent-strong: #2f6fc9; --on-accent: #fff;
-  --focus: #81b6ff; --control-radius: 12px; --popover-radius: 16px;
+  --focus: #2470d5; --control-radius: 12px; --popover-radius: 16px;
   --danger-soft: #fff0f3; --success: #187b59; --success-soft: #e6f8ed;
 }
 * { box-sizing: border-box; }
@@ -17,8 +17,7 @@ button, a, input, textarea, select { -webkit-tap-highlight-color: transparent; }
 button { cursor: pointer; }
 button:disabled { cursor: default; opacity: .5; }
 a { color: var(--accent); text-decoration: none; }
-button, input, textarea, select, a { outline-offset: 4px; }
-:focus-visible { outline: 3px solid #126aff; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
 input, textarea, select { color: var(--text); background: var(--control-bg); border: 1px solid var(--border); border-radius: var(--control-radius); padding: 12px 13px; min-width: 0; max-width: 100%; }
 input::placeholder, textarea::placeholder { color: #7588b4; }
 input:disabled, textarea:disabled, select:disabled { opacity: .6; cursor: not-allowed; }

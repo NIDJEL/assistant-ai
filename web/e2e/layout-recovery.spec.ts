@@ -1,3 +1,4 @@
+import { chooseOption } from './helpers';
 import { test, expect } from './fixtures';
 import { ready, noOverflow, screenshot } from './helpers';
 import { dayKey, addDays } from '../src/features/calendar/dates';
@@ -91,7 +92,7 @@ test('task, meeting and integration filters keep the shell and page heading stab
     if (path === '/tasks') {
       const filters = page.getByRole('group', { name: 'Фильтр задач' }); await filters.getByRole('button', { name: /^Сегодня/ }).click(); await filters.getByRole('button', { name: /^Скоро/ }).click(); await filters.getByRole('button', { name: /^Все/ }).click();
     } else if (path === '/meetings') {
-      await page.getByRole('combobox', { name: 'Период встреч' }).selectOption('today'); await page.getByRole('button', { name: 'Онлайн', exact: true }).click(); await page.getByRole('button', { name: 'Офлайн', exact: true }).click();
+      await chooseOption(page.getByRole('combobox', { name: 'Период встреч' }), 'Сегодня'); await page.getByRole('button', { name: 'Онлайн', exact: true }).click(); await page.getByRole('button', { name: 'Офлайн', exact: true }).click();
     } else {
       const filters = page.getByRole('group', { name: 'Фильтр интеграций' }); await filters.getByRole('button', { name: 'Подключено', exact: true }).click(); await filters.getByRole('button', { name: 'Доступно', exact: true }).click();
     }

@@ -1,3 +1,4 @@
+import { Select } from '../../components/Select';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ArrowLeft, RefreshCw, Trash2, CalendarDays, Video } from 'lucide-react';
@@ -44,7 +45,7 @@ export function CloudDetail({ provider, onBack }: { provider: CloudProvider; onB
       {!!connection?.pending_events && <p>Ожидают отправки: {connection.pending_events}</p>}
     </section>
     {provider === 'google' && authorized && <section className="sync-card"><h3>Календарь для синхронизации</h3>
-      <label>Календарь <select aria-label="Календарь Google" value={selected} onChange={e => setSelected(e.target.value)} disabled={busy}><option value="">Выберите календарь</option>{calendars.map(c => <option value={c.id} key={c.id}>{c.summary}{c.primary ? ' (основной)' : ''}</option>)}</select></label>
+      <label>Календарь <Select aria-label="Календарь Google" value={selected} onChange={setSelected} disabled={busy} options={[{ value: '', label: 'Выберите календарь' }, ...calendars.map(c => ({ value: c.id, label: `${c.summary}${c.primary ? ' (основной)' : ''}` }))]}/></label>
       <p>После выбора все дела Гены с датой будут добавлены в этот календарь. При первом импорте загружаются события за прошлый год и на два года вперёд.</p>
     </section>}
     <Button variant="soft" disabled={!authorized || busy || (provider === 'google' && !selected)} onClick={() => void run()}><RefreshCw size={19}/>{busy ? 'Подождите…' : selected !== saved ? 'Сохранить и синхронизировать' : 'Синхронизировать сейчас'}</Button>

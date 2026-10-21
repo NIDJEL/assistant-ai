@@ -1,3 +1,4 @@
+import { chooseOption } from './helpers';
 import { test, expect } from './fixtures';
 import { ready, screenshot } from './helpers';
 import type { ChatResponse, Health, RhythmEvent } from '../src/types/api';
@@ -46,7 +47,7 @@ test('event subject, event time and explicit notification clock stay separate th
     await screenshot(page, `reminder-editor-${width}`, info);
   }
   await page.setViewportSize({ width: 1440, height: 900 });
-  await dialog.getByLabel('Когда напомнить', { exact: true }).selectOption('60');
+  await chooseOption(dialog.getByLabel('Когда напомнить', { exact: true }), 'За 1 ч.');
   const updated = page.waitForResponse(r => r.url().endsWith(`/api/events/${response.events[0].id}`) && r.request().method() === 'PATCH');
   await dialog.getByRole('button', { name: 'Сохранить', exact: true }).click(); await updated;
   const persisted = await (await request.get(`/api/events/${response.events[0].id}`)).json();

@@ -1,3 +1,4 @@
+import { chooseOption } from './helpers';
 import { test, expect } from './fixtures';
 import { ready, noOverflow, screenshot } from './helpers';
 import { dayKey, addDays } from '../src/features/calendar/dates';
@@ -9,7 +10,7 @@ test('UI CRUD: task, meeting conflict, move, reminder, archive and delete', asyn
   async function save() { const response = page.waitForResponse(r => r.url().endsWith('/api/events') && r.request().method() === 'POST'); await page.getByRole('dialog').getByRole('button', { name: 'Сохранить', exact: true }).click(); const result = await response; const event = await result.json() as RhythmEvent; expect(result.status()).toBe(201); created.push(event.id); await expect(page.getByRole('dialog')).toHaveCount(0); return event; }
   try {
     await ready(page, '/tasks'); await page.getByRole('button', { name: 'Новая задача', exact: true }).click();
-    await page.getByLabel('Название', { exact: true }).fill(`Проверить интерфейс ${token}`); await page.getByLabel('Приоритет', { exact: true }).selectOption('high'); const task = await save();
+    await page.getByLabel('Название', { exact: true }).fill(`Проверить интерфейс ${token}`); await chooseOption(page.getByLabel('Приоритет', { exact: true }), 'Высокий'); const task = await save();
     await page.getByRole('textbox', { name: 'Поиск задач' }).fill(task.title); await page.getByRole('checkbox', { name: `Завершить «${task.title}»`, exact: true }).check();
     await expect(page.getByRole('checkbox', { name: `Возобновить «${task.title}»`, exact: true })).toBeChecked();
     await page.getByRole('link', { name: 'Архив', exact: true }).click(); await page.getByRole('textbox', { name: 'Поиск в архиве' }).fill(task.title); await expect(page.getByRole('button', { name: task.title, exact: true })).toBeVisible();
