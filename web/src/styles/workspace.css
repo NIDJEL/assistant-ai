@@ -32,6 +32,7 @@ html[data-surface='workspace'] :is(.settings-link, .sidebar-collapse, .drawer-wi
 html[data-surface='workspace'] .page-header { min-height: 110px; padding: 12px 0 24px; margin-bottom: 18px; }
 html[data-surface='workspace'] .page-header h1 { font-size: clamp(29px, 2.7vw, 40px); font-weight: 650; letter-spacing: -1.25px; }
 html[data-surface='workspace'] .page-header p { color: var(--muted); font-size: 15px; margin-top: 9px; line-height: 1.5; }
+html[data-surface='workspace'] .tasks-top .page-header { min-height: 0; padding: 0; margin: 0; }
 html[data-surface='workspace'] :is(.button, .icon-button) { box-shadow: none; border-radius: 11px; }
 html[data-surface='workspace'] .button.primary { background: var(--accent-strong); color: white; border-color: var(--accent-strong); }
 html[data-surface='workspace'] .button.primary:hover:not(:disabled) { background: #478bfa; }
@@ -138,6 +139,8 @@ html[data-surface='onboarding'] body { background: #080f21; color: #edf2fc; }
   .legal-page .legal-documents a:is(:hover, [aria-current='page']) { color: #c5ddff; background: #1b3051; }
 }
 @media print { html, body { background: white !important; } }
+@media (min-width: 1180px) { .widgets-hidden .tasks-top { padding-right: 48px; } }
+@media (min-width: 761px) and (max-width: 1179px) { .tasks-top { padding-top: 44px; } }
 @media (max-width: 1179px) {
   html[data-surface='workspace'] .main-panel { padding: 24px; }
   html[data-surface='workspace'] .today-page { height: calc(100dvh - 80px - var(--safe-top) - var(--safe-bottom)); }
@@ -157,7 +160,7 @@ html[data-surface='onboarding'] body { background: #080f21; color: #edf2fc; }
   html[data-surface='workspace'] .settings-card { padding: 20px; }
   html[data-surface='workspace'] .assistant-message .message-bubble { padding-inline: 4px; }
   html[data-surface='workspace'] .drawer .widgets-heading { padding-top: 0; }
-  html[data-surface='workspace'] .tasks-top .page-header { min-height: 134px; }
+  html[data-surface='workspace'] .tasks-top { padding-top: 54px; }
   .auth-premium { padding-top: max(12px, var(--safe-top)); padding-bottom: max(12px, var(--safe-bottom)); padding-left: max(12px, var(--safe-left)); padding-right: max(12px, var(--safe-right)); }
   .legal-page { padding-top: calc(24px + var(--safe-top)); padding-bottom: calc(24px + var(--safe-bottom)); }
 }
