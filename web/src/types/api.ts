@@ -3,11 +3,12 @@ export type EventStatus = 'open' | 'done';
 export type Priority = 'normal' | 'low' | 'high';
 export type Action = 'create' | 'list' | 'search' | 'update' | 'complete' | 'delete' | 'help' | 'clarify' | 'cancel' | 'restore';
 export interface Subtask { id: string; title: string; done: boolean }
-export interface Participant { name: string; email?: string }
+export interface Participant { id?: string; name: string; email?: string; avatar_url?: string }
 export interface Recurrence { frequency: 'minute' | 'hour' | 'day' | 'week' | 'month' | 'year'; interval: number; weekdays?: number[]; day_of_month?: number; month?: number; local_time?: string; timezone: string; anchor?: string }
 export interface EventDetails { recurrence?: Recurrence | null; tags?: string[]; subtasks?: Subtask[]; participants?: Participant[]; reminder_enabled?: boolean; reminder_minutes?: number; start_second?: number }
 export interface RhythmEvent extends EventDetails {
-	 display_title?: string; organizer_name?: string;
+	 display_title?: string; organizer_name?: string; organizer_avatar_url?: string;
+  conference_provider?: 'zoom';
   organizer_id?: string; collaborative?: boolean; meeting_version?: number;
   occurrence_at?: string; last_notification_at?: string;
   id: number; kind: EventKind; title: string; description: string;

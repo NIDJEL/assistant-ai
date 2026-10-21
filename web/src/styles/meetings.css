@@ -1,0 +1,15 @@
+html[data-surface='workspace'] .meetings-page > .page-header {
+  min-height: 0;
+  padding: 0 0 20px;
+  margin-bottom: 0;
+}
+.meetings-page .meeting-timeline { scrollbar-width: none; padding-right: 0; }
+.meetings-page .meeting-timeline::-webkit-scrollbar { display: none; }
+.meeting-tile .meeting-tile-meta > small:first-child { display: flex; align-items: center; justify-content: flex-end; gap: 5px; }
+.meeting-tile-meta > small:first-child svg { margin-right: 0; }
+.meeting-zoom-icon { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; border-radius: 5px; background: #2d8cff; color: white; vertical-align: middle; }
+.meeting-tile-meta .meeting-zoom-icon svg { color: white; }
+.participant .participant-role { color: var(--accent); }
+@media (max-width: 760px) {
+  html[data-surface='workspace'] .meetings-page > .page-header { padding-top: 54px; }
+}

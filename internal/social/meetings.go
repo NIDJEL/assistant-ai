@@ -114,6 +114,7 @@ func (s *Session) Meeting(ctx context.Context, tx repository.Tx, id int64) (*Mee
 
 func (m *Meeting) displayTitle(viewer string) {
 	m.Event.OrganizerName = m.Organizer.Name
+	m.Event.OrganizerAvatarURL = m.Organizer.AvatarURL
 	names := []string{}
 	if m.Organizer.ID != viewer {
 		names = append(names, m.Organizer.Name)

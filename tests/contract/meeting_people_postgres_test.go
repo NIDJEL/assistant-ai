@@ -11,6 +11,35 @@ import (
 	"github.com/NIDJEL/assistant-ai/internal/social"
 )
 
+func TestPostgresMeetingParticipantPhotosAreProjectedForBothAccounts(t *testing.T) {
+	h := schedulingFixture(t)
+	const organizerPhoto = "https://example.test/organizer.png"
+	const friendPhoto = "https://example.test/friend.png"
+	if _, err := h.db.DB.Exec(`UPDATE users SET avatar_url=CASE WHEN id=$1 THEN $3 ELSE $4 END WHERE id IN ($1,$2)`, h.aid, h.bid, organizerPhoto, friendPhoto); err != nil {
+		t.Fatal(err)
+	}
+	id := h.shared(h.a, h.bid, domain.Day(h.now.AddDate(0, 0, 1)), 17)
+	h.execute(h.b, social.Operation{Action: "respond", EventID: id, Version: 1, Status: "accepted"})
+	for _, ctx := range []context.Context{h.a, h.b} {
+		if err := h.db.Read(ctx, func(tx repository.Tx) error {
+			event, err := tx.Get(ctx, id)
+			if err != nil {
+				return err
+			}
+			if event == nil || event.OrganizerAvatarURL != organizerPhoto || len(event.Participants) != 1 || event.Participants[0].ID != h.bid || event.Participants[0].AvatarURL != friendPhoto || event.Participants[0].Email != "" {
+				t.Fatalf("missing participant identity/photo or exposed private email: %+v", event)
+			}
+			items, err := tx.Events(ctx, domain.Filter{Kind: domain.EventMeeting})
+			if err == nil && (len(items) != 1 || items[0].Participants[0].AvatarURL != friendPhoto || items[0].OrganizerAvatarURL != organizerPhoto) {
+				t.Fatalf("list projection differs from meeting details: %+v", items)
+			}
+			return err
+		}); err != nil {
+			t.Fatal(err)
+		}
+	}
+}
+
 func TestPostgresMeetingFriendCasesSurviveZoomConflictDialogue(t *testing.T) {
 	h := schedulingFixture(t)
 	h.now = time.Date(2026, 10, 21, 8, 30, 0, 0, h.now.Location())

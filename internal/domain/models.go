@@ -11,11 +11,12 @@ import (
 )
 
 type Event struct {
-	DisplayTitle   string `json:"display_title,omitempty"`
-	OrganizerName  string `json:"organizer_name,omitempty"`
-	OrganizerID    string `json:"organizer_id,omitempty"`
-	Collaborative  bool   `json:"collaborative,omitempty"`
-	MeetingVersion int    `json:"meeting_version,omitempty"`
+	DisplayTitle       string `json:"display_title,omitempty"`
+	OrganizerName      string `json:"organizer_name,omitempty"`
+	OrganizerAvatarURL string `json:"organizer_avatar_url,omitempty"`
+	OrganizerID        string `json:"organizer_id,omitempty"`
+	Collaborative      bool   `json:"collaborative,omitempty"`
+	MeetingVersion     int    `json:"meeting_version,omitempty"`
 	EventDetails
 	ID                 int64         `json:"id"`
 	Kind               EventType     `json:"kind"`
@@ -38,8 +39,10 @@ type Event struct {
 type Task struct{ Event }
 type Reminder struct{ Event }
 type Participant struct {
-	Name  string `json:"name"`
-	Email string `json:"email,omitempty"`
+	ID        string `json:"id,omitempty"`
+	Name      string `json:"name"`
+	Email     string `json:"email,omitempty"`
+	AvatarURL string `json:"avatar_url,omitempty"`
 }
 type Meeting struct {
 	Event
