@@ -265,7 +265,7 @@ func (s *Service) createSocialMeeting(ctx context.Context, tx repository.Tx, sta
 			}
 		}
 		var missing *social.MissingFriendsError
-		if !errors.As(err, &missing) || a.Invite || a.FriendTag != "" || a.AllWithTag || prior != nil {
+		if !errors.As(err, &missing) || a.Invite || a.FriendTag != "" || a.AllWithTag || prior != nil && !q.ExistingLookup {
 			return question(err.Error())
 		}
 		// Keep the entire request personal, including mixed known/unknown names.
@@ -300,7 +300,7 @@ func (s *Service) createSocialMeeting(ctx context.Context, tx repository.Tx, sta
 		return s.useExistingMeeting(ctx, tx, state, m, a.Conference, now)
 	}
 	// Match before asking for a missing clock or attempting external APIs.
-	if (c.Date != nil || a.Conference == "zoom") && !q.ConfirmedNew && (len(ids) > 0 || !domain.GenericMeetingTitle(a.Title) || a.Conference == "zoom") {
+	if (c.Date != nil || q.ExistingLookup) && !q.ConfirmedNew && (len(ids) > 0 || !domain.GenericMeetingTitle(a.Title) || a.Conference == "zoom") {
 		query := a.Title
 		if len(ids) > 0 && (domain.GenericMeetingTitle(query) || strings.HasPrefix(strings.ToLower(query), "встреча с ")) {
 			query = ""

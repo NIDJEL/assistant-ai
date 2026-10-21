@@ -16,18 +16,19 @@ type ChatChoice struct {
 	Slot   *PlanningSlot `json:"slot,omitempty"`
 }
 type SchedulingPending struct {
-	Personal     bool           `json:"personal,omitempty"`
-	Uninvited    []string       `json:"uninvited,omitempty"`
-	Preview      bool           `json:"preview,omitempty"`
-	SlotChosen   bool           `json:"slot_chosen,omitempty"`
-	SearchEnd    *time.Time     `json:"search_end,omitempty"`
-	ConfirmedNew bool           `json:"confirmed_new,omitempty"`
-	Token        string         `json:"token"`
-	Slots        []PlanningSlot `json:"slots,omitempty"`
-	Requested    *PlanningSlot  `json:"requested,omitempty"`
-	After        *time.Time     `json:"after,omitempty"`
-	Meetings     []Event        `json:"meetings,omitempty"`
-	Selected     *Event         `json:"selected,omitempty"`
+	ExistingLookup bool           `json:"existing_lookup,omitempty"`
+	Personal       bool           `json:"personal,omitempty"`
+	Uninvited      []string       `json:"uninvited,omitempty"`
+	Preview        bool           `json:"preview,omitempty"`
+	SlotChosen     bool           `json:"slot_chosen,omitempty"`
+	SearchEnd      *time.Time     `json:"search_end,omitempty"`
+	ConfirmedNew   bool           `json:"confirmed_new,omitempty"`
+	Token          string         `json:"token"`
+	Slots          []PlanningSlot `json:"slots,omitempty"`
+	Requested      *PlanningSlot  `json:"requested,omitempty"`
+	After          *time.Time     `json:"after,omitempty"`
+	Meetings       []Event        `json:"meetings,omitempty"`
+	Selected       *Event         `json:"selected,omitempty"`
 }
 type SchedulingCard struct {
 	Token     string         `json:"token"`

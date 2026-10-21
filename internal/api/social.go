@@ -179,7 +179,7 @@ func (a *API) socialAvailability(w http.ResponseWriter, r *http.Request) {
 	write(w, 200, result)
 }
 func (a *API) preparePlanningOperation(ctx context.Context, op social.Operation) error {
-	if op.Action != "create_meeting" && op.Action != "invite" && op.Action != "respond" && op.Action != "resolve_proposal" {
+	if op.Action != "create_meeting" && op.Action != "invite" && op.Action != "set_participants" && op.Action != "respond" && op.Action != "resolve_proposal" {
 		return nil
 	}
 	ids := []string{}
@@ -204,7 +204,7 @@ func (a *API) preparePlanningOperation(ctx context.Context, op social.Operation)
 		}
 		m, e := s.Meeting(ctx, tx, op.EventID)
 		if e != nil {
-			if op.Action == "invite" {
+			if op.Action == "invite" || op.Action == "set_participants" {
 				event, getErr := tx.Get(ctx, op.EventID)
 				if getErr != nil {
 					return getErr

@@ -17,13 +17,18 @@ import (
 
 func (s *Service) applySocial(ctx context.Context, tx repository.Tx, state *domain.State, op nlu.Operation, args any, now time.Time) (bool, domain.Response, error) {
 	prior := state.Pending
+	if a, ok := args.(*nlu.MeetingParticipants); ok {
+		r, err := s.setMeetingParticipants(ctx, tx, state, a, now)
+		return true, r, err
+	}
 	continuing := in(op.Intent, "choose_time", "continue", "select", "confirm")
 	var continuationErr error
 	op, args, continuationErr = socialContinuation(prior, op, args, now)
 	if continuationErr != nil {
 		return true, answer(continuationErr.Error(), domain.ActionClarify), nil
 	}
-	if op.Intent == "meeting_zoom" {
+	existingLookup := op.Intent == "meeting_zoom"
+	if existingLookup {
 		a := args.(*nlu.Social)
 		args = &nlu.Create{Invite: true, Friends: a.Friends, FriendTag: a.Tag, Title: a.Query, Date: a.Date, Conference: "zoom"}
 		op.Intent = "create_meeting"
@@ -69,6 +74,9 @@ func (s *Service) applySocial(ctx context.Context, tx repository.Tx, state *doma
 	if isCreate {
 		if !continuing {
 			prior = nil
+		}
+		if existingLookup {
+			prior = &domain.Pending{Scheduling: &domain.SchedulingPending{ExistingLookup: true}}
 		}
 		r, e := s.createSocialMeeting(ctx, tx, state, prior, session, op, create, now)
 		return true, r, e

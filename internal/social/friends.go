@@ -182,6 +182,8 @@ func (s *Session) Execute(ctx context.Context, op Operation, now time.Time) (Res
 		result.Message = "Настройки сохранены"
 	case "create_meeting", "invite", "respond", "propose", "resolve_proposal", "cancel_meeting", "cancel_invitation":
 		result, err = s.meetingOperation(ctx, op, now)
+	case "set_participants":
+		result, err = s.setParticipants(ctx, op, now)
 	default:
 		return result, domain.Validation("Неизвестное действие")
 	}
@@ -431,23 +433,6 @@ func (s *Session) Resolve(ctx context.Context, names []string, tag string) ([]st
 }
 func nameWords(s string) []string {
 	return strings.Fields(strings.ReplaceAll(strings.ToLower(strings.TrimSpace(s)), "ё", "е"))
-}
-func SameName(a, b string) bool { return len(nameWords(a)) == len(nameWords(b)) && NameMatches(a, b) }
-func NameMatches(name, query string) bool {
-	a, b := nameWords(name), nameWords(query)
-	if len(b) == 0 {
-		return false
-	}
-	for _, word := range b {
-		found := false
-		for _, candidate := range a {
-			found = found || candidate == word
-		}
-		if !found {
-			return false
-		}
-	}
-	return true
 }
 
 // A tag used for one person must never silently invite an entire group.

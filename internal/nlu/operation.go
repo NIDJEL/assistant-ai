@@ -66,6 +66,11 @@ type Update struct {
 	Target  Target  `json:"target"`
 	Changes Changes `json:"changes"`
 }
+type MeetingParticipants struct {
+	Target    Target   `json:"target"`
+	Friends   []string `json:"friends"`
+	FriendTag string   `json:"friend_tag,omitempty"`
+}
 type Batch struct {
 	Filter  Filter   `json:"filter"`
 	Exclude []Filter `json:"exclude,omitempty"`
@@ -154,6 +159,8 @@ func (o Operation) Args() (any, error) {
 		v = &SchedulingReply{}
 	case "meeting_zoom":
 		v = &Social{}
+	case "set_meeting_participants":
+		v = &MeetingParticipants{}
 	case "create_task", "create_meeting", "create_reminder":
 		v = &Create{}
 	case "search", "list":
