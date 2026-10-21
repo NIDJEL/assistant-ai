@@ -29,7 +29,7 @@ export function TasksPage() {
       <SearchBox value={query} onChange={setQuery} label="Поиск задач" placeholder="Поиск задач, проектов или меток..."/>
     </div>
     <div className="toolbar tasks-toolbar">
-      <Segments value={filter} onChange={setFilter} label="Фильтр задач" options={[{ value: 'all', label: 'Все', count: all.length }, { value: 'today', label: 'Сегодня', count: open.filter(e => e.date === today).length }, { value: 'soon', label: 'Скоро', count: open.filter(e => e.date && e.date > today && e.date <= addDays(today, 7)).length }, { value: 'done', label: 'Выполнено', count: done.length }]}/>
+      <Segments animated value={filter} onChange={setFilter} label="Фильтр задач" options={[{ value: 'all', label: 'Все', count: all.length }, { value: 'today', label: 'Сегодня', count: open.filter(e => e.date === today).length }, { value: 'soon', label: 'Скоро', count: open.filter(e => e.date && e.date > today && e.date <= addDays(today, 7)).length }, { value: 'done', label: 'Выполнено', count: done.length }]}/>
       <div className="tasks-actions">
         <div className="task-priority-control" data-active={!!priority}>
           <select aria-label="Приоритет задач" value={priority} onChange={e => { const value = e.target.value as Priority | ''; motionUpdate(() => setPriority(value)); }}>

@@ -23,12 +23,6 @@
 .friend-add small { color:var(--muted); font-size:12px; }
 .friend-add .button { min-height:45px; white-space:nowrap; }
 .friends-controls { display:flex; gap:18px; justify-content:space-between; align-items:center; flex-wrap:wrap; }
-.friends-controls .segments { flex-wrap:wrap; gap:4px; border-radius:0; padding:0; background:transparent; }
-.friends-controls .segments button { border-radius:0; border-bottom:2px solid transparent; padding:12px 9px; font-size:14px; color:var(--muted); background:transparent; box-shadow:none; }
-.friends-controls .segments button[aria-pressed='true'] { color:var(--accent); border-bottom-color:var(--accent); background:transparent; box-shadow:none; }
-.friends-controls .segments { border:0; }
-.friends-controls .segments button::before { display:none; }
-.friends-controls .segments button[aria-pressed='true'] .count { color:var(--accent); background: var(--surface-raised); }
 .friend-add>div { flex:1; min-width:0; }
 .friends-controls .search-box { flex:1 1 220px; max-width:320px; min-width:180px; }
 .friends-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }

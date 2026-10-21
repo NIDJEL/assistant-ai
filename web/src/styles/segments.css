@@ -1,0 +1,62 @@
+.segments.segments--sliding {
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  flex-wrap: nowrap;
+  gap: 4px;
+  padding: 3px;
+  min-width: 0;
+  max-width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-inset);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.segments--sliding::-webkit-scrollbar { display: none; }
+.segments.segments--sliding button {
+  z-index: 1;
+  flex: 0 0 auto;
+  gap: 8px;
+  min-height: 38px;
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  box-shadow: none;
+  white-space: nowrap;
+}
+.segments.segments--sliding button::before { display: none; }
+html[data-surface='workspace'] .segments.segments--sliding button[aria-pressed='true'] { color: #f0f5ff; background: transparent; box-shadow: none; }
+.segments.segments--sliding button:not([aria-pressed='true']):hover { color: var(--text); background: color-mix(in srgb, var(--surface-hover) 55%, transparent); }
+.segments--sliding button:focus-visible { outline-offset: -3px; }
+.segments--sliding .segment-label { min-width: 0; }
+.segment-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  border: 1px solid #395b86;
+  border-radius: 999px;
+  background: var(--surface-selected);
+  opacity: 0;
+  pointer-events: none;
+}
+.segments--sliding[data-ready='true'] > .segment-indicator {
+  opacity: 1;
+  transition: transform var(--motion-normal) var(--motion-ease), width var(--motion-normal) var(--motion-ease), height var(--motion-normal) var(--motion-ease);
+}
+.segments.segments--sliding button[aria-pressed='true'] .count { color: #c9ddfa; background: #1a2c46; }
+@media (max-width: 760px) {
+  .tasks-toolbar .segments.segments--sliding { width: max-content; }
+  .segments.segments--sliding button { padding-inline: 11px; font-size: 12px; }
+}
+@media (max-width: 650px) {
+  .friends-controls .segments.segments--sliding { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%; border-radius: 26px; }
+  .friends-controls .segments.segments--sliding button { flex-direction: column; justify-content: center; gap: 5px; min-height: 65px; padding: 8px 5px; font-size: 11px; white-space: normal; }
+  .friends-controls .segments.segments--sliding .count { margin: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html:not([data-motion='full']) .segments--sliding[data-ready='true'] > .segment-indicator { transition: none; }
+}
+html[data-motion='reduced'] .segments--sliding[data-ready='true'] > .segment-indicator { transition: none; }
