@@ -1,7 +1,11 @@
 import { expect, type Page, type TestInfo } from '@playwright/test';
 import { mkdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
-export async function ready(page: Page, path = '/') { await page.goto(path); await expect(page.locator('h1')).toBeVisible(); }
+export async function ready(page: Page, path = '/') {
+  await page.goto(path);
+  if (new URL(page.url()).pathname === '/') await expect(page.locator('.today-page')).toHaveAttribute('aria-busy', 'false');
+  else await expect(page.locator('h1')).toBeVisible();
+}
 async function settleMotion(page: Page) {
   await page.evaluate(async () => {
     await Promise.allSettled(document.getAnimations().filter(animation => animation.effect?.getComputedTiming().iterations !== Infinity).map(animation => animation.finished));

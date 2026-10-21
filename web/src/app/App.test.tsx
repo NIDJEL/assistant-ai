@@ -5,7 +5,7 @@ import { fixture, mockServer } from '../test/server';
 
 async function start(path = '/', options: Parameters<typeof mockServer>[0] = {}) {
   history.pushState({}, '', path); const server = mockServer(options); render(<App/>);
-  await screen.findByRole('heading', { level: 1 }); return { ...server, user: userEvent.setup() };
+  await waitFor(() => expect(document.querySelector('.main-panel > .page')).toBeInTheDocument()); return { ...server, user: userEvent.setup() };
 }
 it('expands reminder groups independently and retains expansion after an item update', async () => {
   history.pushState({}, '', '/reminders'); const server = mockServer();

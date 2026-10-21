@@ -87,7 +87,7 @@ test('server due records show an in-app alert once without browser system delive
   await ready(page);
   await expect(page.locator('.reminder-notice')).toContainText('Проверка уведомления заранее');
   expect(await page.evaluate(() => (window as unknown as { __rhythmNotices: unknown[] }).__rhythmNotices.length)).toBe(0);
-  await page.reload(); await expect(page.locator('h1')).toBeVisible();
+  await page.reload(); await expect(page.locator('.today-page')).toHaveAttribute('aria-busy', 'false');
   const due = page.waitForResponse(r => r.url().endsWith('/api/reminders/due')); await page.reload(); await due;
   await expect(page.locator('.reminder-notice')).toHaveCount(0);
   expect(await page.evaluate(() => (window as unknown as { __rhythmNotices: unknown[] }).__rhythmNotices.length)).toBe(0);

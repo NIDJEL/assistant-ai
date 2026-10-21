@@ -29,7 +29,7 @@ export function useAssistant() {
         const data = await api.history(session, controller.signal);
         if (controller.signal.aborted) return;
         setItems(current => {
-          const saved = data.exchanges.map(e => ({ id: e.response.request_id, message: e.message, response: e.response, created: e.created_at }));
+          const saved = data.exchanges.map(e => ({ id: e.response.request_id, message: e.message, response: e.response, created: e.created_at, notification: e.notification, read: e.read }));
           const merged = interacted.current ? [...new Map([...saved, ...current.map(item => saved.find(x => x.id === item.id) || item)].map(item => [item.id, item])).values()] : saved;
           return JSON.stringify(current) === JSON.stringify(merged) ? current : merged;
         }); setHistoryError('');
@@ -55,6 +55,8 @@ export function useAssistant() {
       setItems(current => current.map(item => item.id === input.request_id ? { ...item, error: errorMessage(e) } : item)); return false;
     } finally { locked.current = false; setBusy(false); }
   }
-  const conversation = useMemo(() => [...items, ...notifications.exchanges.map(e => ({ id: e.response.request_id, message: '', response: e.response, created: e.created_at, notification: true, read: e.read }))].sort((a,b) => Date.parse(a.created) - Date.parse(b.created)), [items, notifications.exchanges]);
-  return { items: conversation, busy, loading, historyError, send };
+  const notificationIds = notifications.exchanges.map(e => e.response.request_id).join('|');
+  useEffect(() => { if (notificationIds) void refresh(); }, [notificationIds, refresh]);
+  const conversation = useMemo(() => [...new Map([...items, ...notifications.exchanges.map(e => ({ id: e.response.request_id, message: '', response: e.response, created: e.created_at, notification: true, read: e.read }))].map(item => [item.id, item])).values()].sort((a,b) => Date.parse(a.created) - Date.parse(b.created)), [items, notifications.exchanges]);
+  return { items: conversation, busy, loading: loading || notifications.loading, historyError, send };
 }

@@ -1,0 +1,23 @@
+html[data-surface='workspace'] .main-panel:has(> .today-page) { padding-inline: 22px; }
+html[data-surface='workspace'] .today-page { max-width: 1040px; }
+html[data-surface='workspace'] .main-panel:has(> .today-page.has-messages) { padding-top: 0; }
+html[data-surface='workspace'] .today-page.has-messages { height: calc(100dvh - 60px - var(--safe-top) - var(--safe-bottom)); }
+html[data-surface='workspace'] .today-page.has-messages > .conversation { margin-top: 0; padding-top: 8px; }
+.conversation { scrollbar-width: none; }
+.conversation::-webkit-scrollbar { display: none; width: 0; height: 0; }
+.exchange { overflow-anchor: none; }
+.exchange:target .assistant-message > .message-bubble { border-radius: 12px; background: var(--surface); }
+.conversation:focus-visible { outline-offset: 2px; }
+@media (min-width: 1180px) {
+  html[data-surface='workspace'] .main-panel:has(.desktop-widget-button) > .today-page.has-messages > .conversation { padding-right: 40px; }
+}
+@media (max-width: 1179px) and (min-width: 761px) {
+  html[data-surface='workspace'] .main-panel:has(> .today-page.has-messages) { padding-top: 64px; }
+  html[data-surface='workspace'] .today-page.has-messages { height: calc(100dvh - 120px - var(--safe-top) - var(--safe-bottom)); }
+}
+@media (max-width: 760px) {
+  html[data-surface='workspace'] .main-panel:has(> .today-page) { padding-inline: 16px; }
+  html[data-surface='workspace'] .main-panel:has(> .today-page.has-messages) { padding-top: calc(64px + var(--safe-top)); }
+  html[data-surface='workspace'] .today-page.has-messages { height: calc(100dvh - 80px - var(--safe-top) - var(--safe-bottom)); }
+  html[data-surface='workspace'] .today-page.has-messages > .conversation { padding-top: 0; }
+}
