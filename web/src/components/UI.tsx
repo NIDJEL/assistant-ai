@@ -8,8 +8,8 @@ export function Button({ children, variant = 'primary', className = '', ...props
 export function IconButton({ icon: Icon, label, className = '', ...props }: ButtonHTMLAttributes<HTMLButtonElement> & { icon: LucideIcon; label: string }) {
   return <button type="button" className={`icon-button ${className}`} aria-label={label} title={label} {...props}><Icon size={20}/></button>;
 }
-export function PageHeader({ title, subtitle, mascot = false }: { title: string; subtitle: string; mascot?: boolean }) {
-  return <header className="page-header"><div><h1>{title}</h1><p>{subtitle}</p></div>{mascot && <Mascot/>}</header>;
+export function PageHeader({ title, subtitle, mascot = false }: { title: string; subtitle?: string; mascot?: boolean }) {
+  return <header className="page-header"><div><h1>{title}</h1>{subtitle && <p>{subtitle}</p>}</div>{mascot && <Mascot/>}</header>;
 }
 export function SearchBox({ value, onChange, label, placeholder = label }: { value: string; onChange: (value: string) => void; label: string; placeholder?: string }) {
   return <div className="search-box"><Search size={20} aria-hidden="true"/><input aria-label={label} placeholder={placeholder} value={value} maxLength={200} onChange={e => onChange(e.target.value)}/>{value && <IconButton icon={X} label="Очистить поиск" onClick={() => onChange('')}/>}</div>;

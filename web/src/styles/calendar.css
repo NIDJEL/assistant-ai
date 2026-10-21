@@ -1,3 +1,4 @@
+html[data-surface='workspace'] .calendar-page > .page-header { min-height: 0; padding: 12px 0 0; margin-bottom: 24px; }
 .calendar-page .calendar-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 26px; }
 .calendar-page .month-switch { gap: 8px; }
 .calendar-page .month-switch strong { min-width: 132px; text-align: center; font-size: 17px; font-weight: 600; }
@@ -53,6 +54,7 @@
 .mini-calendar button.today.selected { background: var(--accent-strong); color: var(--on-accent); box-shadow: none; }
 @media (max-width: 1500px) and (min-width: 761px) { .calendar-page .calendar-toolbar .search-box { order: 4; flex-basis: 100%; } .calendar-page .calendar-toolbar .segments { margin-left: auto; } }
 @media (max-width: 760px) {
+  html[data-surface='workspace'] .calendar-page > .page-header { padding-top: 54px; margin-bottom: 20px; }
   .calendar-page .calendar-toolbar { gap: 12px; margin-bottom: 20px; }
   .calendar-page .month-switch { flex: 1 1 auto; justify-content: flex-start; }
   .calendar-page .month-switch strong { min-width: 0; font-size: 16px; }
