@@ -19,6 +19,7 @@ async function mockSchedule(page: Page) {
     else if (url.pathname === '/api/reminders/due') body = { events: [] };
     else if (url.pathname.includes('/history/') || url.pathname === '/api/chat/notifications') body = { exchanges: [], state: {} };
     else if (url.pathname === '/api/notifications/push/config') body = { enabled: false, public_key: '' };
+    else if (url.pathname === '/api/notifications/push/subscriptions') body = { subscriptions: [] };
     await route.fulfill({ json: body });
   });
 }
@@ -94,5 +95,67 @@ test('reminder toolbar, dates and group expansion stay aligned at every width', 
       await page.locator('.reminders-page').screenshot({ path: info.outputPath(`reminders-${width}.png`) });
     }
   }
+  expect(errors).toEqual([]);
+});
+
+test('archive has a compact heading and animated history/deleted tabs', async ({ page }, info) => {
+  await mockSchedule(page); await page.goto('/archive');
+  await expect(page.getByText('История дел и восстановление удалённых записей')).toHaveCount(0);
+  const tabs = page.getByRole('group', { name: 'Раздел архива' });
+  await expect(tabs).toHaveAttribute('data-ready', 'true');
+  const moving = await tabs.evaluate(async root => {
+    const pill = root.querySelector('.segment-indicator')!; pill.getBoundingClientRect();
+    (root.querySelectorAll('button')[1] as HTMLButtonElement).click();
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    return pill.getAnimations().length > 0;
+  });
+  expect(moving).toBe(true); await expect(page).toHaveURL(/view=deleted/);
+  await page.reload(); await expect(tabs.getByRole('button', { name: 'Удалённые', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await tabs.getByRole('button', { name: 'История', exact: true }).click(); await expect(page).not.toHaveURL(/view=deleted/);
+  for (const width of [1440, 1024, 390, 320]) {
+    await page.setViewportSize({ width, height: 1000 });
+    const title = (await page.locator('h1').boundingBox())!; const track = (await tabs.boundingBox())!;
+    expect(track.y - title.y - title.height).toBeLessThanOrEqual(25);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    if ([1440, 390].includes(width)) { await page.locator('h1').click(); await page.locator('.archive-page').screenshot({ path: info.outputPath(`archive-${width}.png`) }); }
+  }
+  await page.goto('/reminders'); await expect(page.locator('.reminder-card')).toHaveCount(6);
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: 1000 });
+    const morning = page.getByRole('region', { name: 'Утро' }); const cards = await morning.locator('.reminder-card').all();
+    const first = (await cards[0].boundingBox())!; const second = (await cards[1].boundingBox())!;
+    expect(Math.abs(second.y - first.y - first.height - 7)).toBeLessThan(1);
+    expect(await page.locator('.reminder-groups').evaluate(node => getComputedStyle(node).rowGap)).toBe('12px');
+    await page.locator('.reminders-page').screenshot({ path: info.outputPath(`compact-reminders-${width}.png`) });
+  }
+});
+
+test('settings stays above the collapsed avatar and avatar menu only logs out', async ({ page }, info) => {
+  const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
+  await mockSchedule(page); await page.goto('/archive');
+  const trigger = page.getByRole('button', { name: 'Меню аккаунта', exact: true });
+  const settings = page.getByRole('link', { name: 'Настройки', exact: true });
+  await expect(settings).toBeVisible();
+  const settingsBox = (await settings.boundingBox())!; const avatarBox = (await trigger.boundingBox())!;
+  expect(settingsBox.y + settingsBox.height).toBeLessThan(avatarBox.y);
+  await trigger.click(); const menu = page.getByRole('menu', { name: 'Аккаунт' });
+  await expect(menu.getByRole('menuitem')).toHaveCount(1); await expect(menu.getByRole('menuitem', { name: 'Выйти', exact: true })).toBeFocused();
+  await page.keyboard.press('ArrowDown'); await expect(menu.getByRole('menuitem', { name: 'Выйти', exact: true })).toBeFocused();
+  await page.keyboard.press('Escape'); await expect(menu).toHaveCount(0); await expect(trigger).toBeFocused();
+  await settings.click(); await expect(page.locator('h1')).toHaveText('Настройки');
+  await page.getByRole('button', { name: 'Развернуть навигацию', exact: true }).click();
+  await expect(settings).toBeVisible(); await trigger.click(); await expect(menu.getByRole('menuitem')).toHaveCount(1); await page.keyboard.press('Escape');
+  await page.setViewportSize({ width: 1024, height: 900 }); await expect(settings).toBeVisible();
+  expect((await settings.boundingBox())!.y + (await settings.boundingBox())!.height).toBeLessThan((await trigger.boundingBox())!.y);
+  await page.setViewportSize({ width: 390, height: 844 }); await page.getByRole('button', { name: 'Открыть навигацию', exact: true }).click();
+  const drawer = page.getByRole('dialog', { name: 'Навигация', exact: true });
+  await drawer.getByRole('button', { name: 'Меню аккаунта', exact: true }).click();
+  await expect(drawer.getByRole('menuitem')).toHaveCount(1); await expect(drawer.getByRole('menuitem', { name: 'Настройки', exact: true })).toHaveCount(0);
+  await page.keyboard.press('Escape'); await drawer.getByRole('link', { name: 'Настройки', exact: true }).click(); await expect(drawer).toHaveCount(0);
+  await page.getByRole('button', { name: 'Открыть навигацию', exact: true }).click();
+  await drawer.getByRole('button', { name: 'Меню аккаунта', exact: true }).click();
+  await page.screenshot({ path: info.outputPath('avatar-logout-mobile.png') });
+  let logouts = 0; page.on('request', request => { if (request.method() === 'POST' && request.url().endsWith('/api/auth/logout')) logouts++; });
+  await drawer.getByRole('menuitem', { name: 'Выйти', exact: true }).click(); await expect(page).toHaveURL(/\/auth$/); expect(logouts).toBe(1);
   expect(errors).toEqual([]);
 });

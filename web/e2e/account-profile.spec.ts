@@ -21,14 +21,14 @@ test('chat and other pages stay centered with collapsed navigation and either wi
   }
 });
 
-test('avatar menu opens settings and logs out, while account persists names and photos across tabs', async ({ page, context }, info) => {
+test('avatar menu logs out and a separate settings link opens account controls', async ({ page, context }, info) => {
   await ready(page, '/');
   const trigger = page.getByRole('button', { name: 'Меню аккаунта', exact: true });
   await trigger.click(); const menu = page.getByRole('menu', { name: 'Аккаунт' });
-  await expect(menu.getByRole('menuitem', { name: 'Настройки' })).toBeFocused();
+  await expect(menu.getByRole('menuitem')).toHaveCount(1); await expect(menu.getByRole('menuitem', { name: 'Выйти' })).toBeFocused();
   await page.keyboard.press('ArrowDown'); await expect(menu.getByRole('menuitem', { name: 'Выйти' })).toBeFocused();
   await page.keyboard.press('Escape'); await expect(menu).toHaveCount(0); await expect(trigger).toBeFocused();
-  await trigger.click(); await menu.getByRole('menuitem', { name: 'Настройки' }).click();
+  await page.getByRole('link', { name: 'Настройки', exact: true }).click();
   await expect(page.locator('h1')).toHaveText('Настройки'); await expect(page.getByRole('heading', { name: 'Общие', exact: true })).toHaveCount(0);
   await expect(page.locator('.account-card')).not.toContainText('VK ID');
   const other = await context.newPage();
@@ -53,10 +53,13 @@ test('avatar menu opens settings and logs out, while account persists names and 
 
 test('avatar menu fits collapsed navigation and mobile drawer', async ({ page }) => {
   await ready(page, '/'); await page.getByRole('button', { name: 'Свернуть навигацию', exact: true }).click(); await settle(page);
-  await page.getByRole('button', { name: 'Меню аккаунта', exact: true }).click(); await expect(page.getByRole('menuitem', { name: 'Настройки' })).toBeVisible(); await noOverflow(page);
+  const settings = page.getByRole('link', { name: 'Настройки', exact: true }); await expect(settings).toBeVisible();
+  const settingsBox = (await settings.boundingBox())!; const avatarBox = (await page.getByRole('button', { name: 'Меню аккаунта', exact: true }).boundingBox())!;
+  expect(settingsBox.y + settingsBox.height).toBeLessThan(avatarBox.y);
+  await page.getByRole('button', { name: 'Меню аккаунта', exact: true }).click(); await expect(page.getByRole('menuitem')).toHaveCount(1); await expect(page.getByRole('menuitem', { name: 'Выйти' })).toBeVisible(); await noOverflow(page);
   await page.locator('h1').click(); await expect(page.getByRole('menu')).toHaveCount(0);
   await page.setViewportSize({ width: 390, height: 844 }); await page.getByRole('button', { name: 'Открыть навигацию' }).click(); await settle(page);
   const drawer = page.getByRole('dialog', { name: 'Навигация', exact: true }); await drawer.getByRole('button', { name: 'Меню аккаунта', exact: true }).click();
-  await expect(drawer.getByRole('menuitem', { name: 'Настройки' })).toBeVisible(); await noOverflow(page);
-  await drawer.getByRole('menuitem', { name: 'Настройки' }).click(); await expect(page.locator('h1')).toHaveText('Настройки'); await expect(drawer).toHaveCount(0); await noOverflow(page);
+  await expect(drawer.getByRole('menuitem')).toHaveCount(1); await expect(drawer.getByRole('menuitem', { name: 'Выйти' })).toBeVisible(); await noOverflow(page);
+  await page.keyboard.press('Escape'); await drawer.getByRole('link', { name: 'Настройки', exact: true }).click(); await expect(page.locator('h1')).toHaveText('Настройки'); await expect(drawer).toHaveCount(0); await noOverflow(page);
 });

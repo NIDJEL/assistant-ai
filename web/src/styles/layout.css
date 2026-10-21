@@ -27,7 +27,7 @@ html { scrollbar-gutter: stable; }
 .nav-collapsed > .sidebar nav { margin-top: 34px; }
 .nav-collapsed > .sidebar .nav-link { padding: 15px; gap: 0; }
 .nav-collapsed > .sidebar .sidebar-footer { flex-direction: column; gap: 13px; }
-.nav-collapsed > .sidebar .settings-link { display: none; }
+.nav-collapsed > .sidebar .settings-link { display: grid; order: -1; margin: 0; padding: 8px; }
 .dialog.drawer-left { margin: 0 auto 0 0; border-radius: 0 22px 22px 0; }
 .dialog.drawer-left[open] { animation-name: motion-drawer-left-in; }
 .dialog.drawer-left[open].closing { animation-name: motion-drawer-left-out; }
@@ -64,5 +64,5 @@ html { scrollbar-gutter: stable; }
 .reminder-card:has(.check:checked) .reminder-title strong { color: var(--muted); text-decoration: line-through; }
 @media (min-width: 1180px) and (max-width: 1359px) { .app-shell { --nav-width: 198px; --widgets-width: 285px; --shell-gap: 12px; }.app-shell.nav-collapsed { --nav-width: 76px; }.mini-calendar button { width: 29px; height: 29px; min-width: 29px; min-height: 29px; } }
 @media (min-width: 1650px) { .app-shell { --nav-width: 260px; --widgets-width: 355px; }.app-shell.nav-collapsed { --nav-width: 76px; } }
-@media (max-width: 1179px) { .app-shell, .app-shell.widgets-hidden { max-width: none; gap: 12px; grid-template-columns: 76px minmax(0, 1fr); }.app-shell > .main-panel { grid-column: 2; }.widgets-region { display: none; }.sidebar-collapse { display: none; }.sidebar-brand-row .brand { flex: none; padding: 0; }.sidebar .settings-link { display: none; } }
+@media (max-width: 1179px) { .app-shell, .app-shell.widgets-hidden { max-width: none; gap: 12px; grid-template-columns: 76px minmax(0, 1fr); }.app-shell > .main-panel { grid-column: 2; }.widgets-region { display: none; }.sidebar-collapse { display: none; }.sidebar-brand-row .brand { flex: none; padding: 0; }.sidebar .settings-link { display: grid; order: -1; margin: 0; padding: 8px; } }
 @media (max-width: 760px) { html { scrollbar-gutter: auto; }.app-shell, .app-shell.widgets-hidden { max-width: none; grid-template-columns: minmax(0, 1fr); }.app-shell > .main-panel { grid-column: 1; }.calendar-cell .day-number { --day-size: 27px; }.archive-deleted .button { width: 100%; }.action-notice { flex-wrap: wrap; font-size: 13px; } }

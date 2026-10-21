@@ -34,6 +34,6 @@ export function Sidebar({ onNavigate, collapsible = false }: { onNavigate?: () =
       if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
       event.preventDefault(); const items = [...event.currentTarget.querySelectorAll<HTMLElement>('[role="menuitem"]:not(:disabled)')]; const index = items.indexOf(document.activeElement as HTMLElement);
       items[event.key === 'Home' ? 0 : event.key === 'End' ? items.length - 1 : (index + (event.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length]?.focus();
-    }}><NavLink role="menuitem" to="/settings" onClick={() => { setProfileOpen(false); onNavigate?.(); }}><Settings size={18}/>Настройки</NavLink><button type="button" role="menuitem" className="profile-logout" disabled={busy} onClick={() => void leave()}><LogOut size={18}/>{busy ? 'Выходим…' : 'Выйти'}</button>{error && <p role="alert">{error}</p>}</div>}</div><span className="profile-name">{user!.name}</span><NavLink to="/settings" className="settings-link" aria-label="Настройки" onClick={onNavigate}><Settings size={24}/></NavLink></div>
+    }}><button type="button" role="menuitem" className="profile-logout" disabled={busy} onClick={() => void leave()}><LogOut size={18}/>{busy ? 'Выходим…' : 'Выйти'}</button>{error && <p role="alert">{error}</p>}</div>}</div><span className="profile-name">{user!.name}</span><NavLink to="/settings" className="settings-link" aria-label="Настройки" title="Настройки" onClick={onNavigate}><Settings size={24}/></NavLink></div>
   </div>;
 }

@@ -4,13 +4,18 @@ html[data-surface='workspace'] .reminders-page > .page-header { min-height: 0; p
 .reminders-toolbar .segments.segments--sliding { flex: 0 1 auto; }
 .reminders-toolbar .segments.segments--sliding button { padding: 10px 12px; font-size: 14px; }
 .reminders-toolbar > .button { padding: 11px 14px; font-size: 14px; }
+.reminders-page .reminder-groups.motion-list { gap: 12px; }
+.reminders-page .reminder-groups section > .motion-list { gap: 7px; }
+.reminders-page .reminder-groups h2 { margin-bottom: 10px; }
+.reminders-page .reminder-card { margin-bottom: 0; }
 .reminders-page .reminder-row { display: grid; grid-template-columns: 20px 43px minmax(0, 1fr) 230px 42px 29px; align-items: center; gap: 16px; }
 .reminders-page .reminder-time { min-width: 0; width: 100%; margin: 0; }
 .reminders-page .reminder-time span { font-variant-numeric: tabular-nums; }
 .reminders-page .reminder-time small { line-height: 1.45; overflow-wrap: anywhere; }
 .reminders-page .reminder-row > .switch-row { margin: 0; justify-self: end; }
 .reminders-page .reminder-row > .event-menu { justify-self: end; }
-.reminder-group-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.reminder-group-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.reminder-group-actions > .button { min-height: 36px; padding: 8px 14px; }
 .reminder-group-actions:empty { display: none; }
 @media (max-width: 760px) {
   html[data-surface='workspace'] .reminders-page > .page-header { padding-top: 54px; margin-bottom: 20px; }

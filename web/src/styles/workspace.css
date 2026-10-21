@@ -34,6 +34,7 @@ html[data-surface='workspace'] .page-header h1 { font-size: clamp(29px, 2.7vw, 4
 html[data-surface='workspace'] .page-header p { color: var(--muted); font-size: 15px; margin-top: 9px; line-height: 1.5; }
 html[data-surface='workspace'] .tasks-top .page-header { min-height: 0; padding: 0; margin: 0; }
 html[data-surface='workspace'] .friends-page > .page-header { min-height: 0; padding: 12px 0 0; margin-bottom: 0; }
+html[data-surface='workspace'] .archive-page > .page-header { min-height: 0; padding: 12px 0 0; margin-bottom: 24px; }
 html[data-surface='workspace'] :is(.button, .icon-button) { box-shadow: none; border-radius: 11px; }
 html[data-surface='workspace'] .button.primary { background: var(--accent-strong); color: white; border-color: var(--accent-strong); }
 html[data-surface='workspace'] .button.primary:hover:not(:disabled) { background: #478bfa; }
@@ -163,6 +164,7 @@ html[data-surface='onboarding'] body { background: #080f21; color: #edf2fc; }
   html[data-surface='workspace'] .drawer .widgets-heading { padding-top: 0; }
   html[data-surface='workspace'] .tasks-top { padding-top: 54px; }
   html[data-surface='workspace'] .friends-page > .page-header { padding-top: 54px; }
+  html[data-surface='workspace'] .archive-page > .page-header { padding-top: 54px; margin-bottom: 20px; }
   .auth-premium { padding-top: max(12px, var(--safe-top)); padding-bottom: max(12px, var(--safe-bottom)); padding-left: max(12px, var(--safe-left)); padding-right: max(12px, var(--safe-right)); }
   .legal-page { padding-top: calc(24px + var(--safe-top)); padding-bottom: calc(24px + var(--safe-bottom)); }
 }
