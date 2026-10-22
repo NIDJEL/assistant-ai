@@ -30,3 +30,4 @@ html:has(.auth-page),html:has(.auth-splash){scrollbar-gutter:auto}
 .auth-agreement{display:flex;align-items:flex-start;gap:10px;cursor:pointer}.auth-agreement input{appearance:auto;flex-shrink:0;accent-color:#1678ff;width:18px;height:18px;min-height:18px;margin:2px 0 0;padding:0;cursor:pointer}.auth-agreement span{min-width:0}.auth-agreement a{text-decoration:underline;text-underline-offset:2px;color:#0968d9}.auth-agreement a:focus-visible,.auth-agreement input:focus-visible{outline:3px solid #85b8ff;outline-offset:3px}
 .auth-oauth>button:disabled{opacity:.6;cursor:not-allowed}.auth-primary:disabled{cursor:not-allowed}
 @media(max-width:760px){.auth-container .auth-legal{font-size:13px;gap:12px}.auth-agreement{gap:9px}}
+html[data-surface='onboarding'] .auth-splash { background: #050c19; color: #51a6ff; }
