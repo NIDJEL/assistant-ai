@@ -4,10 +4,13 @@ import "github.com/NIDJEL/assistant-ai/internal/legal"
 
 func authOpenAPI(paths, schemas map[string]any) {
 	text := func() map[string]any { return map[string]any{"type": "string"} }
+	accountName := func() map[string]any {
+		return map[string]any{"type": "string", "minLength": 1, "maxLength": 100, "description": "Unicode letters and combining marks, separated by a single space, hyphen or apostrophe. Digits, controls and markup are rejected; surrounding ASCII spaces are trimmed."}
+	}
 	schemas["User"] = map[string]any{"type": "object", "required": []string{"id", "name", "providers", "onboarding_completed"}, "properties": map[string]any{"id": map[string]any{"type": "string", "format": "uuid"}, "name": text(), "email": text(), "avatar_url": text(), "providers": map[string]any{"type": "array", "items": text()}, "onboarding_completed": map[string]any{"type": "boolean"}}}
 	schemas["AuthResponse"] = map[string]any{"type": "object", "properties": map[string]any{"user": map[string]any{"$ref": "#/components/schemas/User"}}}
 	schemas["LoginRequest"] = map[string]any{"type": "object", "additionalProperties": false, "required": []string{"email", "password"}, "properties": map[string]any{"email": map[string]any{"type": "string", "format": "email"}, "password": map[string]any{"type": "string", "format": "password", "writeOnly": true, "maxLength": 1024}}}
-	schemas["RegisterRequest"] = map[string]any{"type": "object", "additionalProperties": false, "required": []string{"name", "email", "password", "password_confirmation"}, "properties": map[string]any{"name": map[string]any{"type": "string", "minLength": 1, "maxLength": 100}, "email": map[string]any{"type": "string", "format": "email"}, "password": map[string]any{"type": "string", "format": "password", "writeOnly": true, "minLength": 10, "maxLength": 1024}, "password_confirmation": map[string]any{"type": "string", "format": "password", "writeOnly": true}}}
+	schemas["RegisterRequest"] = map[string]any{"type": "object", "additionalProperties": false, "required": []string{"name", "email", "password", "password_confirmation"}, "properties": map[string]any{"name": accountName(), "email": map[string]any{"type": "string", "format": "email"}, "password": map[string]any{"type": "string", "format": "password", "writeOnly": true, "minLength": 10, "maxLength": 1024}, "password_confirmation": map[string]any{"type": "string", "format": "password", "writeOnly": true}}}
 	legalProperties := map[string]any{
 		"terms_accepted":        map[string]any{"type": "boolean", "enum": []bool{true}, "description": "Explicit acceptance of terms and acknowledgment of the privacy policy"},
 		"personal_data_consent": map[string]any{"type": "boolean", "enum": []bool{true}, "description": "Separate, explicit personal-data processing consent"},
@@ -54,7 +57,7 @@ func authOpenAPI(paths, schemas map[string]any) {
 				op["requestBody"] = map[string]any{"required": true, "content": map[string]any{"application/json": map[string]any{"schema": map[string]any{"$ref": "#/components/schemas/" + schema}}}}
 			}
 			if method == "patch" {
-				op["requestBody"] = map[string]any{"required": true, "content": map[string]any{"application/json": map[string]any{"schema": map[string]any{"type": "object", "additionalProperties": false, "minProperties": 1, "properties": map[string]any{"name": map[string]any{"type": "string", "minLength": 1, "maxLength": 100}, "avatar_url": map[string]any{"type": "string", "description": "JPEG/PNG data URL up to 256 x 256 and 40 KiB, or an empty string to remove the photo"}}}}}}
+				op["requestBody"] = map[string]any{"required": true, "content": map[string]any{"application/json": map[string]any{"schema": map[string]any{"type": "object", "additionalProperties": false, "minProperties": 1, "properties": map[string]any{"name": accountName(), "avatar_url": map[string]any{"type": "string", "description": "JPEG/PNG data URL up to 256 x 256 and 40 KiB, or an empty string to remove the photo"}}}}}}
 			}
 			if path == "/api/auth/onboarding" || path == "/api/auth/logout" {
 				op["requestBody"] = map[string]any{"required": true, "description": "Send an empty JSON object for same-origin CSRF protection", "content": map[string]any{"application/json": map[string]any{"schema": map[string]any{"type": "object"}}}}

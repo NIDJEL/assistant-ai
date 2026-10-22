@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { UserRound, LogOut, Upload, Trash2, Mail, Link2, CheckCircle2 } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../app/AuthContext';
+import { nameError, normalizeName, passwordError } from '../../app/accountValidation';
 import { usePreferences } from '../../app/PreferencesContext';
 import { Avatar } from '../../components/Avatar';
 import { Button } from '../../components/UI';
@@ -13,6 +14,7 @@ function EmailPasswordForm({ onClose, onSaved }: { onClose: () => void; onSaved:
   const [password, setPassword] = useState(''); const [confirmation, setConfirmation] = useState(''); const [busy, setBusy] = useState(false); const [error, setError] = useState(''); const locked = useRef(false);
   async function submit() {
     if (locked.current || !present) return;
+    if (passwordError(password)) { setError(passwordError(password)); return; }
     if (password !== confirmation) { setError('Пароли не совпадают'); return; }
     locked.current = true; setBusy(true); setError('');
     try { await enableEmailLogin(password, confirmation); setPassword(''); setConfirmation(''); onSaved(); }
@@ -47,12 +49,14 @@ export function AccountCard() {
   const { user, logout, updateProfile } = useAuth(); const { update } = usePreferences();
   const [settingPassword, setSettingPassword] = useState(false);
   const [name, setName] = useState(user!.name); const [busy, setBusy] = useState(''); const [error, setError] = useState(''); const [saved, setSaved] = useState(''); const [params] = useSearchParams();
+  const [nameTouched, setNameTouched] = useState(false); const nameMessage = nameTouched ? nameError(name) : '';
   const upload = useRef<HTMLInputElement>(null); const locked = useRef(false);
   useEffect(() => setName(user!.name), [user!.name]);
   async function save(action: 'name' | 'avatar' | 'remove', file?: File) {
+    if (action === 'name' && nameError(name)) { setNameTouched(true); document.getElementById('account-name')?.focus(); return; }
     if (locked.current) return; locked.current = true; setBusy(action); setError(''); setSaved('');
     try {
-      if (action === 'name') { await updateProfile({ name: name.trim() }); update({ name: name.trim() }); setSaved('Имя сохранено'); }
+      if (action === 'name') { await updateProfile({ name: normalizeName(name) }); update({ name: normalizeName(name) }); setSaved('Имя сохранено'); }
       else { await updateProfile({ avatar_url: file ? await avatarData(file) : '' }); setSaved(file ? 'Фото сохранено' : 'Фото удалено'); }
     } catch (e) { setError(errorMessage(e)); }
     finally { locked.current = false; setBusy(''); }
@@ -62,7 +66,8 @@ export function AccountCard() {
     <div className="settings-row"><div className="account-profile"><Avatar name={user!.name} url={user!.avatar_url} className="account-avatar"/><div><strong>{user!.name}</strong><p className="muted">{user!.email || 'Почта не указана'}</p></div></div>
     <div className="account-photo-controls"><div className="account-avatar-actions"><input ref={upload} type="file" className="sr-only" tabIndex={-1} aria-label="Фото профиля" accept="image/jpeg,image/png,image/webp" disabled={!!busy} onChange={event => { const file = event.target.files?.[0]; event.target.value = ''; if (file) void save('avatar', file); }}/><Button variant="soft" disabled={!!busy} onClick={() => upload.current?.click()}><Upload size={17}/>{busy === 'avatar' ? 'Загружаю…' : user!.avatar_url ? 'Изменить фото' : 'Загрузить фото'}</Button>{user!.avatar_url && <Button variant="ghost" disabled={!!busy} onClick={() => void save('remove')}><Trash2 size={17}/>Удалить фото</Button>}</div>
     <p className="muted account-photo-hint">JPG, PNG или WebP · до 5 МБ</p></div></div>
-    <form className="settings-row account-name-row" onSubmit={event => { event.preventDefault(); void save('name'); }}><div className="settings-row-label"><label htmlFor="account-name">Ваше имя</label><p>Так вас видят друзья и участники встреч.</p></div><div className="settings-row-control"><input id="account-name" value={name} onChange={event => { setName(event.target.value); setSaved(''); }} required maxLength={100} disabled={!!busy}/><Button type="submit" disabled={!!busy || !name.trim() || name.trim() === user!.name}>{busy === 'name' ? 'Сохраняю…' : 'Сохранить имя'}</Button></div></form>
+    <form className="settings-row account-name-row" onSubmit={event => { event.preventDefault(); void save('name'); }}><div className="settings-row-label"><label htmlFor="account-name">Ваше имя</label><p>Так вас видят друзья и участники встреч.</p></div><div className="settings-row-control"><input id="account-name" autoComplete="name" value={name} onChange={event => { setName(event.target.value); setSaved(''); }} onBlur={() => setNameTouched(true)} aria-invalid={!!nameMessage} aria-describedby={nameMessage ? 'account-name-error' : undefined} required maxLength={200} disabled={!!busy}/><Button type="submit" disabled={!!busy || !name.trim() || normalizeName(name) === user!.name}>{busy === 'name' ? 'Сохраняю…' : 'Сохранить имя'}</Button></div></form>
+    {nameMessage && <p id="account-name-error" className="auth-error" role="alert">{nameMessage}</p>}
     {saved && <p className="saved" role="status">{saved}</p>}
     <h3>Способы входа</h3><div className="account-methods">
       <div className="settings-row"><div className="settings-row-label"><strong><Link2 size={18}/>Яндекс</strong><p>Вход через ваш аккаунт Яндекса.</p></div><div className="settings-row-control">{user!.providers.includes('yandex') ? <span className="connection-status connected"><CheckCircle2 size={16}/>Подключён</span> : <a className="button soft" href="/api/auth/yandex/start?link=1">Подключить Яндекс</a>}</div></div>

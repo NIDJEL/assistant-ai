@@ -55,12 +55,16 @@ html[data-theme='light'] .auth-premium :is(.auth-input-label, .auth-input button
 html[data-theme='light'] .auth-premium .auth-input:focus-within .auth-input-label, html[data-theme='light'] .auth-premium .auth-input input:not(:placeholder-shown)+.auth-input-label { color: #1b5faa; }
 html[data-theme='light'] .auth-premium .auth-input input:-webkit-autofill { -webkit-text-fill-color: #1a3151; box-shadow: 0 0 0 40px #fff inset; }
 html[data-theme='light'] .auth-premium .auth-agreement input:not(:checked) { background: white; border-color: #7a92b4; }
+html[data-theme='light'] .auth-premium .auth-agreement[data-invalid='true'] input { border-color: #c53050; background: #fff0f3; box-shadow: 0 0 0 3px #c530501c; }
+html[data-theme='light'] .auth-premium .auth-agreement[data-invalid='true'] { color: #9f2442; }
+html[data-theme='light'] .auth-premium .auth-field-error { color: #ad2547; }
+html[data-theme='light'] .auth-premium .auth-input:has(input[aria-invalid='true']) { border-color: #c53050; }
 html[data-theme='light'] .auth-premium .auth-agreement a:hover { color: #084b9e; }
 html[data-theme='light'] .auth-premium .auth-error { background: #fff0f3; color: #ad2547; border-color: #e8b6c2; }
 html[data-theme='light'] .auth-premium .auth-help { background: #e8f1ff; color: #2a5b98; border-color: #b9cfee; }
 html[data-theme='light'] .auth-premium .auth-primary { background: linear-gradient(115deg, #0e7aff, #0861ce); }
 
-/* The illustrations remain the supplied artwork in both palettes. */
+/* Shared onboarding surfaces; artwork is loaded separately for each palette. */
 html[data-theme='light'] .gena-onboarding { --ob-text: #17314f; --ob-muted: #4c6485; --text: #17314f; --muted: #526b8c; --surface: #fff; --border: #b9cde7; --accent-soft: #e6f0ff; --focus: #0a68dc; color: #17314f; background: radial-gradient(ellipse at 70% 0, #dcecffaa, transparent 68%), #f3f7fc; }
 html[data-theme='light'] .gena-onboarding .ob-card { border-color: #b8cde8; background: linear-gradient(135deg, #fff, #f1f7ff); box-shadow: 0 30px 90px #355d9320, inset 0 1px 0 #fff; }
 html[data-theme='light'] .gena-onboarding .ob-copy h1>span { color: #0a68d6; }
@@ -75,5 +79,6 @@ html[data-theme='light'] .gena-onboarding .ob-back:hover { background: #d4e6ff; 
 html[data-theme='light'] .gena-onboarding .ob-scene-caption { background: #e9f2fff2; border-color: #acc5e6; color: #2c568a; }
 html[data-theme='light'] .gena-onboarding .ob-scene-halo { background: radial-gradient(ellipse at 50% 53%, #badbff88, transparent 69%); }
 html[data-theme='light'] .gena-onboarding .ob-orbit { border-color: #7da4d63b; }
+html[data-theme='light'] .gena-onboarding .ob-wave { opacity: .35; mask-image: radial-gradient(ellipse at 50% 50%, #000, transparent 70%); }
 html[data-theme='light'] .gena-onboarding .ob-feedback p, html[data-theme='light'] .gena-onboarding .ob-theme-error { background: #fff0f3; border-color: #edb2c0; color: #a72245; }
 @media print { html[data-theme] { color-scheme: light; } }

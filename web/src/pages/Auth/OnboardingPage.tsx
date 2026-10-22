@@ -6,7 +6,7 @@ import { errorMessage } from '../../api/client';
 import { startCalendarConnection } from '../../api/integrations';
 import { useYandexIntegration } from '../Integrations/useYandexIntegration';
 import { usePointerSpring } from './useAuthMotion';
-import { OnboardingScene, onboardingAssets } from './OnboardingScene';
+import { OnboardingScene, OnboardingBrand, useOnboardingArtwork } from './OnboardingScene';
 import { usePreferences } from '../../app/PreferencesContext';
 import { ThemePicker } from '../../components/ThemePicker';
 import '../../styles/onboarding.css';
@@ -22,6 +22,7 @@ function readStep(key: string, failed: boolean) {
 export function OnboardingPage() {
   const { user, completeOnboarding } = useAuth();
   const { preferences, update, error: preferenceError } = usePreferences();
+  const artworkTheme = useOnboardingArtwork(preferences.theme);
   const [params, setParams] = useSearchParams();
   const failed = !!params.get('error');
   const storageKey = `gena.onboarding.v2.${user?.id}`;
@@ -103,7 +104,7 @@ export function OnboardingPage() {
       <div className="ob-ambient ob-ambient-one" aria-hidden="true"/><div className="ob-ambient ob-ambient-two" aria-hidden="true"/>
       <motion.section className="ob-card" aria-label="Знакомство с Геной" initial={reduce ? false : { opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
         <header className="ob-header">
-          <div className="ob-brand"><img src={onboardingAssets.logo} width="56" height="31" alt=""/><span>Гена</span></div>
+          <OnboardingBrand theme={artworkTheme} reduce={reduce}/>
         </header>
         <div className="ob-body">
           <div className="ob-copy-shell"><AnimatePresence mode="wait" custom={direction} initial={false}>
@@ -117,7 +118,7 @@ export function OnboardingPage() {
               {step === 2 && <motion.p variants={reveal} className="ob-permission">Доступ к календарю вы подтвердите на странице Яндекса. Другие сервисы можно подключить в интеграциях.</motion.p>}
             </motion.div>
           </AnimatePresence></div>
-          <div className="ob-scene-shell"><OnboardingScene step={step} reduce={reduce}/></div>
+          <div className="ob-scene-shell"><OnboardingScene step={step} reduce={reduce} theme={artworkTheme}/></div>
         </div>
         <footer className="ob-footer">
           <nav className="ob-progress" aria-label={`Шаг ${step + 1} из 3`}>{steps.map((label, value) => <button key={label} type="button" aria-label={`Шаг ${value + 1}: ${label}`} aria-current={value === step ? 'step' : undefined} disabled={!!busy} className={value === step ? 'is-active' : value < step ? 'is-done' : ''} onClick={() => go(value)}>

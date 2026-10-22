@@ -1,4 +1,4 @@
-import { CalendarDays, Check, Link2, SquareCheck, type LucideIcon } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { BrandMark } from '../../components/Brand';
 import { usePointerSpring } from './useAuthMotion';
 import gena from '../../assets/auth/gena.webp';
@@ -18,18 +18,18 @@ function GenaMascot() {
   </div>;
 }
 
-const features: { image: keyof typeof illustrations; title: string; text: string; icon: LucideIcon }[] = [
-  { image: 'calendar', title: 'Календарь', text: 'Все события\nв одном месте', icon: CalendarDays },
-  { image: 'tasks', title: 'Задачи', text: 'Под контролем.\nБез лишних усилий.', icon: SquareCheck },
-  { image: 'integrations', title: 'Интеграции', text: 'Яндекс Календарь,\nZoom и другие сервисы', icon: Link2 },
+const features: { image: keyof typeof illustrations; title: string; text: string }[] = [
+  { image: 'calendar', title: 'Календарь', text: 'Все события\nв одном месте' },
+  { image: 'tasks', title: 'Задачи', text: 'Под контролем.\nБез лишних усилий.' },
+  { image: 'integrations', title: 'Интеграции', text: 'Яндекс Календарь,\nZoom и другие сервисы' },
 ];
 
-function FeatureCard({ image, title, text, icon: Icon, index }: typeof features[number] & { index: number }) {
+function FeatureCard({ image, title, text, index }: typeof features[number] & { index: number }) {
   const ref = usePointerSpring<HTMLLIElement>();
   return <li className={`auth-feature-reveal auth-feature-${index}`} ref={ref}>
     <div className="auth-feature-card">
       <div className="auth-feature-art"><img src={asset(image)} width="320" height="320" alt="" draggable="false"/></div>
-      <div className="auth-feature-copy"><h3>{title}</h3><p>{text}</p><span className="auth-feature-symbol" aria-hidden="true"><Icon size={21} strokeWidth={1.9}/></span></div>
+      <div className="auth-feature-copy"><h3>{title}</h3><p>{text}</p></div>
     </div>
   </li>;
 }

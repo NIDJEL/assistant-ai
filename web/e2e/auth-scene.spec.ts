@@ -92,7 +92,7 @@ test('the redesigned form sends the same credentials and consent payload and blo
   });
   await page.goto('/auth');
   await expect(page.getByRole('button', { name: 'Войти', exact: true })).toBeDisabled();
-  await expect(page.getByRole('button', { name: 'Войти через Яндекс' })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Войти через Яндекс' })).toBeEnabled();
   await page.getByLabel('Почта', { exact: true }).fill('anna@example.test');
   await page.getByLabel('Пароль', { exact: true }).fill('test password 12345');
   await page.getByRole('button', { name: 'Показать пароль' }).click();

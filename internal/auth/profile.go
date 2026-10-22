@@ -10,7 +10,6 @@ import (
 	"image/jpeg"
 	_ "image/png"
 	"strings"
-	"unicode/utf8"
 
 	"github.com/NIDJEL/assistant-ai/internal/domain"
 	"github.com/NIDJEL/assistant-ai/internal/user"
@@ -54,9 +53,10 @@ func (s *Service) UpdateProfile(ctx context.Context, uid string, name, avatar *s
 	}
 	trimmed := ""
 	if name != nil {
-		trimmed = strings.TrimSpace(*name)
-		if trimmed == "" || utf8.RuneCountInString(trimmed) > 100 {
-			return nil, domain.Validation("Укажите имя до 100 символов")
+		var err error
+		trimmed, err = normalizeName(*name)
+		if err != nil {
+			return nil, err
 		}
 	}
 	if avatar != nil {

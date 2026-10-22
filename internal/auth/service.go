@@ -74,9 +74,9 @@ func (s *Service) Register(ctx context.Context, name, email, password, confirmat
 	if err != nil {
 		return nil, err
 	}
-	name = strings.TrimSpace(name)
-	if utf8.RuneCountInString(name) < 1 || utf8.RuneCountInString(name) > 100 {
-		return nil, domain.Validation("Укажите имя до 100 символов")
+	name, err = normalizeName(name)
+	if err != nil {
+		return nil, err
 	}
 	if utf8.RuneCountInString(password) < 10 || len(password) > 1024 {
 		return nil, domain.Validation("Пароль должен содержать от 10 символов")
@@ -155,9 +155,12 @@ func (s *Service) Logout(ctx context.Context, token string) error {
 	return s.Store.RevokeSession(ctx, s.digest(token))
 }
 func (s *Service) Update(ctx context.Context, uid, name string, complete bool) (*user.User, error) {
-	name = strings.TrimSpace(name)
-	if utf8.RuneCountInString(name) > 100 {
-		return nil, domain.Validation("Имя должно быть до 100 символов")
+	if name != "" {
+		var err error
+		name, err = normalizeName(name)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return s.Users.Update(ctx, uid, name, nil, complete)
 }

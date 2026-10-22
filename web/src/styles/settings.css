@@ -64,3 +64,4 @@ html[data-surface='workspace'] .settings-page .settings-card:first-child { paddi
   .settings-page .csv-import-form { grid-template-columns: minmax(0, 1fr); }
   .settings-page .csv-import-form > .button { grid-column: 1; grid-row: auto; justify-self: start; }
 }
+.account-name-row input[aria-invalid='true'] { border-color: var(--danger, #d94c6d); }

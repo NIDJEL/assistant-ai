@@ -75,6 +75,12 @@ html:has(.gena-onboarding) { scrollbar-gutter: auto; color-scheme: dark; }
 .gena-onboarding[data-paused='true'] *, .gena-onboarding[data-paused='true'] *::before { animation-play-state: paused!important; }
 .gena-onboarding { --text: var(--ob-text); --surface: #12243c; --border: #385276; --accent-soft: #123965; --muted: #adc2e3; --ob-back-size: 55px; }
 .ob-theme-card { margin-top: 22px; max-width: 390px; }
+.ob-brand { position: relative; width: 148px; height: 42px; }
+.ob-brand-lockup { position: absolute; inset: 0; display: flex; align-items: center; gap: 10px; }
+.ob-brand .ob-brand-light { width: 148px; height: auto; max-height: 42px; object-fit: contain; }
+.ob-art-light .ob-board { width: 108%; height: 100%; left: -4%; top: 0; rotate: 0deg; }
+.ob-art-light .ob-welcome-tasks { rotate: 0deg; }
+.ob-art-light .ob-reminder { top: 43%; rotate: 0deg; }
 .ob-theme-error { padding: 9px 11px; margin-top: 10px; font-size: 12px; line-height: 1.5; color: #ffc6cc; border-radius: 9px; }
 .ob-detail { font-size: 14px; }.ob-permission { font-size: 12px; }.ob-progress-label { font-size: 12px; gap: 8px; }.ob-progress-label b { font-size: 10px; }
 .ob-actions { align-items: stretch; }
@@ -84,6 +90,9 @@ html:has(.gena-onboarding) { scrollbar-gutter: auto; color-scheme: dark; }
 @media(max-width:1000px) and (min-width:701px) { .ob-progress-label { font-size: 11px; gap: 5px; }.ob-detail { font-size: 13px; } }
 @media(max-width:700px), (max-width:900px) and (orientation:portrait) {
   .gena-onboarding { --ob-back-size: 52px; }.ob-copy-shell { min-height: 250px; }.ob-theme-card { margin: 18px auto 0; text-align: left; max-width: 355px; }.ob-detail { font-size: 12px; }.ob-progress-label { font-size: 11px; gap: 6px; }.ob-progress-label b { font-size: 9px; }.ob-permission { font-size: 11px; }
+  .ob-brand { width: 130px; height: 33px; }.ob-brand .ob-brand-light { width: 130px; max-height: 33px; }
+  .ob-art-light .ob-board { width: 100%; left: 0; height: 111%; top: -6%; }
+  .ob-art-light .ob-reminder { top: 40%; }
 }
 @media(max-width:380px) { .ob-progress-label b { display: none; }.ob-progress-label { font-size: 11px; }.ob-detail { font-size: 11px; }.ob-permission { font-size: 10px; } }
 .gena-onboarding[data-reduced='true'] *, .gena-onboarding[data-reduced='true'] *::before { animation: none!important; transition: none!important; }.gena-onboarding[data-reduced='true'] .ob-scene { transform: none; }.gena-onboarding[data-reduced='true'] .ob-ghost img, .gena-onboarding[data-reduced='true'] .ob-arrow { transform: none!important; }

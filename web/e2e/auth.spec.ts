@@ -141,7 +141,7 @@ test('auth mobile and reduced motion have no overflow or decorative animation', 
 });
 test('two browser accounts never share events or preferences', async ({ browser, baseURL }) => {
  const first = await browser.newContext({ baseURL }); const second = await browser.newContext({ baseURL });
- try { const identities = []; for (const [i, context] of [first, second].entries()) { const response = await context.request.post('/api/auth/register', { data: { ...legalAcceptance, name: `User ${i}`, email: `tenant-${i}-${Date.now()}@example.test`, password, password_confirmation: password } }); expect(response.status()).toBe(201); identities.push((await response.json()).user.id); }
+ try { const identities = []; for (const [i, context] of [first, second].entries()) { const response = await context.request.post('/api/auth/register', { data: { ...legalAcceptance, name: i ? 'Bob' : 'Alice', email: `tenant-${i}-${Date.now()}@example.test`, password, password_confirmation: password } }); expect(response.status()).toBe(201); identities.push((await response.json()).user.id); }
  const created = await first.request.post('/api/events', { data: { kind: 'task', title: 'Секретная задача' } }); expect(created.status()).toBe(201); const event = await created.json();
  expect((await second.request.get(`/api/events/${event.id}`)).status()).toBe(404); expect((await (await second.request.get('/api/events?q=Секретная')).json()).total).toBe(0);
  expect((await second.request.get(`/api/preferences/${identities[0]}`)).status()).toBe(404);
