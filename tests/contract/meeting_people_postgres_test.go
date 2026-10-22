@@ -142,7 +142,7 @@ func TestPostgresMeetingParticipantCorrectionRejectsBusyAndUnknownWithoutPromoti
 
 func TestPostgresInflectedFriendNameAmbiguityDoesNotSendPartialInvitations(t *testing.T) {
 	h := schedulingFixture(t)
-	c, err := h.auth.Register(t.Context(), "Матвей Орлов", "second-matvey@example.test", "password 12345", "password 12345")
+	c, err := h.auth.Register(t.Context(), "Матвей Орлов", "second-matvey@example.test", "test password 12345", "test password 12345")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -160,7 +160,7 @@ func TestPostgresInflectedFriendNameAmbiguityDoesNotSendPartialInvitations(t *te
 
 func TestPostgresMeetingParticipantReplacementCancelsOnlyExcludedGuest(t *testing.T) {
 	h := schedulingFixture(t)
-	c, err := h.auth.Register(t.Context(), "Павел Сергеев", "replacement-friend@example.test", "password 12345", "password 12345")
+	c, err := h.auth.Register(t.Context(), "Павел Сергеев", "replacement-friend@example.test", "test password 12345", "test password 12345")
 	if err != nil {
 		t.Fatal(err)
 	}

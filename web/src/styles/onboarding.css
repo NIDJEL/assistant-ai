@@ -26,7 +26,7 @@ html:has(.gena-onboarding) { scrollbar-gutter: auto; color-scheme: dark; }
 .ob-description { margin-top: 22px; max-width: 385px; color: var(--ob-muted); font-size: 16px; line-height: 1.75; overflow-wrap: anywhere; }
 .ob-detail { display: flex; gap: 12px; align-items: center; margin-top: 25px; color: #b9cdeb; font-size: 12px; line-height: 1.6; }.ob-detail-line { flex: 0 0 21px; height: 1px; background: #3686df; }
 .ob-permission { min-height: 38px; font-size: 11px; line-height: 1.7; color: #95a9c8; margin-top: 16px; max-width: 365px; }
-.ob-scene-shell { min-width: 0; height: 445px; position: relative; margin-right: -18px; }
+.ob-scene-shell { min-width: 0; height: 445px; position: relative; margin-right: -18px; transition: aspect-ratio .4s var(--ob-ease); }
 .ob-scene { position: absolute; inset: 0; transform: translate(calc(var(--pointer-x) * 7px), calc(var(--pointer-y) * 5px)); }
 .ob-art { position: absolute; inset: 0; }.ob-art img, .ob-spark img { display: block; width: 100%; height: 100%; object-fit: contain; user-select: none; pointer-events: none; }
 .ob-art-piece { position: absolute; animation: ob-float 7s ease-in-out infinite; }
@@ -78,9 +78,10 @@ html:has(.gena-onboarding) { scrollbar-gutter: auto; color-scheme: dark; }
 .ob-brand { position: relative; width: 148px; height: 42px; }
 .ob-brand-lockup { position: absolute; inset: 0; display: flex; align-items: center; gap: 10px; }
 .ob-brand .ob-brand-light { width: 148px; height: auto; max-height: 42px; object-fit: contain; }
-.ob-art-light .ob-board { width: 108%; height: 100%; left: -4%; top: 0; rotate: 0deg; }
-.ob-art-light .ob-welcome-tasks { rotate: 0deg; }
-.ob-art-light .ob-reminder { top: 43%; rotate: 0deg; }
+.ob-light-composition { inset: 0; width: 100%; height: 100%; transform-origin: center; }
+.ob-light-composition-0 { animation: ob-light-float 6.5s ease-in-out infinite; }
+.ob-art-light img { object-fit: contain; }
+@keyframes ob-light-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
 .ob-theme-error { padding: 9px 11px; margin-top: 10px; font-size: 12px; line-height: 1.5; color: #ffc6cc; border-radius: 9px; }
 .ob-detail { font-size: 14px; }.ob-permission { font-size: 12px; }.ob-progress-label { font-size: 12px; gap: 8px; }.ob-progress-label b { font-size: 10px; }
 .ob-actions { align-items: stretch; }
@@ -91,9 +92,10 @@ html:has(.gena-onboarding) { scrollbar-gutter: auto; color-scheme: dark; }
 @media(max-width:700px), (max-width:900px) and (orientation:portrait) {
   .gena-onboarding { --ob-back-size: 52px; }.ob-copy-shell { min-height: 250px; }.ob-theme-card { margin: 18px auto 0; text-align: left; max-width: 355px; }.ob-detail { font-size: 12px; }.ob-progress-label { font-size: 11px; gap: 6px; }.ob-progress-label b { font-size: 9px; }.ob-permission { font-size: 11px; }
   .ob-brand { width: 130px; height: 33px; }.ob-brand .ob-brand-light { width: 130px; max-height: 33px; }
-  .ob-art-light .ob-board { width: 100%; left: 0; height: 111%; top: -6%; }
-  .ob-art-light .ob-reminder { top: 40%; }
+  .ob-scene-shell:has(.ob-art-light) { aspect-ratio: 1.35; }
+  .gena-onboarding[data-step='1']:has(.ob-art-light) .ob-copy-shell { min-height: 225px; }
 }
+@media(max-height:760px) and (max-width:700px) { .ob-scene-shell:has(.ob-art-light) { aspect-ratio: 1.7; } }
 @media(max-width:380px) { .ob-progress-label b { display: none; }.ob-progress-label { font-size: 11px; }.ob-detail { font-size: 11px; }.ob-permission { font-size: 10px; } }
 .gena-onboarding[data-reduced='true'] *, .gena-onboarding[data-reduced='true'] *::before { animation: none!important; transition: none!important; }.gena-onboarding[data-reduced='true'] .ob-scene { transform: none; }.gena-onboarding[data-reduced='true'] .ob-ghost img, .gena-onboarding[data-reduced='true'] .ob-arrow { transform: none!important; }
 @media(prefers-reduced-motion:reduce) { .gena-onboarding *, .gena-onboarding *::before { animation: none!important; transition: none!important; }.gena-onboarding .ob-scene, .gena-onboarding .ob-ghost img, .gena-onboarding .ob-arrow { transform: none!important; } }

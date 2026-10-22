@@ -16,7 +16,6 @@ import (
 	"net/mail"
 	"strings"
 	"time"
-	"unicode/utf8"
 )
 
 const SessionTTL = 30 * 24 * time.Hour
@@ -78,8 +77,8 @@ func (s *Service) Register(ctx context.Context, name, email, password, confirmat
 	if err != nil {
 		return nil, err
 	}
-	if utf8.RuneCountInString(password) < 10 || len(password) > 1024 {
-		return nil, domain.Validation("Пароль должен содержать от 10 символов")
+	if err := validatePassword(password); err != nil {
+		return nil, err
 	}
 	if password != confirmation {
 		return nil, domain.Validation("Пароли не совпадают")
@@ -121,8 +120,8 @@ func (s *Service) Login(ctx context.Context, email, password string) (*user.User
 // EnableEmailLogin adds a password to the current OAuth account once. It never
 // changes an existing password or accepts a different email/account identifier.
 func (s *Service) EnableEmailLogin(ctx context.Context, uid, password, confirmation string) (*user.User, error) {
-	if utf8.RuneCountInString(password) < 10 || len(password) > 1024 {
-		return nil, domain.Validation("Пароль должен содержать от 10 символов")
+	if err := validatePassword(password); err != nil {
+		return nil, err
 	}
 	if password != confirmation {
 		return nil, domain.Validation("Пароли не совпадают")

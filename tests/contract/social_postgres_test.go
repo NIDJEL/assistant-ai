@@ -160,8 +160,8 @@ func TestPostgresFriendsInvitationsAvailabilityRescheduleAndPrivacy(t *testing.T
 
 func TestPostgresSocialConcurrentRSVPAndFriendRequest(t *testing.T) {
 	db, auth, _, now := pgFixture(t)
-	u, _ := auth.Register(t.Context(), "A", "race-a@example.test", "password 12345", "password 12345")
-	v, _ := auth.Register(t.Context(), "B", "race-b@example.test", "password 12345", "password 12345")
+	u, _ := auth.Register(t.Context(), "A", "race-a@example.test", "test password 12345", "test password 12345")
+	v, _ := auth.Register(t.Context(), "B", "race-b@example.test", "test password 12345", "test password 12345")
 	a, b := repository.WithUser(t.Context(), u.ID), repository.WithUser(t.Context(), v.ID)
 	loc := now.Location()
 	var code string
@@ -254,8 +254,8 @@ func (s socialInterpreter) InterpretOperation(context.Context, string, nlu.Conte
 }
 func TestPostgresSimpleLLMSocialAtomicityAndContinuation(t *testing.T) {
 	db, auth, _, now := pgFixture(t)
-	u, _ := auth.Register(t.Context(), "Никита", "nlu-a@example.test", "password 12345", "password 12345")
-	v, _ := auth.Register(t.Context(), "Алиса", "nlu-b@example.test", "password 12345", "password 12345")
+	u, _ := auth.Register(t.Context(), "Никита", "nlu-a@example.test", "test password 12345", "test password 12345")
+	v, _ := auth.Register(t.Context(), "Алиса", "nlu-b@example.test", "test password 12345", "test password 12345")
 	a, b := repository.WithUser(t.Context(), u.ID), repository.WithUser(t.Context(), v.ID)
 	var code string
 	db.DB.QueryRow(`SELECT friend_code FROM users WHERE id=$1`, v.ID).Scan(&code)

@@ -80,7 +80,7 @@ func TestPostgresEnableEmailLoginForYandexAccount(t *testing.T) {
 func TestPostgresEnableEmailLoginDoesNotResetOrTrustAnotherContact(t *testing.T) {
 	db, svc, router, now := pgFixture(t)
 	_, session := registerHTTP(t, router, "existing-email@example.test")
-	body := map[string]string{"password": "a replacement password", "password_confirmation": "a replacement password"}
+	body := map[string]string{"password": "a replacement password 7", "password_confirmation": "a replacement password 7"}
 	call(t, router, session, "POST", "/api/auth/email/enable", body, 409)
 	call(t, router, nil, "POST", "/api/auth/login", withLegal(map[string]string{"email": "existing-email@example.test", "password": "correct password 123"}), 200)
 	u, session := yandexEmailAccount(t, svc, now, "original-contact@example.test")
@@ -100,7 +100,7 @@ func TestPostgresEnableEmailLoginDoesNotResetOrTrustAnotherContact(t *testing.T)
 func TestPostgresEnableEmailLoginConcurrentRequestsCannotReplacePassword(t *testing.T) {
 	db, svc, _, now := pgFixture(t)
 	u, _ := yandexEmailAccount(t, svc, now, "concurrent-email@example.test")
-	passwords := []string{"first private password", "second private password"}
+	passwords := []string{"first private password 7", "second private password 8"}
 	outcomes := make([]error, 2)
 	var group sync.WaitGroup
 	for index := range passwords {

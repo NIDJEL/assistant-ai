@@ -6,6 +6,7 @@ import { nameError, normalizeName, passwordError } from '../../app/accountValida
 import { LEGAL_VERSION, type LegalAcceptance } from '../Legal/documents';
 import { errorMessage, request } from '../../api/client';
 import { AutoHeight } from '../../components/motion/AutoHeight';
+import { PasswordStrength } from '../../components/PasswordStrength';
 import yandexLogo from '../../assets/oauth/yandex.svg';
 import { AuthBackdrop, AuthScene } from './AuthScene';
 import { usePointerSpring } from './useAuthMotion';
@@ -60,7 +61,7 @@ export function AuthPage() {
     locked.current = true; setBusy('email'); try { if (isRegister) await register(normalizeName(name), email.trim(), password, confirmation, acceptance); else await login(email.trim(), password, acceptance); setPhase('success'); window.setTimeout(() => { setPhase(''); }, window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches ? 0 : 240); } catch (e) { setError(errorMessage(e)); } finally { setBusy(''); locked.current = false; }
   }
   async function oauth(provider: 'yandex') { if (locked.current || phase || !confirmConsent()) return; locked.current = true; setBusy(provider); setError(''); try { const data = await request<{ redirect_url: string }>(`/api/auth/${provider}/start`, { method: 'POST', body: JSON.stringify(acceptance) }); oauthNavigation.current = true; window.location.assign(data.redirect_url); } catch (e) { oauthNavigation.current = false; setError(errorMessage(e)); setBusy(''); locked.current = false; } }
-  const passwordInput = (repeat = false) => <AuthField id={repeat ? 'auth-password-confirmation' : 'auth-password'} label={repeat ? 'Повторите пароль' : 'Пароль'} icon={LockKeyhole} type={visible ? 'text' : 'password'} autoComplete={isRegister ? 'new-password' : 'current-password'} value={repeat ? confirmation : password} onChange={e => repeat ? setConfirmation(e.target.value) : setPassword(e.target.value)} required maxLength={1024} aria-invalid={!!error} action={!repeat && <button type="button" aria-label={visible ? 'Скрыть пароль' : 'Показать пароль'} onClick={() => setVisible(!visible)}>{visible ? <Eye size={21}/> : <EyeOff size={21}/>}</button>}/>;
+  const passwordInput = (repeat = false) => <AuthField id={repeat ? 'auth-password-confirmation' : 'auth-password'} label={repeat ? 'Повторите пароль' : 'Пароль'} icon={LockKeyhole} type={visible ? 'text' : 'password'} autoComplete={isRegister ? 'new-password' : 'current-password'} value={repeat ? confirmation : password} onChange={e => repeat ? setConfirmation(e.target.value) : setPassword(e.target.value)} required maxLength={1024} aria-invalid={!!error} aria-describedby={isRegister && !repeat ? ['auth-password-strength', error ? 'auth-message' : ''].filter(Boolean).join(' ') : undefined} action={!repeat && <button type="button" aria-label={visible ? 'Скрыть пароль' : 'Показать пароль'} onClick={() => setVisible(!visible)}>{visible ? <Eye size={21}/> : <EyeOff size={21}/>}</button>}/>;
   return <main ref={sceneRef} className="auth-page auth-premium" data-feedback={phase === 'success' ? 'success' : error ? 'error' : busy ? 'busy' : 'idle'}><AuthBackdrop/><div className={`auth-container ${isRegister ? 'auth-register' : ''} ${phase === 'success' ? 'auth-success' : ''}`}>
     <AuthScene/>
     <section className="auth-card" aria-label="Авторизация"><div className="auth-segment" role="tablist" aria-label="Способ авторизации" onKeyDown={event => {
@@ -73,6 +74,7 @@ export function AuthPage() {
       <div className="auth-divider"><span/>или<span/></div><form onSubmit={e => void submit(e)} className="auth-form">
         <div className={`auth-register-field ${isRegister ? 'expanded' : ''}`}><div>{isRegister && <><AuthField id="auth-name" label="Имя" icon={UserRound} autoComplete="name" spellCheck={false} value={name} onChange={e => setName(e.target.value)} onBlur={() => setNameTouched(true)} required maxLength={200} aria-invalid={!!nameMessage} aria-describedby={nameMessage ? 'auth-name-error' : undefined}/>{nameMessage && <p id="auth-name-error" className="auth-field-error" role="alert">{nameMessage}</p>}</>}</div></div>
         <AuthField id="auth-email" label="Почта" icon={Mail} type="email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} required maxLength={254} aria-invalid={!!error}/>{passwordInput()}
+        {isRegister && <PasswordStrength password={password} id="auth-password-strength"/>}
         <div className={`auth-register-field ${isRegister ? 'expanded' : ''}`}><div>{isRegister && passwordInput(true)}</div></div>
         {!isRegister && <button type="button" className="auth-forgot" onClick={() => { setHelp('Восстановление пароля по почте пока недоступно. Если вы подключали Яндекс, войдите через Яндекс.'); setError(''); }}>Забыли пароль?</button>}
         <fieldset className="auth-legal" disabled={!!busy || !!phase} aria-label="Ознакомление с документами">

@@ -130,11 +130,11 @@ type schedulingHarness struct {
 func schedulingFixture(t *testing.T) *schedulingHarness {
 	t.Helper()
 	db, auth, _, now := pgFixture(t)
-	a, err := auth.Register(t.Context(), "Никита Круглов", "schedule-a@example.test", "password 12345", "password 12345")
+	a, err := auth.Register(t.Context(), "Никита Круглов", "schedule-a@example.test", "test password 12345", "test password 12345")
 	if err != nil {
 		t.Fatal(err)
 	}
-	b, err := auth.Register(t.Context(), "Матвей Лапин", "schedule-b@example.test", "password 12345", "password 12345")
+	b, err := auth.Register(t.Context(), "Матвей Лапин", "schedule-b@example.test", "test password 12345", "test password 12345")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -391,7 +391,7 @@ func TestPostgresSchedulingContinuationAcrossMidnightKeepsOriginalDay(t *testing
 
 func TestPostgresSchedulingGroupDisplayTitleMatchesCalendarAndRevokedHistory(t *testing.T) {
 	h := schedulingFixture(t)
-	c, err := h.auth.Register(t.Context(), "Алиса Проверка", "group-title@example.test", "password 12345", "password 12345")
+	c, err := h.auth.Register(t.Context(), "Алиса Проверка", "group-title@example.test", "test password 12345", "test password 12345")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -481,7 +481,7 @@ func TestPostgresSchedulingPersonTitleWithoutResolvedPersonDoesNotCreatePersonal
 
 func TestPostgresSchedulingAmbiguousTagAndRevokedFriendship(t *testing.T) {
 	h := schedulingFixture(t)
-	c, err := h.auth.Register(t.Context(), "Алиса Проверка", "schedule-c@example.test", "password 12345", "password 12345")
+	c, err := h.auth.Register(t.Context(), "Алиса Проверка", "schedule-c@example.test", "test password 12345", "test password 12345")
 	if err != nil {
 		t.Fatal(err)
 	}

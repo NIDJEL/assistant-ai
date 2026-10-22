@@ -87,7 +87,7 @@ func TestPostgresPersonalMeetingMissingTimeSurvivesRestartAndNewFriend(t *testin
 	if !r.Pending || personalRecordCount(t, h) != 0 || !strings.Contains(r.Reply, "Во сколько") {
 		t.Fatal(r)
 	}
-	u, err := h.auth.Register(t.Context(), "Иван", "personal-new-friend@example.test", "password 12345", "password 12345")
+	u, err := h.auth.Register(t.Context(), "Иван", "personal-new-friend@example.test", "test password 12345", "test password 12345")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -163,7 +163,7 @@ func TestPostgresPersonalMeetingStorageFailureDoesNotBecomeMissingFriend(t *test
 
 func TestPostgresPersonalMeetingMissingNameDoesNotHideAmbiguousFriend(t *testing.T) {
 	h := schedulingFixture(t)
-	u, err := h.auth.Register(t.Context(), "Матвей Другой", "personal-ambiguous@example.test", "password 12345", "password 12345")
+	u, err := h.auth.Register(t.Context(), "Матвей Другой", "personal-ambiguous@example.test", "test password 12345", "test password 12345")
 	if err != nil {
 		t.Fatal(err)
 	}

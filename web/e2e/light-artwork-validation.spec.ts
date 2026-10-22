@@ -22,9 +22,17 @@ for (const [width, height] of [[1440, 900], [768, 1024], [390, 844], [320, 740]]
       await expect(page.locator('.ob-art-light')).toHaveCount(1); await expect(page.locator('.ob-art-dark')).toHaveCount(0);
       const images = await page.locator('.ob-art img').evaluateAll(elements => elements.map(element => { const image = element as HTMLImageElement; return { src: image.src, width: image.naturalWidth, loaded: image.complete, bounds: image.getBoundingClientRect().toJSON() }; }));
       expect(images.every(image => image.loaded && image.width > 0)).toBe(true);
-      // Each supplied light image has its own intrinsic dimensions; this also
-      // catches an accidental return to the original dark illustrations.
-      expect(images.map(image => image.width)).toEqual(step === 0 ? [380, 530] : step === 1 ? [794] : [215, 197, 224, 739]);
+      // Complete regenerated scenes include a transparent safety border.
+      expect(images.map(image => image.width)).toEqual([1056]);
+      await expect(page.locator('.ob-scene-caption')).toHaveCount(0);
+      const fits = await page.locator('.ob-light-composition img').evaluate(element => {
+        const image = element as HTMLImageElement, box = image.getBoundingClientRect(), scene = image.closest('.ob-scene')!.getBoundingClientRect();
+        const scale = Math.min(box.width / image.naturalWidth, box.height / image.naturalHeight);
+        const left = box.x + (box.width - image.naturalWidth * scale) / 2 + 48 * scale;
+        const top = box.y + (box.height - image.naturalHeight * scale) / 2 + 48 * scale;
+        return left >= scene.x && top >= scene.y && left + (image.naturalWidth - 96) * scale <= scene.right && top + (image.naturalHeight - 96) * scale <= scene.bottom;
+      });
+      expect(fits).toBe(true);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
       await expect(page.locator('.ob-primary')).toBeInViewport({ ratio: 1 });
       expect(await themeContrastIssues(page)).toEqual([]);
@@ -38,7 +46,7 @@ test('theme waits for artwork, crossfades and survives rapid changes with reduce
   await account(page); await page.goto('/onboarding'); await settle(page);
   const original = await page.locator('.ob-ghost img').getAttribute('src');
   let release!: () => void; const pending = new Promise<void>(resolve => { release = resolve; }); let delayed = false;
-  await page.route('**/assets/ghost-*.webp', async route => { if (!route.request().url().endsWith(original!)) { delayed = true; await pending; } await route.continue(); });
+  await page.route('**/assets/welcome-*.webp', async route => { delayed = true; await pending; await route.continue(); });
   await page.getByRole('radio', { name: 'Светлая', exact: true }).check();
   await expect.poll(() => delayed).toBe(true); await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
   await expect(page.locator('.ob-scene')).toHaveAttribute('data-artwork-theme', 'dark');

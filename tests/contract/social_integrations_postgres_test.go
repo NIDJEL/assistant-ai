@@ -21,8 +21,8 @@ import (
 
 func TestPostgresSharedCalendarExportsAndIncompleteAvailability(t *testing.T) {
 	db, auth, _, now := pgFixture(t)
-	u, _ := auth.Register(t.Context(), "Host", "shared-host@example.test", "password 12345", "password 12345")
-	v, _ := auth.Register(t.Context(), "Guest", "shared-guest@example.test", "password 12345", "password 12345")
+	u, _ := auth.Register(t.Context(), "Host", "shared-host@example.test", "test password 12345", "test password 12345")
+	v, _ := auth.Register(t.Context(), "Guest", "shared-guest@example.test", "test password 12345", "test password 12345")
 	a, b := repository.WithUser(t.Context(), u.ID), repository.WithUser(t.Context(), v.ID)
 	execute := func(ctx context.Context, op social.Operation) social.Result {
 		t.Helper()
@@ -116,7 +116,7 @@ func TestPostgresSharedCalendarExportsAndIncompleteAvailability(t *testing.T) {
 
 func TestPostgresGooglePlanningReadsAllCalendarsAndMapsSharedIDs(t *testing.T) {
 	db, auth, _, now := pgFixture(t)
-	u, _ := auth.Register(t.Context(), "Calendar", "planning-google@example.test", "password 12345", "password 12345")
+	u, _ := auth.Register(t.Context(), "Calendar", "planning-google@example.test", "test password 12345", "test password 12345")
 	ctx := repository.WithUser(t.Context(), u.ID)
 	cal := calendar.Service{Store: db, Location: now.Location()}
 	event, err := cal.Create(ctx, domain.Event{Kind: domain.EventMeeting, Title: "Known", Date: domain.Day(now.AddDate(0, 0, 1)), StartTime: &domain.TimeOfDay{Hour: 15}}, now, false)

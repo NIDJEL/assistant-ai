@@ -6,6 +6,7 @@ import { nameError, normalizeName, passwordError } from '../../app/accountValida
 import { usePreferences } from '../../app/PreferencesContext';
 import { Avatar } from '../../components/Avatar';
 import { Button } from '../../components/UI';
+import { PasswordStrength } from '../../components/PasswordStrength';
 import { errorMessage } from '../../api/client';
 import { Presence, usePresent } from '../../components/motion/Presence';
 
@@ -24,7 +25,7 @@ function EmailPasswordForm({ onClose, onSaved }: { onClose: () => void; onSaved:
   return <form className={`account-password-form ${present ? '' : 'closing'}`} aria-label="Пароль для входа по почте" inert={!present} onSubmit={event => { event.preventDefault(); void submit(); }}>
     <p>Создайте пароль для входа в Гену по вашей почте. Пароль от Яндекса вводить не нужно.</p>
     <div className="form-grid"><label>Новый пароль<input type="password" autoComplete="new-password" minLength={10} maxLength={1024} required value={password} disabled={busy} onChange={event => { setPassword(event.target.value); setError(''); }} aria-describedby="email-password-hint"/></label><label>Повторите новый пароль<input type="password" autoComplete="new-password" minLength={10} maxLength={1024} required value={confirmation} disabled={busy} onChange={event => { setConfirmation(event.target.value); setError(''); }}/></label></div>
-    <p id="email-password-hint">От 10 символов.</p>{error && <p role="alert" className="auth-error">{error}</p>}
+    <PasswordStrength password={password} id="email-password-hint"/>{error && <p role="alert" className="auth-error">{error}</p>}
     <div className="account-password-actions"><Button variant="ghost" disabled={busy} onClick={onClose}>Отмена</Button><Button type="submit" disabled={busy}>{busy ? 'Сохраняю…' : 'Сохранить пароль'}</Button></div>
   </form>;
 }
