@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { AnimatePresence, LazyMotion, domAnimation, MotionConfig, m as motion, useReducedMotion } from 'motion/react';
+import { AnimatePresence, LazyMotion, domAnimation, MotionConfig, m as motion } from 'motion/react';
 import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../app/AuthContext';
 import { errorMessage } from '../../api/client';
@@ -32,7 +32,7 @@ export function OnboardingPage() {
   const changedStep = useRef(false);
   const navigate = useNavigate();
   const sceneRef = usePointerSpring<HTMLElement>();
-  const systemReduced = useReducedMotion();
+  const [systemReduced, setSystemReduced] = useState(() => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false);
   const [appReduced, setAppReduced] = useState(() => document.documentElement.dataset.motion === 'reduced');
   const reduce = !!systemReduced || appReduced;
   const reveal = { enter: { opacity: 0, y: reduce ? 0 : 7 }, visible: { opacity: 1, y: 0 }, leave: { opacity: 0, y: 0 } };
@@ -40,9 +40,13 @@ export function OnboardingPage() {
   const connected = connection?.status === 'connected' || connection?.status === 'pending';
 
   useEffect(() => {
+    // React to OS preference changes without remounting the onboarding or losing its state.
+    const preference = window.matchMedia?.('(prefers-reduced-motion: reduce)');
+    const changed = () => setSystemReduced(preference?.matches ?? false);
+    preference?.addEventListener('change', changed);
     const observer = new MutationObserver(() => setAppReduced(document.documentElement.dataset.motion === 'reduced'));
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-motion'] });
-    return () => observer.disconnect();
+    return () => { observer.disconnect(); preference?.removeEventListener('change', changed); };
   }, []);
   useEffect(() => { try { sessionStorage.setItem(storageKey, String(step)); } catch { /* Private browsing can disable storage. */ } }, [step, storageKey]);
   useEffect(() => { if (failed) setStep(2); }, [failed]);

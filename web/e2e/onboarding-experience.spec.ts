@@ -63,6 +63,24 @@ test('keyboard navigation, animated progress and real integration destination', 
   await expect(page.getByRole('heading', { name: 'Интеграции', exact: true })).toBeVisible();
 });
 
+test('live OS and app motion changes stop and restore the existing scene', async ({ page }) => {
+  await page.goto('/onboarding');
+  await expect(page.locator('.gena-onboarding')).toHaveAttribute('data-reduced', 'false');
+  await page.mouse.move(1050, 330);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await expect(page.locator('.gena-onboarding')).toHaveAttribute('data-reduced', 'true');
+  expect(await page.evaluate(() => document.getAnimations().filter(animation => animation.effect?.getComputedTiming().iterations === Infinity).length)).toBe(0);
+  expect(await page.locator('.ob-scene').evaluate(element => getComputedStyle(element).transform)).toBe('none');
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await expect(page.locator('.gena-onboarding')).toHaveAttribute('data-reduced', 'false');
+  await page.evaluate(() => { document.documentElement.dataset.motion = 'reduced'; });
+  await expect(page.locator('.gena-onboarding')).toHaveAttribute('data-reduced', 'true');
+  await page.evaluate(() => { delete document.documentElement.dataset.motion; });
+  await expect(page.locator('.gena-onboarding')).toHaveAttribute('data-reduced', 'false');
+  await page.getByRole('button', { name: 'Начать', exact: true }).click();
+  await expect(page.getByRole('heading', { name: titles[1] })).toBeVisible();
+});
+
 test('ghost floats, pointer settles, hover responds and a hidden tab pauses the scene', async ({ page }) => {
   await page.goto('/onboarding');
   const ghost = page.locator('.ob-ghost');
