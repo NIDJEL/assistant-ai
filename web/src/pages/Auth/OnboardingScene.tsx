@@ -27,7 +27,6 @@ export function OnboardingScene({ step, reduce }: { step: number; reduce: boolea
           <div className="ob-art-piece ob-board"><img src={board} alt="" width="800" height="600"/></div>
           <div className="ob-art-piece ob-plan-tasks"><img src={tasks} alt="" width="580" height="435"/></div>
           <div className="ob-mini-ghost"><img src={ghost} alt="" width="700" height="700"/></div>
-          <div className="ob-scene-caption"><span/>Всё сложится</div>
         </>}
         {step === 2 && <>
           <svg className="ob-connectors" viewBox="0 0 540 470" fill="none"><path d="M124 126C124 220 185 205 220 270M272 103V270M422 126C422 219 363 214 322 270" stroke="url(#ob-connection)" strokeWidth="1.5" strokeDasharray="5 8"/><defs><linearGradient id="ob-connection" x2="0" y2="1"><stop stopColor="#0E7AFF"/><stop offset="1" stopColor="#6edaff" stopOpacity=".25"/></linearGradient></defs></svg>

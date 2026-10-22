@@ -1,0 +1,79 @@
+/* Shared light palette. Dark surfaces retain their established values. */
+html[data-theme='light'] {
+  color-scheme: light; color: var(--text); background: var(--canvas);
+  --text: #182b46; --muted: #536782; --accent: #0b61c9; --accent-strong: #0969da; --accent-soft: #e7f0ff;
+  --canvas: #f3f7fc; --surface: #fff; --surface-inset: #edf3fb; --surface-raised: #eaf1fa;
+  --surface-hover: #e3edfb; --surface-selected: #dae8fb; --control-bg: #fff;
+  --border: #c2cfe0; --border-subtle: #dbe4f0; --focus: #0a68dc; --on-accent: #fff;
+  --danger: #b42345; --danger-soft: #fff0f3; --success: #176c50; --success-soft: #e5f5ee; --shadow: 0 8px 30px #36527e0b;
+  --page-backdrop: #f3f7fc; --placeholder: #637894; --nav-fg: #405875; --text-bright: #132e50; --accent-secondary: #0764cb;
+  --primary-hover: #075bbf; --action-fg: #155aaf; --danger-fg: #ae2143; --danger-bg: #fff0f3; --danger-border: #e9afbf;
+  --pressed-bg: #dceaff; --pressed-fg: #174b89; --count-fg: #285b97; --selected-border: #88ace0; --icon-fg: #225c9f; --hover-bg: #dfebfb; --outside-fg: #5b6f89;
+  --success-fg: #146a4d; --tag-blue-bg: #e3edfc; --tag-blue-fg: #28558d; --tag-violet-bg: #eee7fd; --tag-violet-fg: #634292;
+  --tag-amber-bg: #fff1d5; --tag-amber-fg: #79551c; --tag-pink-bg: #fbe5f0; --tag-pink-fg: #923b69;
+  --tag-cyan-bg: #ddf0fb; --tag-cyan-fg: #236080; --tag-green-bg: #dff3e9; --tag-green-fg: #246746;
+  --priority-high-bg: #ffe5ed; --priority-high-fg: #a6284c; --priority-low-bg: #e6edf7; --priority-low-fg: #496581;
+  --check-bg: #fff; --check-border: #8b9fb9; --switch-bg: #97a9c2; --widget-tool-fg: #516c90; --widget-link-bg: #e4efff; --widget-link-fg: #155cb6;
+  --overlay-shadow: #244b7c24; --overlay-shade: #233a5b66; --alert-bg: #fff0f3; --alert-border: #edb2c0; --alert-fg: #a72245;
+  --info-bg: #e5f0ff; --info-fg: #285a94; --notice-success-bg: #e4f5eb; --notice-success-border: #a0cfb8;
+  --chat-mark: #0e7aff; --user-bubble: #dfeeff; --assistant-avatar-bg: #e4eeff; --assistant-avatar-fg: #1761c1;
+  --composer-border: #acbed7; --composer-bg: #fff; --composer-focus: #0e7aff; --microphone-fg: #496685;
+  --listening-bg: #ffe7ee; --listening-fg: #ab254b; --disabled-bg: #e0e7f1; --disabled-fg: #62758e; --status-fg: #506986;
+  --legal-bright: #172e50; --legal-body: #273e5e; --legal-panel: #fff; --legal-fg: #344b68; --legal-border: #c7d5e7; --legal-muted: #526987; --legal-link: #0a63c9; --legal-link-hover: #084b9e; --legal-active: #e8f0fc;
+}
+html[data-theme='light'] body { background: var(--canvas); color: var(--text); }
+html[data-theme='light'][data-surface] { color-scheme: light; }
+html[data-theme='light'][data-surface='workspace'] { color-scheme: light; }
+html[data-theme='light'] .calendar-page .month-calendar { --calendar-chip: #e2edfc; --calendar-selected: #dceaff; --calendar-blue: #0b69d7; }
+html[data-theme='light'] :is(.chat-event-card small, .widget-drop-zone, .drag-handle, .widget-configure, .friend-code-hint, .event-card small) { color: var(--muted); }
+html[data-theme='light'] :is(.timeline-time, .participants-empty, .reminder-card small) { color: var(--muted); }
+.calendar-page .calendar-cell .day-number.today { background: #0969da; }
+html[data-theme='light'] .auth-splash { color: #1a6dd2; background: var(--canvas); }
+
+/* Auth uses the same preference, including readable validation and autofill. */
+html[data-theme='light'] .auth-premium { --auth-text: #182b46; --auth-muted: #536782; --auth-link: #0b61c9; background: #edf4fe; color-scheme: light; }
+html[data-theme='light'] .auth-ambient { opacity: .28; }
+html[data-theme='light'] .auth-orbit { opacity: .15; }
+html[data-theme='light'] .auth-premium :is(.auth-brand, .auth-pitch) { color: #172f50; }
+html[data-theme='light'] .auth-pitch h1>span+span { background: none; color: #146bd3; -webkit-text-fill-color: currentColor; }
+html[data-theme='light'] .auth-premium :is(.auth-description, .auth-feature-copy p, .auth-legal) { color: #516884; }
+html[data-theme='light'] .auth-premium .auth-card { color: #182b46; background: linear-gradient(145deg, #fff, #f7faff); border-color: #bed0e9; box-shadow: 0 24px 70px #335d8f19, inset 0 1px 0 white; }
+html[data-theme='light'] .auth-feature-card { color: #182b46; background: linear-gradient(145deg, #fff, #e9f2ff); border-color: #becfe9; box-shadow: 0 12px 30px #365b8f12; }
+html[data-theme='light'] .auth-premium .auth-feature-card:hover { border-color: #86b1ec; }
+html[data-theme='light'] .auth-premium .auth-segment { background: #e6eefb; border-color: #c0cfe3; }
+html[data-theme='light'] .auth-premium .auth-segment button { color: #4c6381; }
+html[data-theme='light'] .auth-premium .auth-segment button[aria-selected='true'] { color: white; }
+html[data-theme='light'] .auth-premium .auth-oauth>button { color: #1e3554; background: #fff; border-color: #a8bcd8; }
+html[data-theme='light'] .auth-premium .auth-oauth>button:hover:not(:disabled) { color: #143b70; background: #edf4ff; border-color: #6d9fdf; }
+html[data-theme='light'] .auth-premium .auth-oauth>button>svg { color: #4771a8; }
+html[data-theme='light'] .auth-premium .auth-divider { color: #657c9b; }
+html[data-theme='light'] .auth-premium .auth-divider span { background: #c4d2e6; }
+html[data-theme='light'] .auth-premium .auth-input { color: #4e6d96; background: #fff; border-color: #acbfd9; }
+html[data-theme='light'] .auth-premium .auth-input:focus-within { background: #f8fbff; color: #1266c6; border-color: #0e7aff; }
+html[data-theme='light'] .auth-premium .auth-input input { color: #1a3151; caret-color: #0e7aff; }
+html[data-theme='light'] .auth-premium :is(.auth-input-label, .auth-input button, .auth-forgot) { color: #506b8e; }
+html[data-theme='light'] .auth-premium .auth-input:focus-within .auth-input-label, html[data-theme='light'] .auth-premium .auth-input input:not(:placeholder-shown)+.auth-input-label { color: #1b5faa; }
+html[data-theme='light'] .auth-premium .auth-input input:-webkit-autofill { -webkit-text-fill-color: #1a3151; box-shadow: 0 0 0 40px #fff inset; }
+html[data-theme='light'] .auth-premium .auth-agreement input:not(:checked) { background: white; border-color: #7a92b4; }
+html[data-theme='light'] .auth-premium .auth-agreement a:hover { color: #084b9e; }
+html[data-theme='light'] .auth-premium .auth-error { background: #fff0f3; color: #ad2547; border-color: #e8b6c2; }
+html[data-theme='light'] .auth-premium .auth-help { background: #e8f1ff; color: #2a5b98; border-color: #b9cfee; }
+html[data-theme='light'] .auth-premium .auth-primary { background: linear-gradient(115deg, #0e7aff, #0861ce); }
+
+/* The illustrations remain the supplied artwork in both palettes. */
+html[data-theme='light'] .gena-onboarding { --ob-text: #17314f; --ob-muted: #4c6485; --text: #17314f; --muted: #526b8c; --surface: #fff; --border: #b9cde7; --accent-soft: #e6f0ff; --focus: #0a68dc; color: #17314f; background: radial-gradient(ellipse at 70% 0, #dcecffaa, transparent 68%), #f3f7fc; }
+html[data-theme='light'] .gena-onboarding .ob-card { border-color: #b8cde8; background: linear-gradient(135deg, #fff, #f1f7ff); box-shadow: 0 30px 90px #355d9320, inset 0 1px 0 #fff; }
+html[data-theme='light'] .gena-onboarding .ob-copy h1>span { color: #0a68d6; }
+html[data-theme='light'] .gena-onboarding :is(.ob-detail, .ob-permission, .ob-secondary button) { color: #496385; }
+html[data-theme='light'] .gena-onboarding .ob-footer { border-color: #bfcfe5; }
+html[data-theme='light'] .gena-onboarding .ob-progress button { color: #526c8e; }
+html[data-theme='light'] .gena-onboarding .ob-progress-label b { color: #47688f; }
+html[data-theme='light'] .gena-onboarding .ob-progress .is-active { color: #173d70; }
+html[data-theme='light'] .gena-onboarding .ob-progress-track { background: #c9d8ec; }
+html[data-theme='light'] .gena-onboarding .ob-back { color: #155cb6; background: #e4efff; border-color: #8fadd4; box-shadow: inset 0 1px 0 #fff; }
+html[data-theme='light'] .gena-onboarding .ob-back:hover { background: #d4e6ff; border-color: #4a88d4; }
+html[data-theme='light'] .gena-onboarding .ob-scene-caption { background: #e9f2fff2; border-color: #acc5e6; color: #2c568a; }
+html[data-theme='light'] .gena-onboarding .ob-scene-halo { background: radial-gradient(ellipse at 50% 53%, #badbff88, transparent 69%); }
+html[data-theme='light'] .gena-onboarding .ob-orbit { border-color: #7da4d63b; }
+html[data-theme='light'] .gena-onboarding .ob-feedback p, html[data-theme='light'] .gena-onboarding .ob-theme-error { background: #fff0f3; border-color: #edb2c0; color: #a72245; }
+@media print { html[data-theme] { color-scheme: light; } }

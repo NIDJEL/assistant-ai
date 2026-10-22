@@ -7,6 +7,8 @@ import { startCalendarConnection } from '../../api/integrations';
 import { useYandexIntegration } from '../Integrations/useYandexIntegration';
 import { usePointerSpring } from './useAuthMotion';
 import { OnboardingScene, onboardingAssets } from './OnboardingScene';
+import { usePreferences } from '../../app/PreferencesContext';
+import { ThemePicker } from '../../components/ThemePicker';
 import '../../styles/onboarding.css';
 
 const steps = ['Знакомство', 'Ваш день', 'Интеграции'];
@@ -19,6 +21,7 @@ function readStep(key: string, failed: boolean) {
 
 export function OnboardingPage() {
   const { user, completeOnboarding } = useAuth();
+  const { preferences, update, error: preferenceError } = usePreferences();
   const [params, setParams] = useSearchParams();
   const failed = !!params.get('error');
   const storageKey = `gena.onboarding.v2.${user?.id}`;
@@ -35,7 +38,11 @@ export function OnboardingPage() {
   const [systemReduced, setSystemReduced] = useState(() => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false);
   const [appReduced, setAppReduced] = useState(() => document.documentElement.dataset.motion === 'reduced');
   const reduce = !!systemReduced || appReduced;
-  const reveal = { enter: { opacity: 0, y: reduce ? 0 : 7 }, visible: { opacity: 1, y: 0 }, leave: { opacity: 0, y: 0 } };
+  const reveal = {
+    enter: { opacity: 0, y: reduce ? 0 : 7 },
+    visible: { opacity: 1, y: 0, transition: { duration: reduce ? 0 : .4, ease } },
+    leave: { opacity: 0, y: 0, transition: { duration: reduce ? 0 : .16, ease } },
+  };
   const { connection, loaded, error: integrationError } = useYandexIntegration();
   const connected = connection?.status === 'connected' || connection?.status === 'pending';
 
@@ -97,18 +104,17 @@ export function OnboardingPage() {
       <motion.section className="ob-card" aria-label="Знакомство с Геной" initial={reduce ? false : { opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
         <header className="ob-header">
           <div className="ob-brand"><img src={onboardingAssets.logo} width="56" height="31" alt=""/><span>Гена</span></div>
-          <span className="ob-counter"><span>Знакомство с ассистентом</span><b>0{step + 1}<i> / 03</i></b></span>
         </header>
         <div className="ob-body">
           <div className="ob-copy-shell"><AnimatePresence mode="wait" custom={direction} initial={false}>
             <motion.div className="ob-copy" key={step} custom={direction}
               variants={{ enter: (d: number) => ({ opacity: 0, x: reduce ? 0 : 16 * d }), visible: { opacity: 1, x: 0, transition: { staggerChildren: reduce ? 0 : .045 } }, leave: (d: number) => ({ opacity: 0, x: reduce ? 0 : -12 * d }) }}
               initial="enter" animate="visible" exit="leave" transition={{ duration: reduce ? 0 : .24, ease }} onAnimationComplete={phase => { if (phase === 'visible') focusHeading(); }}>
-              <motion.p variants={reveal} className="ob-eyebrow"><span/> {step === 0 ? 'Меньше забот. Больше жизни.' : step === 1 ? 'Порядок начинается с малого' : 'Всё работает вместе'}</motion.p>
               <motion.h1 variants={reveal} ref={heading} tabIndex={-1} id="onboarding-title">{title}</motion.h1>
               <motion.p variants={reveal} className="ob-description">{description}</motion.p>
               <motion.div variants={reveal} className="ob-detail"><span className="ob-detail-line"/><p>{step === 0 ? 'Несколько простых шагов — и мы знакомы.' : step === 1 ? 'Задачи, календарь и фокус — в одном месте.' : 'Яндекс Календарь, Google Календарь и Zoom.'}</p></motion.div>
-              <motion.p variants={reveal} className="ob-permission">{step === 2 ? 'Доступ к календарю вы подтвердите на странице Яндекса. Другие сервисы можно подключить в интеграциях.' : null}</motion.p>
+              {step === 0 && <motion.div variants={reveal} className="ob-theme-card"><ThemePicker theme={preferences.theme} onChange={theme => update({ theme })} disabled={!!busy}/>{preferenceError && <p className="ob-theme-error" role="alert">Тема применена на этом устройстве. {preferenceError}</p>}</motion.div>}
+              {step === 2 && <motion.p variants={reveal} className="ob-permission">Доступ к календарю вы подтвердите на странице Яндекса. Другие сервисы можно подключить в интеграциях.</motion.p>}
             </motion.div>
           </AnimatePresence></div>
           <div className="ob-scene-shell"><OnboardingScene step={step} reduce={reduce}/></div>
@@ -123,7 +129,7 @@ export function OnboardingPage() {
               {step === 2 && integrationError && !error && !failed && <p role="alert">{integrationError} Можно повторить подключение или сделать это позже.</p>}
             </div>
             <div className="ob-actions">
-              {step > 0 && <button type="button" className="ob-back" disabled={!!busy} onClick={() => go(step - 1)} aria-label="Назад"><span aria-hidden="true">←</span></button>}
+              {step > 0 && <button type="button" className="ob-back" disabled={!!busy} onClick={() => go(step - 1)} aria-label="Назад"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 12H5m6-6-6 6 6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg></button>}
               <motion.button type="button" className="ob-primary" aria-label={step === 2 && !busy && !failed ? 'Подключить Яндекс Календарь' : undefined} disabled={!!busy || (step === 2 && !loaded && !integrationError)} whileTap={reduce ? undefined : { scale: .98 }} onClick={() => step < 2 ? go(step + 1) : connect()}>
                 <span>{busy === 'finish' ? 'Открываем приложение…' : busy === 'oauth' ? 'Переходим в Яндекс…' : step === 0 ? 'Начать' : step === 1 ? 'Далее' : failed ? 'Попробовать ещё раз' : <><span className="ob-label-desktop">Подключить Яндекс Календарь</span><span className="ob-label-mobile">Подключить календарь</span></>}</span>
                 {busy ? <span className="ob-spinner" aria-hidden="true"/> : <svg className="ob-arrow" width="23" height="23" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
@@ -133,7 +139,6 @@ export function OnboardingPage() {
           </div>
         </footer>
       </motion.section>
-      <p className="ob-page-note">Ваш день становится чуть легче</p>
     </main>
   </MotionConfig></LazyMotion>;
 }

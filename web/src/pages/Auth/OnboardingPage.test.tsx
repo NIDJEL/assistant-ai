@@ -3,12 +3,13 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { OnboardingPage } from './OnboardingPage';
 import { calendarOAuthURL, startCalendarConnection } from '../../api/integrations';
+import { PreferencesProvider } from '../../app/PreferencesContext';
 const { complete } = vi.hoisted(() => ({ complete: vi.fn(async () => {}) }));
 vi.mock('../../app/AuthContext', () => ({ useAuth: () => ({ user: { id: 'alice', name: 'Анна', onboarding_completed: false }, completeOnboarding: complete }) }));
 vi.mock('../../api/integrations', async original => ({ ...await original<object>(), startCalendarConnection: vi.fn() }));
 function mount(path = '/onboarding', status?: string) {
-  vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ yandex_configured: true, connections: status ? [{ provider: 'yandex', status }] : [] }))));
-  return render(<MemoryRouter initialEntries={[path]}><Routes><Route path="/onboarding" element={<OnboardingPage/>}/><Route path="/" element={<h1>Чат Гены</h1>}/><Route path="/integrations" element={<h1>Интеграции</h1>}/></Routes></MemoryRouter>);
+  vi.stubGlobal('fetch', vi.fn(async (path: string) => new Response(JSON.stringify(path.includes('/preferences/') ? {} : { yandex_configured: true, connections: status ? [{ provider: 'yandex', status }] : [] }))));
+  return render(<MemoryRouter initialEntries={[path]}><PreferencesProvider><Routes><Route path="/onboarding" element={<OnboardingPage/>}/><Route path="/" element={<h1>Чат Гены</h1>}/><Route path="/integrations" element={<h1>Интеграции</h1>}/></Routes></PreferencesProvider></MemoryRouter>);
 }
 beforeEach(() => { sessionStorage.clear(); complete.mockClear(); vi.mocked(startCalendarConnection).mockClear(); });
 async function reachIntegrations() {
@@ -48,4 +49,12 @@ it('can skip the introduction without connecting a service', async () => {
   mount(); await userEvent.click(screen.getByRole('button', { name: 'Пропустить знакомство' }));
   expect(await screen.findByRole('heading', { name: 'Чат Гены' })).toBeVisible();
   expect(complete).toHaveBeenCalledOnce(); expect(startCalendarConnection).not.toHaveBeenCalled();
+});
+it('keeps the selected theme when moving between introduction steps', async () => {
+  mount(); await userEvent.click(screen.getByRole('radio', { name: 'Светлая' }));
+  expect(document.documentElement.dataset.theme).toBe('light');
+  expect(JSON.parse(localStorage.getItem('rhythm.preferences.v1.alice') || '{}').theme).toBe('light');
+  await userEvent.click(screen.getByRole('button', { name: 'Начать' }));
+  await userEvent.click(screen.getByRole('button', { name: 'Назад' }));
+  expect(await screen.findByRole('radio', { name: 'Светлая' })).toBeChecked();
 });

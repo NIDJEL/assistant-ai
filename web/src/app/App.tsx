@@ -29,14 +29,13 @@ function AuthGate() {
   const surface = legalDocument ? 'legal' : location.pathname === '/onboarding' || user && !user.onboarding_completed ? 'onboarding' : location.pathname === '/auth' || !user ? 'auth' : 'workspace';
   useLayoutEffect(() => {
     document.documentElement.dataset.surface = surface;
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#080f21');
     return () => { delete document.documentElement.dataset.surface; };
   }, [surface]);
   if (legalDocument) return <LegalPage document={legalDocument}/>;
   if (loading || error) return <main className="auth-splash"><BrandMark/><span>{error || 'Гена'}</span>{error && <button className="auth-primary" onClick={() => void refresh()}>Повторить</button>}</main>;
   if (location.pathname === '/auth') return <AuthPage/>;
   if (!user) return <Navigate to="/auth" replace/>;
-  if (!user.onboarding_completed || location.pathname === '/onboarding') return <Suspense fallback={<main className="auth-splash"><BrandMark/><span>Гена</span></main>}><OnboardingPage/></Suspense>;
+  if (!user.onboarding_completed || location.pathname === '/onboarding') return <PreferencesProvider key={user.id}><Suspense fallback={<main className="auth-splash"><BrandMark/><span>Гена</span></main>}><OnboardingPage/></Suspense></PreferencesProvider>;
   return <PreferencesProvider key={user.id}><DataProvider><SocialProvider><EventActionsProvider><Routes><Route element={<AppShell/>}>
     <Route index element={<TodayPage/>}/><Route path="calendar" element={<CalendarPage/>}/><Route path="tasks" element={<TasksPage/>}/><Route path="meetings" element={<MeetingsPage/>}/><Route path="reminders" element={<RemindersPage/>}/><Route path="archive" element={<ArchivePage/>}/><Route path="integrations" element={<IntegrationsPage/>}/><Route path="settings" element={<SettingsPage/>}/>
     <Route path="friends" element={<FriendsPage/>}/><Route path="*" element={<div className="page"><h1>Страница не найдена</h1><a href="/">Вернуться на Сегодня</a></div>}/>

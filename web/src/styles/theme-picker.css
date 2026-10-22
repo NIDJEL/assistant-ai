@@ -1,0 +1,21 @@
+.theme-picker { min-width: 0; border: 0; margin: 0; padding: 0; color: var(--text); }
+.theme-picker legend { padding: 0; margin-bottom: 10px; font-size: 13px; font-weight: 600; }
+.theme-options { display: flex; gap: 10px; }
+.theme-option { position: relative; display: flex; flex: 1; align-items: center; gap: 10px; min-width: 0; min-height: 60px; padding: 11px 12px; border: 1px solid var(--border); border-radius: 13px; background: var(--surface); cursor: pointer; transition: border-color .25s, background-color .25s, box-shadow .25s; }
+.theme-option:has(:checked) { border-color: #0e7aff; background: var(--accent-soft); box-shadow: inset 0 0 0 1px #0e7aff44; }
+.theme-option:has(:focus-visible) { outline: 2px solid var(--focus); outline-offset: 3px; }
+.theme-option input { position: absolute; width: 1px; height: 1px; opacity: 0; margin: 0; padding: 0; }
+.theme-option-label { font-size: 13px; font-weight: 500; }
+.theme-option-check { display: grid; place-items: center; margin-left: auto; flex: 0 0 17px; height: 17px; border: 1px solid var(--muted); border-radius: 50%; color: white; }
+.theme-option-check svg { opacity: 0; }
+.theme-option:has(:checked) .theme-option-check { background: #0e7aff; border-color: #0e7aff; }
+.theme-option:has(:checked) .theme-option-check svg { opacity: 1; }
+.theme-swatch { display: flex; width: 45px; height: 32px; flex-shrink: 0; overflow: hidden; border-radius: 5px; border: 1px solid #566780; background: #0c1220; }
+.theme-swatch-sidebar { width: 11px; flex-shrink: 0; border-right: 1px solid #30405a; background: #182439; }
+.theme-swatch-content { flex: 1; display: flex; flex-direction: column; gap: 4px; padding: 6px 5px; }
+.theme-swatch-content i { display: block; height: 3px; border-radius: 2px; background: #4d668c; }.theme-swatch-content i:first-child { width: 75%; background: #0e7aff; }.theme-swatch-content i:last-child { width: 60%; }
+.theme-option-light .theme-swatch { background: #fff; border-color: #a1b2ca; }.theme-option-light .theme-swatch-sidebar { background: #e8eff8; border-color: #c4d1e4; }.theme-option-light .theme-swatch-content i:not(:first-child) { background: #becde1; }
+.theme-picker:disabled .theme-option { cursor: default; opacity: .6; }
+@media(hover:hover) { .theme-option:hover { border-color: #0e7aff88; } }
+.settings-row-control > .theme-picker { width: min(100%, 390px); }.settings-row-control > .theme-picker legend { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+@media(max-width:380px) { .theme-option { padding: 9px; gap: 6px; }.theme-swatch { width: 32px; height: 27px; }.theme-option-label { font-size: 12px; } }

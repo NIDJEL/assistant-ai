@@ -12,6 +12,7 @@ test('onboarding mascot keeps its proportions on all steps and pixel densities',
   try {
    const page = await context.newPage();
    await page.route('**/api/integrations',route=>route.fulfill({json:{connections:[],yandex_configured:true}}));
+   await page.route('**/api/preferences/**', route => route.fulfill({ json: {} }));
    await page.route('**/api/auth/me', route => route.fulfill({ json: { user: { id: '11111111-1111-4111-8111-111111111111', name: 'Мария', email: 'onboarding@example.test', avatar_url: '', providers: [], onboarding_completed: false } } }));
    await page.goto('/onboarding');
    for (let step = 0; step < 3; step++) {

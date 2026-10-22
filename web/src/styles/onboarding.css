@@ -73,5 +73,18 @@ html:has(.gena-onboarding) { scrollbar-gutter: auto; color-scheme: dark; }
 @media(max-width:700px), (max-width:900px) and (orientation:portrait) { .ob-label-desktop { display: none; }.ob-label-mobile { display: inline; }.ob-permission { min-height: 34px; }.ob-copy-shell { min-height: 277px; }.ob-controls { min-height: 92px; }.ob-progress button { min-height: 44px; padding-top: 9px; padding-bottom: 9px; margin-block: -9px; }.ob-primary { white-space: nowrap; } }
 @media(min-width:701px) and (max-width:900px) and (orientation:portrait) { .ob-card { width: 600px; padding: 30px 36px 26px; }.ob-scene-shell { aspect-ratio: 1.8; }.ob-copy h1 { font-size: 40px; }.ob-description { font-size: 16px; max-width: 430px; }.ob-eyebrow { font-size: 11px; }.ob-detail { font-size: 12px; }.ob-permission { font-size: 11px; max-width: 405px; }.ob-primary { font-size: 15px; }.ob-progress-label { font-size: 11px; } }
 .gena-onboarding[data-paused='true'] *, .gena-onboarding[data-paused='true'] *::before { animation-play-state: paused!important; }
+.gena-onboarding { --text: var(--ob-text); --surface: #12243c; --border: #385276; --accent-soft: #123965; --muted: #adc2e3; --ob-back-size: 55px; }
+.ob-theme-card { margin-top: 22px; max-width: 390px; }
+.ob-theme-error { padding: 9px 11px; margin-top: 10px; font-size: 12px; line-height: 1.5; color: #ffc6cc; border-radius: 9px; }
+.ob-detail { font-size: 14px; }.ob-permission { font-size: 12px; }.ob-progress-label { font-size: 12px; gap: 8px; }.ob-progress-label b { font-size: 10px; }
+.ob-actions { align-items: stretch; }
+.ob-back { width: var(--ob-back-size); flex: 0 0 var(--ob-back-size); min-height: var(--ob-back-size); padding: 0; color: #e3efff; background: linear-gradient(145deg, #203f65, #173153); border: 1px solid #5278a6; box-shadow: inset 0 1px 0 #d4e6ff1c; }
+.ob-back svg { display: block; transition: transform .3s var(--ob-ease); }
+@media(hover:hover) { .ob-back:hover:not(:disabled) svg { transform: translateX(-2px); } }
+@media(max-width:1000px) and (min-width:701px) { .ob-progress-label { font-size: 11px; gap: 5px; }.ob-detail { font-size: 13px; } }
+@media(max-width:700px), (max-width:900px) and (orientation:portrait) {
+  .gena-onboarding { --ob-back-size: 52px; }.ob-copy-shell { min-height: 250px; }.ob-theme-card { margin: 18px auto 0; text-align: left; max-width: 355px; }.ob-detail { font-size: 12px; }.ob-progress-label { font-size: 11px; gap: 6px; }.ob-progress-label b { font-size: 9px; }.ob-permission { font-size: 11px; }
+}
+@media(max-width:380px) { .ob-progress-label b { display: none; }.ob-progress-label { font-size: 11px; }.ob-detail { font-size: 11px; }.ob-permission { font-size: 10px; } }
 .gena-onboarding[data-reduced='true'] *, .gena-onboarding[data-reduced='true'] *::before { animation: none!important; transition: none!important; }.gena-onboarding[data-reduced='true'] .ob-scene { transform: none; }.gena-onboarding[data-reduced='true'] .ob-ghost img, .gena-onboarding[data-reduced='true'] .ob-arrow { transform: none!important; }
 @media(prefers-reduced-motion:reduce) { .gena-onboarding *, .gena-onboarding *::before { animation: none!important; transition: none!important; }.gena-onboarding .ob-scene, .gena-onboarding .ob-ghost img, .gena-onboarding .ob-arrow { transform: none!important; } }
