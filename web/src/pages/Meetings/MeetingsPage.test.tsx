@@ -25,7 +25,7 @@ it('shows friend photos, Zoom and the organizer as a participant without adding 
   expect(document.querySelector('.participant img')).toHaveAttribute('src', owner.avatar_url);
   const guestPhoto = document.querySelector(`.participant img[src="${friend.avatar_url}"]`)!;
   fireEvent.error(guestPhoto);
-  expect(document.querySelectorAll('.participant img')).toHaveLength(1);
+  await waitFor(() => expect(document.querySelectorAll('.participant img')).toHaveLength(1));
   expect(document.querySelector('.participants')).toHaveTextContent('Б');
   await userEvent.setup().click(screen.getByRole('button', { name: 'Добавить заметку' }));
   const dialog = screen.getByRole('dialog');
