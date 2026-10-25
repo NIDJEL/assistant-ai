@@ -114,6 +114,37 @@ jobs:
           printf '%s\n' "$REVISION" > REVISION
           tar -czf release.tar.gz .release/server web/dist docs/diagrams docs/architecture.html data REVISION
           sha256sum release.tar.gz > release.tar.gz.sha256
+      - name: Smoke the release image before deployment
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        run: |
+          set -euo pipefail
+          docker build -f deploy/Dockerfile.release -t rhythm-ci:release .
+          trap 'docker rm -f rhythm-ci-runtime >/dev/null 2>&1 || true' EXIT
+          docker run -d --name rhythm-ci-runtime --network host --read-only \
+            --tmpfs /tmp:rw,noexec,nosuid,size=64m,uid=65532,gid=65532 \
+            --tmpfs /app/var:rw,noexec,nosuid,size=16m,uid=65532,gid=65532 \
+            --cap-drop ALL --security-opt no-new-privileges:true \
+            -e DATABASE_URL="$TEST_DATABASE_URL" \
+            -e SESSION_SECRET=ci-runtime-secret-at-least-32-characters \
+            -e PUBLIC_URL=http://127.0.0.1:8081 -e APP_ADDR=127.0.0.1:8081 \
+            -e GENA_NLU_MODE=semantic_plan_legacy -e GENA_SEMANTIC_PROVIDER=rules \
+            -e NLP_PROVIDER=rules rhythm-ci:release
+          wait_health() {
+            for attempt in $(seq 1 60); do
+              if curl --silent --fail http://127.0.0.1:8081/health >/dev/null; then return 0; fi
+              sleep 1
+            done
+            return 1
+          }
+          wait_health
+          curl --silent --fail http://127.0.0.1:8081/auth | grep 'id="root"'
+          python3 scripts/smoke_auth.py --base http://127.0.0.1:8081 --phase prepare
+          docker restart rhythm-ci-runtime
+          wait_health
+          python3 scripts/smoke_auth.py --base http://127.0.0.1:8081 --phase verify
+          docker exec rhythm-ci-runtime /app/server -healthcheck
+          docker stop --time 10 rhythm-ci-runtime
+          test "$(docker inspect --format='{{.State.ExitCode}}' rhythm-ci-runtime)" = 0
       - uses: actions/upload-artifact@v4
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         with:

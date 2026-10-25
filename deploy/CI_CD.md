@@ -5,7 +5,7 @@
 ## Выпуск
 
 1. Проверки: `go mod verify`, `go vet`, Go race с отдельной PostgreSQL, тесты release receiver, frontend unit-тесты, TypeScript, Vite и короткий Chromium smoke.
-2. Успешный `main` упаковывается в `production-release`: статический Linux/amd64 Go binary, `web/dist`, runtime-данные, диаграммы и `REVISION`. Приложение не пересобирается на VPS.
+2. Успешный `main` упаковывается в `production-release`: статический Linux/amd64 Go binary, `web/dist`, runtime-данные, диаграммы и `REVISION`. Runtime-образ проверяется с read-only filesystem, auth/CRUD, сохранением данных после restart и штатной остановкой. Приложение не пересобирается на VPS.
 3. Job `Production` использует environment `production`, разрешённый только для ветки `main`, и проверяет, что SHA всё ещё является текущим `main`.
 4. Архив с SHA256 передаётся по SSH с закреплённым host key. Ключ отдельного пользователя `rhythm-deploy` разрешает только установленный receiver; shell, forwarding и произвольные sudo-команды недоступны.
 5. Receiver собирает runtime-образ из готовых файлов, сохраняет PostgreSQL dump и проверяет его через `pg_restore --list`, сохраняет production.env и предыдущий release.
