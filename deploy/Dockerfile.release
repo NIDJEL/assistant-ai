@@ -2,11 +2,11 @@
 FROM gcr.io/distroless/static-debian12:nonroot
 WORKDIR /app
 ENV APP_ROOT=/app APP_ADDR=0.0.0.0:8000
-COPY --chown=65532:65532 .release/server /app/server
-COPY web/dist /app/web/dist
-COPY docs/diagrams /app/docs/diagrams
-COPY docs/architecture.html /app/docs/architecture.html
-COPY data /app/data
+COPY --chown=65532:65532 --chmod=0755 .release/server /app/server
+COPY --chown=65532:65532 web/dist /app/web/dist
+COPY --chown=65532:65532 docs/diagrams /app/docs/diagrams
+COPY --chown=65532:65532 docs/architecture.html /app/docs/architecture.html
+COPY --chown=65532:65532 data /app/data
 USER 65532:65532
 EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 CMD ["/app/server", "-healthcheck"]
