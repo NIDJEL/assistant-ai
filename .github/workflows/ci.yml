@@ -1,101 +1,210 @@
-name: Tests and container
+name: CI/CD
 on:
   push:
+    branches: [main]
+    paths: &application-paths
+      - '.github/workflows/**'
+      - 'cmd/**'
+      - 'internal/**'
+      - 'migrations/**'
+      - 'data/**'
+      - 'testdata/**'
+      - 'tests/**'
+      - 'scripts/**'
+      - 'web/**'
+      - 'deploy/**'
+      - 'go.mod'
+      - 'go.sum'
+      - 'Dockerfile'
+      - '.dockerignore'
+      - '.gitattributes'
+      - 'docs/architecture.html'
+      - 'docs/diagrams/**'
+      - 'VERSION'
+      - '!**/*.md'
   pull_request:
+    branches: [main]
+    paths: *application-paths
+  workflow_dispatch:
+    inputs:
+      full_browser:
+        description: Run the complete Chromium regression suite
+        type: boolean
+        default: false
+      deploy:
+        description: Deploy main after successful checks
+        type: boolean
+        default: false
 permissions:
   contents: read
+# Cancel obsolete PR checks, while allowing production deployment to finish.
+concurrency:
+  group: cicd-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 jobs:
-  go-parity:
-    runs-on: ubuntu-latest
+  verify:
+    name: Checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
     services:
       postgres:
-        image: postgres:17
+        image: postgres:17-bookworm
         env:
           POSTGRES_DB: semantic_test
           POSTGRES_USER: rhythm
           POSTGRES_PASSWORD: ci-only-password
-        ports:
-          - 5432:5432
+        ports: ['5432:5432']
         options: >-
           --health-cmd "pg_isready -U rhythm -d semantic_test"
           --health-interval 5s --health-timeout 3s --health-retries 12
     env:
-      TEST_DATABASE_URL: postgres://rhythm:ci-only-password@127.0.0.1:5432/semantic_test?sslmode=disable
       GOTOOLCHAIN: local
-    strategy:
-      matrix:
-        go: ['1.26.x', '1.27.2']
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
-        with:
-          go-version: ${{ matrix.go }}
-          cache: true
-      - run: go mod verify
-      - run: go vet ./...
-      - run: go test -race -count=1 ./...
-  go-container:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: PostgreSQL runtime smoke and persistence
-        run: |
-          export POSTGRES_PASSWORD=$(openssl rand -hex 24)
-          export SESSION_SECRET=$(openssl rand -hex 32)
-          docker compose config --quiet
-          docker compose up --build -d --wait
-          curl --fail http://localhost:8081/health
-          curl --fail http://localhost:8081/auth | grep '<div id="root">'
-          python scripts/smoke_auth.py --phase prepare
-          docker compose restart app
-          for attempt in $(seq 1 30); do
-            if curl --fail http://localhost:8081/health; then break; fi
-            sleep 1
-          done
-          python scripts/smoke_auth.py --phase verify
-          docker compose exec -T app /app/server -healthcheck
-          docker compose stop --timeout 10 app
-          test "$(docker inspect --format='{{.State.ExitCode}}' $(docker compose ps -a -q app))" = "0"
-          docker compose down -v
-  frontend:
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:17
-        env:
-          POSTGRES_DB: semantic_test
-          POSTGRES_USER: rhythm
-          POSTGRES_PASSWORD: ci-only-password
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U rhythm -d semantic_test"
-          --health-interval 5s --health-timeout 3s --health-retries 12
-    env:
       TEST_DATABASE_URL: postgres://rhythm:ci-only-password@127.0.0.1:5432/semantic_test?sslmode=disable
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
         with:
-          version: '11.25.0'
+          persist-credentials: false
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: go.sum
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-          cache: pnpm
-          cache-dependency-path: web/pnpm-lock.yaml
-      - uses: actions/setup-go@v5
+      - uses: pnpm/action-setup@v4
         with:
-          go-version: '1.27.2'
-          cache: true
-      - run: pnpm --dir web install --frozen-lockfile
-      - run: pnpm --dir web test
-      - run: pnpm --dir web build
-      - run: pnpm --dir web exec playwright install --with-deps chromium
-      - run: pnpm --dir web e2e
+          package_json_file: web/package.json
+      - name: Locate pnpm cache
+        id: pnpm-cache
+        run: echo "store=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.store }}
+          key: pnpm-${{ runner.os }}-${{ hashFiles('web/pnpm-lock.yaml', 'web/package.json') }}
+          restore-keys: pnpm-${{ runner.os }}-
+      - name: Backend checks
+        run: |
+          go mod verify
+          go vet ./...
+          go test -race -count=1 ./...
+          python3 -m unittest discover -s deploy -p 'test_*.py'
+      - name: Frontend checks and production build
+        run: |
+          pnpm --dir web install --frozen-lockfile
+          pnpm --dir web test --maxWorkers=2
+          pnpm --dir web build
+      - name: Browser smoke
+        if: ${{ !inputs.full_browser }}
+        run: |
+          pnpm --dir web exec playwright install --with-deps chromium
+          pnpm --dir web e2e flows.spec.ts --grep 'UI CRUD:'
+          pnpm --dir web e2e password-strength.spec.ts
+      - name: Complete browser regression
+        if: ${{ inputs.full_browser }}
+        run: |
+          pnpm --dir web exec playwright install --with-deps chromium
+          pnpm --dir web e2e
+      - name: Package the checked application
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        env:
+          REVISION: ${{ github.sha }}
+        run: |
+          mkdir -p .release
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags='-s -w' -o .release/server ./cmd/server
+          printf '%s\n' "$REVISION" > REVISION
+          tar -czf release.tar.gz .release/server web/dist docs/diagrams docs/architecture.html data REVISION
+          sha256sum release.tar.gz > release.tar.gz.sha256
+      - name: Smoke the release image before deployment
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        run: |
+          set -euo pipefail
+          docker build -f deploy/Dockerfile.release -t rhythm-ci:release .
+          trap 'docker rm -f rhythm-ci-runtime >/dev/null 2>&1 || true' EXIT
+          docker run -d --name rhythm-ci-runtime --network host --read-only \
+            --tmpfs /tmp:rw,noexec,nosuid,size=64m,uid=65532,gid=65532 \
+            --tmpfs /app/var:rw,noexec,nosuid,size=16m,uid=65532,gid=65532 \
+            --cap-drop ALL --security-opt no-new-privileges:true \
+            -e DATABASE_URL="$TEST_DATABASE_URL" \
+            -e SESSION_SECRET=ci-runtime-secret-at-least-32-characters \
+            -e PUBLIC_URL=http://127.0.0.1:8081 -e APP_ADDR=127.0.0.1:8081 \
+            -e GENA_NLU_MODE=semantic_plan_legacy -e GENA_SEMANTIC_PROVIDER=rules \
+            -e NLP_PROVIDER=rules rhythm-ci:release
+          wait_health() {
+            for attempt in $(seq 1 60); do
+              if curl --silent --fail http://127.0.0.1:8081/health >/dev/null; then return 0; fi
+              sleep 1
+            done
+            return 1
+          }
+          wait_health
+          curl --silent --fail http://127.0.0.1:8081/auth | grep 'id="root"'
+          python3 scripts/smoke_auth.py --base http://127.0.0.1:8081 --phase prepare
+          docker restart rhythm-ci-runtime
+          wait_health
+          python3 scripts/smoke_auth.py --base http://127.0.0.1:8081 --phase verify
+          docker exec rhythm-ci-runtime /app/server -healthcheck
+          docker stop --time 10 rhythm-ci-runtime
+          test "$(docker inspect --format='{{.State.ExitCode}}' rhythm-ci-runtime)" = 0
       - uses: actions/upload-artifact@v4
-        if: always()
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         with:
-          name: p12-browser-results
+          name: production-release
+          path: |
+            release.tar.gz
+            release.tar.gz.sha256
+          retention-days: 3
+          compression-level: 0
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: browser-failure
           path: |
             web/playwright-report
             web/test-results
+          retention-days: 3
+          if-no-files-found: ignore
+  deploy:
+    name: Production
+    needs: verify
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.deploy))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment: production
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: production-release
+      - name: Check archive integrity
+        run: sha256sum --check release.tar.gz.sha256
+      - name: Deploy the current main revision
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          REVISION: ${{ github.sha }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          latest=$(gh api "repos/$REPOSITORY/git/ref/heads/main" --jq .object.sha)
+          if [ "$latest" != "$REVISION" ]; then
+            echo 'A newer main revision exists; skipping this deployment.'
+            exit 0
+          fi
+          test -n "$DEPLOY_HOST" && test -n "$DEPLOY_USER" && test -n "$DEPLOY_SSH_KEY" && test -n "$DEPLOY_KNOWN_HOSTS"
+          umask 077
+          key="$RUNNER_TEMP/rhythm-deploy-key"
+          hosts="$RUNNER_TEMP/rhythm-known-hosts"
+          trap 'rm -f "$key" "$hosts"' EXIT
+          printf '%s\n' "$DEPLOY_SSH_KEY" > "$key"
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > "$hosts"
+          { printf '%s\n' "$REVISION"; cat release.tar.gz; } | ssh \
+            -i "$key" -o BatchMode=yes -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$hosts" \
+            -o ConnectTimeout=15 -o ServerAliveInterval=15 -o ServerAliveCountMax=4 \
+            "$DEPLOY_USER@$DEPLOY_HOST"

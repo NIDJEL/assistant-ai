@@ -158,7 +158,7 @@ pnpm --dir web test
 pnpm --dir web build
 ```
 
-PostgreSQL-тесты требуют `TEST_DATABASE_URL` на отдельную тестовую базу; без неё соответствующие проверки пропускаются. CI дополнительно выполняет race detector, браузерные сценарии и сборку/проверку Docker-контейнера.
+PostgreSQL-тесты требуют `TEST_DATABASE_URL` на отдельную тестовую базу; без неё соответствующие проверки пропускаются. CI выполняет race detector и короткий браузерный smoke. После успешных проверок `main` готовый релиз автоматически отправляется в production с backup и проверкой health. [CI/CD](deploy/CI_CD.md).
 
 ```text
 cmd/                 Сервер, импорт, генератор VAPID и smoke/evaluation CLI
