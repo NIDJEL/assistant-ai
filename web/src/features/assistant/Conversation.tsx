@@ -15,7 +15,6 @@ import { SpeakButton } from '../voice/SpeakButton';
 import { usePreferences } from '../../app/PreferencesContext';
 import { SchedulingCard } from './SchedulingCard';
 import { ActionSteps } from './ActionSteps';
-import { ExecutionStatuses } from './ExecutionStatuses';
 import { assistantReplyText } from './replyText';
 import type { ChatChoice } from '../../types/api';
 import type { ChatItem } from './useAssistant';
@@ -29,7 +28,6 @@ function Response({ item, onDraft, active, busy, onChoose }: { item: ChatItem; o
     {response.scheduling && <SchedulingCard card={response.scheduling} active={active} busy={busy} onChoose={onChoose}/>}
     {response.social && <SocialChatLink kind={response.social.kind} eventId={response.social.event_id}/>}{active && !!response.candidates?.length && <div className="reply-choices" aria-label="Выбор записи">{response.candidates.map(event => <Button key={event.id} variant="soft" onClick={() => onDraft(`#${event.id}`)}>{event.display_title || event.title} · {event.date ? formatDay(event.date, { day: 'numeric', month: 'short', year: 'numeric' }) : 'Без срока'}{event.time ? `, ${event.time}` : ''} · {{ task: 'Задача', meeting: 'Встреча', reminder: 'Напоминание' }[event.kind]}</Button>)}</div>}
     {active && response.pending && !response.scheduling && <div className="reply-choices">{response.suggestions?.map(text => <Button key={text} variant="soft" onClick={() => onDraft(text)}>{text}</Button>)}{response.reply.includes('«да»') && <Button variant="soft" onClick={() => onDraft('да')}>Да</Button>}<Button variant="ghost" onClick={() => onDraft('отмена')}>Отмена</Button></div>}
-    {response.execution && <ExecutionStatuses statuses={response.execution} steps={response.operations}/>}
     </>;
 }
 export function Conversation({ items, busy, loading, error, onDraft, onChoose }: { items: ChatItem[]; busy: boolean; loading: boolean; error: string; onDraft: (text: string) => void; onChoose: (text: string, choice: ChatChoice) => void }) {

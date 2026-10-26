@@ -8,12 +8,13 @@ test('time choice submits the exact structured offer without drafting text', asy
   await userEvent.setup().click(screen.getByRole('button', { name: 'Завтра, 11:00–12:00' }));
   expect(onChoose).toHaveBeenCalledWith('Завтра, 11:00–12:00', { token: card.token, action: 'slot', index: 2, slot: card.slots![1] });
 });
-test('stale and busy cards disable actions and expose partial availability', () => {
+test('stale and busy cards keep actions disabled without service captions', () => {
   const { rerender } = render(<SchedulingCard card={{ ...card, complete: false }} active busy onChoose={vi.fn()}/>);
-  expect(screen.getByRole('status')).toHaveTextContent('не полностью');
+  expect(screen.queryByRole('status')).toBeNull();
   for (const button of screen.getAllByRole('button')) expect(button).toBeDisabled();
   rerender(<SchedulingCard card={card} active={false} busy={false} onChoose={vi.fn()}/>);
   for (const button of screen.getAllByRole('button')) expect(button).toBeDisabled();
+  expect(screen.queryByText(/Выбор завершён/)).toBeNull();
 });
 test('relative labels use the offer timezone across the device midnight', () => {
   expect(planningSlotLabel({ start: '2026-10-20T22:00:00Z', end: '2026-10-20T23:00:00Z' }, 'Europe/Moscow', '2026-10-20')).toBe('Завтра, 01:00–02:00');
