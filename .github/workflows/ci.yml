@@ -101,8 +101,7 @@ jobs:
         if: ${{ !inputs.full_browser }}
         run: |
           pnpm --dir web exec playwright install --with-deps chromium
-          pnpm --dir web e2e flows.spec.ts --grep 'UI CRUD:|all pages at 390px'
-          pnpm --dir web e2e password-strength.spec.ts mobile-settings-commands-errors.spec.ts
+          pnpm --dir web e2e flows.spec.ts password-strength.spec.ts mobile-settings-commands-errors.spec.ts meeting-series.spec.ts multi-action.spec.ts --grep 'UI CRUD:|all pages at 390px|password-strength.spec.ts|mobile-settings-commands-errors.spec.ts|meeting-series.spec.ts|multi-action.spec.ts'
       - name: Complete browser regression
         if: ${{ inputs.full_browser }}
         run: |
