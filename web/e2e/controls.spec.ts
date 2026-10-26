@@ -105,7 +105,7 @@ test('focus follows controls and composite fields, and dropdowns inherit light a
 test('long calendar lists, reminder fields and widget settings all use custom selects', async ({ page }, info) => {
   const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
   await mockSchedule(page); await page.goto('/integrations?service=google');
-  await page.setViewportSize({ width: 390, height: 844 }); await page.getByRole('button', { name: 'Открыть виджеты', exact: true }).click();
+  await page.setViewportSize({ width: 390, height: 844 });
   const integration = page.getByRole('dialog', { name: 'Интеграция', exact: true }); const calendar = integration.getByRole('combobox', { name: 'Календарь Google' });
   await expect(calendar).toContainText('Календарь 1:'); await calendar.click(); await expect(page.getByRole('option')).toHaveCount(46);
   await page.keyboard.press('End'); await expect.poll(() => page.getByRole('listbox').evaluate(node => node.scrollTop)).toBeGreaterThan(0);

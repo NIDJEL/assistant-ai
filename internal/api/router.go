@@ -115,9 +115,15 @@ func (a *API) Router() http.Handler {
 	})
 	a.frontendRoutes(r)
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
+		if a.frontendError(w, r, http.StatusNotFound) {
+			return
+		}
 		a.fail(w, r, &domain.AppError{Code: "not_found", Message: "Маршрут не найден", Status: 404})
 	})
 	r.MethodNotAllowed(func(w http.ResponseWriter, r *http.Request) {
+		if a.frontendError(w, r, http.StatusMethodNotAllowed) {
+			return
+		}
 		a.fail(w, r, &domain.AppError{Code: "method_not_allowed", Message: "Метод не поддерживается", Status: 405})
 	})
 	return r

@@ -1,12 +1,12 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import * as eventsAPI from '../api/events';
 import { health } from '../api/calendar';
-import { errorMessage } from '../api/client';
+import { ApiError, errorMessage } from '../api/client';
 import { dayKey } from '../features/calendar/dates';
 import type { EventInput, EventPatch, Health, RhythmEvent } from '../types/api';
 
 interface Data {
-  events: RhythmEvent[]; health: Health | null; today: string; loading: boolean; error: string; revision: number;
+  events: RhythmEvent[]; health: Health | null; today: string; loading: boolean; error: string; errorStatus: number; revision: number;
   refresh: () => Promise<void>; create: (input: EventInput) => Promise<RhythmEvent>;
   accept: (items: RhythmEvent[]) => void;
   update: (id: number, input: EventPatch) => Promise<RhythmEvent>; remove: (id: number) => Promise<void>;
@@ -16,14 +16,15 @@ const Context = createContext<Data | null>(null);
 export function DataProvider({ children }: { children: ReactNode }) {
   const [events, setEvents] = useState<RhythmEvent[]>([]); const [info, setInfo] = useState<Health | null>(null);
   const [error, setError] = useState(''); const [loading, setLoading] = useState(true); const [revision, setRevision] = useState(0);
+  const [errorStatus, setErrorStatus] = useState(0);
   const current = useRef<AbortController | null>(null);
   const refresh = useCallback(async () => {
     current.current?.abort(); const controller = new AbortController(); current.current = controller;
-    setError('');
+    setError(''); setErrorStatus(0);
     try {
       const [items, status] = await Promise.all([eventsAPI.listEvents({}, controller.signal), health(controller.signal)]);
       if (!controller.signal.aborted) { setEvents(items); setInfo(status); setRevision(r => r + 1); }
-    } catch (e) { if (!controller.signal.aborted) setError(errorMessage(e)); }
+    } catch (e) { if (!controller.signal.aborted) { setError(errorMessage(e)); setErrorStatus(e instanceof ApiError ? e.status : 0); } }
     finally { if (!controller.signal.aborted) setLoading(false); }
   }, []);
   useEffect(() => {
@@ -37,6 +38,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const remove = async (id: number) => { await eventsAPI.deleteEvent(id); setEvents(current => current.filter(event => event.id !== id)); await refresh(); };
   const restore = async (id: number, force = false) => { const item = await eventsAPI.restoreEvent(id, force); setEvents(current => [...current.filter(event => event.id !== id), item]); await refresh(); return item; };
   const accept = (items: RhythmEvent[]) => setEvents(current => [...new Map([...current, ...items].map(event => [event.id, event])).values()]);
-  return <Context value={{ events, health: info, today: info ? dayKey(info.now, info.timezone) : '', loading, error, revision, refresh, accept, create, update, remove, restore }}>{children}</Context>;
+  return <Context value={{ events, health: info, today: info ? dayKey(info.now, info.timezone) : '', loading, error, errorStatus, revision, refresh, accept, create, update, remove, restore }}>{children}</Context>;
 }
 export function useData(): Data { const data = useContext(Context); if (!data) throw new Error('DataProvider missing'); return data; }

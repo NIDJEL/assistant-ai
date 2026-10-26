@@ -58,3 +58,43 @@ func TestMissingBuildReturnsActionableError(t *testing.T) {
 		}
 	}
 }
+
+func TestBrowserErrorsKeepHTTPStatusAndAPIErrorsStayJSON(t *testing.T) {
+	root := t.TempDir()
+	dir := filepath.Join(root, "web", "dist", "errors")
+	if err := os.MkdirAll(dir, 0750); err != nil {
+		t.Fatal(err)
+	}
+	for _, status := range []string{"404", "503"} {
+		if err := os.WriteFile(filepath.Join(dir, status+".html"), []byte("<html>Gena error "+status+"</html>"), 0600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	a := API{Config: config.Config{Root: root}, Logger: slog.New(slog.NewJSONHandler(io.Discard, nil))}
+	for _, item := range []struct {
+		path   string
+		status int
+	}{{"/missing-page", 404}, {"/errors/503", 503}} {
+		request := httptest.NewRequest("GET", item.path, nil)
+		request.Header.Set("Accept", "text/html")
+		w := httptest.NewRecorder()
+		a.Router().ServeHTTP(w, request)
+		if w.Code != item.status || !strings.Contains(w.Header().Get("Content-Type"), "text/html") || !strings.Contains(w.Body.String(), "Gena error") {
+			t.Fatalf("browser error %s: %d %s", item.path, w.Code, w.Body.String())
+		}
+	}
+	request := httptest.NewRequest("GET", "/api/missing", nil)
+	request.Header.Set("Accept", "text/html")
+	w := httptest.NewRecorder()
+	a.Router().ServeHTTP(w, request)
+	if w.Code != 404 || !strings.Contains(w.Header().Get("Content-Type"), "application/json") || !strings.Contains(w.Body.String(), `"not_found"`) {
+		t.Fatal("API errors must remain JSON")
+	}
+	request = httptest.NewRequest("HEAD", "/missing-page", nil)
+	request.Header.Set("Accept", "text/html")
+	w = httptest.NewRecorder()
+	a.Router().ServeHTTP(w, request)
+	if w.Code != 404 || w.Body.Len() != 0 {
+		t.Fatal("HEAD error must not write a response body")
+	}
+}

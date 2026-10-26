@@ -9,6 +9,21 @@ import release
 
 
 class ReleaseTests(unittest.TestCase):
+    def test_error_pages_are_published_readably_outside_private_release(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            base = Path(temporary); incoming = base / 'private-release'; incoming.mkdir(mode=0o700)
+            (incoming / 'REVISION').write_text('a' * 40)
+            pages = incoming / 'web/dist/errors'; pages.mkdir(parents=True)
+            for status in range(400, 600):
+                path = pages / (str(status) + '.html'); path.write_text('error ' + str(status)); path.chmod(0o600)
+            with patch.object(release, 'ERROR_PAGES', base / 'www/rhythm-errors'):
+                release.install_error_pages(incoming)
+                active = base / 'www/rhythm-errors'
+                self.assertTrue(active.is_symlink())
+                self.assertEqual((active / '502.html').read_text(), 'error 502')
+                self.assertEqual((active / '502.html').stat().st_mode & 0o777, 0o644)
+                self.assertEqual(active.resolve().stat().st_mode & 0o777, 0o755)
+
     def archive(self, folder, entries):
         path = folder / 'test.tar.gz'
         with tarfile.open(path, 'w:gz') as archive:

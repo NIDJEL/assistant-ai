@@ -45,6 +45,8 @@ rhythm-deploy ALL=(root) NOPASSWD: /usr/local/sbin/rhythm-deploy ""
 
 Production.env и ключи AI/OAuth в GitHub не передаются. Новые серверные шаблоны и изменения receiver устанавливаются администратором отдельно после проверки; автоматический архив их не меняет. Не заменяйте рабочие шаблоны без сравнения текущих настроек.
 
+Receiver также публикует standalone-страницы ошибок из `web/dist/errors` в `/var/www/rhythm-error-releases/<SHA>` и атомарно переключает `/var/www/rhythm-errors`. Эти HTML-файлы доступны Nginx без backend и без доступа к приватному каталогу релиза. После первоначальной установки страниц проверьте `deploy/nginx.conf` через `nginx -t` и примените reload. API-ответы приложения остаются JSON; перехват upstream-ошибок включён только для страниц.
+
 ## Диагностика и восстановление
 
 Если GitHub пишет `The job was not started because recent account payments have failed or your spending limit needs to be increased`, задания не стартовали: исправьте **Settings → Billing & licensing** аккаунта. Изменение workflow не устраняет платёжную блокировку. После исправления выполните **Actions → CI/CD → Run workflow**, выберите `main`, включите `deploy`.

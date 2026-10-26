@@ -22,6 +22,7 @@ import urllib.request
 BASE = Path('/opt/rhythm')
 ENV = Path('/etc/rhythm/production.env')
 TEMPLATES = Path('/etc/rhythm/deploy')
+ERROR_PAGES = Path('/var/www/rhythm-errors')
 MAX_SIZE = 512 * 1024 * 1024
 
 
@@ -94,6 +95,30 @@ def point_current(release):
     os.replace(temporary, BASE / 'current')
 
 
+def install_error_pages(release):
+    """Nginx must be able to serve errors without the app or its private folder."""
+    source = release / 'web/dist/errors'
+    if not source.is_dir():
+        return  # Older releases predate standalone error pages.
+    revision = (release / 'REVISION').read_text().strip()
+    if not re.fullmatch('[0-9a-f]{40}', revision):
+        raise ValueError('invalid error-page revision')
+    versions = ERROR_PAGES.with_name('rhythm-error-releases')
+    versions.mkdir(parents=True, exist_ok=True); versions.chmod(0o755)
+    target = versions / revision
+    target.mkdir(exist_ok=True); target.chmod(0o755)
+    for status in range(400, 600):
+        incoming = source / (str(status) + '.html')
+        if not incoming.is_file():
+            raise ValueError('incomplete standalone error pages')
+        outgoing = target / incoming.name
+        shutil.copyfile(incoming, outgoing); outgoing.chmod(0o644)
+    temporary = ERROR_PAGES.with_name('.rhythm-errors-new')
+    temporary.unlink(missing_ok=True)
+    temporary.symlink_to(target, target_is_directory=True)
+    os.replace(temporary, ERROR_PAGES)
+
+
 def health(release):
     run(compose(release) + ['exec', '-T', 'app', '/app/server', '-healthcheck'])
     config = json.loads(run(compose(release) + ['config', '--format', 'json']))
@@ -140,6 +165,7 @@ def activate(release, revision):
         run(compose(release) + ['config', '--quiet'])
         run(compose(release) + ['up', '-d', '--no-deps', '--no-build', '--wait', '--wait-timeout', '120', 'app'])
         health(release)
+        install_error_pages(release)
         point_current(release)
     except Exception:
         write_env(old_env)
