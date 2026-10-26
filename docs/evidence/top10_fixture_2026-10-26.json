@@ -1,0 +1,1638 @@
+{
+  "Source": {
+    "Commit": "22ff6627ac61cf087ee4105d1aa12dead23182cf",
+    "GoTreeSHA256": "4ac8b787f2abe5d0e66ba42a58877a6bf5d853803e4a75e15906dc77fa0fa839",
+    "Dirty": true
+  },
+  "CorpusSHA256": "50b44b926fae61dcf1a548c9c48488823757a6cf70090038b16aeadd5ef269c7",
+  "CreatedAt": "2026-10-26T06:47:49Z",
+  "Timezone": "Europe/Moscow",
+  "P50MS": 4.706,
+  "P95MS": 6.324,
+  "Repairs": 0,
+  "ExpectedOperations": 30,
+  "ReturnedOperations": 30,
+  "mode": "fixture",
+  "Scenarios": 10,
+  "Passed": 10,
+  "Turns": 16,
+  "LLMCalls": 0,
+  "mean_turn_ms": 4.528249999999999,
+  "mean_llm_ms": 0,
+  "results": [
+    {
+      "name": "01 mandatory explicit triple",
+      "pass": true,
+      "turns": [
+        {
+          "message": "Создай встречу с Колей сегодня в 20:00, задачу купить продукты и напомни позвонить маме сегодня в 10:00",
+          "response": {
+            "diagnostics": {
+              "model_calls": 0,
+              "repairs": 0,
+              "plan_steps": 3,
+              "waiting_steps": 0,
+              "state_bytes": 242,
+              "inference_ms": 2.121,
+              "duration_ms": 3.725
+            },
+            "operations": [
+              {
+                "control_token": "89752b98-9923-49a0-942b-9e666dff7e15",
+                "applied": true,
+                "action": "create",
+                "event_ids": [
+                  1
+                ],
+                "key": "meeting",
+                "status": "done",
+                "reply": "Встреча сохранена: #1 «Встреча с Колей» — 26.10.2026 в 20:00."
+              },
+              {
+                "control_token": "89752b98-9923-49a0-942b-9e666dff7e15",
+                "applied": true,
+                "action": "create",
+                "event_ids": [
+                  2
+                ],
+                "key": "task",
+                "status": "done",
+                "reply": "Задача сохранена: #2 «Купить продукты» — без срока."
+              },
+              {
+                "control_token": "89752b98-9923-49a0-942b-9e666dff7e15",
+                "applied": true,
+                "action": "create",
+                "event_ids": [
+                  3
+                ],
+                "key": "reminder",
+                "status": "done",
+                "reply": "Напоминание сохранено: #3 «Позвонить маме» — 26.10.2026 в 10:00."
+              }
+            ],
+            "reply": "1. Выполнено: Встреча сохранена: #1 «Встреча с Колей» — 26.10.2026 в 20:00.\n2. Выполнено: Задача сохранена: #2 «Купить продукты» — без срока.\n3. Выполнено: Напоминание сохранено: #3 «Позвонить маме» — 26.10.2026 в 10:00.",
+            "action": "create",
+            "events": [
+              {
+                "id": 1,
+                "kind": "meeting",
+                "title": "Встреча с Колей",
+                "description": "",
+                "location": "",
+                "meeting_url": "",
+                "date": "2026-10-26",
+                "time": "20:00",
+                "status": "open",
+                "priority": "normal",
+                "created_at": "2026-10-26T04:53:00+03:00",
+                "updated_at": "2026-10-26T04:53:00+03:00",
+                "source_key": null,
+                "external_calendar_id": null,
+                "duration_minutes": 60
+              },
+              {
+                "id": 2,
+                "kind": "task",
+                "title": "Купить продукты",
+                "description": "",
+                "location": "",
+                "meeting_url": "",
+                "date": null,
+                "time": null,
+                "status": "open",
+                "priority": "normal",
+                "created_at": "2026-10-26T04:53:00+03:00",
+                "updated_at": "2026-10-26T04:53:00+03:00",
+                "source_key": null,
+                "external_calendar_id": null,
+                "duration_minutes": 60
+              },
+              {
+                "id": 3,
+                "kind": "reminder",
+                "title": "Позвонить маме",
+                "description": "",
+                "location": "",
+                "meeting_url": "",
+                "date": "2026-10-26",
+                "time": "10:00",
+                "status": "open",
+                "priority": "normal",
+                "created_at": "2026-10-26T04:53:00+03:00",
+                "updated_at": "2026-10-26T04:53:00+03:00",
+                "source_key": null,
+                "external_calendar_id": null,
+                "duration_minutes": 60
+              }
+            ],
+            "candidates": null,
+            "conflicts": null,
+            "session_id": "smoke",
+            "request_id": "0",
+            "provider": "simple_llm",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          },
+          "operation": {
+            "intent": "multi_action",
+            "arguments": {
+              "steps": [
+                {
+                  "key": "meeting",
+                  "source": "встречу с Колей сегодня в 20:00",
+                  "operation": {
+                    "intent": "create_meeting",
+                    "arguments": {
+                      "title": "Встреча с Колей",
+                      "date": {
+                        "type": "relative_day",
+                        "offset": 0
+                      },
+                      "time": "20:00"
+                    },
+                    "confidence": "high",
+                    "clarification": null
+                  }
+                },
+                {
+                  "key": "task",
+                  "source": "задачу купить продукты",
+                  "operation": {
+                    "intent": "create_task",
+                    "arguments": {
+                      "title": "Купить продукты"
+                    },
+                    "confidence": "high",
+                    "clarification": null
+                  }
+                },
+                {
+                  "key": "reminder",
+                  "source": "напомни позвонить маме сегодня в 10:00",
+                  "operation": {
+                    "intent": "create_reminder",
+                    "arguments": {
+                      "title": "Позвонить маме",
+                      "date": {
+                        "type": "relative_day",
+                        "offset": 0
+                      },
+                      "time": "10:00"
+                    },
+                    "confidence": "high",
+                    "clarification": null
+                  }
+                }
+              ]
+            },
+            "confidence": "high",
+            "clarification": null
+          },
+          "latency_ms": 5.291,
+          "llm_calls": 0
+        }
+      ]
+    },
+    {
+      "name": "02 mandatory original screenshot",
+      "pass": true,
+      "turns": [
+        {
+          "message": "Создай встречу с Колей в 8, добавь задачу купить продукты и напомни позвонить маме в 10",
+          "response": {
+            "diagnostics": {
+              "model_calls": 0,
+              "repairs": 0,
+              "plan_steps": 3,
+              "waiting_steps": 2,
+              "state_bytes": 2797,
+              "inference_ms": 1.567,
+              "duration_ms": 2.606
+            },
+            "operations": [
+              {
+                "control_token": "ef7fd9c0-4b65-4931-b96b-ad1e3df66429",
+                "active": true,
+                "key": "meeting",
+                "status": "waiting",
+                "reply": "Вы имеете в виду 08:00 или 20:00?"
+              },
+              {
+                "control_token": "ef7fd9c0-4b65-4931-b96b-ad1e3df66429",
+                "applied": true,
+                "action": "create",
+                "event_ids": [
+                  1
+                ],
+                "key": "task",
+                "status": "done",
+                "reply": "Задача сохранена: #1 «Купить продукты» — без срока."
+              },
+              {
+                "control_token": "ef7fd9c0-4b65-4931-b96b-ad1e3df66429",
+                "key": "reminder",
+                "status": "waiting",
+                "reply": "Вы имеете в виду 10:00 или 22:00?"
+              }
+            ],
+            "reply": "1. Нужно уточнение: Вы имеете в виду 08:00 или 20:00?\n2. Выполнено: Задача сохранена: #1 «Купить продукты» — без срока.\n3. Нужно уточнение: Вы имеете в виду 10:00 или 22:00?\nПродолжим действие 1: Вы имеете в виду 08:00 или 20:00?",
+            "action": "create",
+            "events": [
+              {
+                "id": 1,
+                "kind": "task",
+                "title": "Купить продукты",
+                "description": "",
+                "location": "",
+                "meeting_url": "",
+                "date": null,
+                "time": null,
+                "status": "open",
+                "priority": "normal",
+                "created_at": "2026-10-26T04:53:00+03:00",
+                "updated_at": "2026-10-26T04:53:00+03:00",
+                "source_key": null,
+                "external_calendar_id": null,
+                "duration_minutes": 60
+              }
+            ],
+            "candidates": [],
+            "conflicts": null,
+            "session_id": "smoke",
+            "request_id": "0",
+            "provider": "simple_llm",
+            "timezone": "Europe/Moscow",
+            "pending": true,
+            "suggestions": [
+              "08:00",
+              "20:00"
+            ]
+          },
+          "operation": {
+            "intent": "multi_action",
+            "arguments": {
+              "steps": [
+                {
+                  "key": "meeting",
+                  "source": "Создай встречу с Колей в 8",
+                  "operation": {
+                    "intent": "create_meeting",
+                    "arguments": {
+                      "title": "Встреча с Колей",
+                      "time": "20:00"
+                    },
+                    "confidence": "high",
+                    "clarification": null
+                  }
+                },
+                {
+                  "key": "task",
+                  "source": "добавь задачу купить продукты",
+                  "operation": {
+                    "intent": "create_task",
+                    "arguments": {
+                      "title": "Купить продукты"
+                    },
+                    "confidence": "high",
+                    "clarification": null
+                  }
+                },
+                {
+                  "key": "reminder",
+                  "source": "напомни позвонить маме в 10",
+                  "operation": {
+                    "intent": "create_reminder",
+                    "arguments": {
+                      "title": "Позвонить маме",
+                      "time": "10:00"
+                    },
+                    "confidence": "high",
+                    "clarification": null
+                  }
+                }
+              ]
+            },
+            "confidence": "high",
+            "clarification": null
+          },
+          "latency_ms": 4.706,
+          "llm_calls": 0
+        },
+        {
+          "message": "Сегодня в 20:00",
+          "response": {
+            "diagnostics": {
+              "model_calls": 0,
+              "repairs": 0,
+              "plan_steps": 3,
+              "waiting_steps": 1,
+              "state_bytes": 2302,
+              "inference_ms": 2.096,
+              "duration_ms": 3.712
+            },
+            "operations": [
+              {
+                "control_token": "f9bb645b-1cd7-4f4c-a0c5-b66c449602f4",
+                "applied": true,
+                "action": "create",
+                "event_ids": [
+                  2
+                ],
+                "key": "meeting",
+                "status": "done",
+                "reply": "Встреча сохранена: #2 «Встреча с Колей» — 26.10.2026 в 20:00."
+              },
+              {
+                "control_token": "f9bb645b-1cd7-4f4c-a0c5-b66c449602f4",
+                "action": "create",
+                "event_ids": [
+                  1
+                ],
+                "key": "task",
+                "status": "done",
+                "reply": "Задача сохранена: #1 «Купить продукты» — без срока."
+              },
+              {
+                "control_token": "f9bb645b-1cd7-4f4c-a0c5-b66c449602f4",
+                "active": true,
+                "key": "reminder",
+                "status": "waiting",
+                "reply": "Вы имеете в виду 10:00 или 22:00?"
+              }
+            ],
+            "reply": "1. Выполнено: Встреча сохранена: #2 «Встреча с Колей» — 26.10.2026 в 20:00.\n2. Выполнено: Задача сохранена: #1 «Купить продукты» — без срока.\n3. Нужно уточнение: Вы имеете в виду 10:00 или 22:00?\nПродолжим действие 3: Вы имеете в виду 10:00 или 22:00?",
+            "action": "create",
+            "events": [
+              {
+                "id": 2,
+                "kind": "meeting",
+                "title": "Встреча с Колей",
+                "description": "",
+                "location": "",
+                "meeting_url": "",
+                "date": "2026-10-26",
+                "time": "20:00",
+                "status": "open",
+                "priority": "normal",
+                "created_at": "2026-10-26T04:53:01+03:00",
+                "updated_at": "2026-10-26T04:53:01+03:00",
+                "source_key": null,
+                "external_calendar_id": null,
+                "duration_minutes": 60
+              }
+            ],
+            "candidates": [],
+            "conflicts": null,
+            "session_id": "smoke",
+            "request_id": "1",
+            "provider": "simple_llm",
+            "timezone": "Europe/Moscow",
+            "pending": true,
+            "suggestions": [
+              "10:00",
+              "22:00"
+            ]
+          },
+          "operation": {
+            "intent": "continue",
+            "arguments": {
+              "changes": {
+                "date": {
+                  "type": "relative_day",
+                  "offset": 0
+                },
+                "time": "20:00"
+              }
+            },
+            "confidence": "high",
+            "clarification": null
+          },
+          "latency_ms": 5.29,
+          "llm_calls": 0
+        },
+        {
+          "message": "Сегодня в 10:00",
+          "response": {
+            "diagnostics": {
+              "model_calls": 0,
+              "repairs": 0,
+              "plan_steps": 3,
+              "waiting_steps": 0,
+              "state_bytes": 242,
+              "inference_ms": 2.675,
+              "duration_ms": 3.197
+            },
+            "operations": [
+              {
+                "control_token": "77a24779-1e7e-4c4c-9415-fe26b111167e",
+                "action": "create",
+                "event_ids": [
+                  2
+                ],
+                "key": "meeting",
+                "status": "done",
+                "reply": "Встреча сохранена: #2 «Встреча с Колей» — 26.10.2026 в 20:00."
+              },
+              {
+                "control_token": "77a24779-1e7e-4c4c-9415-fe26b111167e",
+                "action": "create",
+                "event_ids": [
+                  1
+                ],
+                "key": "task",
+                "status": "done",
+                "reply": "Задача сохранена: #1 «Купить продукты» — без срока."
+              },
+              {
+                "control_token": "77a24779-1e7e-4c4c-9415-fe26b111167e",
+                "applied": true,
+                "action": "create",
+                "event_ids": [
+                  3
+                ],
+                "key": "reminder",
+                "status": "done",
+                "reply": "Напоминание сохранено: #3 «Позвонить маме» — 26.10.2026 в 10:00."
+              }
+            ],
+            "reply": "1. Выполнено: Встреча сохранена: #2 «Встреча с Колей» — 26.10.2026 в 20:00.\n2. Выполнено: Задача сохранена: #1 «Купить продукты» — без срока.\n3. Выполнено: Напоминание сохранено: #3 «Позвонить маме» — 26.10.2026 в 10:00.",
+            "action": "create",
+            "events": [
+              {
+                "id": 3,
+                "kind": "reminder",
+                "title": "Позвонить маме",
+                "description": "",
+                "location": "",
+                "meeting_url": "",
+                "date": "2026-10-26",
+                "time": "10:00",
+                "status": "open",
+                "priority": "normal",
+                "created_at": "2026-10-26T04:53:02+03:00",
+                "updated_at": "2026-10-26T04:53:02+03:00",
+                "source_key": null,
+                "external_calendar_id": null,
+                "duration_minutes": 60
+              }
+            ],
+            "candidates": null,
+            "conflicts": null,
+            "session_id": "smoke",
+            "request_id": "2",
+            "provider": "simple_llm",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          },
+          "operation": {
+            "intent": "continue",
+            "arguments": {
+              "changes": {
+                "date": {
+                  "type": "relative_day",
+                  "offset": 0
+                },
+                "time": "10:00"
+              }
+            },
+            "confidence": "high",
+            "clarification": null
+          },
+          "latency_ms": 4.757,
+          "llm_calls": 0
+        }
+      ]
+    },
+    {
+      "name": "03 mandatory dependency",
+      "pass": true,
+      "turns": [
+        {
+          "message": "Создай задачу Отчёт, затем отметь именно её выполненной; независимо добавь задачу Купить хлеб",
+          "response": {
+            "diagnostics": {
+              "model_calls": 0,
+              "repairs": 0,
+              "plan_steps": 3,
+              "waiting_steps": 0,
+              "state_bytes": 238,
+              "inference_ms": 1.006,
+              "duration_ms": 2.511
+            },
+            "operations": [
+              {
+                "control_token": "9b309fb2-50c4-4579-9057-2c92e9f02e4b",
+                "applied": true,
+                "action": "create",
+                "event_ids": [
+                  1
+                ],
+                "key": "report",
+                "status": "done",
+                "reply": "Задача сохранена: #1 «Отчёт» — без срока."
+              },
+              {
+                "control_token": "9b309fb2-50c4-4579-9057-2c92e9f02e4b",
+                "applied": true,
+                "action": "complete",
+                "event_ids": [
+                  1
+                ],
+                "key": "complete",
+                "status": "done",
+                "reply": "Отмечено выполненным: #1 «Отчёт» — без срока."
+              },
+              {
+                "control_token": "9b309fb2-50c4-4579-9057-2c92e9f02e4b",
+                "applied": true,
+                "action": "create",
+                "event_ids": [
+                  2
+                ],
+                "key": "bread",
+                "status": "done",
+                "reply": "Задача сохранена: #2 «Купить хлеб» — без срока."
+              }
+            ],
+            "reply": "1. Выполнено: Задача сохранена: #1 «Отчёт» — без срока.\n2. Выполнено: Отмечено выполненным: #1 «Отчёт» — без срока.\n3. Выполнено: Задача сохранена: #2 «Купить хлеб» — без срока.",
+            "action": "create",
+            "events": [
+              {
+                "id": 1,
+                "kind": "task",
+                "title": "Отчёт",
+                "description": "",
+                "location": "",
+                "meeting_url": "",
+                "date": null,
+                "time": null,
+                "status": "done",
+                "priority": "normal",
+                "created_at": "2026-10-26T04:53:00+03:00",
+                "updated_at": "2026-10-26T04:53:00+03:00",
+                "source_key": null,
+                "external_calendar_id": null,
+                "duration_minutes": 60
+              },
+              {
+                "id": 2,
+                "kind": "task",
+                "title": "Купить хлеб",
+                "description": "",
+                "location": "",
+                "meeting_url": "",
+                "date": null,
+                "time": null,
+                "status": "open",
+                "priority": "normal",
+                "created_at": "2026-10-26T04:53:00+03:00",
+                "updated_at": "2026-10-26T04:53:00+03:00",
+                "source_key": null,
+                "external_calendar_id": null,
+                "duration_minutes": 60
+              }
+            ],
+            "candidates": null,
+            "conflicts": null,
+            "session_id": "smoke",
+            "request_id": "0",
+            "provider": "simple_llm",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          },
+          "operation": {
+            "intent": "multi_action",
+            "arguments": {
+              "steps": [
+                {
+                  "key": "report",
+                  "source": "Создай задачу Отчёт",
+                  "operation": {
+                    "intent": "create_task",
+                    "arguments": {
+                      "title": "Отчёт"
+                    },
+                    "confidence": "high",
+                    "clarification": null
+                  }
+                },
+                {
+                  "key": "complete",
+                  "source": "затем отметь именно её выполненной",
+                  "operation": {
+                    "intent": "complete",
+                    "arguments": {
+                      "target": {
+                        "type": "step",
+                        "value": "report"
+                      }
+                    },
+                    "confidence": "high",
+                    "clarification": null
+                  },
+                  "depends_on": [
+                    "report"
+                  ]
+                },
+                {
+                  "key": "bread",
+                  "source": "добавь задачу Купить хлеб",
+                  "operation": {
+                    "intent": "create_task",
+                    "arguments": {
+                      "title": "Купить хлеб"
+                    },
+                    "confidence": "high",
+                    "clarification": null
+                  }
+                }
+              ]
+            },
+            "confidence": "high",
+            "clarification": null
+          },
+          "latency_ms": 3.519,
+          "llm_calls": 0
+        }
+      ]
+    },
+    {
+      "name": "04 mandatory five independent commands",
+      "pass": true,
+      "turns": [
+        {
+          "message": "Добавь задачу Альфа; Добавь задачу Бета; Добавь задачу Гамма; Добавь задачу Дельта; Добавь задачу Эпсилон",
+          "response": {
+            "diagnostics": {
+              "model_calls": 0,
+              "repairs": 0,
+              "plan_steps": 5,
+              "waiting_steps": 0,
+              "state_bytes": 238,
+              "inference_ms": 3.7,
+              "duration_ms": 4.741
+            },
+            "operations": [
+              {
+                "control_token": "0f20a8f9-f614-4577-a159-b45522847f4a",
+                "applied": true,
+                "action": "create",
+                "event_ids": [
+                  1
+                ],
+                "key": "a",
+                "status": "done",
+                "reply": "Задача сохранена: #1 «Альфа» — без срока."
+              },
+              {
+                "control_token": "0f20a8f9-f614-4577-a159-b45522847f4a",
+                "applied": true,
+                "action": "create",
+                "event_ids": [
+                  2
+                ],
+                "key": "b",
+                "status": "done",
+                "reply": "Задача сохранена: #2 «Бета» — без срока."
+              },
+              {
+                "control_token": "0f20a8f9-f614-4577-a159-b45522847f4a",
+                "applied": true,
+                "action": "create",
+                "event_ids": [
+                  3
+                ],
+                "key": "c",
+                "status": "done",
+                "reply": "Задача сохранена: #3 «Гамма» — без срока."
+              },
+              {
+                "control_token": "0f20a8f9-f614-4577-a159-b45522847f4a",
+                "applied": true,
+                "action": "create",
+                "event_ids": [
+                  4
+                ],
+                "key": "d",
+                "status": "done",
+                "reply": "Задача сохранена: #4 «Дельта» — без срока."
+              },
+              {
+                "control_token": "0f20a8f9-f614-4577-a159-b45522847f4a",
+                "applied": true,
+                "action": "create",
+                "event_ids": [
+                  5
+                ],
+                "key": "e",
+                "status": "done",
+                "reply": "Задача сохранена: #5 «Эпсилон» — без срока."
+              }
+            ],
+            "reply": "1. Выполнено: Задача сохранена: #1 «Альфа» — без срока.\n2. Выполнено: Задача сохранена: #2 «Бета» — без срока.\n3. Выполнено: Задача сохранена: #3 «Гамма» — без срока.\n4. Выполнено: Задача сохранена: #4 «Дельта» — без срока.\n5. Выполнено: Задача сохранена: #5 «Эпсилон» — без срока.",
+            "action": "create",
+            "events": [
+              {
+                "id": 1,
+                "kind": "task",
+                "title": "Альфа",
+                "description": "",
+                "location": "",
+                "meeting_url": "",
+                "date": null,
+                "time": null,
+                "status": "open",
+                "priority": "normal",
+                "created_at": "2026-10-26T04:53:00+03:00",
+                "updated_at": "2026-10-26T04:53:00+03:00",
+                "source_key": null,
+                "external_calendar_id": null,
+                "duration_minutes": 60
+              },
+              {
+                "id": 2,
+                "kind": "task",
+                "title": "Бета",
+                "description": "",
+                "location": "",
+                "meeting_url": "",
+                "date": null,
+                "time": null,
+                "status": "open",
+                "priority": "normal",
+                "created_at": "2026-10-26T04:53:00+03:00",
+                "updated_at": "2026-10-26T04:53:00+03:00",
+                "source_key": null,
+                "external_calendar_id": null,
+                "duration_minutes": 60
+              },
+              {
+                "id": 3,
+                "kind": "task",
+                "title": "Гамма",
+                "description": "",
+                "location": "",
+                "meeting_url": "",
+                "date": null,
+                "time": null,
+                "status": "open",
+                "priority": "normal",
+                "created_at": "2026-10-26T04:53:00+03:00",
+                "updated_at": "2026-10-26T04:53:00+03:00",
+                "source_key": null,
+                "external_calendar_id": null,
+                "duration_minutes": 60
+              },
+              {
+                "id": 4,
+                "kind": "task",
+                "title": "Дельта",
+                "description": "",
+                "location": "",
+                "meeting_url": "",
+                "date": null,
+                "time": null,
+                "status": "open",
+                "priority": "normal",
+                "created_at": "2026-10-26T04:53:00+03:00",
+                "updated_at": "2026-10-26T04:53:00+03:00",
+                "source_key": null,
+                "external_calendar_id": null,
+                "duration_minutes": 60
+              },
+              {
+                "id": 5,
+                "kind": "task",
+                "title": "Эпсилон",
+                "description": "",
+                "location": "",
+                "meeting_url": "",
+                "date": null,
+                "time": null,
+                "status": "open",
+                "priority": "normal",
+                "created_at": "2026-10-26T04:53:00+03:00",
+                "updated_at": "2026-10-26T04:53:00+03:00",
+                "source_key": null,
+                "external_calendar_id": null,
+                "duration_minutes": 60
+              }
+            ],
+            "candidates": null,
+            "conflicts": null,
+            "session_id": "smoke",
+            "request_id": "0",
+            "provider": "simple_llm",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          },
+          "operation": {
+            "intent": "multi_action",
+            "arguments": {
+              "steps": [
+                {
+                  "key": "a",
+                  "source": "Добавь задачу Альфа",
+                  "operation": {
+                    "intent": "create_task",
+                    "arguments": {
+                      "title": "Альфа"
+                    },
+                    "confidence": "high",
+                    "clarification": null
+                  }
+                },
+                {
+                  "key": "b",
+                  "source": "Добавь задачу Бета",
+                  "operation": {
+                    "intent": "create_task",
+                    "arguments": {
+                      "title": "Бета"
+                    },
+                    "confidence": "high",
+                    "clarification": null
+                  }
+                },
+                {
+                  "key": "c",
+                  "source": "Добавь задачу Гамма",
+                  "operation": {
+                    "intent": "create_task",
+                    "arguments": {
+                      "title": "Гамма"
+                    },
+                    "confidence": "high",
+                    "clarification": null
+                  }
+                },
+                {
+                  "key": "d",
+                  "source": "Добавь задачу Дельта",
+                  "operation": {
+                    "intent": "create_task",
+                    "arguments": {
+                      "title": "Дельта"
+                    },
+                    "confidence": "high",
+                    "clarification": null
+                  }
+                },
+                {
+                  "key": "e",
+                  "source": "Добавь задачу Эпсилон",
+                  "operation": {
+                    "intent": "create_task",
+                    "arguments": {
+                      "title": "Эпсилон"
+                    },
+                    "confidence": "high",
+                    "clarification": null
+                  }
+                }
+              ]
+            },
+            "confidence": "high",
+            "clarification": null
+          },
+          "latency_ms": 6.324,
+          "llm_calls": 0
+        }
+      ]
+    },
+    {
+      "name": "05 atomic preview then commit",
+      "pass": true,
+      "turns": [
+        {
+          "message": "Добавь задачи Отчёт и Смета только вместе, либо обе либо ни одной; независимо добавь Купить хлеб",
+          "response": {
+            "diagnostics": {
+              "model_calls": 0,
+              "repairs": 0,
+              "plan_steps": 3,
+              "waiting_steps": 2,
+              "state_bytes": 2445,
+              "inference_ms": 2.087,
+              "duration_ms": 3.125
+            },
+            "operations": [
+              {
+                "atomic_group": "all",
+                "control_token": "88f17491-a98a-408e-a1fd-6f37c607418a",
+                "can_confirm": true,
+                "active": true,
+                "key": "report",
+                "status": "waiting",
+                "reply": "Группа all готова: «Отчёт» (task). Все изменения будут сохранены вместе после подтверждения."
+              },
+              {
+                "atomic_group": "all",
+                "control_token": "88f17491-a98a-408e-a1fd-6f37c607418a",
+                "can_confirm": true,
+                "key": "estimate",
+                "status": "waiting",
+                "reply": "Группа all готова: «Смета» (task). Все изменения будут сохранены вместе после подтверждения."
+              },
+              {
+                "control_token": "88f17491-a98a-408e-a1fd-6f37c607418a",
+                "applied": true,
+                "action": "create",
+                "event_ids": [
+                  1
+                ],
+                "key": "bread",
+                "status": "done",
+                "reply": "Задача сохранена: #1 «Купить хлеб» — без срока."
+              }
+            ],
+            "reply": "1. Нужно уточнение: Группа all готова: «Отчёт» (task). Все изменения будут сохранены вместе после подтверждения.\n2. Нужно уточнение: Группа all готова: «Смета» (task). Все изменения будут сохранены вместе после подтверждения.\n3. Выполнено: Задача сохранена: #1 «Купить хлеб» — без срока.\nПродолжим действие 1: Группа all готова: «Отчёт» (task). Все изменения будут сохранены вместе после подтверждения.",
+            "action": "create",
+            "events": [
+              {
+                "id": 1,
+                "kind": "task",
+                "title": "Купить хлеб",
+                "description": "",
+                "location": "",
+                "meeting_url": "",
+                "date": null,
+                "time": null,
+                "status": "open",
+                "priority": "normal",
+                "created_at": "2026-10-26T04:53:00+03:00",
+                "updated_at": "2026-10-26T04:53:00+03:00",
+                "source_key": null,
+                "external_calendar_id": null,
+                "duration_minutes": 60
+              }
+            ],
+            "candidates": null,
+            "conflicts": null,
+            "session_id": "smoke",
+            "request_id": "0",
+            "provider": "simple_llm",
+            "timezone": "Europe/Moscow",
+            "pending": true
+          },
+          "operation": {
+            "intent": "multi_action",
+            "arguments": {
+              "steps": [
+                {
+                  "key": "report",
+                  "source": "Отчёт",
+                  "operation": {
+                    "intent": "create_task",
+                    "arguments": {
+                      "title": "Отчёт"
+                    },
+                    "confidence": "high",
+                    "clarification": null
+                  },
+                  "atomic_group": "all"
+                },
+                {
+                  "key": "estimate",
+                  "source": "и Смета только вместе",
+                  "operation": {
+                    "intent": "create_task",
+                    "arguments": {
+                      "title": "Смета"
+                    },
+                    "confidence": "high",
+                    "clarification": null
+                  },
+                  "atomic_group": "all"
+                },
+                {
+                  "key": "bread",
+                  "source": "Купить хлеб",
+                  "operation": {
+                    "intent": "create_task",
+                    "arguments": {
+                      "title": "Купить хлеб"
+                    },
+                    "confidence": "high",
+                    "clarification": null
+                  }
+                }
+              ]
+            },
+            "confidence": "high",
+            "clarification": null
+          },
+          "latency_ms": 4.716,
+          "llm_calls": 0
+        },
+        {
+          "message": "да",
+          "response": {
+            "diagnostics": {
+              "model_calls": 0,
+              "repairs": 0,
+              "plan_steps": 3,
+              "waiting_steps": 0,
+              "state_bytes": 238,
+              "inference_ms": 0,
+              "duration_ms": 1.049
+            },
+            "operations": [
+              {
+                "atomic_group": "all",
+                "control_token": "f9d7fcc0-91b2-4b09-aadf-844bb02051dd",
+                "applied": true,
+                "action": "create",
+                "event_ids": [
+                  2
+                ],
+                "key": "report",
+                "status": "done",
+                "reply": "Задача сохранена: #2 «Отчёт» — без срока."
+              },
+              {
+                "atomic_group": "all",
+                "control_token": "f9d7fcc0-91b2-4b09-aadf-844bb02051dd",
+                "applied": true,
+                "action": "create",
+                "event_ids": [
+                  3
+                ],
+                "key": "estimate",
+                "status": "done",
+                "reply": "Задача сохранена: #3 «Смета» — без срока."
+              },
+              {
+                "control_token": "f9d7fcc0-91b2-4b09-aadf-844bb02051dd",
+                "action": "create",
+                "event_ids": [
+                  1
+                ],
+                "key": "bread",
+                "status": "done",
+                "reply": "Задача сохранена: #1 «Купить хлеб» — без срока."
+              }
+            ],
+            "reply": "1. Выполнено: Задача сохранена: #2 «Отчёт» — без срока.\n2. Выполнено: Задача сохранена: #3 «Смета» — без срока.\n3. Выполнено: Задача сохранена: #1 «Купить хлеб» — без срока.",
+            "action": "create",
+            "events": [
+              {
+                "id": 2,
+                "kind": "task",
+                "title": "Отчёт",
+                "description": "",
+                "location": "",
+                "meeting_url": "",
+                "date": null,
+                "time": null,
+                "status": "open",
+                "priority": "normal",
+                "created_at": "2026-10-26T04:53:00+03:00",
+                "updated_at": "2026-10-26T04:53:00+03:00",
+                "source_key": null,
+                "external_calendar_id": null,
+                "duration_minutes": 60
+              },
+              {
+                "id": 3,
+                "kind": "task",
+                "title": "Смета",
+                "description": "",
+                "location": "",
+                "meeting_url": "",
+                "date": null,
+                "time": null,
+                "status": "open",
+                "priority": "normal",
+                "created_at": "2026-10-26T04:53:00+03:00",
+                "updated_at": "2026-10-26T04:53:00+03:00",
+                "source_key": null,
+                "external_calendar_id": null,
+                "duration_minutes": 60
+              }
+            ],
+            "candidates": null,
+            "conflicts": null,
+            "session_id": "smoke",
+            "request_id": "1",
+            "provider": "simple_llm",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          },
+          "latency_ms": 2.608,
+          "llm_calls": 0
+        }
+      ]
+    },
+    {
+      "name": "06 atomic cancellation",
+      "pass": true,
+      "turns": [
+        {
+          "message": "Добавь задачу Отчёт и задачу Смета только вместе: обе задачи или ни одной",
+          "response": {
+            "diagnostics": {
+              "model_calls": 0,
+              "repairs": 0,
+              "plan_steps": 2,
+              "waiting_steps": 2,
+              "state_bytes": 1922,
+              "inference_ms": 2.108,
+              "duration_ms": 3.154
+            },
+            "operations": [
+              {
+                "atomic_group": "all",
+                "control_token": "6c53df81-f067-46c5-9aad-f6ffec61cc23",
+                "can_confirm": true,
+                "active": true,
+                "key": "report",
+                "status": "waiting",
+                "reply": "Группа all готова: «Отчёт» (task). Все изменения будут сохранены вместе после подтверждения."
+              },
+              {
+                "atomic_group": "all",
+                "control_token": "6c53df81-f067-46c5-9aad-f6ffec61cc23",
+                "can_confirm": true,
+                "key": "estimate",
+                "status": "waiting",
+                "reply": "Группа all готова: «Смета» (task). Все изменения будут сохранены вместе после подтверждения."
+              }
+            ],
+            "reply": "1. Нужно уточнение: Группа all готова: «Отчёт» (task). Все изменения будут сохранены вместе после подтверждения.\n2. Нужно уточнение: Группа all готова: «Смета» (task). Все изменения будут сохранены вместе после подтверждения.\nПродолжим действие 1: Группа all готова: «Отчёт» (task). Все изменения будут сохранены вместе после подтверждения.",
+            "action": "clarify",
+            "events": [],
+            "candidates": null,
+            "conflicts": null,
+            "session_id": "smoke",
+            "request_id": "0",
+            "provider": "simple_llm",
+            "timezone": "Europe/Moscow",
+            "pending": true
+          },
+          "operation": {
+            "intent": "multi_action",
+            "arguments": {
+              "steps": [
+                {
+                  "key": "report",
+                  "source": "задачу Отчёт",
+                  "operation": {
+                    "intent": "create_task",
+                    "arguments": {
+                      "title": "Отчёт"
+                    },
+                    "confidence": "high",
+                    "clarification": null
+                  },
+                  "atomic_group": "all"
+                },
+                {
+                  "key": "estimate",
+                  "source": "и задачу Смета только вместе",
+                  "operation": {
+                    "intent": "create_task",
+                    "arguments": {
+                      "title": "Смета"
+                    },
+                    "confidence": "high",
+                    "clarification": null
+                  },
+                  "atomic_group": "all"
+                }
+              ]
+            },
+            "confidence": "high",
+            "clarification": null
+          },
+          "latency_ms": 5.759,
+          "llm_calls": 0
+        },
+        {
+          "message": "отмена",
+          "response": {
+            "diagnostics": {
+              "model_calls": 0,
+              "repairs": 0,
+              "plan_steps": 2,
+              "waiting_steps": 0,
+              "state_bytes": 2,
+              "inference_ms": 0,
+              "duration_ms": 0.523
+            },
+            "operations": [
+              {
+                "atomic_group": "all",
+                "control_token": "6c53df81-f067-46c5-9aad-f6ffec61cc23",
+                "active": true,
+                "key": "report",
+                "status": "cancelled",
+                "reply": "Отменено."
+              },
+              {
+                "atomic_group": "all",
+                "control_token": "6c53df81-f067-46c5-9aad-f6ffec61cc23",
+                "key": "estimate",
+                "status": "cancelled",
+                "reply": "Отменено."
+              }
+            ],
+            "reply": "Незавершённые действия отменены. Уже выполненные действия сохранены.\n1. Отменено: Отменено.\n2. Отменено: Отменено.\nПродолжим действие 1: Отменено.",
+            "action": "cancel",
+            "events": [],
+            "candidates": null,
+            "conflicts": null,
+            "session_id": "smoke",
+            "request_id": "1",
+            "provider": "simple_llm",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          },
+          "latency_ms": 3.129,
+          "llm_calls": 0
+        }
+      ]
+    },
+    {
+      "name": "07 bounded daily recurrence",
+      "pass": true,
+      "turns": [
+        {
+          "message": "Напоминай принимать витамины ежедневно в 09:00 три раза",
+          "response": {
+            "diagnostics": {
+              "model_calls": 0,
+              "repairs": 0,
+              "plan_steps": 0,
+              "waiting_steps": 0,
+              "state_bytes": 242,
+              "inference_ms": 2.071,
+              "duration_ms": 2.598
+            },
+            "reply": "Напоминание сохранено: #1 «Принимать витамины» — 26.10.2026 в 09:00.",
+            "action": "create",
+            "events": [
+              {
+                "recurrence": {
+                  "count": 3,
+                  "frequency": "day",
+                  "interval": 1,
+                  "local_time": "09:00",
+                  "timezone": "Europe/Moscow",
+                  "anchor": "2026-10-26T06:00:00Z"
+                },
+                "occurrence_at": "2026-10-26T06:00:00Z",
+                "id": 1,
+                "kind": "reminder",
+                "title": "Принимать витамины",
+                "description": "",
+                "location": "",
+                "meeting_url": "",
+                "date": "2026-10-26",
+                "time": "09:00",
+                "status": "open",
+                "priority": "normal",
+                "created_at": "2026-10-26T04:53:00+03:00",
+                "updated_at": "2026-10-26T04:53:00+03:00",
+                "source_key": null,
+                "external_calendar_id": null,
+                "duration_minutes": 60
+              }
+            ],
+            "candidates": null,
+            "conflicts": [],
+            "session_id": "smoke",
+            "request_id": "0",
+            "provider": "simple_llm",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          },
+          "operation": {
+            "intent": "create_reminder",
+            "arguments": {
+              "title": "Принимать витамины",
+              "time": "09:00",
+              "recurrence": {
+                "frequency": "day",
+                "count": 3
+              }
+            },
+            "confidence": "high",
+            "clarification": null
+          },
+          "latency_ms": 4.175,
+          "llm_calls": 0
+        }
+      ]
+    },
+    {
+      "name": "08 recurrence missing time is preserved",
+      "pass": true,
+      "turns": [
+        {
+          "message": "Напоминай делать зарядку по понедельникам три раза",
+          "response": {
+            "diagnostics": {
+              "model_calls": 0,
+              "repairs": 0,
+              "plan_steps": 0,
+              "waiting_steps": 0,
+              "state_bytes": 435,
+              "inference_ms": 0.533,
+              "duration_ms": 0.533
+            },
+            "reply": "Во сколько повторять запись?",
+            "action": "clarify",
+            "events": [],
+            "candidates": [],
+            "conflicts": null,
+            "session_id": "smoke",
+            "request_id": "0",
+            "provider": "simple_llm",
+            "timezone": "Europe/Moscow",
+            "pending": true
+          },
+          "operation": {
+            "intent": "create_reminder",
+            "arguments": {
+              "title": "Делать зарядку",
+              "recurrence": {
+                "frequency": "week",
+                "weekdays": [
+                  "monday"
+                ],
+                "count": 3
+              }
+            },
+            "confidence": "high",
+            "clarification": null
+          },
+          "latency_ms": 5.245,
+          "llm_calls": 0
+        },
+        {
+          "message": "В 09:00",
+          "response": {
+            "diagnostics": {
+              "model_calls": 0,
+              "repairs": 0,
+              "plan_steps": 0,
+              "waiting_steps": 0,
+              "state_bytes": 242,
+              "inference_ms": 1.624,
+              "duration_ms": 2.671
+            },
+            "reply": "Напоминание сохранено: #1 «Делать зарядку» — 26.10.2026 в 09:00.",
+            "action": "create",
+            "events": [
+              {
+                "recurrence": {
+                  "count": 3,
+                  "frequency": "week",
+                  "interval": 1,
+                  "weekdays": [
+                    1
+                  ],
+                  "local_time": "09:00",
+                  "timezone": "Europe/Moscow",
+                  "anchor": "2026-10-26T01:53:00Z"
+                },
+                "occurrence_at": "2026-10-26T06:00:00Z",
+                "id": 1,
+                "kind": "reminder",
+                "title": "Делать зарядку",
+                "description": "",
+                "location": "",
+                "meeting_url": "",
+                "date": "2026-10-26",
+                "time": "09:00",
+                "status": "open",
+                "priority": "normal",
+                "created_at": "2026-10-26T04:53:01+03:00",
+                "updated_at": "2026-10-26T04:53:01+03:00",
+                "source_key": null,
+                "external_calendar_id": null,
+                "duration_minutes": 60
+              }
+            ],
+            "candidates": null,
+            "conflicts": [],
+            "session_id": "smoke",
+            "request_id": "1",
+            "provider": "simple_llm",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          },
+          "operation": {
+            "intent": "continue",
+            "arguments": {
+              "changes": {
+                "time": "09:00"
+              }
+            },
+            "confidence": "high",
+            "clarification": null
+          },
+          "latency_ms": 3.705,
+          "llm_calls": 0
+        }
+      ]
+    },
+    {
+      "name": "09 next occurrence keeps series",
+      "pass": true,
+      "turns": [
+        {
+          "message": "Напоминай принимать витамины ежедневно в 09:00 три раза",
+          "response": {
+            "diagnostics": {
+              "model_calls": 0,
+              "repairs": 0,
+              "plan_steps": 0,
+              "waiting_steps": 0,
+              "state_bytes": 242,
+              "inference_ms": 1.59,
+              "duration_ms": 2.624
+            },
+            "reply": "Напоминание сохранено: #1 «Принимать витамины» — 26.10.2026 в 09:00.",
+            "action": "create",
+            "events": [
+              {
+                "recurrence": {
+                  "count": 3,
+                  "frequency": "day",
+                  "interval": 1,
+                  "local_time": "09:00",
+                  "timezone": "Europe/Moscow",
+                  "anchor": "2026-10-26T06:00:00Z"
+                },
+                "occurrence_at": "2026-10-26T06:00:00Z",
+                "id": 1,
+                "kind": "reminder",
+                "title": "Принимать витамины",
+                "description": "",
+                "location": "",
+                "meeting_url": "",
+                "date": "2026-10-26",
+                "time": "09:00",
+                "status": "open",
+                "priority": "normal",
+                "created_at": "2026-10-26T04:53:00+03:00",
+                "updated_at": "2026-10-26T04:53:00+03:00",
+                "source_key": null,
+                "external_calendar_id": null,
+                "duration_minutes": 60
+              }
+            ],
+            "candidates": null,
+            "conflicts": [],
+            "session_id": "smoke",
+            "request_id": "0",
+            "provider": "simple_llm",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          },
+          "operation": {
+            "intent": "create_reminder",
+            "arguments": {
+              "title": "Принимать витамины",
+              "time": "09:00",
+              "recurrence": {
+                "frequency": "day",
+                "count": 3
+              }
+            },
+            "confidence": "high",
+            "clarification": null
+          },
+          "latency_ms": 3.669,
+          "llm_calls": 0
+        },
+        {
+          "message": "Только ближайший приём перенеси на 10:00",
+          "response": {
+            "diagnostics": {
+              "model_calls": 0,
+              "repairs": 0,
+              "plan_steps": 0,
+              "waiting_steps": 0,
+              "state_bytes": 242,
+              "inference_ms": 1.55,
+              "duration_ms": 3.118
+            },
+            "reply": "Изменено ближайшее повторение: #2 «Принимать витамины» — 26.10.2026 в 10:00. Остальная серия сохранена.",
+            "action": "update",
+            "events": [
+              {
+                "id": 2,
+                "kind": "reminder",
+                "title": "Принимать витамины",
+                "description": "",
+                "location": "",
+                "meeting_url": "",
+                "date": "2026-10-26",
+                "time": "10:00",
+                "status": "open",
+                "priority": "normal",
+                "created_at": "2026-10-26T04:53:01+03:00",
+                "updated_at": "2026-10-26T04:53:01+03:00",
+                "source_key": null,
+                "external_calendar_id": null,
+                "duration_minutes": 60
+              }
+            ],
+            "candidates": null,
+            "conflicts": [],
+            "session_id": "smoke",
+            "request_id": "1",
+            "provider": "simple_llm",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          },
+          "operation": {
+            "intent": "update",
+            "arguments": {
+              "target": {
+                "type": "last"
+              },
+              "changes": {
+                "scope": "occurrence",
+                "time": "10:00"
+              }
+            },
+            "confidence": "high",
+            "clarification": null
+          },
+          "latency_ms": 5.281,
+          "llm_calls": 0
+        }
+      ]
+    },
+    {
+      "name": "10 second precision",
+      "pass": true,
+      "turns": [
+        {
+          "message": "Через 75 секунд напомни выключить чайник",
+          "response": {
+            "diagnostics": {
+              "model_calls": 0,
+              "repairs": 0,
+              "plan_steps": 0,
+              "waiting_steps": 0,
+              "state_bytes": 242,
+              "inference_ms": 1.611,
+              "duration_ms": 2.152
+            },
+            "reply": "Напоминание сохранено: #1 «Выключить чайник» — 26.10.2026 в 04:54.",
+            "action": "create",
+            "events": [
+              {
+                "occurrence_at": "2026-10-26T04:54:15+03:00",
+                "start_second": 15,
+                "id": 1,
+                "kind": "reminder",
+                "title": "Выключить чайник",
+                "description": "",
+                "location": "",
+                "meeting_url": "",
+                "date": "2026-10-26",
+                "time": "04:54",
+                "status": "open",
+                "priority": "normal",
+                "created_at": "2026-10-26T04:53:00+03:00",
+                "updated_at": "2026-10-26T04:53:00+03:00",
+                "source_key": null,
+                "external_calendar_id": null,
+                "duration_minutes": 60
+              }
+            ],
+            "candidates": null,
+            "conflicts": [],
+            "session_id": "smoke",
+            "request_id": "0",
+            "provider": "simple_llm",
+            "timezone": "Europe/Moscow",
+            "pending": false
+          },
+          "operation": {
+            "intent": "create_reminder",
+            "arguments": {
+              "title": "Выключить чайник",
+              "date": {
+                "type": "relative_delay",
+                "unit": "second",
+                "value": 75
+              }
+            },
+            "confidence": "high",
+            "clarification": null
+          },
+          "latency_ms": 4.278,
+          "llm_calls": 0
+        }
+      ]
+    }
+  ]
+}

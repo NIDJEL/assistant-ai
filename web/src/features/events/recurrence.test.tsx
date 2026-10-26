@@ -2,6 +2,11 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { RecurrenceEditor } from './RecurrenceEditor';
 import { recurrenceLabel } from './recurrence';
+
+test('bounded recurrence labels expose the count and inclusive end day', () => {
+  expect(recurrenceLabel({ frequency: 'day', interval: 1, timezone: 'Europe/Moscow', count: 3 })).toBe('Каждый день, всего 3');
+  expect(recurrenceLabel({ frequency: 'day', interval: 1, timezone: 'Europe/Moscow', until: '2026-10-31' })).toBe('Каждый день, до 31.10.2026 включительно');
+});
 import type { Recurrence } from '../../types/api';
 
 it.each([

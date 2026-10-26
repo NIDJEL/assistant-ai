@@ -1,0 +1,11 @@
+{
+  "Conversations": 20,
+  "Turns": 40,
+  "SHA256": "4b7d42c38c1b66ac6653d8f302d9167256abda316a02a65e2ffeeb5bfa971cd8",
+  "Categories": {
+    "ambiguous_reference": 5,
+    "explicit_reference": 10,
+    "temporal_is_not_target": 5
+  },
+  "PreviousAuditRead": false
+}

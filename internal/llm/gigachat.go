@@ -335,6 +335,9 @@ func (g *GigaChat) parseJSON(ctx context.Context, req SemanticRequest, messages 
 	defer func() { <-g.gate }()
 	started := time.Now()
 	request := map[string]any{"model": g.cfg.Model, "messages": messages, "stream": false, "temperature": 0, "max_tokens": 2048}
+	if schema == nil && len(messages) > 0 && messages[0]["content"] == simplePrompt {
+		request["max_tokens"] = 4096
+	}
 	if schema != nil {
 		request["response_format"] = map[string]any{"type": "json_schema", "schema": schema, "strict": true}
 	}

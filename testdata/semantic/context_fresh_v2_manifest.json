@@ -1,0 +1,18 @@
+{
+  "protocol": "Tune on DEV classes only. Fresh v2 is run once after code/prompt/schema/input freeze; no tuning on audit failures.",
+  "previous_holdouts_read": false,
+  "files": {
+    "context_heldout_v2.jsonl": {
+      "conversations": 135,
+      "turns": 270,
+      "sha256": "5c75ba500ca35e0ea58d4581fb3d00ad1ccb593d03e99bd2afa09ade4f03f916",
+      "categories": {
+        "temporal_filler": 30,
+        "cancellation_confirmation": 25,
+        "refinement": 25,
+        "timer_word_order": 15,
+        "references_ambiguity": 40
+      }
+    }
+  }
+}

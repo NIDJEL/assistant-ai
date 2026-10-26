@@ -1,0 +1,23 @@
+{
+  "Conversations": 150,
+  "Turns": 300,
+  "SHA256": "4ccd77bdb5e544b1e5e578d9726e28fe930bc91129a1deb02200b382a7aeea35",
+  "Categories": {
+    "ambiguity": 10,
+    "batch_complete": 10,
+    "batch_delete_cancel": 10,
+    "batch_exclusion": 10,
+    "batch_shift": 10,
+    "calendar_refinement": 10,
+    "contextual_reference": 10,
+    "destructive_safety": 10,
+    "difficult_search": 10,
+    "natural_timer": 10,
+    "normal_commands": 10,
+    "normal_search": 10,
+    "simple_chat": 10,
+    "simple_pending_delay": 10,
+    "simple_pending_time": 10
+  },
+  "PreviousAuditRead": false
+}

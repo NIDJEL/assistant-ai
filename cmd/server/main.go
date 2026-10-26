@@ -138,6 +138,12 @@ func run(log *slog.Logger) error {
 			}
 			defer provider.Close()
 			interpreter = &llm.Simple{Provider: provider}
+			if cfg.SearchMode == "cloud" {
+				engine.EnableCloud(llm.CloudSearch{Client: provider}, cfg.SearchBudget)
+			}
+			if cfg.SearchMode == "hybrid" {
+				engine.EnableHybrid(llm.GigaEmbeddings{Client: provider, Model: cfg.EmbeddingModel}, cfg.SearchBudget)
+			}
 		default:
 			return errors.New("simple_llm requires gigachat; use semantic_plan_legacy for rules")
 		}
@@ -157,13 +163,12 @@ func run(log *slog.Logger) error {
 		}
 	}
 	service := assistant.New(store, interpreter, cal)
+	service.TurnTimeout = cfg.TurnTimeout
 	service.Integrations = cloudService
 	service.AskReminderSettings = cfg.NLUMode != "simple_llm"
-	if cfg.Environment != "production" {
-		service.ObserveTurn = func(o assistant.DialogueObservation) {
-			if o.Route.Path != "" {
-				log.Info("nlu_route", "route", o.Route.Path, "reason", o.Route.Reason, "semantic_calls", o.SemanticCalls, "plan_valid", o.PlanValid, "evidence_field", o.EvidenceField, "evidence_reason", o.EvidenceReason, "latency_ms", float64(o.InterpretationLatency.Microseconds())/1000)
-			}
+	service.ObserveTurn = func(o assistant.DialogueObservation) {
+		if o.Route.Path != "" {
+			log.Info("nlu_route", "route", o.Route.Path, "reason", o.Route.Reason, "semantic_calls", o.SemanticCalls, "search_calls", o.Metrics.SearchCalls, "plan_valid", o.PlanValid, "repairs", o.Metrics.Repairs, "plan_steps", o.Metrics.PlanSteps, "waiting_steps", o.Metrics.WaitingSteps, "state_bytes", o.Metrics.StateBytes, "precommit_ms", o.Metrics.DurationMS, "latency_ms", float64(o.InterpretationLatency.Microseconds())/1000)
 		}
 	}
 	app := &api.API{Cloud: cloudService, Config: cfg, Clock: now, Calendar: cal, CalendarSync: calendarSync, Assistant: service, Auth: authService, Logger: log}
@@ -183,7 +188,7 @@ func run(log *slog.Logger) error {
 		defer transcriber.Close()
 		app.Transcriber = transcriber
 	}
-	server := &http.Server{Addr: cfg.Address, Handler: app.Router(), ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 30 * time.Second, WriteTimeout: 50 * time.Second, IdleTimeout: 60 * time.Second,
+	server := &http.Server{Addr: cfg.Address, Handler: app.Router(), ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 30 * time.Second, WriteTimeout: max(50*time.Second, cfg.TurnTimeout+5*time.Second), IdleTimeout: 60 * time.Second,
 		BaseContext: func(net.Listener) context.Context { return ctx }, ErrorLog: slog.NewLogLogger(log.Handler(), slog.LevelError)}
 	done := make(chan error, 1)
 	go func() {

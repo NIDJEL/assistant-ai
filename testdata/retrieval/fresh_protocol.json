@@ -1,0 +1,10 @@
+{
+  "protocol": "Runtime and prompts frozen before the first fresh evaluation; no tuning from fresh labels. Synthetic 1000 records, 30 independent new topic queries, exhaustive 5 positives each. This is developer-authored evidence, not a blinded external benchmark.",
+  "runtime_sha256": {
+    "internal/search/cloud.go": "fb074c56d50fc4bebb993ae9a6e6f885c703ef7ffc7df7f021585a969080852f",
+    "internal/llm/cloud_search.go": "811e336655d4e103650b62f3c2fb61b86e3d92291fcce9ea9cf2ce149184f31d",
+    "internal/search/hybrid.go": "aac1859992b1e41674063c2c68520e3e0dbb1b96e1bdeb56481ea03e9a34b11d",
+    "internal/search/engine.go": "968b627aafdcf865bee00c947ffb8e6555d98cc3a6c5c5f85cf8086bcadfba5c"
+  },
+  "dataset_sha256": "339f95dacab2db00f9505daa99c81bb3d411a601eb518495e676fa74a7a35315"
+}

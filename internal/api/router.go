@@ -283,7 +283,12 @@ func (a *API) events(fixed domain.EventType) http.HandlerFunc {
 			a.fail(w, r, domain.Validation("Некорректные параметры списка"))
 			return
 		}
-		result, err := a.Calendar.List(r.Context(), filter, q.Get("q"), limit, offset)
+		var result calendar.List
+		if q.Get("expand") == "true" {
+			result, err = a.Calendar.ListOccurrences(r.Context(), filter, q.Get("q"), limit, offset)
+		} else {
+			result, err = a.Calendar.List(r.Context(), filter, q.Get("q"), limit, offset)
+		}
 		if err != nil {
 			a.fail(w, r, err)
 			return

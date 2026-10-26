@@ -1,0 +1,10 @@
+{
+  "protocol": "Runtime and prompts frozen before first fresh v2 evaluation; no tuning from v2 labels. 30 new positive topics, 5 positives each, 850 old distractors. First fresh set is now development evidence after catalogue diversity repair. Not an independent external benchmark.",
+  "runtime_sha256": {
+    "internal/search/cloud.go": "da17684a514dac976cb258f4dadcd4f266503073401b1819a0823a9cfd54db9a",
+    "internal/llm/cloud_search.go": "811e336655d4e103650b62f3c2fb61b86e3d92291fcce9ea9cf2ce149184f31d",
+    "internal/search/hybrid.go": "aac1859992b1e41674063c2c68520e3e0dbb1b96e1bdeb56481ea03e9a34b11d",
+    "internal/search/engine.go": "968b627aafdcf865bee00c947ffb8e6555d98cc3a6c5c5f85cf8086bcadfba5c"
+  },
+  "dataset_sha256": "bad39ab7d2862d8d67ed94cfba2a3607e147b0804f03a49d506923c07d1bf475"
+}

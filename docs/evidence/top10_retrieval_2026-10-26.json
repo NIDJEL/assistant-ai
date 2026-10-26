@@ -1,0 +1,631 @@
+{
+  "Status": "degraded",
+  "EmbeddingErrors": [
+    "GigaChat API HTTP 402"
+  ],
+  "Source": {
+    "Commit": "22ff6627ac61cf087ee4105d1aa12dead23182cf",
+    "GoTreeSHA256": "01ce8b17cc1820f271a5f96c755f48814cf543f183ad040679d3178472069dac",
+    "Dirty": true
+  },
+  "CreatedAt": "2026-10-26T06:31:56Z",
+  "SourceSHA": "22ff6627ac61cf087ee4105d1aa12dead23182cf",
+  "DatasetSHA256": "81ab94b48ed7a90de6a43f729a27d2721e8cc3f70ca80c82665af289a1a54c1b",
+  "CorpusSHA256": "f2fcc5505c7193e6b11d633328f4c2f3dc7179bb2b95d06c33ac0c48369cc00a",
+  "Model": "Embeddings-2",
+  "Timezone": "Europe/Moscow",
+  "DatasetRows": 1000,
+  "EmbeddingCalls": 1,
+  "Summary": {
+    "dev/hybrid": {
+      "Count": 10,
+      "Recall10": 0.138803529582709,
+      "MRR": 0.65,
+      "Success10": 0.7,
+      "P50MS": 27.162,
+      "P95MS": 766.468
+    },
+    "dev/lexical": {
+      "Count": 10,
+      "Recall10": 0.138803529582709,
+      "MRR": 0.65,
+      "Success10": 0.7,
+      "P50MS": 24.155,
+      "P95MS": 34.894
+    },
+    "paraphrase_holdout/hybrid": {
+      "Count": 10,
+      "Recall10": 0.029411764705882353,
+      "MRR": 0.1,
+      "Success10": 0.1,
+      "P50MS": 28.143,
+      "P95MS": 34.572
+    },
+    "paraphrase_holdout/lexical": {
+      "Count": 10,
+      "Recall10": 0.029411764705882353,
+      "MRR": 0.1,
+      "Success10": 0.1,
+      "P50MS": 24.55,
+      "P95MS": 33.925
+    }
+  },
+  "Results": [
+    {
+      "Name": "spec",
+      "Split": "dev",
+      "Mode": "lexical",
+      "IDs": null,
+      "Recall10": 0,
+      "MRR": 0,
+      "MS": 24.396,
+      "Warning": ""
+    },
+    {
+      "Name": "spec",
+      "Split": "dev",
+      "Mode": "hybrid",
+      "IDs": null,
+      "Recall10": 0,
+      "MRR": 0,
+      "MS": 766.468,
+      "Warning": "fallback: Смысловой поиск временно недоступен. Использован поиск по словам и синонимам."
+    },
+    {
+      "Name": "spec",
+      "Split": "paraphrase_holdout",
+      "Mode": "lexical",
+      "IDs": null,
+      "Recall10": 0,
+      "MRR": 0,
+      "MS": 33.137,
+      "Warning": ""
+    },
+    {
+      "Name": "spec",
+      "Split": "paraphrase_holdout",
+      "Mode": "hybrid",
+      "IDs": null,
+      "Recall10": 0,
+      "MRR": 0,
+      "MS": 34.572,
+      "Warning": "fallback: Смысловой поиск временно недоступен. Использован поиск по словам и синонимам."
+    },
+    {
+      "Name": "contract",
+      "Split": "dev",
+      "Mode": "lexical",
+      "IDs": [
+        2,
+        5,
+        14,
+        44,
+        55,
+        57,
+        60,
+        74,
+        100,
+        107
+      ],
+      "Recall10": 0.10989010989010989,
+      "MRR": 1,
+      "MS": 22.901,
+      "Warning": ""
+    },
+    {
+      "Name": "contract",
+      "Split": "dev",
+      "Mode": "hybrid",
+      "IDs": [
+        2,
+        5,
+        14,
+        44,
+        55,
+        57,
+        60,
+        74,
+        100,
+        107
+      ],
+      "Recall10": 0.10989010989010989,
+      "MRR": 1,
+      "MS": 26.141,
+      "Warning": "fallback: Смысловой поиск временно недоступен. Использован поиск по словам и синонимам."
+    },
+    {
+      "Name": "contract",
+      "Split": "paraphrase_holdout",
+      "Mode": "lexical",
+      "IDs": null,
+      "Recall10": 0,
+      "MRR": 0,
+      "MS": 23.204,
+      "Warning": ""
+    },
+    {
+      "Name": "contract",
+      "Split": "paraphrase_holdout",
+      "Mode": "hybrid",
+      "IDs": null,
+      "Recall10": 0,
+      "MRR": 0,
+      "MS": 25.788,
+      "Warning": "fallback: Смысловой поиск временно недоступен. Использован поиск по словам и синонимам."
+    },
+    {
+      "Name": "report",
+      "Split": "dev",
+      "Mode": "lexical",
+      "IDs": [
+        7,
+        13,
+        18,
+        30,
+        39,
+        68,
+        104,
+        130,
+        231,
+        254
+      ],
+      "Recall10": 0.29411764705882354,
+      "MRR": 1,
+      "MS": 25.094,
+      "Warning": ""
+    },
+    {
+      "Name": "report",
+      "Split": "dev",
+      "Mode": "hybrid",
+      "IDs": [
+        7,
+        13,
+        18,
+        30,
+        39,
+        68,
+        104,
+        130,
+        231,
+        254
+      ],
+      "Recall10": 0.29411764705882354,
+      "MRR": 1,
+      "MS": 25.491,
+      "Warning": "fallback: Смысловой поиск временно недоступен. Использован поиск по словам и синонимам."
+    },
+    {
+      "Name": "report",
+      "Split": "paraphrase_holdout",
+      "Mode": "lexical",
+      "IDs": [
+        7,
+        13,
+        18,
+        30,
+        39,
+        68,
+        104,
+        130,
+        231,
+        254
+      ],
+      "Recall10": 0.29411764705882354,
+      "MRR": 1,
+      "MS": 23.305,
+      "Warning": ""
+    },
+    {
+      "Name": "report",
+      "Split": "paraphrase_holdout",
+      "Mode": "hybrid",
+      "IDs": [
+        7,
+        13,
+        18,
+        30,
+        39,
+        68,
+        104,
+        130,
+        231,
+        254
+      ],
+      "Recall10": 0.29411764705882354,
+      "MRR": 1,
+      "MS": 25.438,
+      "Warning": "fallback: Смысловой поиск временно недоступен. Использован поиск по словам и синонимам."
+    },
+    {
+      "Name": "estimate",
+      "Split": "dev",
+      "Mode": "lexical",
+      "IDs": [
+        16,
+        27,
+        36,
+        47,
+        50,
+        54,
+        60,
+        69,
+        78,
+        80
+      ],
+      "Recall10": 0.21739130434782608,
+      "MRR": 0.5,
+      "MS": 25.836,
+      "Warning": ""
+    },
+    {
+      "Name": "estimate",
+      "Split": "dev",
+      "Mode": "hybrid",
+      "IDs": [
+        16,
+        27,
+        36,
+        47,
+        50,
+        54,
+        60,
+        69,
+        78,
+        80
+      ],
+      "Recall10": 0.21739130434782608,
+      "MRR": 0.5,
+      "MS": 30.562,
+      "Warning": "fallback: Смысловой поиск временно недоступен. Использован поиск по словам и синонимам."
+    },
+    {
+      "Name": "estimate",
+      "Split": "paraphrase_holdout",
+      "Mode": "lexical",
+      "IDs": null,
+      "Recall10": 0,
+      "MRR": 0,
+      "MS": 24.55,
+      "Warning": ""
+    },
+    {
+      "Name": "estimate",
+      "Split": "paraphrase_holdout",
+      "Mode": "hybrid",
+      "IDs": null,
+      "Recall10": 0,
+      "MRR": 0,
+      "MS": 31.017,
+      "Warning": "fallback: Смысловой поиск временно недоступен. Использован поиск по словам и синонимам."
+    },
+    {
+      "Name": "feedback",
+      "Split": "dev",
+      "Mode": "lexical",
+      "IDs": [
+        19,
+        40,
+        92,
+        111,
+        127,
+        128,
+        146,
+        175,
+        194,
+        209
+      ],
+      "Recall10": 0.16129032258064516,
+      "MRR": 1,
+      "MS": 24.826,
+      "Warning": ""
+    },
+    {
+      "Name": "feedback",
+      "Split": "dev",
+      "Mode": "hybrid",
+      "IDs": [
+        19,
+        40,
+        92,
+        111,
+        127,
+        128,
+        146,
+        175,
+        194,
+        209
+      ],
+      "Recall10": 0.16129032258064516,
+      "MRR": 1,
+      "MS": 25.909,
+      "Warning": "fallback: Смысловой поиск временно недоступен. Использован поиск по словам и синонимам."
+    },
+    {
+      "Name": "feedback",
+      "Split": "paraphrase_holdout",
+      "Mode": "lexical",
+      "IDs": null,
+      "Recall10": 0,
+      "MRR": 0,
+      "MS": 24.813,
+      "Warning": ""
+    },
+    {
+      "Name": "feedback",
+      "Split": "paraphrase_holdout",
+      "Mode": "hybrid",
+      "IDs": null,
+      "Recall10": 0,
+      "MRR": 0,
+      "MS": 25.509,
+      "Warning": "fallback: Смысловой поиск временно недоступен. Использован поиск по словам и синонимам."
+    },
+    {
+      "Name": "demo",
+      "Split": "dev",
+      "Mode": "lexical",
+      "IDs": null,
+      "Recall10": 0,
+      "MRR": 0,
+      "MS": 24.116,
+      "Warning": ""
+    },
+    {
+      "Name": "demo",
+      "Split": "dev",
+      "Mode": "hybrid",
+      "IDs": null,
+      "Recall10": 0,
+      "MRR": 0,
+      "MS": 26.681,
+      "Warning": "fallback: Смысловой поиск временно недоступен. Использован поиск по словам и синонимам."
+    },
+    {
+      "Name": "demo",
+      "Split": "paraphrase_holdout",
+      "Mode": "lexical",
+      "IDs": null,
+      "Recall10": 0,
+      "MRR": 0,
+      "MS": 24.236,
+      "Warning": ""
+    },
+    {
+      "Name": "demo",
+      "Split": "paraphrase_holdout",
+      "Mode": "hybrid",
+      "IDs": null,
+      "Recall10": 0,
+      "MRR": 0,
+      "MS": 26.864,
+      "Warning": "fallback: Смысловой поиск временно недоступен. Использован поиск по словам и синонимам."
+    },
+    {
+      "Name": "materials",
+      "Split": "dev",
+      "Mode": "lexical",
+      "IDs": [
+        15,
+        34,
+        42,
+        96,
+        107,
+        113,
+        147,
+        159,
+        161,
+        163
+      ],
+      "Recall10": 0.20833333333333334,
+      "MRR": 1,
+      "MS": 23.75,
+      "Warning": ""
+    },
+    {
+      "Name": "materials",
+      "Split": "dev",
+      "Mode": "hybrid",
+      "IDs": [
+        15,
+        34,
+        42,
+        96,
+        107,
+        113,
+        147,
+        159,
+        161,
+        163
+      ],
+      "Recall10": 0.20833333333333334,
+      "MRR": 1,
+      "MS": 27.954,
+      "Warning": "fallback: Смысловой поиск временно недоступен. Использован поиск по словам и синонимам."
+    },
+    {
+      "Name": "materials",
+      "Split": "paraphrase_holdout",
+      "Mode": "lexical",
+      "IDs": null,
+      "Recall10": 0,
+      "MRR": 0,
+      "MS": 24.049,
+      "Warning": ""
+    },
+    {
+      "Name": "materials",
+      "Split": "paraphrase_holdout",
+      "Mode": "hybrid",
+      "IDs": null,
+      "Recall10": 0,
+      "MRR": 0,
+      "MS": 28.143,
+      "Warning": "fallback: Смысловой поиск временно недоступен. Использован поиск по словам и синонимам."
+    },
+    {
+      "Name": "status",
+      "Split": "dev",
+      "Mode": "lexical",
+      "IDs": null,
+      "Recall10": 0,
+      "MRR": 0,
+      "MS": 23.87,
+      "Warning": ""
+    },
+    {
+      "Name": "status",
+      "Split": "dev",
+      "Mode": "hybrid",
+      "IDs": null,
+      "Recall10": 0,
+      "MRR": 0,
+      "MS": 29.642,
+      "Warning": "fallback: Смысловой поиск временно недоступен. Использован поиск по словам и синонимам."
+    },
+    {
+      "Name": "status",
+      "Split": "paraphrase_holdout",
+      "Mode": "lexical",
+      "IDs": null,
+      "Recall10": 0,
+      "MRR": 0,
+      "MS": 33.925,
+      "Warning": ""
+    },
+    {
+      "Name": "status",
+      "Split": "paraphrase_holdout",
+      "Mode": "hybrid",
+      "IDs": null,
+      "Recall10": 0,
+      "MRR": 0,
+      "MS": 33.937,
+      "Warning": "fallback: Смысловой поиск временно недоступен. Использован поиск по словам и синонимам."
+    },
+    {
+      "Name": "planning",
+      "Split": "dev",
+      "Mode": "lexical",
+      "IDs": [
+        14,
+        16,
+        41,
+        50,
+        119,
+        140,
+        142,
+        143,
+        160,
+        178
+      ],
+      "Recall10": 0.18867924528301888,
+      "MRR": 1,
+      "MS": 24.155,
+      "Warning": ""
+    },
+    {
+      "Name": "planning",
+      "Split": "dev",
+      "Mode": "hybrid",
+      "IDs": [
+        14,
+        16,
+        41,
+        50,
+        119,
+        140,
+        142,
+        143,
+        160,
+        178
+      ],
+      "Recall10": 0.18867924528301888,
+      "MRR": 1,
+      "MS": 27.162,
+      "Warning": "fallback: Смысловой поиск временно недоступен. Использован поиск по словам и синонимам."
+    },
+    {
+      "Name": "planning",
+      "Split": "paraphrase_holdout",
+      "Mode": "lexical",
+      "IDs": null,
+      "Recall10": 0,
+      "MRR": 0,
+      "MS": 29.27,
+      "Warning": ""
+    },
+    {
+      "Name": "planning",
+      "Split": "paraphrase_holdout",
+      "Mode": "hybrid",
+      "IDs": null,
+      "Recall10": 0,
+      "MRR": 0,
+      "MS": 31.34,
+      "Warning": "fallback: Смысловой поиск временно недоступен. Использован поиск по словам и синонимам."
+    },
+    {
+      "Name": "questions",
+      "Split": "dev",
+      "Mode": "lexical",
+      "IDs": [
+        31,
+        37,
+        81,
+        97,
+        148,
+        174,
+        193,
+        215,
+        255,
+        325
+      ],
+      "Recall10": 0.20833333333333334,
+      "MRR": 1,
+      "MS": 34.894,
+      "Warning": ""
+    },
+    {
+      "Name": "questions",
+      "Split": "dev",
+      "Mode": "hybrid",
+      "IDs": [
+        31,
+        37,
+        81,
+        97,
+        148,
+        174,
+        193,
+        215,
+        255,
+        325
+      ],
+      "Recall10": 0.20833333333333334,
+      "MRR": 1,
+      "MS": 28.248,
+      "Warning": "fallback: Смысловой поиск временно недоступен. Использован поиск по словам и синонимам."
+    },
+    {
+      "Name": "questions",
+      "Split": "paraphrase_holdout",
+      "Mode": "lexical",
+      "IDs": null,
+      "Recall10": 0,
+      "MRR": 0,
+      "MS": 30.314,
+      "Warning": ""
+    },
+    {
+      "Name": "questions",
+      "Split": "paraphrase_holdout",
+      "Mode": "hybrid",
+      "IDs": null,
+      "Recall10": 0,
+      "MRR": 0,
+      "MS": 30.327,
+      "Warning": "fallback: Смысловой поиск временно недоступен. Использован поиск по словам и синонимам."
+    }
+  ]
+}

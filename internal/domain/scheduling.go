@@ -10,6 +10,7 @@ type PlanningSlot struct {
 	End   time.Time `json:"end"`
 }
 type ChatChoice struct {
+	Key    string        `json:"key,omitempty"`
 	Token  string        `json:"token"`
 	Action string        `json:"action"`
 	Index  int           `json:"index,omitempty"`

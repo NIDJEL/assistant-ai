@@ -1,0 +1,16 @@
+{
+  "Conversations": 195,
+  "Turns": 485,
+  "SHA256": "b113e6955171f71af21f2962f5dfd3193db7f751e78dc094ad2fd6c5c6995bdc",
+  "Categories": {
+    "canonicalization": 20,
+    "context_preservation": 30,
+    "correction": 30,
+    "negated_alternative": 20,
+    "pending_defer": 20,
+    "refinement": 25,
+    "source_coverage": 30,
+    "timer_duration": 20
+  },
+  "PreviousAuditRead": false
+}

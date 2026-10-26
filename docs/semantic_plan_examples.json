@@ -1,0 +1,324 @@
+{
+  "note": "Synthetic DEV examples. semantic_plan is the full raw model JSON; grounded_command is produced by Go, including calendar arithmetic.",
+  "examples": [
+    {
+      "case": "complex_search",
+      "current_message": "Можешь найти встречи с Василисой, но лишь за предыдущий месяц?",
+      "semantic_plan": {
+        "changes": null,
+        "chat_response": null,
+        "clarification": null,
+        "dialogue_act": "command",
+        "filters": {
+          "exclude": null,
+          "period": {
+            "day": null,
+            "direction": null,
+            "month": null,
+            "offset": -1,
+            "type": "calendar_period",
+            "unit": "month",
+            "value": null,
+            "weekday": null,
+            "year": null
+          },
+          "priority": null,
+          "status": null,
+          "time_before": null,
+          "time_from": null
+        },
+        "kind": "meeting",
+        "operation": "search",
+        "query": "Василисой",
+        "schedule": null,
+        "status": "ok",
+        "target": null,
+        "title": null
+      },
+      "grounded_command": {
+        "filter": {
+          "query": "Василисой",
+          "kind": "meeting",
+          "start": "2026-09-01",
+          "end": "2026-10-01"
+        },
+        "action": "search",
+        "kind": "meeting",
+        "title": "",
+        "query": "Василисой",
+        "date": null,
+        "time": null,
+        "period_start": "2026-09-01",
+        "period_end": "2026-10-01",
+        "duration_minutes": 60,
+        "target_id": null,
+        "error": null,
+        "provider": "semantic_llm"
+      }
+    },
+    {
+      "case": "contextual_refinement",
+      "current_message": "А только прошлый месяц?",
+      "semantic_plan": {
+        "changes": null,
+        "chat_response": null,
+        "clarification": null,
+        "dialogue_act": "refinement",
+        "filters": {
+          "exclude": null,
+          "period": {
+            "day": null,
+            "direction": null,
+            "month": null,
+            "offset": -1,
+            "type": "calendar_period",
+            "unit": "month",
+            "value": null,
+            "weekday": null,
+            "year": null
+          },
+          "priority": null,
+          "status": null,
+          "time_before": null,
+          "time_from": null
+        },
+        "kind": null,
+        "operation": "search",
+        "query": null,
+        "schedule": null,
+        "status": "ok",
+        "target": null,
+        "title": null
+      },
+      "grounded_command": {
+        "filter": {
+          "query": "Василисой",
+          "kind": "meeting",
+          "start": "2026-09-01",
+          "end": "2026-10-01"
+        },
+        "action": "search",
+        "kind": "meeting",
+        "title": "",
+        "query": "Василисой",
+        "date": null,
+        "time": null,
+        "period_start": "2026-09-01",
+        "period_end": "2026-10-01",
+        "duration_minutes": 60,
+        "target_id": null,
+        "error": null,
+        "provider": "semantic_llm"
+      }
+    },
+    {
+      "case": "multiple_filters",
+      "current_message": "Покажи задачи высокого приоритета на следующую неделю после 14:00, кроме завершённых и дел про отпуск. Это нужно для разбора: доклад.",
+      "semantic_plan": {
+        "changes": null,
+        "chat_response": null,
+        "clarification": null,
+        "dialogue_act": "command",
+        "filters": {
+          "exclude": [
+            {
+              "kind": null,
+              "period": null,
+              "priority": null,
+              "query": null,
+              "status": "done"
+            },
+            {
+              "kind": null,
+              "period": null,
+              "priority": null,
+              "query": "отпуск",
+              "status": null
+            }
+          ],
+          "period": {
+            "day": null,
+            "direction": null,
+            "month": null,
+            "offset": 1,
+            "type": "calendar_period",
+            "unit": "week",
+            "value": null,
+            "weekday": null,
+            "year": null
+          },
+          "priority": "high",
+          "status": "open",
+          "time_before": null,
+          "time_from": {
+            "hour": 14,
+            "minute": 0
+          }
+        },
+        "kind": "task",
+        "operation": "list",
+        "query": null,
+        "schedule": null,
+        "status": "ok",
+        "target": null,
+        "title": null
+      },
+      "grounded_command": {
+        "filter": {
+          "kind": "task",
+          "start": "2026-10-19",
+          "end": "2026-10-26",
+          "status": "open",
+          "priority": "high",
+          "time_from": "14:00",
+          "exclude": [
+            {
+              "kind": null,
+              "status": "done"
+            },
+            {
+              "query": "отпуск",
+              "kind": null
+            }
+          ]
+        },
+        "action": "list",
+        "kind": "task",
+        "title": "",
+        "query": "",
+        "date": null,
+        "time": null,
+        "period_start": "2026-10-19",
+        "period_end": "2026-10-26",
+        "duration_minutes": 60,
+        "target_id": null,
+        "error": null,
+        "provider": "semantic_llm"
+      }
+    },
+    {
+      "case": "batch_update",
+      "current_message": "Сдвинь все встречи следующей недели на 15 минут позже, сохрани названия и дни.",
+      "semantic_plan": {
+        "changes": {
+          "date": null,
+          "delay": null,
+          "priority": null,
+          "reminder_enabled": null,
+          "reminder_minutes": null,
+          "status": null,
+          "time": null,
+          "time_shift_minutes": 15,
+          "title": null
+        },
+        "chat_response": null,
+        "clarification": null,
+        "dialogue_act": "command",
+        "filters": {
+          "exclude": null,
+          "period": {
+            "day": null,
+            "direction": null,
+            "month": null,
+            "offset": 1,
+            "type": "calendar_period",
+            "unit": "week",
+            "value": null,
+            "weekday": null,
+            "year": null
+          },
+          "priority": null,
+          "status": null,
+          "time_before": null,
+          "time_from": null
+        },
+        "kind": "meeting",
+        "operation": "batch_update",
+        "query": null,
+        "schedule": null,
+        "status": "ok",
+        "target": null,
+        "title": null
+      },
+      "grounded_command": {
+        "filter": {
+          "kind": "meeting",
+          "start": "2026-10-19",
+          "end": "2026-10-26"
+        },
+        "execution_changes": {
+          "time_shift_minutes": 15
+        },
+        "batch": true,
+        "action": "update",
+        "kind": "meeting",
+        "title": "",
+        "query": "",
+        "date": null,
+        "time": null,
+        "period_start": "2026-10-19",
+        "period_end": "2026-10-26",
+        "duration_minutes": 60,
+        "target_id": null,
+        "error": null,
+        "provider": "semantic_llm",
+        "selector": {
+          "all": true,
+          "start": "2026-10-19",
+          "end": "2026-10-26"
+        }
+      }
+    },
+    {
+      "case": "natural_timer",
+      "current_message": "Засеки минут тринадцать",
+      "semantic_plan": {
+        "changes": null,
+        "chat_response": null,
+        "clarification": null,
+        "dialogue_act": "command",
+        "filters": null,
+        "kind": "reminder",
+        "operation": "create",
+        "query": null,
+        "schedule": {
+          "date": null,
+          "delay": {
+            "day": null,
+            "direction": null,
+            "month": null,
+            "offset": null,
+            "type": "relative_delay",
+            "unit": "minute",
+            "value": 13,
+            "weekday": null,
+            "year": null
+          },
+          "duration_minutes": null,
+          "recurrence": null,
+          "reminder_enabled": null,
+          "reminder_minutes": null,
+          "time": null
+        },
+        "status": "ok",
+        "target": null,
+        "title": "Таймер"
+      },
+      "grounded_command": {
+        "exact_at": "2026-10-17T12:43:00+03:00",
+        "action": "create",
+        "kind": "reminder",
+        "title": "Таймер",
+        "query": "",
+        "date": "2026-10-17",
+        "time": "12:43",
+        "period_start": null,
+        "period_end": null,
+        "duration_minutes": 60,
+        "target_id": null,
+        "error": null,
+        "provider": "semantic_llm"
+      }
+    }
+  ]
+}

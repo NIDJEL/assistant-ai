@@ -28,12 +28,15 @@ func OpenAPI() map[string]any {
 		"Error": map[string]any{"type": "object", "required": []string{"error", "request_id"}, "properties": map[string]any{
 			"error": map[string]any{"type": "object", "required": []string{"code", "message"}, "properties": map[string]any{"code": text(), "message": text()}}, "request_id": text(), "detail": text()}},
 	}
-	schemas["ChatChoice"] = map[string]any{"type": "object", "additionalProperties": false, "required": []string{"token", "action"}, "properties": map[string]any{"token": map[string]any{"type": "string", "format": "uuid"}, "action": enum("slot", "meeting", "more", "cancel", "confirm", "new"), "index": map[string]any{"type": "integer", "minimum": 1, "maximum": 8}, "slot": ref("PlanningSlot")}, "description": "Choice of a persisted, user-scoped chat offer. A slot submits its exact start/end and one-based index. Stale or altered offers cannot create meetings; identical request_id retries return the saved result without another LLM call."}
+	schemas["ChatChoice"] = map[string]any{"type": "object", "additionalProperties": false, "required": []string{"token", "action"}, "properties": map[string]any{"token": map[string]any{"type": "string", "format": "uuid"}, "action": enum("slot", "meeting", "more", "cancel", "confirm", "new", "action_focus", "action_cancel", "action_confirm"), "key": map[string]any{"type": "string", "minLength": 1, "maxLength": 32}, "index": map[string]any{"type": "integer", "minimum": 1, "maximum": 8}, "slot": ref("PlanningSlot")}, "description": "Choice of a persisted, user-scoped chat offer. A slot submits its exact start/end and one-based index. Stale or altered offers cannot create meetings; identical request_id retries return the saved result without another LLM call."}
+	schemas["ActionResult"] = map[string]any{"type": "object", "required": []string{"key", "status", "reply"}, "properties": map[string]any{"key": text(), "status": enum("done", "waiting", "failed", "blocked", "cancelled"), "reply": text(), "atomic_group": text(), "control_token": map[string]any{"type": "string", "format": "uuid"}, "active": map[string]any{"type": "boolean"}, "can_confirm": map[string]any{"type": "boolean"}, "applied": map[string]any{"type": "boolean"}, "event_ids": map[string]any{"type": "array", "items": map[string]any{"type": "integer", "format": "int64"}}}}
+	schemas["ExecutionStatus"] = map[string]any{"type": "object", "required": []string{"event_id", "provider", "state", "message"}, "description": "Read-only status from scoped outboxes and notification deliveries. accepted means the push gateway accepted a send, not device receipt or reading.", "properties": map[string]any{"event_id": map[string]any{"type": "integer", "format": "int64"}, "provider": text(), "state": text(), "message": text(), "accepted_devices": map[string]any{"type": "integer"}, "pending_devices": map[string]any{"type": "integer"}, "attempts": map[string]any{"type": "integer"}, "next_attempt_at": map[string]any{"type": "string", "format": "date-time"}, "step_keys": map[string]any{"type": "array", "items": text()}}}
+	schemas["ChatResponse"] = map[string]any{"type": "object", "required": []string{"reply", "action", "events", "pending", "session_id", "request_id"}, "properties": map[string]any{"reply": text(), "action": text(), "pending": map[string]any{"type": "boolean"}, "session_id": text(), "request_id": text(), "timezone": text(), "provider": text(), "events": map[string]any{"type": "array", "items": ref("Event")}, "operations": map[string]any{"type": "array", "maxItems": 5, "items": ref("ActionResult")}, "execution": map[string]any{"type": "array", "items": ref("ExecutionStatus")}, "search": map[string]any{"type": "object", "properties": map[string]any{"mode": enum("lexical", "cloud", "hybrid"), "model": text(), "warning": text()}}, "diagnostics": map[string]any{"type": "object", "description": "Actual model calls, repair count, plan/waiting steps, serialized state bytes and pre-commit duration/inference milliseconds."}}}
 	schemas["Event"].(map[string]any)["properties"].(map[string]any)["display_title"] = text()
 	schemas["Event"].(map[string]any)["properties"].(map[string]any)["organizer_name"] = text()
 	schemas["Event"].(map[string]any)["properties"].(map[string]any)["organizer_avatar_url"] = map[string]any{"type": "string", "readOnly": true}
 
-	schemas["Recurrence"] = map[string]any{"type": "object", "nullable": true, "additionalProperties": false, "required": []string{"frequency", "interval", "timezone"}, "description": "Calendar rules use local wall time; elapsed minute/hour rules use anchor. Missing monthly dates are skipped. DST gap shifts forward, fold fires once at the first instant.", "properties": map[string]any{"frequency": enum("minute", "hour", "day", "week", "month", "year"), "interval": map[string]any{"type": "integer", "minimum": 1, "maximum": 366}, "weekdays": map[string]any{"type": "array", "uniqueItems": true, "items": map[string]any{"type": "integer", "minimum": 0, "maximum": 6}}, "day_of_month": map[string]any{"type": "integer", "minimum": 1, "maximum": 31}, "month": map[string]any{"type": "integer", "minimum": 1, "maximum": 12}, "local_time": clock, "timezone": map[string]any{"type": "string", "description": "IANA timezone"}, "anchor": map[string]any{"type": "string", "format": "date-time"}}}
+	schemas["Recurrence"] = map[string]any{"type": "object", "nullable": true, "additionalProperties": false, "required": []string{"frequency", "interval", "timezone"}, "description": "Calendar rules use local wall time; elapsed minute/hour rules use anchor. Missing monthly dates are skipped. DST gap shifts forward, fold fires once at the first instant.", "properties": map[string]any{"frequency": enum("minute", "hour", "day", "week", "month", "year"), "interval": map[string]any{"type": "integer", "minimum": 1, "maximum": 366}, "weekdays": map[string]any{"type": "array", "uniqueItems": true, "items": map[string]any{"type": "integer", "minimum": 0, "maximum": 6}}, "day_of_month": map[string]any{"type": "integer", "minimum": 1, "maximum": 31}, "month": map[string]any{"type": "integer", "minimum": 1, "maximum": 12}, "local_time": clock, "timezone": map[string]any{"type": "string", "description": "IANA timezone"}, "anchor": map[string]any{"type": "string", "format": "date-time"}, "until": day, "count": map[string]any{"type": "integer", "minimum": 0, "maximum": 1000}}}
 	metadata := map[string]any{
 		"recurrence":       ref("Recurrence"),
 		"tags":             map[string]any{"type": "array", "maxItems": 12, "items": map[string]any{"type": "string", "minLength": 1, "maxLength": 50}},
@@ -42,6 +45,13 @@ func OpenAPI() map[string]any {
 		"reminder_enabled": map[string]any{"type": "boolean", "default": true},
 		"reminder_minutes": map[string]any{"type": "integer", "minimum": 0, "maximum": 10080, "description": "Minutes before the event to notify; 0 means at the event time. Enable/disable with reminder_enabled."},
 	}
+	schemas["Recurrence"].(map[string]any)["properties"].(map[string]any)["exdates"] = map[string]any{"type": "array", "maxItems": 1000, "uniqueItems": true, "items": map[string]any{"type": "string", "format": "date-time"}}
+	schemas["EventPatch"].(map[string]any)["properties"].(map[string]any)["edit_occurrence_at"] = map[string]any{"type": "string", "format": "date-time", "description": "Original occurrence timestamp from an expanded calendar row. Changes only that personal occurrence, preserving the rest of its series."}
+	for _, name := range []string{"recurrence_id"} {
+		schemas["Event"].(map[string]any)["properties"].(map[string]any)[name] = map[string]any{"type": "string", "format": "date-time", "readOnly": true}
+	}
+	schemas["Event"].(map[string]any)["properties"].(map[string]any)["series_id"] = map[string]any{"type": "integer", "readOnly": true}
+	schemas["Event"].(map[string]any)["properties"].(map[string]any)["virtual_occurrence"] = map[string]any{"type": "boolean", "readOnly": true}
 	for name, value := range metadata {
 		eventProperties[name] = value
 		for _, schema := range []string{"EventPatch", "Event"} {
@@ -68,6 +78,9 @@ func OpenAPI() map[string]any {
 				status = "204"
 			}
 			responseSchema := map[string]any{"type": "object"}
+			if path == "/api/chat" {
+				responseSchema = ref("ChatResponse")
+			}
 			if path == "/api/events/{id}" || path == "/api/events/{id}/restore" || (path == "/api/events" && method == "post") {
 				responseSchema = ref("Event")
 			}
@@ -109,6 +122,7 @@ func OpenAPI() map[string]any {
 				parameters = append(parameters, map[string]any{"name": "session_id", "in": "path", "required": true, "schema": map[string]any{"type": "string", "format": "uuid"}})
 			}
 			if method == "get" && (path == "/api/events" || path == "/api/tasks" || path == "/api/meetings" || path == "/api/reminders") {
+				parameters = append(parameters, map[string]any{"name": "expand", "in": "query", "schema": map[string]any{"type": "boolean", "default": false, "description": "Expand recurring records into calendar occurrences; start and end are required, maximum 93 days."}})
 				for name, schema := range map[string]any{"start": day, "end": day, "kind": eventProperties["kind"], "status": eventProperties["status"], "q": map[string]any{"type": "string", "maxLength": 200}, "deleted": map[string]any{"type": "boolean", "default": false, "description": "Only deleted events, available for restoration"}, "limit": map[string]any{"type": "integer", "minimum": 1, "maximum": 200, "default": 100}, "offset": map[string]any{"type": "integer", "minimum": 0, "default": 0}} {
 					parameters = append(parameters, map[string]any{"name": name, "in": "query", "schema": schema})
 				}

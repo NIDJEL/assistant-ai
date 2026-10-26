@@ -26,6 +26,8 @@ type lockEntry struct {
 	refs  int
 }
 type Service struct {
+	ReadExecutionStatus func(context.Context, []int64, time.Time) ([]domain.ExecutionStatus, error)
+	TurnTimeout         time.Duration
 	RefreshPlanning     func(context.Context, []string, time.Time, time.Time)
 	Integrations        ExternalIntegrations
 	Store               repository.Store
@@ -43,7 +45,11 @@ type ExternalIntegrations interface {
 }
 
 func New(store repository.Store, interpreter Interpreter, cal *calendar.Service) *Service {
-	return &Service{Store: store, Interpreter: interpreter, Calendar: cal, locks: map[string]*lockEntry{}}
+	s := &Service{Store: store, Interpreter: interpreter, Calendar: cal, locks: map[string]*lockEntry{}}
+	if reader, ok := store.(repository.ExecutionStatusReader); ok {
+		s.ReadExecutionStatus = reader.ExecutionStatuses
+	}
+	return s
 }
 func (s *Service) sessionLock(ctx context.Context, id string) (func(), error) {
 	id = repository.UserID(ctx) + ":" + id
@@ -494,7 +500,7 @@ func (s *Service) executeValidated(ctx context.Context, tx repository.Tx, state 
 		if err != nil {
 			return domain.Response{}, err
 		}
-		if len(conflicts) > 0 && !force {
+		if len(conflicts) > 0 && !force && ctx.Value(atomicRunKey{}) != true {
 			return ask(state, cmd, "Это время пересекается с другой встречей: "+joinEvents(conflicts, 3, "; ")+". Укажите другое время или ответьте «да», чтобы сохранить пересечение.", now, "conflict", conflicts), nil
 		}
 		if e.Recurrence != nil {
@@ -533,6 +539,7 @@ func (s *Service) executeValidated(ctx context.Context, tx repository.Tx, state 
 	if cmd.Action == domain.ActionList || cmd.Action == domain.ActionSearch {
 		f := domain.Filter{Kind: cmd.Kind, Start: cmd.PeriodStart, End: cmd.PeriodEnd}
 		intro := ""
+		var searchStatus *domain.SearchStatus
 		if cmd.Action == domain.ActionSearch && cmd.Query == "" {
 			return answer("По какой теме искать? Например: «Найди задачу про презентацию».", domain.ActionClarify), nil
 		}
@@ -557,7 +564,7 @@ func (s *Service) executeValidated(ctx context.Context, tx repository.Tx, state 
 			events = s.filterEvents(events, &filter)
 		}
 		if cmd.Action == domain.ActionSearch {
-			events = s.Calendar.Search.Search(events, cmd.Query, len(events))
+			events, searchStatus = s.Calendar.Search.SearchContext(ctx, events, cmd.Query, len(events))
 			if cmd.Next {
 				events = nextScheduled(events, now, s.Calendar.Location)
 			}
@@ -595,6 +602,10 @@ func (s *Service) executeValidated(ctx context.Context, tx repository.Tx, state 
 			events = events[:100]
 		}
 		result := answer(intro, cmd.Action, events...)
+		result.Search = searchStatus
+		if searchStatus != nil && searchStatus.Warning != "" {
+			result.Reply += "\n" + searchStatus.Warning
+		}
 		result.Total = &total
 		return result, nil
 	}
@@ -634,6 +645,15 @@ func (s *Service) executeValidated(ctx context.Context, tx repository.Tx, state 
 		if err != nil {
 			return domain.Response{}, err
 		}
+		if !force {
+			conflicts, e := s.Calendar.RestoredChildrenConflicts(ctx, tx, id)
+			if e != nil {
+				return domain.Response{}, e
+			}
+			if len(conflicts) > 0 {
+				return domain.Response{}, &domain.AppError{Code: "meeting_conflict", Message: "Отдельное повторение серии пересекается с другой встречей", Status: 409, Conflicts: conflicts}
+			}
+		}
 		if e.Recurrence != nil && e.Status == domain.StatusOpen {
 			if err := calendar.Resume(e, now); err != nil {
 				return domain.Response{}, err
@@ -647,10 +667,17 @@ func (s *Service) executeValidated(ctx context.Context, tx repository.Tx, state 
 		return answer("Восстановлено: "+describe(*e)+".", domain.ActionRestore, *e), nil
 	}
 	if cmd.Action == domain.ActionDelete {
+		if ctx.Value(atomicRunKey{}) == true {
+			if err := tx.Delete(ctx, id); err != nil {
+				return domain.Response{}, err
+			}
+			return answer("Будет удалено: "+describe(event)+".", domain.ActionDelete, event), nil
+		}
 		return askDeletion(state, cmd, candidates, now), nil
 	}
 	if cmd.Action == domain.ActionComplete {
 		event.Status = domain.StatusDone
+		event.LastNotificationAt = nil
 		e, err := tx.Update(ctx, event, now)
 		if err != nil {
 			return domain.Response{}, err
@@ -660,6 +687,14 @@ func (s *Service) executeValidated(ctx context.Context, tx repository.Tx, state 
 	}
 	if cmd.Action != domain.ActionUpdate {
 		return answer("Уточните действие. Ничего не изменено.", domain.ActionClarify), nil
+	}
+	var series *domain.Event
+	if cmd.Changes != nil && cmd.Changes.Scope == "occurrence" {
+		parent, child, err := s.Calendar.PrepareOccurrence(ctx, tx, event, cmd.Changes.OccurrenceDate, cmd.Changes.OccurrenceAt)
+		if err != nil {
+			return answer(err.Error(), domain.ActionClarify), nil
+		}
+		series, event = &parent, child
 	}
 	if cmd.Date == nil && cmd.Time == nil && strings.TrimSpace(cmd.Title) == "" && cmd.ReminderEnabled == nil && cmd.ReminderMinutes == nil && cmd.Changes == nil {
 		return ask(state, cmd, "На какую дату или время перенести событие?", now, "fields", nil), nil
@@ -689,10 +724,13 @@ func (s *Service) executeValidated(ctx context.Context, tx repository.Tx, state 
 	if err := applyExecutionChanges(&event, cmd.Changes, s.Calendar.Location); err != nil {
 		return answer(err.Error(), domain.ActionClarify), nil
 	}
+	if cmd.Changes != nil && cmd.Changes.Status != nil && *cmd.Changes.Status == domain.StatusDone {
+		event.LastNotificationAt = nil
+	}
 	if event.StartTime != nil && event.Date == nil {
 		return ask(state, cmd, "Уточните дату переноса.", now, "fields", nil), nil
 	}
-	if event.Recurrence != nil {
+	if event.Recurrence != nil && (cmd.Date != nil || cmd.Time != nil || cmd.Changes != nil && (cmd.Changes.Recurrence != nil || cmd.Changes.TimeShiftMinutes != nil)) {
 		if err := calendar.Rebase(&event, now, s.Calendar.Location); err != nil {
 			return answer(err.Error(), domain.ActionClarify), nil
 		}
@@ -700,23 +738,39 @@ func (s *Service) executeValidated(ctx context.Context, tx repository.Tx, state 
 	if err := event.Validate(); err != nil {
 		return answer(err.Error(), domain.ActionClarify), nil
 	}
-	conflicts, err := s.Calendar.Conflicts(ctx, tx, event, id)
+	conflicts, err := s.Calendar.Conflicts(ctx, tx, event, event.ID)
 	if err != nil {
 		return domain.Response{}, err
 	}
-	if len(conflicts) > 0 && !force {
+	if len(conflicts) > 0 && !force && ctx.Value(atomicRunKey{}) != true {
 		return ask(state, cmd, "Перенос пересекается с встречей: "+joinEvents(conflicts, 3, "; ")+". Укажите другое время или ответьте «да».", now, "conflict", conflicts), nil
 	}
-	e, err := tx.Update(ctx, event, now)
+	var e *domain.Event
+	if series != nil {
+		if _, err = tx.Update(ctx, *series, now); err != nil {
+			return domain.Response{}, err
+		}
+		event.LastNotificationAt = nil
+		if event.ID == 0 {
+			e, err = tx.Create(ctx, event, now)
+		} else {
+			e, err = tx.Update(ctx, event, now)
+		}
+	} else {
+		e, err = tx.Update(ctx, event, now)
+	}
 	if err != nil {
 		return domain.Response{}, err
 	}
-	state.LastIDs = []int64{id}
+	state.LastIDs = []int64{e.ID}
 	label := "Перенесено: "
 	if cmd.Title != "" {
 		label = "Изменено: "
 	}
 	result := answer(label+describe(*e)+".", domain.ActionUpdate, *e)
+	if series != nil {
+		result.Reply = "Изменено одно повторение: " + describe(*e) + ". Остальная серия сохранена."
+	}
 	result.Conflicts = conflicts
 	return result, nil
 }
@@ -736,10 +790,15 @@ func (s *Service) History(ctx context.Context, id string) ([]domain.Exchange, do
 		return err
 	})
 	if err == nil {
+		responses := make([]*domain.Response, len(history))
 		for i := range history {
+			responses[i] = &history[i].Response
 			if err = s.RefreshZoomCards(ctx, &history[i].Response); err != nil {
 				break
 			}
+		}
+		if err == nil {
+			s.refreshExecutionStatus(ctx, responses)
 		}
 	}
 	return history, state, err

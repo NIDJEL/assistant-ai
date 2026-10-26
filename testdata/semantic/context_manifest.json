@@ -1,0 +1,17 @@
+{
+  "protocol": "DEV can inform changes; fresh holdout runs once after DEV tuning; never tune on holdout.",
+  "old_208_used": false,
+  "files": {
+    "context_dev.jsonl": {
+      "conversations": 24,
+      "turns": 53,
+      "sha256": "30a7e76ad9bb4cb516bc2c2d4cc963a07b16db2cef76f04408a30bf1c39fe9af"
+    },
+    "context_heldout.jsonl": {
+      "conversations": 110,
+      "turns": 220,
+      "sha256": "aba727e3239526b5bc5ccd989bde9a8901dbf651cfc04e33bced23369d90efc1"
+    }
+  },
+  "dev_expectation_correction": "Bare Friday uses the existing Go same-weekday policy (2026-10-16). Held-out content and hash are unchanged."
+}

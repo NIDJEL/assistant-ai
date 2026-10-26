@@ -20,19 +20,27 @@ type operationInterpreter interface {
 
 // No slot parser is needed: optional slot fast paths are deliberately omitted.
 func simpleControl(state domain.State, message string) string {
-	if state.Pending == nil {
+	if state.Pending == nil && state.Actions == nil {
 		return ""
 	}
 	text := strings.Trim(strings.ToLower(message), " .!?")
 	if in(text, "нет", "отмена", "не надо") {
 		return "cancel"
 	}
-	if in(state.Pending.Expectation, "delete", "delete_many", "batch", "conflict", "confirm_meeting") && in(text, "да", "подтверждаю", "удаляй") {
+	if state.Pending != nil && in(state.Pending.Expectation, "delete", "delete_many", "batch", "conflict", "confirm_meeting", "atomic_group") && in(text, "да", "подтверждаю", "удаляй") {
 		return "confirm"
 	}
 	return ""
 }
 func (s *Service) respondSimple(ctx context.Context, interpreter operationInterpreter, message, sid, rid string, now time.Time) (domain.Response, error) {
+	turnStarted := time.Now()
+	budget := s.TurnTimeout
+	if budget <= 0 {
+		budget = 45 * time.Second
+	}
+	ctx, cancel := context.WithTimeout(ctx, budget)
+	defer cancel()
+	ctx, metrics := nlu.WithMetrics(ctx)
 	now = now.In(s.Calendar.Location)
 	var response domain.Response
 	unlock, err := s.sessionLock(ctx, sid)
@@ -101,27 +109,78 @@ func (s *Service) respondSimple(ctx context.Context, interpreter operationInterp
 	op := nlu.Operation{Intent: simpleControl(snapshot, message), Confidence: "high", Arguments: json.RawMessage(`{}`)}
 	var parseErr error
 	if choice := chatChoice(ctx); choice != nil {
-		op, parseErr = choiceOperation(snapshot.Pending, choice)
+		if strings.HasPrefix(choice.Action, "action_") {
+			op, parseErr = actionChoiceOperation(snapshot, choice)
+		} else {
+			op, parseErr = choiceOperation(snapshot.Pending, choice)
+		}
 	} else if op.Intent == "" {
 		calls = 1
 		op, parseErr = interpreter.InterpretOperation(ctx, message, compact)
 	}
 	if parseErr == nil {
-		_, parseErr = op.Args()
+		parseErr = nlu.ValidateAt(op, now)
 	}
 	if ctx.Err() != nil {
 		return response, ctx.Err()
 	}
+	if parseErr == nil && chatChoice(ctx) == nil && !in(op.Intent, "confirm", "cancel", "chat", "clarify") {
+		issue, e := s.preflightSimple(ctx, snapshot, op, message, now)
+		if e != nil {
+			return response, e
+		}
+		if issue != nil {
+			if repair, ok := interpreter.(interface {
+				RepairValidation(context.Context, string, nlu.Context, nlu.Operation, nlu.ValidationIssue) (nlu.Operation, error)
+			}); ok && metrics.Repairs == 0 {
+				op, parseErr = repair.RepairValidation(ctx, message, compact, op, *issue)
+			}
+		}
+	}
 	latency := time.Since(started)
+	metrics.InferenceMS = float64(latency.Microseconds()) / 1000
+	if metrics.ModelCalls > 0 {
+		calls = metrics.ModelCalls
+	}
+	if parseErr == nil {
+		var e error
+		ctx, e = s.prepareSearches(ctx, op, snapshot, now)
+		if e != nil {
+			return response, e
+		}
+	}
 	if parseErr == nil && s.RefreshPlanning != nil {
+		if op.Intent == "multi_action" {
+			if args, e := op.Args(); e == nil {
+				for _, step := range args.(*nlu.MultiAction).Steps {
+					if _, e := step.Operation.Args(); e == nil && nlu.StepAllowed(step.Operation.Intent) {
+						s.prepareSimplePlanning(ctx, step.Operation, now, nil)
+					}
+				}
+			}
+		}
 		prepared := op
+		planningPending := snapshot.Pending
+		if op.Intent == "resume_action" {
+			if args, e := op.Args(); e == nil {
+				a := args.(*nlu.ResumeAction)
+				prepared = a.Operation
+				if snapshot.Actions != nil {
+					for _, step := range snapshot.Actions.Steps {
+						if step.Key == a.Key {
+							planningPending = step.Pending
+						}
+					}
+				}
+			}
+		}
 		var planningAfter *time.Time
-		if snapshot.Pending != nil && in(op.Intent, "choose_time", "continue", "select", "confirm") {
-			raw, _ := json.Marshal(snapshot.Pending)
+		if planningPending != nil && in(prepared.Intent, "choose_time", "continue", "select", "confirm") {
+			raw, _ := json.Marshal(planningPending)
 			var p domain.Pending
 			_ = json.Unmarshal(raw, &p)
-			args, _ := op.Args()
-			if effective, _, e := socialContinuation(&p, op, args, now); e == nil {
+			args, _ := prepared.Args()
+			if effective, _, e := socialContinuation(&p, prepared, args, now); e == nil {
 				prepared = effective
 				if p.Scheduling != nil {
 					planningAfter = p.Scheduling.After
@@ -155,13 +214,30 @@ func (s *Service) respondSimple(ctx context.Context, interpreter operationInterp
 				response = answer(parseErr.Error(), domain.ActionClarify)
 			} else {
 				// A failed new request must not leave an older destructive preview armed.
-				if state.Pending == nil || len(state.Pending.SocialOperation) == 0 && !in(state.Pending.Expectation, "fields", "reminder") {
+				if state.Actions == nil && (state.Pending == nil || len(state.Pending.SocialOperation) == 0 && !in(state.Pending.Expectation, "fields", "reminder")) {
 					state.Pending = nil
 				}
 				response = answer("Не удалось понять запрос. Уточните, что нужно сделать. Ничего не изменено.", domain.ActionClarify)
+				if state.Actions != nil {
+					for i := range state.Actions.Steps {
+						step := &state.Actions.Steps[i]
+						if step.Pending != nil && in(step.Pending.Expectation, "batch", "delete", "delete_many", "conflict", "confirm_meeting", "atomic_group") {
+							if step.AtomicGroup != "" {
+								group := state.Actions.Groups[step.AtomicGroup]
+								group.Ready = false
+								state.Actions.Groups[step.AtomicGroup] = group
+							}
+							step.Pending, step.Preview, step.Status, step.Reply = nil, nil, "failed", "Подтверждение сброшено после нераспознанного запроса. Уточните действие для нового предпросмотра."
+							if step.Key == state.Actions.Active {
+								state.Pending = nil
+							}
+						}
+					}
+					response.Reply += " Незавершённые действия сохранены."
+				}
 			}
 		} else {
-			cmd, response, err = s.applySimple(ctx, tx, &state, op, message, now)
+			cmd, response, err = s.applySimpleActions(ctx, tx, &state, op, message, now)
 			if err != nil {
 				return err
 			}
@@ -177,8 +253,29 @@ func (s *Service) respondSimple(ctx context.Context, interpreter operationInterp
 				}
 			}
 		}
-		rememberSimple(&state, cmd, response, now)
-		response.SessionID, response.RequestID, response.Provider, response.Timezone, response.Pending = sid, rid, "simple_llm", s.Calendar.Location.String(), state.Pending != nil
+		if len(response.Operations) == 0 {
+			rememberSimple(&state, cmd, response, now)
+		}
+		metrics.PlanSteps = len(response.Operations)
+		if response.Search != nil {
+			metrics.SearchCalls = response.Search.Calls
+		}
+		for _, step := range response.Operations {
+			if in(step.Status, "waiting", "blocked", "failed") {
+				metrics.WaitingSteps++
+			}
+		}
+		rawState, e := json.Marshal(state)
+		if e != nil {
+			return e
+		}
+		metrics.StateBytes = len(rawState)
+		if len(rawState) > 1<<20 {
+			return domain.Validation("План слишком большой. Разделите запрос на меньшие группы.")
+		}
+		metrics.DurationMS = float64(time.Since(turnStarted).Microseconds()) / 1000
+		response.Diagnostics = metrics
+		response.SessionID, response.RequestID, response.Provider, response.Timezone, response.Pending = sid, rid, "simple_llm", s.Calendar.Location.String(), state.Pending != nil || state.Actions != nil
 		response.SubmittedChoice = chatChoice(ctx)
 		if err = tx.SaveState(ctx, sid, state, now); err != nil {
 			return err
@@ -190,7 +287,7 @@ func (s *Service) respondSimple(ctx context.Context, interpreter operationInterp
 			return err
 		}
 		if s.ObserveTurn != nil {
-			s.ObserveTurn(DialogueObservation{Type: op.Intent, Command: cmd, Provider: "simple_llm", InterpretationLatency: latency, SemanticCalls: calls, PlanValid: parseErr == nil, Route: RouteDecision{Path: "simple_llm", Reason: op.Intent}})
+			s.ObserveTurn(DialogueObservation{Metrics: *metrics, Type: op.Intent, Command: cmd, Provider: "simple_llm", InterpretationLatency: latency, SemanticCalls: calls, PlanValid: parseErr == nil, Route: RouteDecision{Path: "simple_llm", Reason: op.Intent}})
 		}
 		return nil
 	})
@@ -202,10 +299,29 @@ func (s *Service) respondSimple(ctx context.Context, interpreter operationInterp
 }
 
 func (s *Service) finishExternal(ctx context.Context, r domain.Response) domain.Response {
-	if s.Integrations == nil || r.Pending || !in(r.Action.String(), "create", "update") {
+	r = s.syncExternal(ctx, r)
+	s.refreshExecutionStatus(ctx, []*domain.Response{&r})
+	return r
+}
+
+func (s *Service) syncExternal(ctx context.Context, r domain.Response) domain.Response {
+	if s.Integrations == nil || len(r.Operations) == 0 && (r.Pending || !in(r.Action.String(), "create", "update")) {
 		return r
 	}
 	for i, e := range r.Events {
+		if len(r.Operations) > 0 {
+			mutated := false
+			for _, step := range r.Operations {
+				if step.Applied && step.Status == "done" && in(step.Action.String(), "create", "update") {
+					for _, id := range step.EventIDs {
+						mutated = mutated || id == e.ID
+					}
+				}
+			}
+			if !mutated {
+				continue
+			}
+		}
 		google, zoom := e.CalendarProvider == "google", e.ConferenceProvider == "zoom"
 		if !google && !zoom {
 			continue
@@ -217,9 +333,6 @@ func (s *Service) finishExternal(ctx context.Context, r domain.Response) domain.
 		}
 		if current != nil {
 			r.Events[i] = *current
-			if google {
-				r.Reply += " Событие отправлено в Google Calendar."
-			}
 		}
 	}
 	return r
@@ -323,6 +436,9 @@ func (s *Service) simpleTarget(ctx context.Context, tx repository.Tx, state *dom
 var obviousClock = regexp.MustCompile(`\b[0-2]?[0-9]:[0-5][0-9]\b`)
 
 func omittedSimpleSchedule(c domain.Command, a *nlu.Create, message string) string {
+	if c.Recurrence != nil {
+		return ""
+	}
 	for _, token := range strings.Fields(strings.ToLower(message)) {
 		token = strings.Trim(token, ",.!?;:«»\"")
 		if a.Date == nil && in(token, "завтра", "послезавтра") {
@@ -335,7 +451,7 @@ func omittedSimpleSchedule(c domain.Command, a *nlu.Create, message string) stri
 	return ""
 }
 
-func (s *Service) applySimple(ctx context.Context, tx repository.Tx, state *domain.State, op nlu.Operation, message string, now time.Time) (domain.Command, domain.Response, error) {
+func (s *Service) applySimpleOperation(ctx context.Context, tx repository.Tx, state *domain.State, op nlu.Operation, message string, now time.Time) (domain.Command, domain.Response, error) {
 	c := neutral("simple_llm")
 	clarify := func(text string) (domain.Command, domain.Response, error) {
 		return c, answer(text, domain.ActionClarify), nil
@@ -355,6 +471,8 @@ func (s *Service) applySimple(ctx context.Context, tx repository.Tx, state *doma
 		}
 		return clarify(q)
 	}
+	guardRecurringClock(args, message)
+	op.Arguments, _ = json.Marshal(args)
 	if create, ok := args.(*nlu.Create); ok && op.Intent == "create_meeting" {
 		invite, decline := invitationIntent(message)
 		if invite && decline {
@@ -426,6 +544,21 @@ func (s *Service) applySimple(ctx context.Context, tx repository.Tx, state *doma
 		if err = simpleDate(&c, a.Date, a.Time, now); err != nil {
 			return clarify("Уточните дату или время.")
 		}
+		if a.Recurrence != nil {
+			c.Recurrence, err = a.Recurrence.Bind(now, c.Date, c.Time)
+			if err != nil {
+				return clarify("Уточните правило повторения.")
+			}
+			if err = resolveSimpleRecurrence(&c, now); err != nil {
+				return clarify(err.Error())
+			}
+		}
+		if a.TimeAmbiguous {
+			c.Time = nil
+			r := ask(state, c, "Укажите точное время.", now, "fields", nil)
+			state.Pending.RequiredSlot = "time"
+			return c, r, nil
+		}
 		if missing := omittedSimpleSchedule(c, a, message); missing != "" {
 			q := "На какую дату поставить запись?"
 			if missing == "time" {
@@ -438,35 +571,9 @@ func (s *Service) applySimple(ctx context.Context, tx repository.Tx, state *doma
 	case *nlu.Read:
 		c.Action = domain.ActionList
 		c.Next = a.Next
-		f, err := simpleFilter(a.Filter, now)
+		f, err := simpleReadFilter(a, *state, now)
 		if err != nil {
-			return clarify("Уточните фильтры поиска.")
-		}
-		if a.Inherit {
-			if !freshResult(*state, now) || state.Dialogue.Search == nil {
-				return clarify("Сначала задайте поиск, который нужно уточнить.")
-			}
-			q := state.Dialogue.Search
-			base := domain.ExecutionFilter{Kind: q.Kind, Query: q.Query, Start: q.Start, End: q.End}
-			if q.Filter != nil {
-				base = *q.Filter
-			}
-			if a.Kind != "" {
-				base.Kind = f.Kind
-			}
-			if a.Conference != "" {
-				base.Conference = f.Conference
-			}
-			if a.Query != "" {
-				base.Query = f.Query
-			}
-			if a.Date != nil || a.Period != nil {
-				base.Start, base.End = f.Start, f.End
-			}
-			if a.Status != nil {
-				base.Status = f.Status
-			}
-			f = &base
+			return clarify(err.Error())
 		}
 		setSimpleFilter(&c, f)
 		if c.Query != "" {
@@ -479,6 +586,12 @@ func (s *Service) applySimple(ctx context.Context, tx repository.Tx, state *doma
 		}
 		if err = simpleChanges(&c, a.Changes, now); err != nil {
 			return clarify("Уточните изменения. Ничего не изменено.")
+		}
+		if a.Changes.TimeAmbiguous {
+			c.Time = nil
+			r := ask(state, c, "Укажите точное время.", now, "fields", nil)
+			state.Pending.RequiredSlot = "time"
+			return c, r, nil
 		}
 	case *nlu.Mutation:
 		if op.Intent == "select" {
@@ -516,6 +629,12 @@ func (s *Service) applySimple(ctx context.Context, tx repository.Tx, state *doma
 				state.Pending = p
 			}
 			return clarify("Уточните дату, время, длительность или настройки напоминания.")
+		}
+		if a.Changes.TimeAmbiguous {
+			c.Time = nil
+			r := ask(state, c, "Укажите точное время.", now, "fields", nil)
+			state.Pending.RequiredSlot = "time"
+			return c, r, nil
 		}
 		if p.RequiredSlot == "date" && a.Changes.Date == nil || p.RequiredSlot == "time" && a.Changes.Time == nil && (a.Changes.Date == nil || a.Changes.Date.Type != "relative_delay") {
 			state.Pending = p

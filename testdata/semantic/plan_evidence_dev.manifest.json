@@ -1,0 +1,16 @@
+{
+  "Conversations": 120,
+  "Turns": 240,
+  "SHA256": "a10101dcf32d139fd5fd7d2b21b6523a33a420b16c37f70212cdd0b7c73e9b9c",
+  "Categories": {
+    "ambiguous_time": 15,
+    "batch_source_role": 15,
+    "exclusions": 15,
+    "explicit_delay": 15,
+    "lexical_day": 15,
+    "reference_dev": 15,
+    "time_shift": 15,
+    "weekday": 15
+  },
+  "PreviousAuditRead": false
+}

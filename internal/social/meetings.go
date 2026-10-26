@@ -146,7 +146,10 @@ func (s *Session) meetingOperation(ctx context.Context, op Operation, now time.T
 		if e.Duration == 0 {
 			e.Duration = time.Hour
 		}
-		e.Recurrence = nil
+		if e.Recurrence != nil {
+			return r, domain.Validation("Для серии пока доступно личное сохранение. Приглашения отправляются на отдельную встречу.")
+		}
+		e.SeriesID, e.RecurrenceID = nil, nil
 		e.ID = 0
 		e.SourceKey = nil
 		e.ExternalCalendarID = nil

@@ -16,6 +16,20 @@ func applyExecutionChanges(e *domain.Event, ch *domain.ExecutionChanges, loc *ti
 	if ch == nil {
 		return nil
 	}
+	if ch.ClearRecurrence && ch.Recurrence != nil {
+		return errors.New("Нельзя одновременно задать и отменить повторения")
+	}
+	if ch.ClearRecurrence {
+		e.Recurrence = nil
+		e.OccurrenceAt = nil
+	}
+	if ch.Recurrence != nil {
+		r := *ch.Recurrence
+		if !r.Elapsed() {
+			r.LocalTime = e.StartTime
+		}
+		e.Recurrence = &r
+	}
 	if ch.DurationMinutes != nil {
 		if *ch.DurationMinutes < 5 || *ch.DurationMinutes > 1440 {
 			return errors.New("Длительность должна быть от 5 минут до суток.")
@@ -90,7 +104,7 @@ func (s *Service) proposedBatchEvent(e domain.Event, c domain.Command, now time.
 	if err := applyExecutionChanges(&e, c.Changes, s.Calendar.Location); err != nil {
 		return e, err
 	}
-	if e.Recurrence != nil {
+	if e.Recurrence != nil && (c.Date != nil || c.Time != nil || c.Changes != nil && (c.Changes.Recurrence != nil || c.Changes.TimeShiftMinutes != nil)) {
 		if err := calendar.Rebase(&e, now, s.Calendar.Location); err != nil {
 			return e, err
 		}

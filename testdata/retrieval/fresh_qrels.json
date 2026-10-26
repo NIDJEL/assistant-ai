@@ -1,0 +1,395 @@
+{
+  "DatasetSHA256": "339f95dacab2db00f9505daa99c81bb3d411a601eb518495e676fa74a7a35315",
+  "Queries": [
+    {
+      "Name": "fresh_01",
+      "Split": "fresh_after_freeze",
+      "Query": "Где я записан лечить зубы?",
+      "Relevant": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "Rationale": "All five topic records judged relevant; distractors belong to explicitly different topics. Synthetic Russian corpus, not production traffic."
+    },
+    {
+      "Name": "fresh_02",
+      "Split": "fresh_after_freeze",
+      "Query": "Найди проверку остроты зрения",
+      "Relevant": [
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "Rationale": "All five topic records judged relevant; distractors belong to explicitly different topics. Synthetic Russian corpus, not production traffic."
+    },
+    {
+      "Name": "fresh_03",
+      "Split": "fresh_after_freeze",
+      "Query": "Что запланировано для смазки двигателя?",
+      "Relevant": [
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "Rationale": "All five topic records judged relevant; distractors belong to explicitly different topics. Synthetic Russian corpus, not production traffic."
+    },
+    {
+      "Name": "fresh_04",
+      "Split": "fresh_after_freeze",
+      "Query": "Когда переобуть машину на зимнюю резину?",
+      "Relevant": [
+        16,
+        17,
+        18,
+        19,
+        20
+      ],
+      "Rationale": "All five topic records judged relevant; distractors belong to explicitly different topics. Synthetic Russian corpus, not production traffic."
+    },
+    {
+      "Name": "fresh_05",
+      "Split": "fresh_after_freeze",
+      "Query": "Найди обязательную автогражданку",
+      "Relevant": [
+        21,
+        22,
+        23,
+        24,
+        25
+      ],
+      "Rationale": "All five topic records judged relevant; distractors belong to explicitly different topics. Synthetic Russian corpus, not production traffic."
+    },
+    {
+      "Name": "fresh_06",
+      "Split": "fresh_after_freeze",
+      "Query": "Какие дела с документом для поездок за границу?",
+      "Relevant": [
+        26,
+        27,
+        28,
+        29,
+        30
+      ],
+      "Rationale": "All five topic records judged relevant; distractors belong to explicitly different topics. Synthetic Russian corpus, not production traffic."
+    },
+    {
+      "Name": "fresh_07",
+      "Split": "fresh_after_freeze",
+      "Query": "Найди прививку домашнему питомцу",
+      "Relevant": [
+        31,
+        32,
+        33,
+        34,
+        35
+      ],
+      "Rationale": "All five topic records judged relevant; distractors belong to explicitly different topics. Synthetic Russian corpus, not production traffic."
+    },
+    {
+      "Name": "fresh_08",
+      "Split": "fresh_after_freeze",
+      "Query": "Что у меня про цветочный подарок бабуле?",
+      "Relevant": [
+        36,
+        37,
+        38,
+        39,
+        40
+      ],
+      "Rationale": "All five topic records judged relevant; distractors belong to explicitly different topics. Synthetic Russian corpus, not production traffic."
+    },
+    {
+      "Name": "fresh_09",
+      "Split": "fresh_after_freeze",
+      "Query": "Найди практику устной иностранной речи",
+      "Relevant": [
+        41,
+        42,
+        43,
+        44,
+        45
+      ],
+      "Rationale": "All five topic records judged relevant; distractors belong to explicitly different topics. Synthetic Russian corpus, not production traffic."
+    },
+    {
+      "Name": "fresh_10",
+      "Split": "fresh_after_freeze",
+      "Query": "Где платежи по кредиту на квартиру?",
+      "Relevant": [
+        46,
+        47,
+        48,
+        49,
+        50
+      ],
+      "Rationale": "All five topic records judged relevant; distractors belong to explicitly different topics. Synthetic Russian corpus, not production traffic."
+    },
+    {
+      "Name": "fresh_11",
+      "Split": "fresh_after_freeze",
+      "Query": "Найди отчетность о доходах для ФНС",
+      "Relevant": [
+        51,
+        52,
+        53,
+        54,
+        55
+      ],
+      "Rationale": "All five topic records judged relevant; distractors belong to explicitly different topics. Synthetic Russian corpus, not production traffic."
+    },
+    {
+      "Name": "fresh_12",
+      "Split": "fresh_after_freeze",
+      "Query": "Что запланировано по расходу холодной и горячей воды?",
+      "Relevant": [
+        56,
+        57,
+        58,
+        59,
+        60
+      ],
+      "Rationale": "All five topic records judged relevant; distractors belong to explicitly different topics. Synthetic Russian corpus, not production traffic."
+    },
+    {
+      "Name": "fresh_13",
+      "Split": "fresh_after_freeze",
+      "Query": "Где дела по резервированию номера в отеле?",
+      "Relevant": [
+        61,
+        62,
+        63,
+        64,
+        65
+      ],
+      "Rationale": "All five topic records judged relevant; distractors belong to explicitly different topics. Synthetic Russian corpus, not production traffic."
+    },
+    {
+      "Name": "fresh_14",
+      "Split": "fresh_after_freeze",
+      "Query": "Найди подготовку CV соискателя",
+      "Relevant": [
+        66,
+        67,
+        68,
+        69,
+        70
+      ],
+      "Rationale": "All five topic records judged relevant; distractors belong to explicitly different topics. Synthetic Russian corpus, not production traffic."
+    },
+    {
+      "Name": "fresh_15",
+      "Split": "fresh_after_freeze",
+      "Query": "Что у меня по проверке изменений программистов?",
+      "Relevant": [
+        71,
+        72,
+        73,
+        74,
+        75
+      ],
+      "Rationale": "All five topic records judged relevant; distractors belong to explicitly different topics. Synthetic Russian corpus, not production traffic."
+    },
+    {
+      "Name": "fresh_16",
+      "Split": "fresh_after_freeze",
+      "Query": "Найди бэкап хранилища данных",
+      "Relevant": [
+        76,
+        77,
+        78,
+        79,
+        80
+      ],
+      "Rationale": "All five topic records judged relevant; distractors belong to explicitly different topics. Synthetic Russian corpus, not production traffic."
+    },
+    {
+      "Name": "fresh_17",
+      "Split": "fresh_after_freeze",
+      "Query": "Где наблюдение за состоянием нашего хоста?",
+      "Relevant": [
+        81,
+        82,
+        83,
+        84,
+        85
+      ],
+      "Rationale": "All five topic records judged relevant; distractors belong to explicitly different topics. Synthetic Russian corpus, not production traffic."
+    },
+    {
+      "Name": "fresh_18",
+      "Split": "fresh_after_freeze",
+      "Query": "Найди обсуждение итогов спринта",
+      "Relevant": [
+        86,
+        87,
+        88,
+        89,
+        90
+      ],
+      "Rationale": "All five topic records judged relevant; distractors belong to explicitly different topics. Synthetic Russian corpus, not production traffic."
+    },
+    {
+      "Name": "fresh_19",
+      "Split": "fresh_after_freeze",
+      "Query": "Что запланировано по платежу за учебу?",
+      "Relevant": [
+        91,
+        92,
+        93,
+        94,
+        95
+      ],
+      "Rationale": "All five topic records judged relevant; distractors belong to explicitly different topics. Synthetic Russian corpus, not production traffic."
+    },
+    {
+      "Name": "fresh_20",
+      "Split": "fresh_after_freeze",
+      "Query": "Найди плановый профилактический осмотр здоровья",
+      "Relevant": [
+        96,
+        97,
+        98,
+        99,
+        100
+      ],
+      "Rationale": "All five topic records judged relevant; distractors belong to explicitly different topics. Synthetic Russian corpus, not production traffic."
+    },
+    {
+      "Name": "fresh_21",
+      "Split": "fresh_after_freeze",
+      "Query": "Где заверение документов у юриста?",
+      "Relevant": [
+        101,
+        102,
+        103,
+        104,
+        105
+      ],
+      "Rationale": "All five topic records judged relevant; distractors belong to explicitly different topics. Synthetic Russian corpus, not production traffic."
+    },
+    {
+      "Name": "fresh_22",
+      "Split": "fresh_after_freeze",
+      "Query": "Найди получение отправления в пункте выдачи",
+      "Relevant": [
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "Rationale": "All five topic records judged relevant; distractors belong to explicitly different topics. Synthetic Russian corpus, not production traffic."
+    },
+    {
+      "Name": "fresh_23",
+      "Split": "fresh_after_freeze",
+      "Query": "Какие дела по разрешению на въезд в другую страну?",
+      "Relevant": [
+        111,
+        112,
+        113,
+        114,
+        115
+      ],
+      "Rationale": "All five topic records judged relevant; distractors belong to explicitly different topics. Synthetic Russian corpus, not production traffic."
+    },
+    {
+      "Name": "fresh_24",
+      "Split": "fresh_after_freeze",
+      "Query": "Где обмен прав на вождение?",
+      "Relevant": [
+        116,
+        117,
+        118,
+        119,
+        120
+      ],
+      "Rationale": "All five topic records judged relevant; distractors belong to explicitly different topics. Synthetic Russian corpus, not production traffic."
+    },
+    {
+      "Name": "fresh_25",
+      "Split": "fresh_after_freeze",
+      "Query": "Найди подачу заявки работодателю",
+      "Relevant": [
+        121,
+        122,
+        123,
+        124,
+        125
+      ],
+      "Rationale": "All five topic records judged relevant; distractors belong to explicitly different topics. Synthetic Russian corpus, not production traffic."
+    },
+    {
+      "Name": "fresh_26",
+      "Split": "fresh_after_freeze",
+      "Query": "Где занятия физической подготовкой с тренажерами?",
+      "Relevant": [
+        126,
+        127,
+        128,
+        129,
+        130
+      ],
+      "Rationale": "All five topic records judged relevant; distractors belong to explicitly different topics. Synthetic Russian corpus, not production traffic."
+    },
+    {
+      "Name": "fresh_27",
+      "Split": "fresh_after_freeze",
+      "Query": "Найди запись подстричь волосы",
+      "Relevant": [
+        131,
+        132,
+        133,
+        134,
+        135
+      ],
+      "Rationale": "All five topic records judged relevant; distractors belong to explicitly different topics. Synthetic Russian corpus, not production traffic."
+    },
+    {
+      "Name": "fresh_28",
+      "Split": "fresh_after_freeze",
+      "Query": "Что запланировано по праздничному десерту имениннику?",
+      "Relevant": [
+        136,
+        137,
+        138,
+        139,
+        140
+      ],
+      "Rationale": "All five topic records judged relevant; distractors belong to explicitly different topics. Synthetic Russian corpus, not production traffic."
+    },
+    {
+      "Name": "fresh_29",
+      "Split": "fresh_after_freeze",
+      "Query": "Найди перевозку домашних вещей на новый адрес",
+      "Relevant": [
+        141,
+        142,
+        143,
+        144,
+        145
+      ],
+      "Rationale": "All five topic records judged relevant; distractors belong to explicitly different topics. Synthetic Russian corpus, not production traffic."
+    },
+    {
+      "Name": "fresh_30",
+      "Split": "fresh_after_freeze",
+      "Query": "Где сравнение двух вариантов экрана для пользователей?",
+      "Relevant": [
+        146,
+        147,
+        148,
+        149,
+        150
+      ],
+      "Rationale": "All five topic records judged relevant; distractors belong to explicitly different topics. Synthetic Russian corpus, not production traffic."
+    }
+  ]
+}

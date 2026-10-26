@@ -2,6 +2,7 @@ package domain
 
 import (
 	"errors"
+	"time"
 	"unicode/utf8"
 )
 
@@ -20,10 +21,15 @@ type ExecutionFilter struct {
 }
 
 type ExecutionChanges struct {
-	DurationMinutes  *int      `json:"duration_minutes,omitempty"`
-	Priority         *Priority `json:"priority,omitempty"`
-	Status           *Status   `json:"status,omitempty"`
-	TimeShiftMinutes *int      `json:"time_shift_minutes,omitempty"`
+	OccurrenceDate   *Date       `json:"occurrence_date,omitempty"`
+	OccurrenceAt     *time.Time  `json:"occurrence_at,omitempty"`
+	Scope            string      `json:"scope,omitempty"`
+	Recurrence       *Recurrence `json:"recurrence,omitempty"`
+	ClearRecurrence  bool        `json:"clear_recurrence,omitempty"`
+	DurationMinutes  *int        `json:"duration_minutes,omitempty"`
+	Priority         *Priority   `json:"priority,omitempty"`
+	Status           *Status     `json:"status,omitempty"`
+	TimeShiftMinutes *int        `json:"time_shift_minutes,omitempty"`
 }
 
 func (f ExecutionFilter) Validate() error { return f.validateDepth(0) }

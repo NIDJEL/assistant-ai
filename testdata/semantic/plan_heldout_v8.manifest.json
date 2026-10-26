@@ -1,0 +1,26 @@
+{
+  "Conversations": 180,
+  "Turns": 563,
+  "SHA256": "cd4b2cd1202de9196140ea6462791c07a808fe9329b34ea0d1f2a016b2ed376d",
+  "Categories": {
+    "ambiguous_reference": 10,
+    "batch_complete": 10,
+    "batch_delete": 10,
+    "batch_exclusion": 10,
+    "batch_shift": 10,
+    "correction_chain": 10,
+    "deferred_confirmation": 10,
+    "historical_search": 10,
+    "negated_alternative": 10,
+    "omission_filter_pressure": 10,
+    "omission_schedule_pressure": 10,
+    "reference_chain": 10,
+    "refinement_chain": 10,
+    "scheduled_create": 10,
+    "simple_chat": 10,
+    "simple_create": 10,
+    "slot_then_correction": 10,
+    "timer_semantics": 10
+  },
+  "PreviousAuditRead": false
+}

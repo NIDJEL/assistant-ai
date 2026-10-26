@@ -1,0 +1,519 @@
+{
+  "review_date": "2026-10-26",
+  "timezone": "Europe/Moscow",
+  "repositories": {
+    "artem": {
+      "repository": "ArtemST2006/GorkyCode",
+      "commit": "ee29c9e1ab95a3fd17461c4a970ac0d964dcfc1d",
+      "committed_at": "2026-10-24T14:08:28+03:00",
+      "evidence": [
+        {
+          "path": "backend/internal/service/task_process_service.go",
+          "sha256": "7a36242e36d1f35674b4cbb83b09be5ca29b02f7a7cb9679d9b6548c2e1f1910"
+        },
+        {
+          "path": "backend/internal/storage/postgres/task_repository.go",
+          "sha256": "2f0195a75f6b4b94eaecad4de7f7334c4dc7a393ce8ec346c21cd856a42bba6b"
+        },
+        {
+          "path": "backend/internal/service/subservice/task_search_service.go",
+          "sha256": "584ad253b08c857dbdee58bab531e3eb731d28fc81bc876a5c8ae2f1189bdcb3"
+        },
+        {
+          "path": "ai-service/tests/unit/test_contract_sync.py",
+          "sha256": "7790f88e63776007e2e3765295a10b3731fa16043fb3bd5c03c4681ad19ed798"
+        },
+        {
+          "path": "ai-service/tests/unit/test_schemas.py",
+          "sha256": "52eebb1bfd3200ab8fc7d212a217ccabf5abc42a61e2a57780d01d419206bdc9"
+        }
+      ]
+    },
+    "ryzhilx": {
+      "repository": "ryzhilx/voice-assistant-gorkycode2026",
+      "commit": "4d3d9c488b681e195422492ccd6472e282defef9",
+      "committed_at": "2026-10-25T22:24:56+03:00",
+      "evidence": [
+        {
+          "path": "app/agent/agent.py",
+          "sha256": "23083146a1b730baa487035fd8b1a52d3bfe2fb225d43826aa80d900c6f8516e"
+        },
+        {
+          "path": "app/orchestrator/dialogue.py",
+          "sha256": "557febc643efbc8479dc03fc683cb67c440880bbfc3bc673bc6805c920e7557b"
+        },
+        {
+          "path": "app/agent/tools/manage.py",
+          "sha256": "b8c1897be8dfe1c2519447bebde6f59d4c51924e538105bb91e9cdc6baee15f2"
+        },
+        {
+          "path": "app/ai/embeddings.py",
+          "sha256": "9f4dda83a54c19dc84cd34c73641fa2aa150fe8f2b3d9c6c136fe8194c0400b5"
+        },
+        {
+          "path": "app/bot/reminders.py",
+          "sha256": "d17d44bce51f8a61e97ab8349b224e3367198096a4830cd10ac6d29c3da464a2"
+        },
+        {
+          "path": "app/speech/speechkit.py",
+          "sha256": "67d6c1837c6709ae9ce126bc6d358187e5c80fdd257d7710c742b9ff526c9123"
+        },
+        {
+          "path": "tests/test_tool_calling_agent.py",
+          "sha256": "a7c0546b12355c6aeaf4d265a94b1abafb9036c51efb550a6acbb4c4d0e02e49"
+        }
+      ]
+    },
+    "margaryan": {
+      "repository": "Margaryan22/hokaton_test",
+      "commit": "89c5442e03f5451737674c7522d1176af2c611d4",
+      "committed_at": "2026-10-19T20:43:04+04:00",
+      "evidence": [
+        {
+          "path": "src/server/nlu/parse.ts",
+          "sha256": "d837dd05ca023fedfb9bc63106481278de12a5dd0d6c23a95308d1959e8e4836"
+        },
+        {
+          "path": "src/server/dialog/transition.ts",
+          "sha256": "849f313fa971dbb109b1fb143f46590e4d2bd0741595b0ac7a45e5ae22c85deb"
+        },
+        {
+          "path": "src/server/dialog/engine.ts",
+          "sha256": "71236d8e779fc59525052d7e6b9a04f653fb0e62fcdd0f5b6a4891b105da02cb"
+        },
+        {
+          "path": "src/server/dialog/state.ts",
+          "sha256": "24020fb143ab6b1a4ca818e8c3835db1cfac8bc83b1d70e5086761a30548c496"
+        },
+        {
+          "path": "src/server/search/rank.ts",
+          "sha256": "a4425d3b21103e55f2faeffe8d647866f32afaa1641da970fb10ca976d7d3985"
+        },
+        {
+          "path": "src/client/speech/recognition.ts",
+          "sha256": "c41546294b712007d1a2425cfefe8a8cedaabe17f93ba4be6ffc82b3c6deebfa"
+        }
+      ]
+    },
+    "triada": {
+      "repository": "TRIADA-TEAM/gorkycode-test",
+      "commit": "ffe66e7255c2b2e89262cbaaf81ffee2451ec8a1",
+      "committed_at": "2026-10-25T17:20:29+03:00",
+      "evidence": [
+        {
+          "path": "app/domain/commands.py",
+          "sha256": "564be568b084bb0b41d03ea6bbf2d8f972531c2c83543dc9f509f49ff6c9b4a1"
+        },
+        {
+          "path": "app/services/assistant.py",
+          "sha256": "6b51ea0facd5dc4ff514ae54d4ff3821c58d405fcd60b58dbccfd2f74a8125f7"
+        },
+        {
+          "path": "app/services/events.py",
+          "sha256": "008bdaccfa2927aca39b04c9a7bef4eb54ae55a3be1e8b36f38aaadc5faef736"
+        },
+        {
+          "path": "app/integrations/polza.py",
+          "sha256": "571a6584a91422d9dd74c4c1e4e8ed6fdf51126971f6eeee3f3849d633bcb383"
+        },
+        {
+          "path": "app/static/app.js",
+          "sha256": "3723e136f4f059f1fa40ebf53a34d214a4e911b63c065a3c2447a7eef414440f"
+        }
+      ]
+    },
+    "britni": {
+      "repository": "Britnispirs/testovoe_gorkycode",
+      "commit": "09e672d93c5db2792d34b429c8b78b06525394f1",
+      "committed_at": "2026-10-24T19:02:53+03:00",
+      "evidence": [
+        {
+          "path": "backend/app/services/dialog_manager.py",
+          "sha256": "0a3bc471ea9a70e5baaee6572d8af2644426502ff4b3a03e667f0a9e69a664b6"
+        },
+        {
+          "path": "backend/app/services/llm_client.py",
+          "sha256": "0782c8a1880af89ef6ce378f1f712207504088b45856bc31f61003678ed86e1c"
+        },
+        {
+          "path": "backend/app/services/search_service.py",
+          "sha256": "c270c5ef22d1318069739f6d148582631281d54f991cb1a81eaf04a83c213ece"
+        },
+        {
+          "path": "backend/app/database.py",
+          "sha256": "a0a31f40a6e32ff88b761b60c69cd2656744403d57159c475ada877b01ec7efb"
+        },
+        {
+          "path": "backend/app/api/events.py",
+          "sha256": "691218acf1668a658510e3c7cb77f36dc0e16374c4666dd7775d1ddea523c7ef"
+        }
+      ]
+    },
+    "anast": {
+      "repository": "anastbezu/gorkycode-test",
+      "commit": "493bda8005fce07c5d69a21683ce09d7b22bd01a",
+      "committed_at": "2026-10-26T01:16:46+03:00",
+      "evidence": [
+        {
+          "path": "backend/agent/agent.py",
+          "sha256": "8b726bdfda2098cd95647d6351e7ea7150ab95ce508021cfc7cef5b55ff0d78a"
+        },
+        {
+          "path": "backend/agent/actions.py",
+          "sha256": "f5d2a3bd1813bd8dd981317501adfe23b7ebab2874f33191ede62eb7f7ed64e9"
+        },
+        {
+          "path": "backend/services/conversation.py",
+          "sha256": "1c7592301fc2af8b7d5f6505f02c9f8661ade640e8237e05fc5002892dedcb04"
+        },
+        {
+          "path": "backend/api/chat.py",
+          "sha256": "a9ceebb9b1e45afa180aa2d3efe2d4d6dd7cb1ac4728a5c4f365b7586a0fa198"
+        },
+        {
+          "path": "backend/api/dispatch.py",
+          "sha256": "9935ee377a6e058c16a18658c778ad7edc5e0eedfedadb83ead037574361e128"
+        }
+      ]
+    },
+    "svoloch": {
+      "repository": "Svoloch2940194/GorkyKod_schedule_bot",
+      "commit": "159cd00f3e509b049bf795e0b7dd09c89f3ff49f",
+      "committed_at": "2026-10-19T19:04:33+03:00",
+      "evidence": [
+        {
+          "path": "handlers/text.py",
+          "sha256": "4e9186baf02331c4866fdf79e289f765c018c32c523711a0a75abfa909a76b65"
+        },
+        {
+          "path": "handlers/voice.py",
+          "sha256": "57ee9e802ff7bc28a25eb21413cf32d762ea51913738453d9e504a6872e2a57a"
+        },
+        {
+          "path": "database.py",
+          "sha256": "624af914f462dcc865a0c0c6fc8a9c161dd83f94ada14570e1ebe877cc58c14d"
+        },
+        {
+          "path": "bot.py",
+          "sha256": "ca7b10199e4b14ab04881ce1f401d43b9bf40301ebec93421d14d499bcb93425"
+        },
+        {
+          "path": "nlp/parser.py",
+          "sha256": "41014d231b14b044914ebb19a7da33246d56a49257b759a8697a5a2ffc7e0896"
+        }
+      ]
+    },
+    "lefiper": {
+      "repository": "Lefiper/gorky-code",
+      "commit": "4ff466da7bc6ccf2dd456cd4c59223aa3d95c02b",
+      "committed_at": "2026-10-26T01:42:04+03:00",
+      "evidence": [
+        {
+          "path": "data-platform/new_assistant_storage/app/mcp_server.py",
+          "sha256": "c39fd7a121b71024aa6e8b42d171f59ccfe4370ddbda54209ae5b81b0182ee62"
+        },
+        {
+          "path": "data-platform/new_assistant_storage/app/events.py",
+          "sha256": "f7ef19e51026a209d16c5f972668a243083e53056c8832c0b734753355bbd34d"
+        },
+        {
+          "path": "data-platform/new_assistant_storage/app/memory.py",
+          "sha256": "bd8d3a1abf4ca36c5b6f222299a76188d712da371080aa46a2194dfa6e6ae881"
+        },
+        {
+          "path": "data-platform/new_assistant_storage/app/confirmation.py",
+          "sha256": "16185d731d0d4695a21db10bdd328b57846868a8d36d44b88da788be0880b3c1"
+        },
+        {
+          "path": "max-bot/bot.py",
+          "sha256": "f9ffb1c6e7696a2781c48aeb8e9c79179f66e928ce48252637ae1c7b25436c3d"
+        },
+        {
+          "path": "agent-backend/README.md",
+          "sha256": "8dacb39de0c51a059af202295b20c4dbfbb27b254859fb2443669d5d486c0376"
+        },
+        {
+          "path": "http-api/README.md",
+          "sha256": "8ca66b75e700f40b319f0f00c66c89b96cc4ae87d74260af5c4e8b8e07236eb1"
+        }
+      ]
+    },
+    "neyro": {
+      "repository": "Neyromark/GorkyCodeTest",
+      "commit": "6d890b9467db15bb2080693557122ee224c70d46",
+      "committed_at": "2026-10-21T17:38:07+03:00",
+      "evidence": [
+        {
+          "path": "docker-compose.yml",
+          "sha256": "a678c80468f12989ad829117c1ae37b0e8111dba521425dfd39c15f4238a8113"
+        }
+      ]
+    },
+    "neyro-backend": {
+      "repository": "Neyromark/GorkyCodeTest-Backend",
+      "commit": "20e86f1598d71846bfd6a4c7feabb85a0d092e1e",
+      "committed_at": "2026-10-24T12:19:09+03:00",
+      "evidence": [
+        {
+          "path": "src/services/llm.py",
+          "sha256": "f4b8fe0be9332619bf647b4fbaad572593e1b4e9d23315e29e35624a5c644841"
+        },
+        {
+          "path": "src/choose.py",
+          "sha256": "a0d07fb437826a26dad1efab85ff50dd0499acae65d48340b42f8ca2ef73c91d"
+        },
+        {
+          "path": "src/key_func/search.py",
+          "sha256": "d1c7ace5e2d2c19d578f79624107c6b842b9fa1436f859779ab974cbce34c181"
+        },
+        {
+          "path": "src/vectorization.py",
+          "sha256": "52f355b9982d0c2e31808bbfc65a5b20076f996ab113bc3f7375a1b444dd911e"
+        }
+      ]
+    },
+    "neyro-vk": {
+      "repository": "Neyromark/GorkyCodeTest-VK-Bot",
+      "commit": "3f6111be25df1110f45b7822842f4d88f9c1c7d2",
+      "committed_at": "2026-10-21T17:35:58+03:00",
+      "evidence": [
+        {
+          "path": "src/handlers/menu.py",
+          "sha256": "0e23647814fd16bedb014ba559cd23f9ae6a21318bf329ba24a41f5aef033932"
+        }
+      ]
+    },
+    "neyro-db": {
+      "repository": "Neyromark/GorkyCodeTest-Database",
+      "commit": "9a2cb7d6dc17764277c569f5b7c58310a2576193",
+      "committed_at": "2026-10-21T15:45:45+03:00",
+      "evidence": [
+        {
+          "path": "init.sql",
+          "sha256": "654ded1f55aebfb4c0d83aeb01157638314ba4b4d9da32c20e3f30f23cecb18c"
+        }
+      ]
+    },
+    "neyro-notify": {
+      "repository": "Neyromark/GorkyCodeTest-Notifications",
+      "commit": "f02575f7bc401f5aa953f088e758510ab5715d75",
+      "committed_at": "2026-10-16T17:37:58+03:00",
+      "evidence": [
+        {
+          "path": "README.md",
+          "sha256": "eb7f99226322048c56cf2aeabb5de1a233119f97ef7d8ce6e51fb59140e7be36"
+        }
+      ]
+    },
+    "xm1k": {
+      "repository": "xm1k/voice-assistant",
+      "commit": "2c07a471067b92da2998fa6766de40273fff0358",
+      "committed_at": "2026-10-25T22:58:36+03:00",
+      "evidence": [
+        {
+          "path": "shared/backend/common/schemas.py",
+          "sha256": "a7713e2faeac05110596607f693fe7754e89eee37d248e83eb145198d58ba540"
+        },
+        {
+          "path": "services/core/app/backend/chat/decisions.py",
+          "sha256": "e85c1b76eb9f8f4b172f916c51ea7596777a9c32c17e9a00796cdc5b8cfe79cd"
+        },
+        {
+          "path": "services/core/app/backend/chat/main.py",
+          "sha256": "3232781b6a5f1c86bc9692d6ffd7fb6d4fd41c4cf3a237323a7e1e3941085175"
+        },
+        {
+          "path": "services/assistant-worker/app/backend/llm/client.py",
+          "sha256": "a6706d75fc975667ed27287db308f4effbc2b59824ee3721025a30b7e22098ea"
+        },
+        {
+          "path": "services/assistant-worker/app/backend/workers/assistant.py",
+          "sha256": "26ba9f2625882cd658a2c367c688067f4528115321ec59ac51ae5508ed683a14"
+        },
+        {
+          "path": "shared/backend/rag/main.py",
+          "sha256": "3ed77c7f1852b26cc3f1fa16b27d5482a01480ee7326d7d97871e6909403496b"
+        },
+        {
+          "path": "services/yandex-calendar/app/backend/yandex_calendar/service.py",
+          "sha256": "56ec5f598f69e2dd7c128e914c4fef7059c95af64e1a30a543cb17350f79a5ea"
+        },
+        {
+          "path": "shared/tests_v2/test_yandex_pipeline.py",
+          "sha256": "7455c1bf83021f58d7143420d101c85cffd52ab3fa7fcbbb89bd2c0b0f5b3177"
+        },
+        {
+          "path": "ARCHITECTURE.md",
+          "sha256": "eaa4bc995479fbade9f4c0f708fbd0a394aa45b1f8796732dff7df4a9eb37483"
+        },
+        {
+          "path": "docs/llm-service.md",
+          "sha256": "7db85b037421e25d9b2b786eb6e7e4b43540b24b4d64e386fd5029257583f9cd"
+        },
+        {
+          "path": "README.v2.md",
+          "sha256": "51e7640f8280a028e3115594b8757d91986391d0940d9bb023881253abaea061"
+        },
+        {
+          "path": "local tests/README.md",
+          "sha256": "a0b8b9e2d7f197bfb358948bcc932b1a3fb47ca376ad436a8cc6d6ca214ef982"
+        }
+      ]
+    },
+    "agend": {
+      "repository": "ZininRo/agend-ai",
+      "commit": "d964aa9a966fdc7941e724145badd61bdcf1cbe0",
+      "committed_at": "2026-10-25T23:36:05+03:00",
+      "evidence": [
+        {
+          "path": "backend/src/main/java/com/example/agend_ai/service/IntentDispatcher.java",
+          "sha256": "7a994853ec0d8e628918f7909cdb642d70b9a2f1096a7837b31682eb05c11426"
+        },
+        {
+          "path": "backend/src/main/java/com/example/agend_ai/service/DateResolver.java",
+          "sha256": "9428bf2890feab679922d80df43ff7ee6dabd05f6e17055aa91f7f94bad327b5"
+        },
+        {
+          "path": "backend/src/test/java/com/example/agend_ai/api/MessageApiTest.java",
+          "sha256": "bf287d47572d537e59bd95ec37cecb873f4b086d05909ec9833e7e007a2bf8ac"
+        },
+        {
+          "path": "frontend/src/features/chat/useSpeech.ts",
+          "sha256": "0e9e2bd8a999537c86f3a7aab60231a91e0cb57ae495fafb4e98df367b5b9e0a"
+        }
+      ]
+    }
+  },
+  "csv_fingerprints": [
+    {
+      "path": "data/voice_assistant_events_1000.csv",
+      "rows": 1000,
+      "sha256": "81ab94b48ed7a90de6a43f729a27d2721e8cc3f70ca80c82665af289a1a54c1b",
+      "csv_rows_sha256": "480298fbe53f228c7566bfa7e2fafebaba91d1f326d6f8eed54fb207b981cdc5"
+    },
+    {
+      "path": "tmp/competitor-review/ryzhilx/voice_assistant_events_1000_77e927b5d2.csv",
+      "rows": 1000,
+      "sha256": "d2b8c2d0ce8d966aa21cabf94e3412b9325ecb6effe8f983ea21fc9cdffdd158",
+      "csv_rows_sha256": "480298fbe53f228c7566bfa7e2fafebaba91d1f326d6f8eed54fb207b981cdc5"
+    },
+    {
+      "path": "tmp/competitor-review/anast/backend/data/voice_assistant_events_1000.csv",
+      "rows": 1000,
+      "sha256": "d2b8c2d0ce8d966aa21cabf94e3412b9325ecb6effe8f983ea21fc9cdffdd158",
+      "csv_rows_sha256": "480298fbe53f228c7566bfa7e2fafebaba91d1f326d6f8eed54fb207b981cdc5"
+    },
+    {
+      "path": "tmp/competitor-review/anast/backend/tests/fixtures/events_5.csv",
+      "rows": 5,
+      "sha256": "a493c1a55dac204082765eb814781fef8a1482757d4338286839a09744399fdd",
+      "csv_rows_sha256": "1e83423721a66f95259e7b83299c3f5360122389ad418a41c89e0af45c72faf2"
+    },
+    {
+      "path": "tmp/competitor-review/britni/backend/data/seed_events.csv",
+      "rows": 101,
+      "sha256": "f70ba5b26b3611f1a78bc8055e0ffc9340cde16ec34f225f823400baf35928d9",
+      "csv_rows_sha256": "909cc9648136edd29b37bd459c24082c8885167dfbe9b64d1575b2212aff8ac9"
+    },
+    {
+      "path": "tmp/competitor-review/margaryan/docs/source/voice_assistant_events.csv",
+      "rows": 1000,
+      "sha256": "d2b8c2d0ce8d966aa21cabf94e3412b9325ecb6effe8f983ea21fc9cdffdd158",
+      "csv_rows_sha256": "480298fbe53f228c7566bfa7e2fafebaba91d1f326d6f8eed54fb207b981cdc5"
+    }
+  ],
+  "gena_working_copy": {
+    "base_commit": "22ff6627ac61cf087ee4105d1aa12dead23182cf",
+    "files": [
+      {
+        "path": "internal/nlu/multi.go",
+        "sha256": "e821541aefc33ebca87defddcd6fd1f87ca0f3b75e15730df14ffd3c48e30294"
+      },
+      {
+        "path": "internal/nlu/operation.go",
+        "sha256": "81a9e1867d999f31036635a47ff1398217d9a02fdde4c330a4ba6c32fc8ca544"
+      },
+      {
+        "path": "internal/nlu/temporal.go",
+        "sha256": "e8347b597816c6dd97cd5ed067d03465c8f793d393ab8c826abf0c68597e249a"
+      },
+      {
+        "path": "internal/assistant/multi.go",
+        "sha256": "ba190d08507cd82f6f0be8c9ca44b89663635634e70e3860bed889eb62c0d7a1"
+      },
+      {
+        "path": "internal/assistant/simple.go",
+        "sha256": "399d71a1c96421ca320943a0a5e7c4ee2199aeeef22ca29324073254b8daa896"
+      },
+      {
+        "path": "internal/assistant/simple_context.go",
+        "sha256": "fecf0532e84a5c6b7cd04e5e6d1fe94d63f80d74d31be48b6ba87a9e9562a13a"
+      },
+      {
+        "path": "internal/assistant/simple_time.go",
+        "sha256": "c5445ded0a9385ff3d6c6943ec53de6f51a3e35549133308f5b620465ab9cdbc"
+      },
+      {
+        "path": "internal/assistant/scheduling.go",
+        "sha256": "06a7f850636dd477b7e391feae59c0427818a51ae727d8da3235951184e73fe3"
+      },
+      {
+        "path": "internal/assistant/multi_test.go",
+        "sha256": "f5694cbfe1fc00d5e98f4a4fa1c211a47482bf5098523b00ba48a70f89b45d35"
+      },
+      {
+        "path": "internal/domain/action_plan.go",
+        "sha256": "a081b99836ae90d2ecba9afea6ebdceeb8f468f5f7f27d6ff8928c4a49b574fc"
+      },
+      {
+        "path": "internal/llm/simple.go",
+        "sha256": "3c27b45389dbb3516b1729884d65326ba2c8dfad86be0df099ad78eabf906574"
+      },
+      {
+        "path": "internal/llm/gigachat.go",
+        "sha256": "6c84a74572542208d917cad55f8fd5d7c5c9465aa8297ed5cc5881950697aff8"
+      },
+      {
+        "path": "tests/contract/multi_action_postgres_test.go",
+        "sha256": "a153f20bf76848bf16055ecae6b8b5fc03b463d74c82d9d45b191ae1ff18c7db"
+      }
+    ]
+  },
+  "validation": {
+    "gena_full_suite": {
+      "source": "artifacts/multi_action_go_test.jsonl",
+      "pass_test_and_subtest_events": 1299,
+      "skip_test_events": 10,
+      "failed_events": 0,
+      "go_vet": "passed",
+      "web_build": "passed",
+      "race_detector": "not run: missing Windows gcc/cgo; existing Linux CI runs go test -race",
+      "postgres": "disposable loopback gena_semantic_test",
+      "production_deployed": false,
+      "live_gigachat_postgres": {
+        "passed": [
+          "three explicit actions",
+          "original screenshot with all necessary clarifications",
+          "dependency chain plus five independent actions"
+        ],
+        "cases": 3,
+        "failed": 0
+      }
+    },
+    "competitors": {
+      "xm1k": "137 passed, 8 skipped, 9 subtests",
+      "ryzhilx": "31 selected tests passed, LLM mocked",
+      "triada": "91 passed",
+      "britni": "9 passed",
+      "anast": "13 selected tests passed",
+      "lefiper_transport": "15 passed",
+      "lefiper_storage": "9 passed, 10 skipped, 33 subtests",
+      "artem_go": "selected pure-Go packages passed; full service blocked by missing gcc",
+      "artem_python": "18 passed, 1 failed: OpenAPI contract drift; 54 subtests",
+      "margaryan": "source inspected; tests not run",
+      "agend": "source inspected; JDK/Maven unavailable",
+      "svoloch": "reproduced evening clock parsed as morning",
+      "neyro": "integration inspected, no full runtime"
+    }
+  }
+}

@@ -16,12 +16,18 @@
 
 ## Архитектура и разработка
 
+Реализация и проверки: [улучшения после TOP-10](QUALITY5_IMPROVEMENTS.md), [исходный пакет TOP-10](TOP10_IMPLEMENTATION.md).
+
+Положение после изменений: [Повторная оценка Гены и конкурентов](COMPETITIVE_REASSESSMENT_AFTER_TOP10.md).
+
 | Тема | Документ |
 | --- | --- |
 | Блочные схемы, UML, ER и границы системы | [Архитектура](ARCHITECTURE.md) |
 | Среда разработки, PostgreSQL, тесты, генерация материалов | [Разработка](DEVELOPMENT.md) |
 | Диалог, контекст, выбор и подтверждения | [Поведение ассистента](ASSISTANT_BEHAVIOR.md) |
 | Контракт операции и граница GigaChat/Go | [Simple LLM runtime](SIMPLE_LLM_RUNTIME.md) |
+| Несколько действий, зависимости, уточнения и идемпотентность | [Multi-Action](MULTI_ACTION.md) |
+| Проверенное сравнение 11 конкурсных проектов | [Технический разбор GORKYCODE 2026](GORKYCODE_2026_TECHNICAL_REVIEW.md) |
 | Аккаунты, сессии, изоляция и импорт SQLite | [Аккаунты](ACCOUNTS.md) |
 | Темы, навигация, команды и ошибки | [Интерфейс](WORKSPACE_DESIGN.md) |
 | Авторизация и onboarding | [Вход](AUTH_VISUALS.md) |

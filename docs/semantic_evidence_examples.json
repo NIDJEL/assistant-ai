@@ -1,0 +1,510 @@
+[
+  {
+    "id": "evidence-dev-lexical_day-02",
+    "source": "У задачи «Проверка насоса 3» поменяй дату на послезавтра.",
+    "model_plan": {
+      "changes": {
+        "date": {
+          "day": null,
+          "direction": null,
+          "month": null,
+          "offset": 2,
+          "type": "relative_day",
+          "unit": null,
+          "value": null,
+          "weekday": null,
+          "year": null
+        },
+        "delay": null,
+        "priority": null,
+        "reminder_enabled": null,
+        "reminder_minutes": null,
+        "status": null,
+        "time": null,
+        "time_shift_minutes": null,
+        "title": null
+      },
+      "chat_response": null,
+      "clarification": null,
+      "dialogue_act": "command",
+      "evidence": [
+        {
+          "field": "target.query",
+          "text": "Проверка насоса 3"
+        },
+        {
+          "field": "changes.date",
+          "text": "послезавтра"
+        }
+      ],
+      "filters": null,
+      "kind": null,
+      "operation": "update",
+      "query": null,
+      "schedule": null,
+      "status": "ok",
+      "target": {
+        "ordinal": null,
+        "query": "Проверка насоса 3",
+        "reference": "query"
+      },
+      "title": null
+    },
+    "go_command": {
+      "action": "update",
+      "kind": null,
+      "title": "",
+      "query": "Проверка насоса 3",
+      "date": "2026-12-11",
+      "time": null,
+      "period_start": null,
+      "period_end": null,
+      "duration_minutes": 60,
+      "target_id": null,
+      "error": null,
+      "provider": "semantic_llm"
+    },
+    "evidence_field": null,
+    "evidence_reason": null,
+    "action": "update",
+    "pending": false
+  },
+  {
+    "id": "evidence-dev-batch_source_role-00",
+    "source": "Перенеси все встречи послезавтра на день позже.",
+    "model_plan": {
+      "changes": {
+        "date": null,
+        "delay": null,
+        "priority": null,
+        "reminder_enabled": null,
+        "reminder_minutes": null,
+        "status": null,
+        "time": null,
+        "time_shift_minutes": 1440,
+        "title": null
+      },
+      "chat_response": null,
+      "clarification": null,
+      "dialogue_act": "command",
+      "evidence": [
+        {
+          "field": "batch.scope",
+          "text": "все встречи"
+        },
+        {
+          "field": "filters.period",
+          "text": "послезавтра"
+        },
+        {
+          "field": "changes.time_shift_minutes",
+          "text": "на день позже"
+        }
+      ],
+      "filters": {
+        "exclude": [],
+        "period": {
+          "day": null,
+          "direction": null,
+          "month": null,
+          "offset": 2,
+          "type": "relative_day",
+          "unit": null,
+          "value": null,
+          "weekday": null,
+          "year": null
+        },
+        "priority": null,
+        "status": null,
+        "time_before": null,
+        "time_from": null
+      },
+      "kind": "meeting",
+      "operation": "batch_update",
+      "query": null,
+      "schedule": null,
+      "status": "ok",
+      "target": null,
+      "title": null
+    },
+    "go_command": {
+      "filter": {
+        "kind": "meeting",
+        "start": "2026-12-11",
+        "end": "2026-12-12"
+      },
+      "execution_changes": {
+        "time_shift_minutes": 1440
+      },
+      "batch": true,
+      "action": "update",
+      "kind": "meeting",
+      "title": "",
+      "query": "",
+      "date": null,
+      "time": null,
+      "period_start": "2026-12-11",
+      "period_end": "2026-12-12",
+      "duration_minutes": 60,
+      "target_id": null,
+      "error": null,
+      "provider": "semantic_llm",
+      "selector": {
+        "all": true,
+        "start": "2026-12-11",
+        "end": "2026-12-12"
+      }
+    },
+    "evidence_field": null,
+    "evidence_reason": null,
+    "action": "clarify",
+    "pending": true
+  },
+  {
+    "id": "evidence-dev-batch_source_role-01",
+    "source": "Все встречи послезавтра перенеси на 18:00.",
+    "model_plan": {
+      "changes": {
+        "date": null,
+        "delay": null,
+        "priority": null,
+        "reminder_enabled": null,
+        "reminder_minutes": null,
+        "status": null,
+        "time": {
+          "hour": 18,
+          "minute": 0
+        },
+        "time_shift_minutes": null,
+        "title": null
+      },
+      "chat_response": null,
+      "clarification": null,
+      "dialogue_act": "command",
+      "evidence": [
+        {
+          "field": "batch.scope",
+          "text": "Все встречи"
+        },
+        {
+          "field": "filters.period",
+          "text": "послезавтра"
+        },
+        {
+          "field": "changes.time",
+          "text": "на 18:00"
+        }
+      ],
+      "filters": {
+        "exclude": [],
+        "period": {
+          "day": null,
+          "direction": null,
+          "month": null,
+          "offset": 2,
+          "type": "relative_day",
+          "unit": null,
+          "value": null,
+          "weekday": null,
+          "year": null
+        },
+        "priority": null,
+        "status": null,
+        "time_before": null,
+        "time_from": null
+      },
+      "kind": "meeting",
+      "operation": "batch_update",
+      "query": null,
+      "schedule": null,
+      "status": "ok",
+      "target": null,
+      "title": null
+    },
+    "go_command": {
+      "filter": {
+        "kind": "meeting",
+        "start": "2026-12-11",
+        "end": "2026-12-12"
+      },
+      "batch": true,
+      "action": "update",
+      "kind": "meeting",
+      "title": "",
+      "query": "",
+      "date": null,
+      "time": "18:00",
+      "period_start": "2026-12-11",
+      "period_end": "2026-12-12",
+      "duration_minutes": 60,
+      "target_id": null,
+      "error": null,
+      "provider": "semantic_llm",
+      "selector": {
+        "all": true,
+        "start": "2026-12-11",
+        "end": "2026-12-12"
+      }
+    },
+    "evidence_field": null,
+    "evidence_reason": null,
+    "action": "clarify",
+    "pending": true
+  },
+  {
+    "id": "evidence-dev-exclusions-00",
+    "source": "Все встречи послезавтра перенеси на завтра, кроме встречи с Иваном.",
+    "model_plan": {
+      "changes": {
+        "date": {
+          "day": null,
+          "direction": null,
+          "month": null,
+          "offset": 1,
+          "type": "relative_day",
+          "unit": null,
+          "value": null,
+          "weekday": null,
+          "year": null
+        },
+        "delay": null,
+        "priority": null,
+        "reminder_enabled": null,
+        "reminder_minutes": null,
+        "status": null,
+        "time": null,
+        "time_shift_minutes": null,
+        "title": null
+      },
+      "chat_response": null,
+      "clarification": null,
+      "dialogue_act": "command",
+      "evidence": [
+        {
+          "field": "batch.scope",
+          "text": "Все встречи"
+        },
+        {
+          "field": "filters.period",
+          "text": "послезавтра"
+        },
+        {
+          "field": "filters.exclude.0.query",
+          "text": "Иваном"
+        },
+        {
+          "field": "changes.date",
+          "text": "завтра"
+        }
+      ],
+      "filters": {
+        "exclude": [
+          {
+            "kind": null,
+            "period": null,
+            "priority": null,
+            "query": "Иваном",
+            "status": null
+          }
+        ],
+        "period": {
+          "day": null,
+          "direction": null,
+          "month": null,
+          "offset": 2,
+          "type": "relative_day",
+          "unit": null,
+          "value": null,
+          "weekday": null,
+          "year": null
+        },
+        "priority": null,
+        "status": null,
+        "time_before": null,
+        "time_from": null
+      },
+      "kind": "meeting",
+      "operation": "batch_update",
+      "query": null,
+      "schedule": null,
+      "status": "ok",
+      "target": null,
+      "title": null
+    },
+    "go_command": {
+      "filter": {
+        "kind": "meeting",
+        "start": "2026-12-11",
+        "end": "2026-12-12",
+        "exclude": [
+          {
+            "query": "Иваном",
+            "kind": null
+          }
+        ]
+      },
+      "batch": true,
+      "action": "update",
+      "kind": "meeting",
+      "title": "",
+      "query": "",
+      "date": "2026-12-10",
+      "time": null,
+      "period_start": "2026-12-11",
+      "period_end": "2026-12-12",
+      "duration_minutes": 60,
+      "target_id": null,
+      "error": null,
+      "provider": "semantic_llm",
+      "selector": {
+        "all": true,
+        "start": "2026-12-11",
+        "end": "2026-12-12"
+      }
+    },
+    "evidence_field": null,
+    "evidence_reason": null,
+    "action": "clarify",
+    "pending": true
+  },
+  {
+    "id": "evidence-dev-time_shift-03",
+    "source": "Задачу «Проверка тяги 4» сдвинь на день раньше.",
+    "model_plan": {
+      "changes": {
+        "date": {
+          "day": null,
+          "direction": null,
+          "month": null,
+          "offset": -1,
+          "type": "relative_day",
+          "unit": null,
+          "value": null,
+          "weekday": null,
+          "year": null
+        },
+        "delay": null,
+        "priority": null,
+        "reminder_enabled": null,
+        "reminder_minutes": null,
+        "status": null,
+        "time": null,
+        "time_shift_minutes": null,
+        "title": null
+      },
+      "chat_response": null,
+      "clarification": null,
+      "dialogue_act": "command",
+      "evidence": [
+        {
+          "field": "target.query",
+          "text": "Проверка тяги 4"
+        },
+        {
+          "field": "changes.date",
+          "text": "на день раньше"
+        }
+      ],
+      "filters": null,
+      "kind": null,
+      "operation": "update",
+      "query": null,
+      "schedule": null,
+      "status": "ok",
+      "target": {
+        "ordinal": null,
+        "query": "Проверка тяги 4",
+        "reference": "query"
+      },
+      "title": null
+    },
+    "go_command": {
+      "action": "help",
+      "kind": null,
+      "title": "",
+      "query": "",
+      "date": null,
+      "time": null,
+      "period_start": null,
+      "period_end": null,
+      "duration_minutes": 60,
+      "target_id": null,
+      "error": "Не уверен, что правильно понял дату, время или нужные записи. Уточните запрос. Ничего не изменено.",
+      "provider": "semantic_llm"
+    },
+    "evidence_field": "changes.date",
+    "evidence_reason": "value_mismatch",
+    "action": "clarify",
+    "pending": false
+  },
+  {
+    "id": "evidence-dev-time_shift-13",
+    "source": "Задачу «Проверка тяги 14» сдвинь на день раньше.",
+    "model_plan": {
+      "changes": {
+        "date": {
+          "day": null,
+          "direction": null,
+          "month": null,
+          "offset": -1,
+          "type": "relative_day",
+          "unit": null,
+          "value": null,
+          "weekday": null,
+          "year": null
+        },
+        "delay": null,
+        "priority": null,
+        "reminder_enabled": null,
+        "reminder_minutes": null,
+        "status": null,
+        "time": null,
+        "time_shift_minutes": null,
+        "title": null
+      },
+      "chat_response": null,
+      "clarification": null,
+      "dialogue_act": "command",
+      "evidence": [
+        {
+          "field": "target.query",
+          "text": "Проверка тяги 14"
+        },
+        {
+          "field": "changes.date",
+          "text": "на день раньше"
+        }
+      ],
+      "filters": null,
+      "kind": null,
+      "operation": "update",
+      "query": null,
+      "schedule": null,
+      "status": "ok",
+      "target": {
+        "ordinal": null,
+        "query": "Проверка тяги 14",
+        "reference": "query"
+      },
+      "title": null
+    },
+    "go_command": {
+      "action": "help",
+      "kind": null,
+      "title": "",
+      "query": "",
+      "date": null,
+      "time": null,
+      "period_start": null,
+      "period_end": null,
+      "duration_minutes": 60,
+      "target_id": null,
+      "error": "Не уверен, что правильно понял дату, время или нужные записи. Уточните запрос. Ничего не изменено.",
+      "provider": "semantic_llm"
+    },
+    "evidence_field": "changes.date",
+    "evidence_reason": "value_mismatch",
+    "action": "clarify",
+    "pending": false
+  }
+]

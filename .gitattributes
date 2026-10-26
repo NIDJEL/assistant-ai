@@ -4,3 +4,4 @@
 *.sqlite3 binary
 # Frozen semantic corpora retain their original bytes and checksums.
 testdata/semantic/*.jsonl -text whitespace=cr-at-eol
+testdata/retrieval/*.csv -text whitespace=cr-at-eol

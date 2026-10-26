@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/ecdh"
 	"encoding/base64"
+	"errors"
 	"net/url"
 	"strings"
 	"time"
@@ -128,6 +129,12 @@ func NextDue(e domain.Event, now time.Time, loc *time.Location) (updated domain.
 	if e.Recurrence != nil {
 		var next time.Time
 		next, err = e.Recurrence.Next(now.Add(time.Duration(e.ReminderLead()) * time.Minute))
+		if errors.Is(err, domain.ErrRecurrenceExhausted) {
+			updated.Status = domain.StatusDone
+			changed = true
+			err = nil
+			return
+		}
 		if err != nil {
 			return
 		}

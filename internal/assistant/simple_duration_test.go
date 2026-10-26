@@ -48,7 +48,7 @@ func TestSimpleDurationUpdatePreservesOtherFieldsAndChecksConflicts(t *testing.T
 		t.Fatal(r)
 	}
 	operationFixture(p, "update", `{"target":{"type":"last"},"changes":{"time":"11:00"}}`)
-	r = say(t, s, "Нет, лучше в одиннадцать", now.Add(2*time.Second))
+	r = say(t, s, "Нет, лучше в 11:00", now.Add(2*time.Second))
 	if r.Action != domain.ActionUpdate || r.Pending || r.Events[0].Duration != 30*time.Minute {
 		t.Fatal("time correction reset duration", r)
 	}
@@ -94,7 +94,7 @@ func TestSimpleInvalidDurationDisarmsOlderConflictConfirmation(t *testing.T) {
 	operationFixture(p, "search", `{"kind":"meeting","query":"макет"}`)
 	say(t, s, "Найди встречу по макету", now)
 	operationFixture(p, "update", `{"target":{"type":"last"},"changes":{"time":"11:00"}}`)
-	if r := say(t, s, "Перенеси на одиннадцать", now.Add(time.Second)); !r.Pending {
+	if r := say(t, s, "Перенеси на 11:00", now.Add(time.Second)); !r.Pending {
 		t.Fatal("expected conflict confirmation", r)
 	}
 	operationFixture(p, "continue", `{"changes":{"duration_minutes":2}}`)

@@ -48,7 +48,7 @@ func TestSimpleGigaChatUsesCompactContextAndStrictOperationDecoder(t *testing.T)
 	if _, err = s.InterpretOperation(t.Context(), "её удали", d); err == nil {
 		t.Fatal("model ID accepted")
 	}
-	if calls != 2 {
+	if calls != 3 {
 		t.Fatal("unexpected extra inference", calls)
 	}
 }

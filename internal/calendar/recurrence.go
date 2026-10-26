@@ -47,6 +47,9 @@ func Rebase(e *domain.Event, now time.Time, loc *time.Location) error {
 		return nil
 	}
 	r := *e.Recurrence
+	if len(r.ExDates) > 0 {
+		return errors.New("У серии есть отдельные изменения. Меняйте нужные повторения по одному; для нового общего расписания создайте новую серию.")
+	}
 	if !r.Elapsed() {
 		r.LocalTime = e.StartTime
 	}

@@ -320,7 +320,7 @@ func (d *Database) DeliverOne(ctx context.Context, now time.Time, sender notific
 		}
 		// Automatic completion retains the occurrence stamp. Manual completion
 		// or edits clear it, which still cancels queued deliveries.
-		autoCompleted := e != nil && e.Status == domain.StatusDone && e.Kind == domain.EventReminder && e.Recurrence == nil && e.LastNotificationAt != nil
+		autoCompleted := e != nil && e.Status == domain.StatusDone && e.LastNotificationAt != nil && (e.Kind == domain.EventReminder || e.Recurrence != nil && e.Recurrence.Bounded())
 		allowed = e != nil && (e.Status == domain.StatusOpen || autoCompleted) && e.HasReminder()
 		if allowed {
 			var snapshotRaw []byte
@@ -336,7 +336,7 @@ func (d *Database) DeliverOne(ctx context.Context, now time.Time, sender notific
 			}
 			allowed = allowed && e.ReminderLead() == snapshot.ReminderLead() && (e.Recurrence == nil) == (snapshot.Recurrence == nil)
 			if allowed && e.Recurrence != nil {
-				allowed = e.Recurrence.Anchor.Equal(snapshot.Recurrence.Anchor)
+				allowed = e.Recurrence.Anchor.Equal(snapshot.Recurrence.Anchor) && snapshot.OccurrenceAt != nil && !e.Recurrence.Excluded(*snapshot.OccurrenceAt)
 			}
 			if allowed && e.Recurrence == nil {
 				allowed = e.Date != nil && e.StartTime != nil && e.Date.String() == snapshot.Date.String() && e.StartTime.String() == snapshot.StartTime.String() && e.StartSecond == snapshot.StartSecond

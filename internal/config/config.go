@@ -20,6 +20,8 @@ import (
 )
 
 type Config struct {
+	SearchMode, EmbeddingModel                                                    string
+	SearchBudget, TurnTimeout                                                     time.Duration
 	ZoomWebhookSecret                                                             string
 	GoogleCalendarClientID, GoogleCalendarClientSecret, GoogleCalendarRedirectURI string
 	ZoomClientID, ZoomClientSecret, ZoomRedirectURI                               string
@@ -75,6 +77,7 @@ func Load() (Config, error) {
 		return fallback
 	}
 	c := Config{
+		SearchMode: value("GENA_SEARCH_MODE", ""), EmbeddingModel: value("GENA_EMBEDDING_MODEL", "Embeddings-2"),
 		ZoomWebhookSecret:      value("ZOOM_WEBHOOK_SECRET_TOKEN", ""),
 		GoogleCalendarClientID: value("GOOGLE_CALENDAR_CLIENT_ID", ""), GoogleCalendarClientSecret: value("GOOGLE_CALENDAR_CLIENT_SECRET", ""), GoogleCalendarRedirectURI: value("GOOGLE_CALENDAR_REDIRECT_URI", ""),
 		ZoomClientID: value("ZOOM_CLIENT_ID", ""), ZoomClientSecret: value("ZOOM_CLIENT_SECRET", ""), ZoomRedirectURI: value("ZOOM_REDIRECT_URI", ""),
@@ -124,6 +127,21 @@ func Load() (Config, error) {
 	}
 	if c.GigaChat.Timeout, err = time.ParseDuration(value("GIGACHAT_TIMEOUT", "30s")); err != nil || c.GigaChat.Timeout <= 0 || c.GigaChat.Timeout > 2*time.Minute {
 		return c, errors.New("GIGACHAT_TIMEOUT must be a duration between 0 and 2m")
+	}
+	if c.SearchMode == "" {
+		c.SearchMode = "lexical"
+		if c.NLUMode == "simple_llm" && c.SemanticProvider != "rules" {
+			c.SearchMode = "cloud"
+		}
+	}
+	if c.SearchMode != "lexical" && c.SearchMode != "hybrid" && c.SearchMode != "cloud" {
+		return c, errors.New("GENA_SEARCH_MODE must be lexical, cloud or hybrid")
+	}
+	if c.SearchBudget, err = time.ParseDuration(value("GENA_SEARCH_BUDGET", "8s")); err != nil || c.SearchBudget <= 0 || c.SearchBudget > 20*time.Second {
+		return c, errors.New("GENA_SEARCH_BUDGET must be between 0 and 20s")
+	}
+	if c.TurnTimeout, err = time.ParseDuration(value("GENA_TURN_TIMEOUT", "45s")); err != nil || c.TurnTimeout < time.Second || c.TurnTimeout > 2*time.Minute {
+		return c, errors.New("GENA_TURN_TIMEOUT must be between 1s and 2m")
 	}
 	if c.GigaChat.MaxConcurrent, err = strconv.Atoi(value("GIGACHAT_MAX_CONCURRENT", "1")); err != nil || c.GigaChat.MaxConcurrent < 1 || c.GigaChat.MaxConcurrent > 16 {
 		return c, errors.New("GIGACHAT_MAX_CONCURRENT must be between 1 and 16")

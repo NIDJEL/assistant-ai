@@ -17,6 +17,7 @@ const pendingTTL = 30 * time.Minute
 
 // DialogueObservation is local instrumentation, never part of the API/LLM DTO.
 type DialogueObservation struct {
+	Metrics                       domain.TurnMetrics
 	EvidenceField, EvidenceReason string
 	Route                         RouteDecision
 	SemanticCalls                 int
@@ -43,6 +44,9 @@ func freshAffected(state domain.State, now time.Time) bool {
 }
 
 func expireDialogue(state *domain.State, now time.Time) {
+	if state.Actions != nil && (now.Before(state.Actions.At) || now.Sub(state.Actions.At) > pendingTTL) {
+		state.Actions, state.Pending = nil, nil
+	}
 	if state.Pending != nil && (now.Before(state.Pending.At) || now.Sub(state.Pending.At) > pendingTTL) {
 		state.Pending = nil
 	}

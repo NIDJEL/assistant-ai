@@ -1,0 +1,157 @@
+{
+  "checkedAt": "2026-10-26T06:50:21Z",
+  "scope": "GitHub default branch HEAD, 11 peer projects plus 4 Neyromark component repositories",
+  "changed": 0,
+  "repositories": [
+    {
+      "key": "artem",
+      "repo": "ArtemST2006/GorkyCode",
+      "old": "ee29c9e1ab95a3fd17461c4a970ac0d964dcfc1d",
+      "sha": "ee29c9e1ab95a3fd17461c4a970ac0d964dcfc1d",
+      "changed": false,
+      "committedAt": "2026-10-24T11:08:28Z",
+      "message": "Merge pull request #6 from ArtemST2006/ai-service\n\nai-service",
+      "url": "https://github.com/ArtemST2006/GorkyCode/commit/ee29c9e1ab95a3fd17461c4a970ac0d964dcfc1d"
+    },
+    {
+      "key": "ryzhilx",
+      "repo": "ryzhilx/voice-assistant-gorkycode2026",
+      "old": "4d3d9c488b681e195422492ccd6472e282defef9",
+      "sha": "4d3d9c488b681e195422492ccd6472e282defef9",
+      "changed": false,
+      "committedAt": "2026-10-25T19:24:56Z",
+      "message": "fix: support current_date in mark_task_completed and fix recurring task tests",
+      "url": "https://github.com/ryzhilx/voice-assistant-gorkycode2026/commit/4d3d9c488b681e195422492ccd6472e282defef9"
+    },
+    {
+      "key": "margaryan",
+      "repo": "Margaryan22/hokaton_test",
+      "old": "89c5442e03f5451737674c7522d1176af2c611d4",
+      "sha": "89c5442e03f5451737674c7522d1176af2c611d4",
+      "changed": false,
+      "committedAt": "2026-10-19T16:43:04Z",
+      "message": "docs: repository link in README\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>",
+      "url": "https://github.com/Margaryan22/hokaton_test/commit/89c5442e03f5451737674c7522d1176af2c611d4"
+    },
+    {
+      "key": "triada",
+      "repo": "TRIADA-TEAM/gorkycode-test",
+      "old": "ffe66e7255c2b2e89262cbaaf81ffee2451ec8a1",
+      "sha": "ffe66e7255c2b2e89262cbaaf81ffee2451ec8a1",
+      "changed": false,
+      "committedAt": "2026-10-25T14:20:29Z",
+      "message": "Serega_fix_delete_event_date_another2",
+      "url": "https://github.com/TRIADA-TEAM/gorkycode-test/commit/ffe66e7255c2b2e89262cbaaf81ffee2451ec8a1"
+    },
+    {
+      "key": "britni",
+      "repo": "Britnispirs/testovoe_gorkycode",
+      "old": "09e672d93c5db2792d34b429c8b78b06525394f1",
+      "sha": "09e672d93c5db2792d34b429c8b78b06525394f1",
+      "changed": false,
+      "committedAt": "2026-10-24T16:02:53Z",
+      "message": "chore: добавлено игнорирование локального архива и теории в gitignore",
+      "url": "https://github.com/Britnispirs/testovoe_gorkycode/commit/09e672d93c5db2792d34b429c8b78b06525394f1"
+    },
+    {
+      "key": "anast",
+      "repo": "anastbezu/gorkycode-test",
+      "old": "493bda8005fce07c5d69a21683ce09d7b22bd01a",
+      "sha": "493bda8005fce07c5d69a21683ce09d7b22bd01a",
+      "changed": false,
+      "committedAt": "2026-10-25T22:16:46Z",
+      "message": "feat(api): маршруты /api/chat, /api/items, /health на сервисах и БД (#27)\n\nbackend-02b: X-User-Id, импорт датасета новому пользователю, /api/items (from/to обяз",
+      "url": "https://github.com/anastbezu/gorkycode-test/commit/493bda8005fce07c5d69a21683ce09d7b22bd01a"
+    },
+    {
+      "key": "svoloch",
+      "repo": "Svoloch2940194/GorkyKod_schedule_bot",
+      "old": "159cd00f3e509b049bf795e0b7dd09c89f3ff49f",
+      "sha": "159cd00f3e509b049bf795e0b7dd09c89f3ff49f",
+      "changed": false,
+      "committedAt": "2026-10-19T16:04:33Z",
+      "message": "add impl",
+      "url": "https://github.com/Svoloch2940194/GorkyKod_schedule_bot/commit/159cd00f3e509b049bf795e0b7dd09c89f3ff49f"
+    },
+    {
+      "key": "lefiper",
+      "repo": "Lefiper/gorky-code",
+      "old": "4ff466da7bc6ccf2dd456cd4c59223aa3d95c02b",
+      "sha": "4ff466da7bc6ccf2dd456cd4c59223aa3d95c02b",
+      "changed": false,
+      "committedAt": "2026-10-25T22:42:04Z",
+      "message": "Update README.md",
+      "url": "https://github.com/Lefiper/gorky-code/commit/4ff466da7bc6ccf2dd456cd4c59223aa3d95c02b"
+    },
+    {
+      "key": "neyro",
+      "repo": "Neyromark/GorkyCodeTest",
+      "old": "6d890b9467db15bb2080693557122ee224c70d46",
+      "sha": "6d890b9467db15bb2080693557122ee224c70d46",
+      "changed": false,
+      "committedAt": "2026-10-21T14:38:07Z",
+      "message": "Merge pull request #13 from Neyromark/update-modules\n\nОбновлены подмодули VK-Bot и Backend",
+      "url": "https://github.com/Neyromark/GorkyCodeTest/commit/6d890b9467db15bb2080693557122ee224c70d46"
+    },
+    {
+      "key": "neyro-backend",
+      "repo": "Neyromark/GorkyCodeTest-Backend",
+      "old": "20e86f1598d71846bfd6a4c7feabb85a0d092e1e",
+      "sha": "20e86f1598d71846bfd6a4c7feabb85a0d092e1e",
+      "changed": false,
+      "committedAt": "2026-10-24T09:19:09Z",
+      "message": "Merge pull request #3 from Neyromark/add-some-columns\n\nAdd some columns",
+      "url": "https://github.com/Neyromark/GorkyCodeTest-Backend/commit/20e86f1598d71846bfd6a4c7feabb85a0d092e1e"
+    },
+    {
+      "key": "neyro-vk",
+      "repo": "Neyromark/GorkyCodeTest-VK-Bot",
+      "old": "3f6111be25df1110f45b7822842f4d88f9c1c7d2",
+      "sha": "3f6111be25df1110f45b7822842f4d88f9c1c7d2",
+      "changed": false,
+      "committedAt": "2026-10-21T14:35:58Z",
+      "message": "Merge pull request #7 from Neyromark/feature/change-vosk\n\nfix: Изменена модель vosk на vosk-model-small-ru-0.22",
+      "url": "https://github.com/Neyromark/GorkyCodeTest-VK-Bot/commit/3f6111be25df1110f45b7822842f4d88f9c1c7d2"
+    },
+    {
+      "key": "neyro-db",
+      "repo": "Neyromark/GorkyCodeTest-Database",
+      "old": "9a2cb7d6dc17764277c569f5b7c58310a2576193",
+      "sha": "9a2cb7d6dc17764277c569f5b7c58310a2576193",
+      "changed": false,
+      "committedAt": "2026-10-21T12:45:45Z",
+      "message": "Merge pull request #2 from Neyromark/add-database\n\nAdd database",
+      "url": "https://github.com/Neyromark/GorkyCodeTest-Database/commit/9a2cb7d6dc17764277c569f5b7c58310a2576193"
+    },
+    {
+      "key": "neyro-notify",
+      "repo": "Neyromark/GorkyCodeTest-Notifications",
+      "old": "f02575f7bc401f5aa953f088e758510ab5715d75",
+      "sha": "f02575f7bc401f5aa953f088e758510ab5715d75",
+      "changed": false,
+      "committedAt": "2026-10-16T14:37:58Z",
+      "message": "first commit",
+      "url": "https://github.com/Neyromark/GorkyCodeTest-Notifications/commit/f02575f7bc401f5aa953f088e758510ab5715d75"
+    },
+    {
+      "key": "xm1k",
+      "repo": "xm1k/voice-assistant",
+      "old": "2c07a471067b92da2998fa6766de40273fff0358",
+      "sha": "2c07a471067b92da2998fa6766de40273fff0358",
+      "changed": false,
+      "committedAt": "2026-10-25T19:58:36Z",
+      "message": "new sync icon replace",
+      "url": "https://github.com/xm1k/voice-assistant/commit/2c07a471067b92da2998fa6766de40273fff0358"
+    },
+    {
+      "key": "agend",
+      "repo": "ZininRo/agend-ai",
+      "old": "d964aa9a966fdc7941e724145badd61bdcf1cbe0",
+      "sha": "d964aa9a966fdc7941e724145badd61bdcf1cbe0",
+      "changed": false,
+      "committedAt": "2026-10-25T20:36:05Z",
+      "message": "Update app icon and main language",
+      "url": "https://github.com/ZininRo/agend-ai/commit/d964aa9a966fdc7941e724145badd61bdcf1cbe0"
+    }
+  ]
+}

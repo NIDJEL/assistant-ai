@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/NIDJEL/assistant-ai/internal/domain"
+	"github.com/NIDJEL/assistant-ai/internal/repository"
 )
 
 type executor interface {
@@ -16,7 +17,15 @@ type executor interface {
 	QueryContext(context.Context, string, ...any) (*sql.Rows, error)
 	QueryRowContext(context.Context, string, ...any) *sql.Row
 }
-type Repo struct{ q executor }
+type Repo struct {
+	q           executor
+	checkpoints uint64
+}
+
+func (r *Repo) WithinSavepoint(ctx context.Context, work func() error) error {
+	return repository.SQLCheckpoint(ctx, &r.checkpoints, r.q.ExecContext, work)
+}
+
 type scanner interface{ Scan(...any) error }
 
 const columns = "id,kind,title,date,time,duration_minutes,status,created_at,updated_at,source_key,description,priority,external_calendar_id,location,meeting_url,details,deleted_at"
@@ -102,11 +111,18 @@ func (r *Repo) GetDeleted(ctx context.Context, id int64) (*domain.Event, error) 
 	return scanEvent(r.q.QueryRowContext(ctx, "SELECT "+columns+" FROM events WHERE id=? AND deleted_at IS NOT NULL", id))
 }
 func (r *Repo) Restore(ctx context.Context, id int64, now time.Time) (*domain.Event, error) {
+	if err := repository.CheckSeriesRestore(ctx, r, id); err != nil {
+		return nil, err
+	}
 	_, err := r.q.ExecContext(ctx, "UPDATE events SET deleted_at=NULL,updated_at=? WHERE id=? AND deleted_at IS NOT NULL", now.Format(time.RFC3339Nano), id)
 	if err != nil {
 		return nil, err
 	}
-	return r.Get(ctx, id)
+	result, err := r.Get(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return repository.RestoreSeriesChildren(ctx, r, result, now)
 }
 func (r *Repo) Events(ctx context.Context, f domain.Filter) ([]domain.Event, error) {
 	where := []string{"deleted_at IS NULL"}
@@ -196,7 +212,16 @@ func (r *Repo) Update(ctx context.Context, e domain.Event, now time.Time) (*doma
 	return r.Get(ctx, e.ID)
 }
 func (r *Repo) Delete(ctx context.Context, id int64) error {
-	_, err := r.q.ExecContext(ctx, "UPDATE events SET deleted_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id=? AND deleted_at IS NULL", id)
+	e, err := r.Get(ctx, id)
+	if err != nil {
+		return err
+	}
+	if e != nil {
+		if err = repository.DeleteSeriesChildren(ctx, r, *e, time.Now()); err != nil {
+			return err
+		}
+	}
+	_, err = r.q.ExecContext(ctx, "UPDATE events SET deleted_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id=? AND deleted_at IS NULL", id)
 	return err
 }
 func (r *Repo) State(ctx context.Context, id string) (domain.State, error) {

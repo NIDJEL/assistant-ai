@@ -1,0 +1,13 @@
+{
+  "Conversations": 50,
+  "Turns": 140,
+  "SHA256": "f8ceb035a31046806db5ff249aaf3236e29837c0812504eb726b5971c5aaa254",
+  "Categories": {
+    "explicit_kind": 10,
+    "ordinal_read": 10,
+    "other_ambiguous": 10,
+    "safe_clarification": 10,
+    "topic_kind": 10
+  },
+  "PreviousAuditRead": false
+}

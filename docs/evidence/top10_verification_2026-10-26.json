@@ -1,0 +1,71 @@
+{
+  "Date": "2026-10-26",
+  "Go": {
+    "PassedTestsAndSubtests": 1351,
+    "SkippedTests": 10,
+    "Failures": []
+  },
+  "Vet": "pass",
+  "Web": {
+    "Tests": 226,
+    "Files": 29,
+    "Build": "pass"
+  },
+  "Race": {
+    "Status": "unavailable",
+    "Reason": "gcc missing for cgo; Linux CI configured, not executed here"
+  },
+  "Logs": {
+    "top10_go_guarded.jsonl": {
+      "SHA256": "609cc3bda49b8cc4f9542137f44699f64e17646be96b9d1fa215f42fb7982847",
+      "Bytes": 1474342
+    },
+    "top10_web_verified.log": {
+      "SHA256": "048ed691b355f8161a3776883434e45d2d65834d2e1ef7f4ef938c676781b03e",
+      "Bytes": 594
+    },
+    "top10_web_build_verified.log": {
+      "SHA256": "38fcf2360a6bcc42887744a3c2bd6a5fa695c62dc33237455845f717585bb72c",
+      "Bytes": 16317
+    },
+    "top10_race.log": {
+      "SHA256": "f197d6bf45347621b998524a1009ab35334b0ed77667419dcf9a47e8629bdc7c",
+      "Bytes": 243
+    },
+    "top10_browser.log": {
+      "SHA256": "b5c99a468c4cf467b133256374c2cbd596b251c990860403b7e1026a78490a7a",
+      "Bytes": 434
+    },
+    "top10_status_review.log": {
+      "SHA256": "b5e20dd6df03e01a1fa7223901867f35f929638b43e9054614bd05f70c020287",
+      "Bytes": 122
+    }
+  },
+  "Source": {
+    "Commit": "22ff6627ac61cf087ee4105d1aa12dead23182cf",
+    "GoTreeSHA256": "48e8cba622d0f221a22c8ce8dd05c6c962ebf6807f491edc21cdba25a7f4695a",
+    "Dirty": true
+  },
+  "Browser": {
+    "Passed": 1,
+    "Viewports": [
+      1440,
+      390,
+      320
+    ],
+    "Checks": [
+      "No horizontal overflow",
+      "Choose third step using keyboard Enter",
+      "Exact token/key payload",
+      "Old response controls hidden"
+    ],
+    "Scope": "Browser rendering uses fixture chat responses with a real disposable PostgreSQL/auth app. Server token semantics separately covered by Go tests."
+  },
+  "PostSuiteReview": "pass: final external status wording/freshness and nil search guard; assistant/contract targeted tests + go vet",
+  "FinalGoSource": {
+    "Commit": "22ff6627ac61cf087ee4105d1aa12dead23182cf",
+    "GoTreeSHA256": "4ac8b787f2abe5d0e66ba42a58877a6bf5d853803e4a75e15906dc77fa0fa839",
+    "Dirty": true
+  },
+  "FinalFixture": "10/10 after external status review"
+}

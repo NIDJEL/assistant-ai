@@ -16,19 +16,21 @@ type Operation struct {
 	Clarification *string         `json:"clarification"`
 }
 type Create struct {
-	Personal        bool      `json:"personal,omitempty"`
-	Invite          bool      `json:"invite,omitempty"`
-	AllWithTag      bool      `json:"all_with_tag,omitempty"`
-	Friends         []string  `json:"friends,omitempty"`
-	FriendTag       string    `json:"friend_tag,omitempty"`
-	Calendar        string    `json:"calendar,omitempty"`
-	Conference      string    `json:"conference,omitempty"`
-	Title           string    `json:"title"`
-	Date            *Temporal `json:"date,omitempty"`
-	Time            *string   `json:"time,omitempty"`
-	DurationMinutes *int      `json:"duration_minutes,omitempty"`
-	ReminderMinutes *int      `json:"reminder_minutes,omitempty"`
-	ReminderEnabled *bool     `json:"reminder_enabled,omitempty"`
+	Recurrence      *Recurrence `json:"recurrence,omitempty"`
+	TimeAmbiguous   bool        `json:"time_ambiguous,omitempty"`
+	Personal        bool        `json:"personal,omitempty"`
+	Invite          bool        `json:"invite,omitempty"`
+	AllWithTag      bool        `json:"all_with_tag,omitempty"`
+	Friends         []string    `json:"friends,omitempty"`
+	FriendTag       string      `json:"friend_tag,omitempty"`
+	Calendar        string      `json:"calendar,omitempty"`
+	Conference      string      `json:"conference,omitempty"`
+	Title           string      `json:"title"`
+	Date            *Temporal   `json:"date,omitempty"`
+	Time            *string     `json:"time,omitempty"`
+	DurationMinutes *int        `json:"duration_minutes,omitempty"`
+	ReminderMinutes *int        `json:"reminder_minutes,omitempty"`
+	ReminderEnabled *bool       `json:"reminder_enabled,omitempty"`
 }
 type Filter struct {
 	Conference string    `json:"conference,omitempty"`
@@ -50,14 +52,19 @@ type Target struct {
 	Filter *Filter `json:"filter,omitempty"`
 }
 type Changes struct {
-	DurationMinutes *int      `json:"duration_minutes,omitempty"`
-	Title           *string   `json:"title,omitempty"`
-	Date            *Temporal `json:"date,omitempty"`
-	Time            *string   `json:"time,omitempty"`
-	ShiftMinutes    *int      `json:"shift_minutes,omitempty"`
-	ReminderMinutes *int      `json:"reminder_minutes,omitempty"`
-	ReminderEnabled *bool     `json:"reminder_enabled,omitempty"`
-	Status          *string   `json:"status,omitempty"`
+	Occurrence      *Temporal   `json:"occurrence,omitempty"`
+	Scope           string      `json:"scope,omitempty"`
+	Recurrence      *Recurrence `json:"recurrence,omitempty"`
+	ClearRecurrence bool        `json:"clear_recurrence,omitempty"`
+	TimeAmbiguous   bool        `json:"time_ambiguous,omitempty"`
+	DurationMinutes *int        `json:"duration_minutes,omitempty"`
+	Title           *string     `json:"title,omitempty"`
+	Date            *Temporal   `json:"date,omitempty"`
+	Time            *string     `json:"time,omitempty"`
+	ShiftMinutes    *int        `json:"shift_minutes,omitempty"`
+	ReminderMinutes *int        `json:"reminder_minutes,omitempty"`
+	ReminderEnabled *bool       `json:"reminder_enabled,omitempty"`
+	Status          *string     `json:"status,omitempty"`
 }
 type Mutation struct {
 	Target Target `json:"target"`
@@ -135,7 +142,7 @@ func Strict(raw []byte, value any) error {
 }
 func Decode(raw []byte) (Operation, error) {
 	var op Operation
-	if len(raw) > 16384 {
+	if len(raw) > 65536 {
 		return op, errors.New("operation too large")
 	}
 	if err := Strict(raw, &op); err != nil {
@@ -153,6 +160,12 @@ func (o Operation) Args() (any, error) {
 	}
 	var v any
 	switch o.Intent {
+	case "focus_action":
+		v = &ActionFocus{}
+	case "multi_action":
+		v = &MultiAction{}
+	case "resume_action":
+		v = &ResumeAction{}
 	case "friend_request", "friend_requests", "friend_availability", "invite_friends", "respond_invitation", "propose_reschedule", "resolve_reschedule":
 		v = &Social{}
 	case "choose_time":
@@ -185,33 +198,52 @@ func (o Operation) Args() (any, error) {
 	if err := Strict(o.Arguments, v); err != nil {
 		return nil, err
 	}
+	if m, ok := v.(*MultiAction); ok {
+		if err := m.Validate(); err != nil {
+			return nil, err
+		}
+	}
+	if r, ok := v.(*ResumeAction); ok {
+		if !actionKey.MatchString(r.Key) || r.Operation.Intent == "multi_action" || r.Operation.Intent == "resume_action" {
+			return nil, errors.New("invalid action continuation")
+		}
+		if _, err := r.Operation.Args(); err != nil {
+			return nil, err
+		}
+	}
 	if chat, ok := v.(*Chat); ok && (strings.TrimSpace(chat.Reply) == "" || len([]rune(chat.Reply)) > 1000) {
 		return nil, errors.New("invalid chat reply")
 	}
 	return v, nil
 }
 
+type ActionFocus struct {
+	Key string `json:"key"`
+}
+
 // Item exposes display indices, never database identifiers.
 type Item struct {
-	Index  int    `json:"index,omitempty"`
-	Kind   string `json:"kind"`
-	Title  string `json:"title"`
-	Date   string `json:"date,omitempty"`
-	Time   string `json:"time,omitempty"`
-	Status string `json:"status"`
+	Recurrence *Recurrence `json:"recurrence,omitempty"`
+	Index      int         `json:"index,omitempty"`
+	Kind       string      `json:"kind"`
+	Title      string      `json:"title"`
+	Date       string      `json:"date,omitempty"`
+	Time       string      `json:"time,omitempty"`
+	Status     string      `json:"status"`
 }
 type Pending struct {
-	Intent       string   `json:"intent"`
-	Expected     string   `json:"expected"`
-	Missing      []string `json:"missing,omitempty"`
-	Title        string   `json:"title,omitempty"`
-	Date         string   `json:"date,omitempty"`
-	Time         string   `json:"time,omitempty"`
-	Candidates   []Item   `json:"candidates,omitempty"`
-	Confirmation bool     `json:"confirmation"`
-	Filter       *Filter  `json:"filter,omitempty"`
-	Changes      *Changes `json:"changes,omitempty"`
-	Exclude      []Filter `json:"exclude,omitempty"`
+	Recurrence   *Recurrence `json:"recurrence,omitempty"`
+	Intent       string      `json:"intent"`
+	Expected     string      `json:"expected"`
+	Missing      []string    `json:"missing,omitempty"`
+	Title        string      `json:"title,omitempty"`
+	Date         string      `json:"date,omitempty"`
+	Time         string      `json:"time,omitempty"`
+	Candidates   []Item      `json:"candidates,omitempty"`
+	Confirmation bool        `json:"confirmation"`
+	Filter       *Filter     `json:"filter,omitempty"`
+	Changes      *Changes    `json:"changes,omitempty"`
+	Exclude      []Filter    `json:"exclude,omitempty"`
 }
 type SearchSummary struct {
 	Conference string `json:"conference,omitempty"`
@@ -222,15 +254,27 @@ type SearchSummary struct {
 	Status     string `json:"status,omitempty"`
 }
 type Context struct {
-	OfferedSlots   []SocialTime   `json:"offered_slots,omitempty"`
-	MeetingChoices []Item         `json:"meeting_choices,omitempty"`
-	Friends        []Friend       `json:"friends,omitempty"`
-	SocialPending  *Operation     `json:"social_pending,omitempty"`
-	Now            string         `json:"now"`
-	Timezone       string         `json:"timezone"`
-	LastAction     string         `json:"last_action,omitempty"`
-	LastResults    []Item         `json:"last_results,omitempty"`
-	LastAffected   *Item          `json:"last_affected,omitempty"`
-	LastSearch     *SearchSummary `json:"last_search,omitempty"`
-	Pending        *Pending       `json:"pending,omitempty"`
+	Actions        []ActionContext `json:"actions,omitempty"`
+	ActiveAction   string          `json:"active_action,omitempty"`
+	OfferedSlots   []SocialTime    `json:"offered_slots,omitempty"`
+	MeetingChoices []Item          `json:"meeting_choices,omitempty"`
+	Friends        []Friend        `json:"friends,omitempty"`
+	SocialPending  *Operation      `json:"social_pending,omitempty"`
+	Now            string          `json:"now"`
+	Timezone       string          `json:"timezone"`
+	LastAction     string          `json:"last_action,omitempty"`
+	LastResults    []Item          `json:"last_results,omitempty"`
+	LastAffected   *Item           `json:"last_affected,omitempty"`
+	LastSearch     *SearchSummary  `json:"last_search,omitempty"`
+	Pending        *Pending        `json:"pending,omitempty"`
+}
+
+type ActionContext struct {
+	AtomicGroup string     `json:"atomic_group,omitempty"`
+	Operation   *Operation `json:"operation,omitempty"`
+	Key         string     `json:"key"`
+	Status      string     `json:"status"`
+	Source      string     `json:"source"`
+	Intent      string     `json:"intent"`
+	DependsOn   []string   `json:"depends_on,omitempty"`
 }

@@ -1,0 +1,16 @@
+{
+  "Conversations": 60,
+  "Turns": 120,
+  "SHA256": "b07fb64617d2d6e26ca612e471059bac74f4b0a482e19afd18551da541f76117",
+  "Categories": {
+    "exclusion": 8,
+    "explicit_status": 8,
+    "neutral_any": 8,
+    "neutral_read": 4,
+    "neutral_shift": 4,
+    "optional_create": 8,
+    "required_change": 8,
+    "timer": 12
+  },
+  "PreviousAuditRead": false
+}

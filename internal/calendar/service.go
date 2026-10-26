@@ -24,10 +24,11 @@ type Service struct {
 	DemoPath string
 }
 type List struct {
-	Events []domain.Event `json:"events"`
-	Total  int            `json:"total"`
-	Offset int            `json:"offset"`
-	Limit  int            `json:"limit"`
+	Search *domain.SearchStatus `json:"search,omitempty"`
+	Events []domain.Event       `json:"events"`
+	Total  int                  `json:"total"`
+	Offset int                  `json:"offset"`
+	Limit  int                  `json:"limit"`
 }
 type ImportResult struct {
 	Imported  int `json:"imported"`
@@ -37,11 +38,19 @@ type ImportResult struct {
 
 func (s *Service) Conflicts(ctx context.Context, tx repository.Tx, e domain.Event, exclude int64) ([]domain.Event, error) {
 	result := []domain.Event{}
-	start, end, ok := e.Interval(s.Location)
-	if e.Kind != domain.EventMeeting || !ok {
+	start, _, ok := e.Interval(s.Location)
+	if e.Kind != domain.EventMeeting || !ok || e.Status == domain.StatusDone {
 		return result, nil
 	}
-	meetings, err := tx.Events(ctx, domain.Filter{Kind: domain.EventMeeting, Status: domain.StatusOpen, Start: domain.Day(start.AddDate(0, 0, -1)), End: domain.Day(end.AddDate(0, 0, 1))})
+	slots, err := e.MeetingSlots(s.Location)
+	if err != nil {
+		return nil, domain.Validation(err.Error())
+	}
+	if len(slots) == 0 {
+		return result, nil
+	}
+	end := slots[len(slots)-1].End
+	meetings, err := tx.Events(ctx, domain.Filter{Kind: domain.EventMeeting, Status: domain.StatusOpen})
 	if err != nil {
 		return nil, err
 	}
@@ -49,8 +58,18 @@ func (s *Service) Conflicts(ctx context.Context, tx repository.Tx, e domain.Even
 		if other.ID == exclude {
 			continue
 		}
-		os, oe, ok := other.Interval(s.Location)
-		if ok && start.Before(oe) && os.Before(end) {
+		if e.SeriesID != nil && *e.SeriesID == other.ID && e.RecurrenceID != nil && other.Recurrence != nil {
+			rule, err := other.Recurrence.Excluding(*e.RecurrenceID)
+			if err != nil {
+				return nil, domain.Validation(err.Error())
+			}
+			other.Recurrence = rule
+		}
+		otherSlots, err := other.Slots(start, end, s.Location)
+		if err != nil {
+			return nil, domain.Validation(err.Error())
+		}
+		if domain.SlotsOverlap(slots, otherSlots) {
 			result = append(result, other)
 		}
 	}
@@ -67,7 +86,8 @@ func (s *Service) List(ctx context.Context, f domain.Filter, query string, limit
 		return result, err
 	}
 	if query != "" {
-		events = s.Search.Search(events, query, len(events))
+		ctx = s.Search.Prepare(ctx, events, query)
+		events, result.Search = s.Search.SearchContext(ctx, events, query, len(events))
 	}
 	result.Total = len(events)
 	if offset < len(events) {
@@ -127,6 +147,7 @@ func (s *Service) Create(ctx context.Context, e domain.Event, now time.Time, for
 }
 
 type Patch struct {
+	OccurrenceAt         *time.Time
 	Recurrence           **domain.Recurrence
 	Tags                 *[]string
 	Subtasks             *[]domain.Subtask
@@ -154,6 +175,18 @@ func (s *Service) Update(ctx context.Context, id int64, p Patch, now time.Time) 
 			return &domain.AppError{Code: "not_found", Message: "Запись не найдена", Status: 404}
 		}
 		old := *e
+		var parent *domain.Event
+		if p.OccurrenceAt != nil {
+			if p.Recurrence != nil {
+				return domain.Validation("Для одного повторения нельзя менять правило серии")
+			}
+			master, child, err := s.PrepareOccurrence(ctx, tx, *e, nil, p.OccurrenceAt)
+			if err != nil {
+				return domain.Validation(err.Error())
+			}
+			parent, e = &master, &child
+			old = child
+		}
 		if p.Recurrence != nil {
 			e.Recurrence = *p.Recurrence
 			if e.Recurrence != nil && p.Time == nil && e.Recurrence.LocalTime != nil {
@@ -205,6 +238,9 @@ func (s *Service) Update(ctx context.Context, id int64, p Patch, now time.Time) 
 			e.Duration = *p.Duration
 		}
 		if p.Status != nil {
+			if *p.Status == domain.StatusDone {
+				e.LastNotificationAt = nil
+			}
 			if e.Status == domain.StatusDone && *p.Status == domain.StatusOpen {
 				if err := Resume(e, now); err != nil {
 					return err
@@ -229,8 +265,8 @@ func (s *Service) Update(ctx context.Context, id int64, p Patch, now time.Time) 
 		if err = e.Validate(); err != nil {
 			return domain.Validation(err.Error())
 		}
-		if e.Status == domain.StatusOpen && (p.Date != nil || p.Time != nil || p.Duration != nil || p.Status != nil) {
-			conflicts, err := s.Conflicts(ctx, tx, *e, id)
+		if e.Status == domain.StatusOpen && (p.Date != nil || p.Time != nil || p.Duration != nil || p.Status != nil || p.Recurrence != nil) {
+			conflicts, err := s.Conflicts(ctx, tx, *e, e.ID)
 			if err != nil {
 				return err
 			}
@@ -238,7 +274,16 @@ func (s *Service) Update(ctx context.Context, id int64, p Patch, now time.Time) 
 				return &domain.AppError{Code: "meeting_conflict", Message: "Время пересекается с другой встречей", Status: 409, Conflicts: conflicts}
 			}
 		}
-		result, err = tx.Update(ctx, *e, now)
+		if parent != nil {
+			if _, err = tx.Update(ctx, *parent, now); err != nil {
+				return err
+			}
+		}
+		if e.ID == 0 {
+			result, err = tx.Create(ctx, *e, now)
+		} else {
+			result, err = tx.Update(ctx, *e, now)
+		}
 		return err
 	})
 	return result, err
@@ -275,6 +320,15 @@ func (s *Service) Restore(ctx context.Context, id int64, now time.Time, force bo
 			}
 		}
 		result, err = tx.Restore(ctx, id, now)
+		if err == nil && !force {
+			conflicts, e := s.RestoredChildrenConflicts(ctx, tx, id)
+			if e != nil {
+				return e
+			}
+			if len(conflicts) > 0 {
+				return &domain.AppError{Code: "meeting_conflict", Message: "Отдельное повторение серии пересекается с другой встречей", Status: 409, Conflicts: conflicts}
+			}
+		}
 		if err == nil && result != nil && result.Status == domain.StatusOpen && result.Recurrence != nil {
 			if err = Resume(result, now); err != nil {
 				return err
@@ -322,6 +376,16 @@ func (s *Service) Due(ctx context.Context, now time.Time) ([]domain.Event, error
 					e.LastNotificationLead = e.ReminderLead()
 				}
 				next, err := e.Recurrence.Next(now.Add(lead))
+				if errors.Is(err, domain.ErrRecurrenceExhausted) {
+					e.Status = domain.StatusDone
+					if _, err = tx.Update(ctx, e, now); err != nil {
+						return err
+					}
+					if e.HasReminder() && age <= 5*time.Minute {
+						result = append(result, e)
+					}
+					continue
+				}
 				if err != nil {
 					return err
 				}

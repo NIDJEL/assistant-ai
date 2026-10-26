@@ -58,5 +58,5 @@ func (t *TimeOfDay) UnmarshalJSON(b []byte) error {
 	return err
 }
 func (d Date) At(t TimeOfDay, loc *time.Location) time.Time {
-	return time.Date(d.Year(), d.Month(), d.Day(), t.Hour, t.Minute, 0, 0, loc)
+	return LocalInstant(d.Year(), d.Month(), d.Day(), t.Hour, t.Minute, 0, loc)
 }

@@ -1,0 +1,20 @@
+{
+  "Conversations": 120,
+  "Turns": 240,
+  "SHA256": "4478eb7dd56af855ce967efcd72f5273944aeccab33c0fef2e5f2302d115defb",
+  "Categories": {
+    "batch_update": 10,
+    "correction": 10,
+    "destructive_safety": 10,
+    "exclusions": 10,
+    "long_conversational": 10,
+    "multiple_filters": 10,
+    "natural_timer": 10,
+    "references": 10,
+    "refinement": 10,
+    "reminders": 10,
+    "search_period": 10,
+    "unusual_order": 10
+  },
+  "PreviousAuditRead": false
+}

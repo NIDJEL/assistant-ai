@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/NIDJEL/assistant-ai/internal/domain"
+	"github.com/NIDJEL/assistant-ai/internal/repository"
 	"github.com/NIDJEL/assistant-ai/internal/social"
 )
 
@@ -19,9 +20,15 @@ type executor interface {
 	QueryRowContext(context.Context, string, ...any) *sql.Row
 }
 type Repo struct {
-	q      executor
-	userID string
+	checkpoints uint64
+	q           executor
+	userID      string
 }
+
+func (r *Repo) WithinSavepoint(ctx context.Context, work func() error) error {
+	return repository.SQLCheckpoint(ctx, &r.checkpoints, r.q.ExecContext, work)
+}
+
 type scanner interface{ Scan(...any) error }
 
 const baseColumns = "id,kind,title,date,time,duration_minutes,status,created_at,updated_at,source_key,description,priority,external_calendar_id,location,meeting_url,details,deleted_at"
@@ -115,6 +122,9 @@ func (r *Repo) GetDeleted(ctx context.Context, id int64) (*domain.Event, error) 
 	return scanEvent(r.q.QueryRowContext(ctx, "SELECT "+columns+" FROM events WHERE id=$1 AND user_id=$2 AND deleted_at IS NOT NULL", id, r.userID))
 }
 func (r *Repo) Restore(ctx context.Context, id int64, now time.Time) (*domain.Event, error) {
+	if err := repository.CheckSeriesRestore(ctx, r, id); err != nil {
+		return nil, err
+	}
 	var shared bool
 	if err := r.q.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM collaborative_meetings cm JOIN events e ON e.id=cm.event_id WHERE e.id=$1 AND e.user_id=$2 AND cm.cancelled)`, id, r.userID).Scan(&shared); err != nil {
 		return nil, err
@@ -126,7 +136,11 @@ func (r *Repo) Restore(ctx context.Context, id int64, now time.Time) (*domain.Ev
 	if err != nil {
 		return nil, err
 	}
-	return r.Get(ctx, id)
+	result, err := r.Get(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return repository.RestoreSeriesChildren(ctx, r, result, now)
 }
 func (r *Repo) Events(ctx context.Context, f domain.Filter) ([]domain.Event, error) {
 	where := []string{"deleted_at IS NULL", visibleEvents("?")}
@@ -259,6 +273,9 @@ func (r *Repo) Delete(ctx context.Context, id int64) error {
 		return &domain.AppError{Status: 403, Code: "organizer_required", Message: "Только организатор может отменить встречу"}
 	}
 	if err = r.beforeSharedChange(ctx, *e, true, time.Now()); err != nil {
+		return err
+	}
+	if err = repository.DeleteSeriesChildren(ctx, r, *e, time.Now()); err != nil {
 		return err
 	}
 	_, err = r.q.ExecContext(ctx, "UPDATE events SET deleted_at=$1 WHERE id=$2 AND user_id=$3 AND deleted_at IS NULL", time.Now().UTC().Format(time.RFC3339Nano), id, r.userID)

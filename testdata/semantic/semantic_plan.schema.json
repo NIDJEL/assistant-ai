@@ -1,0 +1,1324 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "changes": {
+      "additionalProperties": false,
+      "properties": {
+        "date": {
+          "additionalProperties": false,
+          "properties": {
+            "day": {
+              "maximum": 31536000,
+              "minimum": -31536000,
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "direction": {
+              "enum": [
+                "next_or_current",
+                "next_week",
+                "previous_week",
+                null
+              ],
+              "maxLength": 500,
+              "minLength": 1,
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "month": {
+              "maximum": 31536000,
+              "minimum": -31536000,
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "offset": {
+              "maximum": 31536000,
+              "minimum": -31536000,
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "type": {
+              "enum": [
+                "calendar_period",
+                "relative_day",
+                "relative_delay",
+                "weekday",
+                "calendar_date",
+                "rolling_period"
+              ],
+              "maxLength": 500,
+              "minLength": 1,
+              "type": "string"
+            },
+            "unit": {
+              "enum": [
+                "second",
+                "minute",
+                "hour",
+                "day",
+                "week",
+                "month",
+                "quarter",
+                "year",
+                null
+              ],
+              "maxLength": 500,
+              "minLength": 1,
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "value": {
+              "maximum": 31536000,
+              "minimum": -31536000,
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "weekday": {
+              "enum": [
+                "monday",
+                "tuesday",
+                "wednesday",
+                "thursday",
+                "friday",
+                "saturday",
+                "sunday",
+                null
+              ],
+              "maxLength": 500,
+              "minLength": 1,
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "year": {
+              "maximum": 31536000,
+              "minimum": -31536000,
+              "type": [
+                "integer",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "type",
+            "unit",
+            "offset",
+            "value",
+            "weekday",
+            "direction",
+            "year",
+            "month",
+            "day"
+          ],
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "delay": {
+          "additionalProperties": false,
+          "properties": {
+            "day": {
+              "maximum": 31536000,
+              "minimum": -31536000,
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "direction": {
+              "enum": [
+                "next_or_current",
+                "next_week",
+                "previous_week",
+                null
+              ],
+              "maxLength": 500,
+              "minLength": 1,
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "month": {
+              "maximum": 31536000,
+              "minimum": -31536000,
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "offset": {
+              "maximum": 31536000,
+              "minimum": -31536000,
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "type": {
+              "enum": [
+                "calendar_period",
+                "relative_day",
+                "relative_delay",
+                "weekday",
+                "calendar_date",
+                "rolling_period"
+              ],
+              "maxLength": 500,
+              "minLength": 1,
+              "type": "string"
+            },
+            "unit": {
+              "enum": [
+                "second",
+                "minute",
+                "hour",
+                "day",
+                "week",
+                "month",
+                "quarter",
+                "year",
+                null
+              ],
+              "maxLength": 500,
+              "minLength": 1,
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "value": {
+              "maximum": 31536000,
+              "minimum": -31536000,
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "weekday": {
+              "enum": [
+                "monday",
+                "tuesday",
+                "wednesday",
+                "thursday",
+                "friday",
+                "saturday",
+                "sunday",
+                null
+              ],
+              "maxLength": 500,
+              "minLength": 1,
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "year": {
+              "maximum": 31536000,
+              "minimum": -31536000,
+              "type": [
+                "integer",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "type",
+            "unit",
+            "offset",
+            "value",
+            "weekday",
+            "direction",
+            "year",
+            "month",
+            "day"
+          ],
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "priority": {
+          "enum": [
+            "low",
+            "normal",
+            "high",
+            null
+          ],
+          "maxLength": 500,
+          "minLength": 1,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reminder_enabled": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "reminder_minutes": {
+          "maximum": 31536000,
+          "minimum": -31536000,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "status": {
+          "enum": [
+            "open",
+            "done",
+            "any",
+            null
+          ],
+          "maxLength": 500,
+          "minLength": 1,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "time": {
+          "additionalProperties": false,
+          "properties": {
+            "hour": {
+              "maximum": 31536000,
+              "minimum": -31536000,
+              "type": "integer"
+            },
+            "minute": {
+              "maximum": 31536000,
+              "minimum": -31536000,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "hour",
+            "minute"
+          ],
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "time_shift_minutes": {
+          "maximum": 31536000,
+          "minimum": -31536000,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "title": {
+          "maxLength": 500,
+          "minLength": 1,
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "title",
+        "date",
+        "time",
+        "delay",
+        "time_shift_minutes",
+        "priority",
+        "status",
+        "reminder_minutes",
+        "reminder_enabled"
+      ],
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "chat_response": {
+      "maxLength": 500,
+      "minLength": 1,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "clarification": {
+      "maxLength": 500,
+      "minLength": 1,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "dialogue_act": {
+      "enum": [
+        "command",
+        "refinement",
+        "slot_reply",
+        "choice",
+        "confirmation",
+        "cancellation"
+      ],
+      "maxLength": 500,
+      "minLength": 1,
+      "type": "string"
+    },
+    "evidence": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "field": {
+            "maxLength": 500,
+            "minLength": 1,
+            "type": "string"
+          },
+          "text": {
+            "maxLength": 500,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "field",
+          "text"
+        ],
+        "type": "object"
+      },
+      "maxItems": 30,
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "filters": {
+      "additionalProperties": false,
+      "properties": {
+        "exclude": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "enum": [
+                  "task",
+                  "meeting",
+                  "reminder",
+                  "any",
+                  null
+                ],
+                "maxLength": 500,
+                "minLength": 1,
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "period": {
+                "additionalProperties": false,
+                "properties": {
+                  "day": {
+                    "maximum": 31536000,
+                    "minimum": -31536000,
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  },
+                  "direction": {
+                    "enum": [
+                      "next_or_current",
+                      "next_week",
+                      "previous_week",
+                      null
+                    ],
+                    "maxLength": 500,
+                    "minLength": 1,
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "month": {
+                    "maximum": 31536000,
+                    "minimum": -31536000,
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  },
+                  "offset": {
+                    "maximum": 31536000,
+                    "minimum": -31536000,
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  },
+                  "type": {
+                    "enum": [
+                      "calendar_period",
+                      "relative_day",
+                      "relative_delay",
+                      "weekday",
+                      "calendar_date",
+                      "rolling_period"
+                    ],
+                    "maxLength": 500,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "unit": {
+                    "enum": [
+                      "second",
+                      "minute",
+                      "hour",
+                      "day",
+                      "week",
+                      "month",
+                      "quarter",
+                      "year",
+                      null
+                    ],
+                    "maxLength": 500,
+                    "minLength": 1,
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "value": {
+                    "maximum": 31536000,
+                    "minimum": -31536000,
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  },
+                  "weekday": {
+                    "enum": [
+                      "monday",
+                      "tuesday",
+                      "wednesday",
+                      "thursday",
+                      "friday",
+                      "saturday",
+                      "sunday",
+                      null
+                    ],
+                    "maxLength": 500,
+                    "minLength": 1,
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "year": {
+                    "maximum": 31536000,
+                    "minimum": -31536000,
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "type",
+                  "unit",
+                  "offset",
+                  "value",
+                  "weekday",
+                  "direction",
+                  "year",
+                  "month",
+                  "day"
+                ],
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "priority": {
+                "enum": [
+                  "low",
+                  "normal",
+                  "high",
+                  null
+                ],
+                "maxLength": 500,
+                "minLength": 1,
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "query": {
+                "maxLength": 500,
+                "minLength": 1,
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "status": {
+                "enum": [
+                  "open",
+                  "done",
+                  "any",
+                  null
+                ],
+                "maxLength": 500,
+                "minLength": 1,
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "query",
+              "kind",
+              "status",
+              "priority",
+              "period"
+            ],
+            "type": "object"
+          },
+          "maxItems": 30,
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "period": {
+          "additionalProperties": false,
+          "properties": {
+            "day": {
+              "maximum": 31536000,
+              "minimum": -31536000,
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "direction": {
+              "enum": [
+                "next_or_current",
+                "next_week",
+                "previous_week",
+                null
+              ],
+              "maxLength": 500,
+              "minLength": 1,
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "month": {
+              "maximum": 31536000,
+              "minimum": -31536000,
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "offset": {
+              "maximum": 31536000,
+              "minimum": -31536000,
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "type": {
+              "enum": [
+                "calendar_period",
+                "relative_day",
+                "relative_delay",
+                "weekday",
+                "calendar_date",
+                "rolling_period"
+              ],
+              "maxLength": 500,
+              "minLength": 1,
+              "type": "string"
+            },
+            "unit": {
+              "enum": [
+                "second",
+                "minute",
+                "hour",
+                "day",
+                "week",
+                "month",
+                "quarter",
+                "year",
+                null
+              ],
+              "maxLength": 500,
+              "minLength": 1,
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "value": {
+              "maximum": 31536000,
+              "minimum": -31536000,
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "weekday": {
+              "enum": [
+                "monday",
+                "tuesday",
+                "wednesday",
+                "thursday",
+                "friday",
+                "saturday",
+                "sunday",
+                null
+              ],
+              "maxLength": 500,
+              "minLength": 1,
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "year": {
+              "maximum": 31536000,
+              "minimum": -31536000,
+              "type": [
+                "integer",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "type",
+            "unit",
+            "offset",
+            "value",
+            "weekday",
+            "direction",
+            "year",
+            "month",
+            "day"
+          ],
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "priority": {
+          "enum": [
+            "low",
+            "normal",
+            "high",
+            null
+          ],
+          "maxLength": 500,
+          "minLength": 1,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "enum": [
+            "open",
+            "done",
+            "any",
+            null
+          ],
+          "maxLength": 500,
+          "minLength": 1,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "time_before": {
+          "additionalProperties": false,
+          "properties": {
+            "hour": {
+              "maximum": 31536000,
+              "minimum": -31536000,
+              "type": "integer"
+            },
+            "minute": {
+              "maximum": 31536000,
+              "minimum": -31536000,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "hour",
+            "minute"
+          ],
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "time_from": {
+          "additionalProperties": false,
+          "properties": {
+            "hour": {
+              "maximum": 31536000,
+              "minimum": -31536000,
+              "type": "integer"
+            },
+            "minute": {
+              "maximum": 31536000,
+              "minimum": -31536000,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "hour",
+            "minute"
+          ],
+          "type": [
+            "object",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "status",
+        "priority",
+        "period",
+        "time_from",
+        "time_before",
+        "exclude"
+      ],
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "kind": {
+      "enum": [
+        "task",
+        "meeting",
+        "reminder",
+        "any",
+        null
+      ],
+      "maxLength": 500,
+      "minLength": 1,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "operation": {
+      "enum": [
+        "create",
+        "list",
+        "search",
+        "update",
+        "delete",
+        "complete",
+        "batch_update",
+        "batch_delete",
+        "batch_complete",
+        "chat",
+        null
+      ],
+      "maxLength": 500,
+      "minLength": 1,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "query": {
+      "maxLength": 500,
+      "minLength": 1,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "schedule": {
+      "additionalProperties": false,
+      "properties": {
+        "date": {
+          "additionalProperties": false,
+          "properties": {
+            "day": {
+              "maximum": 31536000,
+              "minimum": -31536000,
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "direction": {
+              "enum": [
+                "next_or_current",
+                "next_week",
+                "previous_week",
+                null
+              ],
+              "maxLength": 500,
+              "minLength": 1,
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "month": {
+              "maximum": 31536000,
+              "minimum": -31536000,
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "offset": {
+              "maximum": 31536000,
+              "minimum": -31536000,
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "type": {
+              "enum": [
+                "calendar_period",
+                "relative_day",
+                "relative_delay",
+                "weekday",
+                "calendar_date",
+                "rolling_period"
+              ],
+              "maxLength": 500,
+              "minLength": 1,
+              "type": "string"
+            },
+            "unit": {
+              "enum": [
+                "second",
+                "minute",
+                "hour",
+                "day",
+                "week",
+                "month",
+                "quarter",
+                "year",
+                null
+              ],
+              "maxLength": 500,
+              "minLength": 1,
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "value": {
+              "maximum": 31536000,
+              "minimum": -31536000,
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "weekday": {
+              "enum": [
+                "monday",
+                "tuesday",
+                "wednesday",
+                "thursday",
+                "friday",
+                "saturday",
+                "sunday",
+                null
+              ],
+              "maxLength": 500,
+              "minLength": 1,
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "year": {
+              "maximum": 31536000,
+              "minimum": -31536000,
+              "type": [
+                "integer",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "type",
+            "unit",
+            "offset",
+            "value",
+            "weekday",
+            "direction",
+            "year",
+            "month",
+            "day"
+          ],
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "delay": {
+          "additionalProperties": false,
+          "properties": {
+            "day": {
+              "maximum": 31536000,
+              "minimum": -31536000,
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "direction": {
+              "enum": [
+                "next_or_current",
+                "next_week",
+                "previous_week",
+                null
+              ],
+              "maxLength": 500,
+              "minLength": 1,
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "month": {
+              "maximum": 31536000,
+              "minimum": -31536000,
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "offset": {
+              "maximum": 31536000,
+              "minimum": -31536000,
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "type": {
+              "enum": [
+                "calendar_period",
+                "relative_day",
+                "relative_delay",
+                "weekday",
+                "calendar_date",
+                "rolling_period"
+              ],
+              "maxLength": 500,
+              "minLength": 1,
+              "type": "string"
+            },
+            "unit": {
+              "enum": [
+                "second",
+                "minute",
+                "hour",
+                "day",
+                "week",
+                "month",
+                "quarter",
+                "year",
+                null
+              ],
+              "maxLength": 500,
+              "minLength": 1,
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "value": {
+              "maximum": 31536000,
+              "minimum": -31536000,
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "weekday": {
+              "enum": [
+                "monday",
+                "tuesday",
+                "wednesday",
+                "thursday",
+                "friday",
+                "saturday",
+                "sunday",
+                null
+              ],
+              "maxLength": 500,
+              "minLength": 1,
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "year": {
+              "maximum": 31536000,
+              "minimum": -31536000,
+              "type": [
+                "integer",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "type",
+            "unit",
+            "offset",
+            "value",
+            "weekday",
+            "direction",
+            "year",
+            "month",
+            "day"
+          ],
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "duration_minutes": {
+          "maximum": 31536000,
+          "minimum": -31536000,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "recurrence": {
+          "additionalProperties": false,
+          "properties": {
+            "day": {
+              "maximum": 31536000,
+              "minimum": -31536000,
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "frequency": {
+              "enum": [
+                "minute",
+                "hour",
+                "day",
+                "week",
+                "month",
+                "year"
+              ],
+              "maxLength": 500,
+              "minLength": 1,
+              "type": "string"
+            },
+            "interval": {
+              "maximum": 31536000,
+              "minimum": -31536000,
+              "type": "integer"
+            },
+            "month": {
+              "maximum": 31536000,
+              "minimum": -31536000,
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "weekdays": {
+              "items": {
+                "enum": [
+                  "monday",
+                  "tuesday",
+                  "wednesday",
+                  "thursday",
+                  "friday",
+                  "saturday",
+                  "sunday"
+                ],
+                "maxLength": 500,
+                "minLength": 1,
+                "type": "string"
+              },
+              "maxItems": 30,
+              "type": [
+                "array",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "frequency",
+            "interval",
+            "weekdays",
+            "day",
+            "month"
+          ],
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "reminder_enabled": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "reminder_minutes": {
+          "maximum": 31536000,
+          "minimum": -31536000,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "time": {
+          "additionalProperties": false,
+          "properties": {
+            "hour": {
+              "maximum": 31536000,
+              "minimum": -31536000,
+              "type": "integer"
+            },
+            "minute": {
+              "maximum": 31536000,
+              "minimum": -31536000,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "hour",
+            "minute"
+          ],
+          "type": [
+            "object",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "date",
+        "time",
+        "delay",
+        "duration_minutes",
+        "reminder_minutes",
+        "reminder_enabled",
+        "recurrence"
+      ],
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "status": {
+      "enum": [
+        "ok",
+        "ambiguous",
+        "unknown"
+      ],
+      "maxLength": 500,
+      "minLength": 1,
+      "type": "string"
+    },
+    "target": {
+      "additionalProperties": false,
+      "properties": {
+        "ordinal": {
+          "maximum": 31536000,
+          "minimum": -31536000,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "query": {
+          "maxLength": 500,
+          "minLength": 1,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reference": {
+          "enum": [
+            "last",
+            "ordinal",
+            "query",
+            null
+          ],
+          "maxLength": 500,
+          "minLength": 1,
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "reference",
+        "ordinal",
+        "query"
+      ],
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "title": {
+      "maxLength": 500,
+      "minLength": 1,
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "status",
+    "dialogue_act",
+    "operation",
+    "kind",
+    "title",
+    "query",
+    "filters",
+    "target",
+    "schedule",
+    "changes",
+    "evidence",
+    "clarification",
+    "chat_response"
+  ],
+  "type": "object"
+}

@@ -4,7 +4,7 @@
     "Seeds": [],
     "Turns": [
       {
-        "Message": "Напомни завтра в 10 позвонить Ивану",
+        "Message": "Напомни завтра в 10 утра позвонить Ивану",
         "Operation": {
           "intent": "create_reminder",
           "arguments": {
@@ -1253,7 +1253,7 @@
     "Seeds": [],
     "Turns": [
       {
-        "Message": "Запланируй встречу с Алисой в следующую пятницу в 11",
+        "Message": "Запланируй встречу с Алисой в следующую пятницу в 11:00",
         "Operation": {
           "intent": "create_meeting",
           "arguments": {
@@ -1335,7 +1335,7 @@
     "Seeds": [],
     "Turns": [
       {
-        "Message": "Напомни завтра в четыре проверить отчёт",
+        "Message": "Напомни завтра в четыре дня проверить отчёт",
         "Operation": {
           "intent": "create_reminder",
           "arguments": {
@@ -1354,7 +1354,7 @@
         }
       },
       {
-        "Message": "не, лучше в пять",
+        "Message": "не, лучше в пять вечера",
         "Operation": {
           "intent": "update",
           "arguments": {

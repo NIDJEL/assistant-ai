@@ -1,0 +1,9 @@
+{
+  "Conversations": 30,
+  "Turns": 60,
+  "SHA256": "36ba993cda2365bba168c2ee0d19875d64dfacaec99edbc56cbaea2dfed99f36",
+  "Categories": {
+    "source_coverage": 30
+  },
+  "PreviousAuditRead": false
+}

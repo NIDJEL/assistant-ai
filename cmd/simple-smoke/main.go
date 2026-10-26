@@ -4,6 +4,8 @@ package main
 import (
 	"bufio"
 	"context"
+	"crypto/sha256"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -12,13 +14,18 @@ import (
 	"github.com/NIDJEL/assistant-ai/internal/calendar"
 	"github.com/NIDJEL/assistant-ai/internal/config"
 	"github.com/NIDJEL/assistant-ai/internal/domain"
+	"github.com/NIDJEL/assistant-ai/internal/evaluation"
 	"github.com/NIDJEL/assistant-ai/internal/llm"
 	"github.com/NIDJEL/assistant-ai/internal/nlu"
 	"github.com/NIDJEL/assistant-ai/internal/repository"
 	"github.com/NIDJEL/assistant-ai/internal/search"
+	"github.com/NIDJEL/assistant-ai/internal/storage/postgres"
 	"github.com/NIDJEL/assistant-ai/internal/storage/sqlite"
+	"github.com/google/uuid"
+	"net/url"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 )
@@ -27,8 +34,11 @@ type eventSpec struct{ Key, Kind, Title, Date, Time, Status string }
 type eventWant struct {
 	Key, TitleContains, Date, Time, Status string
 	ReminderMinutes                        *int
+	RecurrenceFrequency                    string
+	RecurrenceCount                        *int
 }
 type expectation struct {
+	Operations     []string
 	Action         string
 	Pending        bool
 	Count, DBCount *int
@@ -42,6 +52,7 @@ type turn struct {
 	Want      expectation
 }
 type scenario struct {
+	Now   string
 	Name  string
 	Seeds []eventSpec
 	Turns []turn
@@ -61,22 +72,42 @@ type scenarioResult struct {
 	Turns []turnResult `json:"turns"`
 }
 type report struct {
-	Mode                               string `json:"mode"`
-	Model                              string `json:"model,omitempty"`
-	Scenarios, Passed, Turns, LLMCalls int
-	MeanTurnMS                         float64          `json:"mean_turn_ms"`
-	MeanLLMMS                          float64          `json:"mean_llm_ms"`
-	Results                            []scenarioResult `json:"results"`
+	Source                                          evaluation.Source
+	CorpusSHA256, CreatedAt, Timezone               string
+	P50MS, P95MS                                    float64
+	Repairs, ExpectedOperations, ReturnedOperations int
+	Mode                                            string `json:"mode"`
+	Model                                           string `json:"model,omitempty"`
+	Scenarios, Passed, Turns, LLMCalls              int
+	MeanTurnMS                                      float64          `json:"mean_turn_ms"`
+	MeanLLMMS                                       float64          `json:"mean_llm_ms"`
+	Results                                         []scenarioResult `json:"results"`
 }
 type recordingInterpreter struct {
-	base    *llm.Simple
-	fixture json.RawMessage
-	last    *nlu.Operation
-	err     string
+	queryModel   search.QueryModel
+	searchBudget time.Duration
+	base         *llm.Simple
+	fixture      json.RawMessage
+	last         *nlu.Operation
+	err          string
 }
+
+var postgresMode bool
 
 func (*recordingInterpreter) Interpret(context.Context, string, time.Time) (domain.Command, error) {
 	panic("legacy interpretation used")
+}
+func (p *recordingInterpreter) RepairValidation(ctx context.Context, text string, d nlu.Context, previous nlu.Operation, issue nlu.ValidationIssue) (nlu.Operation, error) {
+	if p.base == nil {
+		return previous, nil
+	}
+	op, err := p.base.RepairValidation(ctx, text, d, previous, issue)
+	p.last = &op
+	p.err = ""
+	if err != nil {
+		p.err = err.Error()
+	}
+	return op, err
 }
 func (p *recordingInterpreter) InterpretOperation(ctx context.Context, text string, d nlu.Context) (nlu.Operation, error) {
 	var op nlu.Operation
@@ -95,6 +126,7 @@ func (p *recordingInterpreter) InterpretOperation(ctx context.Context, text stri
 }
 
 func main() {
+	flag.BoolVar(&postgresMode, "postgres", false, "use disposable local TEST_DATABASE_URL schemas (database name must contain semantic_test)")
 	mode := flag.String("mode", "fixture", "fixture or live")
 	input := flag.String("input", "testdata/simple_llm/smoke.json", "small realistic corpus")
 	output := flag.String("output", "artifacts/simple_llm_smoke.json", "result file")
@@ -124,6 +156,10 @@ func run(mode, input, output, only string, interactive bool) error {
 		}
 		defer g.Close()
 		p.base = &llm.Simple{Provider: g}
+		if cfg.SearchMode == "cloud" {
+			p.queryModel = llm.CloudSearch{Client: g}
+			p.searchBudget = cfg.SearchBudget
+		}
 		model = g.ModelID()
 	}
 	if interactive {
@@ -137,7 +173,8 @@ func run(mode, input, output, only string, interactive bool) error {
 	if err = json.Unmarshal(data, &cases); err != nil {
 		return err
 	}
-	r := report{Mode: mode, Model: model}
+	r := report{Mode: mode, Model: model, Source: evaluation.Identity(), CorpusSHA256: fmt.Sprintf("%x", sha256.Sum256(data)), CreatedAt: time.Now().UTC().Format(time.RFC3339), Timezone: "Europe/Moscow"}
+	latencies := []float64{}
 	var totalMS, llmMS float64
 	for _, c := range cases {
 		if only != "" && !strings.Contains(c.Name, only) {
@@ -152,6 +189,11 @@ func run(mode, input, output, only string, interactive bool) error {
 			r.Passed++
 		}
 		for _, t := range result.Turns {
+			latencies = append(latencies, t.LatencyMS)
+			if t.Response.Diagnostics != nil {
+				r.Repairs += t.Response.Diagnostics.Repairs
+			}
+			r.ReturnedOperations += len(t.Response.Operations)
 			r.Turns++
 			r.LLMCalls += t.LLMCalls
 			totalMS += t.LatencyMS
@@ -159,10 +201,16 @@ func run(mode, input, output, only string, interactive bool) error {
 				llmMS += t.LatencyMS
 			}
 		}
+		for _, turn := range c.Turns {
+			r.ExpectedOperations += len(turn.Want.Operations)
+		}
 		r.Results = append(r.Results, result)
 		fmt.Fprintf(os.Stderr, "%s pass=%v\n", c.Name, result.Pass)
 	}
 	if r.Turns > 0 {
+		sort.Float64s(latencies)
+		r.P50MS = latencies[(len(latencies)-1)/2]
+		r.P95MS = latencies[(len(latencies)*95+99)/100-1]
 		r.MeanTurnMS = totalMS / float64(r.Turns)
 	}
 	if r.LLMCalls > 0 {
@@ -185,6 +233,9 @@ func run(mode, input, output, only string, interactive bool) error {
 	return nil
 }
 func scratch(ctx context.Context, p *recordingInterpreter) (*assistant.Service, func(), error) {
+	if postgresMode {
+		return postgresScratch(ctx, p)
+	}
 	dir, err := os.MkdirTemp("", "gena-simple-")
 	if err != nil {
 		return nil, nil, err
@@ -201,10 +252,14 @@ func scratch(ctx context.Context, p *recordingInterpreter) (*assistant.Service, 
 		return nil, nil, err
 	}
 	loc, _ := time.LoadLocation("Europe/Moscow")
+	if p.queryModel != nil {
+		engine.EnableCloud(p.queryModel, p.searchBudget)
+	}
 	s := assistant.New(db, p, &calendar.Service{Store: db, Search: engine, Location: loc})
 	return s, func() { db.Close(); os.RemoveAll(dir) }, nil
 }
 func runScenario(ctx context.Context, c scenario, p *recordingInterpreter) (scenarioResult, error) {
+	ctx = repository.WithUser(ctx, uuid.NewString())
 	r := scenarioResult{Name: c.Name, Pass: true}
 	s, close, err := scratch(ctx, p)
 	if err != nil {
@@ -212,6 +267,12 @@ func runScenario(ctx context.Context, c scenario, p *recordingInterpreter) (scen
 	}
 	defer close()
 	now, _ := time.Parse(time.RFC3339, "2026-10-17T12:30:00+03:00")
+	if c.Now != "" {
+		now, err = time.Parse(time.RFC3339, c.Now)
+		if err != nil {
+			return r, err
+		}
+	}
 	keys := map[string]int64{}
 	err = s.Store.Write(ctx, func(tx repository.Tx) error {
 		for _, seed := range c.Seeds {
@@ -252,6 +313,9 @@ func runScenario(ctx context.Context, c scenario, p *recordingInterpreter) (scen
 		s.ObserveTurn = func(o assistant.DialogueObservation) { calls = o.SemanticCalls }
 		started := time.Now()
 		response, err := s.Respond(ctx, t.Message, "smoke", fmt.Sprint(i), now.Add(time.Duration(i)*time.Second))
+		if response.Diagnostics != nil {
+			calls = response.Diagnostics.ModelCalls
+		}
 		tr := turnResult{Message: t.Message, Response: response, Operation: p.last, Error: p.err, LatencyMS: float64(time.Since(started).Microseconds()) / 1000, LLMCalls: calls}
 		if err != nil {
 			tr.Error = err.Error()
@@ -264,6 +328,17 @@ func runScenario(ctx context.Context, c scenario, p *recordingInterpreter) (scen
 		}
 		if t.Want.Count != nil && len(response.Events) != *t.Want.Count {
 			tr.Failures = append(tr.Failures, "result count mismatch")
+		}
+		if t.Want.Operations != nil {
+			if len(response.Operations) != len(t.Want.Operations) {
+				tr.Failures = append(tr.Failures, "operation omitted or added")
+			} else {
+				for i, status := range t.Want.Operations {
+					if response.Operations[i].Status != status {
+						tr.Failures = append(tr.Failures, fmt.Sprintf("operation %d status want %s", i+1, status))
+					}
+				}
+			}
 		}
 		if t.Want.Event != nil {
 			if len(response.Events) != 1 || !matches(response.Events[0], *t.Want.Event) {
@@ -310,6 +385,12 @@ func runScenario(ctx context.Context, c scenario, p *recordingInterpreter) (scen
 	return r, nil
 }
 func matches(e domain.Event, w eventWant) bool {
+	if w.RecurrenceFrequency != "" && (e.Recurrence == nil || e.Recurrence.Frequency != w.RecurrenceFrequency) {
+		return false
+	}
+	if w.RecurrenceCount != nil && (e.Recurrence == nil || e.Recurrence.Count != *w.RecurrenceCount) {
+		return false
+	}
 	if w.TitleContains != "" && !strings.Contains(strings.ToLower(e.Title), strings.ToLower(w.TitleContains)) {
 		return false
 	}
@@ -328,6 +409,7 @@ func matches(e domain.Event, w eventWant) bool {
 	return true
 }
 func chat(ctx context.Context, p *recordingInterpreter, output, model string) error {
+	ctx = repository.WithUser(ctx, uuid.NewString())
 	s, close, err := scratch(ctx, p)
 	if err != nil {
 		return err
@@ -375,4 +457,45 @@ func chat(ctx context.Context, p *recordingInterpreter, output, model string) er
 		return err
 	}
 	return os.WriteFile(output, data, 0600)
+}
+
+func postgresScratch(ctx context.Context, p *recordingInterpreter) (*assistant.Service, func(), error) {
+	dsn := os.Getenv("TEST_DATABASE_URL")
+	u, err := url.Parse(dsn)
+	if err != nil || !strings.Contains(u.Path, "semantic_test") || u.Hostname() != "127.0.0.1" && u.Hostname() != "localhost" {
+		return nil, nil, errors.New("postgres smoke requires a local disposable semantic_test database")
+	}
+	admin, err := sql.Open("pgx", dsn)
+	if err != nil {
+		return nil, nil, err
+	}
+	schema := "smoke_" + strings.ReplaceAll(uuid.NewString(), "-", "")
+	if _, err = admin.ExecContext(ctx, "CREATE SCHEMA "+schema); err != nil {
+		admin.Close()
+		return nil, nil, err
+	}
+	cleanup := func() { admin.Exec("DROP SCHEMA " + schema + " CASCADE"); admin.Close() }
+	query := u.Query()
+	query.Set("search_path", schema)
+	u.RawQuery = query.Encode()
+	db, err := postgres.Open(ctx, u.String())
+	if err != nil {
+		cleanup()
+		return nil, nil, err
+	}
+	close := func() { db.Close(); cleanup() }
+	if _, err = db.DB.ExecContext(ctx, `INSERT INTO users(id,display_name) VALUES($1,'Disposable evaluation')`, repository.UserID(ctx)); err != nil {
+		close()
+		return nil, nil, err
+	}
+	engine, err := search.New()
+	if err != nil {
+		close()
+		return nil, nil, err
+	}
+	loc, _ := time.LoadLocation("Europe/Moscow")
+	if p.queryModel != nil {
+		engine.EnableCloud(p.queryModel, p.searchBudget)
+	}
+	return assistant.New(db, p, &calendar.Service{Store: db, Search: engine, Location: loc}), close, nil
 }

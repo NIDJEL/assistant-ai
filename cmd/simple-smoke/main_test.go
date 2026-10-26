@@ -31,3 +31,29 @@ func TestRealisticSmokeExecution(t *testing.T) {
 		})
 	}
 }
+
+func TestTopTenMandatoryScenarios(t *testing.T) {
+	data, err := os.ReadFile("../../testdata/simple_llm/top10.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var cases []scenario
+	if err = json.Unmarshal(data, &cases); err != nil {
+		t.Fatal(err)
+	}
+	if len(cases) < 10 {
+		t.Fatal("mandatory scenarios missing")
+	}
+	for _, c := range cases {
+		t.Run(c.Name, func(t *testing.T) {
+			r, err := runScenario(t.Context(), c, &recordingInterpreter{})
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !r.Pass {
+				raw, _ := json.MarshalIndent(r, "", "  ")
+				t.Fatal(string(raw))
+			}
+		})
+	}
+}

@@ -1,0 +1,700 @@
+[
+  {
+    "Name": "01 mandatory explicit triple",
+    "Now": "2026-10-26T04:53:00+03:00",
+    "Turns": [
+      {
+        "Message": "Создай встречу с Колей сегодня в 20:00, задачу купить продукты и напомни позвонить маме сегодня в 10:00",
+        "Operation": {
+          "intent": "multi_action",
+          "arguments": {
+            "steps": [
+              {
+                "key": "meeting",
+                "source": "встречу с Колей сегодня в 20:00",
+                "operation": {
+                  "intent": "create_meeting",
+                  "arguments": {
+                    "title": "Встреча с Колей",
+                    "date": {
+                      "type": "relative_day",
+                      "offset": 0
+                    },
+                    "time": "20:00"
+                  },
+                  "confidence": "high",
+                  "clarification": null
+                }
+              },
+              {
+                "key": "task",
+                "source": "задачу купить продукты",
+                "operation": {
+                  "intent": "create_task",
+                  "arguments": {
+                    "title": "Купить продукты"
+                  },
+                  "confidence": "high",
+                  "clarification": null
+                }
+              },
+              {
+                "key": "reminder",
+                "source": "напомни позвонить маме сегодня в 10:00",
+                "operation": {
+                  "intent": "create_reminder",
+                  "arguments": {
+                    "title": "Позвонить маме",
+                    "date": {
+                      "type": "relative_day",
+                      "offset": 0
+                    },
+                    "time": "10:00"
+                  },
+                  "confidence": "high",
+                  "clarification": null
+                }
+              }
+            ]
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "DBCount": 3,
+          "Operations": [
+            "done",
+            "done",
+            "done"
+          ],
+          "Records": [
+            {
+              "TitleContains": "Коле",
+              "Time": "20:00"
+            },
+            {
+              "TitleContains": "продукт"
+            },
+            {
+              "TitleContains": "маме",
+              "Time": "10:00"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "Name": "02 mandatory original screenshot",
+    "Now": "2026-10-26T04:53:00+03:00",
+    "Turns": [
+      {
+        "Message": "Создай встречу с Колей в 8, добавь задачу купить продукты и напомни позвонить маме в 10",
+        "Operation": {
+          "intent": "multi_action",
+          "arguments": {
+            "steps": [
+              {
+                "key": "meeting",
+                "source": "Создай встречу с Колей в 8",
+                "operation": {
+                  "intent": "create_meeting",
+                  "arguments": {
+                    "title": "Встреча с Колей",
+                    "time": "20:00"
+                  },
+                  "confidence": "high",
+                  "clarification": null
+                }
+              },
+              {
+                "key": "task",
+                "source": "добавь задачу купить продукты",
+                "operation": {
+                  "intent": "create_task",
+                  "arguments": {
+                    "title": "Купить продукты"
+                  },
+                  "confidence": "high",
+                  "clarification": null
+                }
+              },
+              {
+                "key": "reminder",
+                "source": "напомни позвонить маме в 10",
+                "operation": {
+                  "intent": "create_reminder",
+                  "arguments": {
+                    "title": "Позвонить маме",
+                    "time": "10:00"
+                  },
+                  "confidence": "high",
+                  "clarification": null
+                }
+              }
+            ]
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "Pending": true,
+          "DBCount": 1,
+          "Operations": [
+            "waiting",
+            "done",
+            "waiting"
+          ]
+        }
+      },
+      {
+        "Message": "Сегодня в 20:00",
+        "Operation": {
+          "intent": "continue",
+          "arguments": {
+            "changes": {
+              "date": {
+                "type": "relative_day",
+                "offset": 0
+              },
+              "time": "20:00"
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "Pending": true,
+          "DBCount": 2,
+          "Operations": [
+            "done",
+            "done",
+            "waiting"
+          ]
+        }
+      },
+      {
+        "Message": "Сегодня в 10:00",
+        "Operation": {
+          "intent": "continue",
+          "arguments": {
+            "changes": {
+              "date": {
+                "type": "relative_day",
+                "offset": 0
+              },
+              "time": "10:00"
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "DBCount": 3,
+          "Operations": [
+            "done",
+            "done",
+            "done"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "Name": "03 mandatory dependency",
+    "Now": "2026-10-26T04:53:00+03:00",
+    "Turns": [
+      {
+        "Message": "Создай задачу Отчёт, затем отметь именно её выполненной; независимо добавь задачу Купить хлеб",
+        "Operation": {
+          "intent": "multi_action",
+          "arguments": {
+            "steps": [
+              {
+                "key": "report",
+                "source": "Создай задачу Отчёт",
+                "operation": {
+                  "intent": "create_task",
+                  "arguments": {
+                    "title": "Отчёт"
+                  },
+                  "confidence": "high",
+                  "clarification": null
+                }
+              },
+              {
+                "key": "complete",
+                "source": "затем отметь именно её выполненной",
+                "operation": {
+                  "intent": "complete",
+                  "arguments": {
+                    "target": {
+                      "type": "step",
+                      "value": "report"
+                    }
+                  },
+                  "confidence": "high",
+                  "clarification": null
+                },
+                "depends_on": [
+                  "report"
+                ]
+              },
+              {
+                "key": "bread",
+                "source": "добавь задачу Купить хлеб",
+                "operation": {
+                  "intent": "create_task",
+                  "arguments": {
+                    "title": "Купить хлеб"
+                  },
+                  "confidence": "high",
+                  "clarification": null
+                }
+              }
+            ]
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "DBCount": 2,
+          "Operations": [
+            "done",
+            "done",
+            "done"
+          ],
+          "Records": [
+            {
+              "TitleContains": "Отчёт",
+              "Status": "done"
+            },
+            {
+              "TitleContains": "хлеб",
+              "Status": "open"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "Name": "04 mandatory five independent commands",
+    "Now": "2026-10-26T04:53:00+03:00",
+    "Turns": [
+      {
+        "Message": "Добавь задачу Альфа; Добавь задачу Бета; Добавь задачу Гамма; Добавь задачу Дельта; Добавь задачу Эпсилон",
+        "Operation": {
+          "intent": "multi_action",
+          "arguments": {
+            "steps": [
+              {
+                "key": "a",
+                "source": "Добавь задачу Альфа",
+                "operation": {
+                  "intent": "create_task",
+                  "arguments": {
+                    "title": "Альфа"
+                  },
+                  "confidence": "high",
+                  "clarification": null
+                }
+              },
+              {
+                "key": "b",
+                "source": "Добавь задачу Бета",
+                "operation": {
+                  "intent": "create_task",
+                  "arguments": {
+                    "title": "Бета"
+                  },
+                  "confidence": "high",
+                  "clarification": null
+                }
+              },
+              {
+                "key": "c",
+                "source": "Добавь задачу Гамма",
+                "operation": {
+                  "intent": "create_task",
+                  "arguments": {
+                    "title": "Гамма"
+                  },
+                  "confidence": "high",
+                  "clarification": null
+                }
+              },
+              {
+                "key": "d",
+                "source": "Добавь задачу Дельта",
+                "operation": {
+                  "intent": "create_task",
+                  "arguments": {
+                    "title": "Дельта"
+                  },
+                  "confidence": "high",
+                  "clarification": null
+                }
+              },
+              {
+                "key": "e",
+                "source": "Добавь задачу Эпсилон",
+                "operation": {
+                  "intent": "create_task",
+                  "arguments": {
+                    "title": "Эпсилон"
+                  },
+                  "confidence": "high",
+                  "clarification": null
+                }
+              }
+            ]
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "DBCount": 5,
+          "Operations": [
+            "done",
+            "done",
+            "done",
+            "done",
+            "done"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "Name": "05 atomic preview then commit",
+    "Now": "2026-10-26T04:53:00+03:00",
+    "Turns": [
+      {
+        "Message": "Добавь задачи Отчёт и Смета только вместе, либо обе либо ни одной; независимо добавь Купить хлеб",
+        "Operation": {
+          "intent": "multi_action",
+          "arguments": {
+            "steps": [
+              {
+                "key": "report",
+                "source": "Отчёт",
+                "operation": {
+                  "intent": "create_task",
+                  "arguments": {
+                    "title": "Отчёт"
+                  },
+                  "confidence": "high",
+                  "clarification": null
+                },
+                "atomic_group": "all"
+              },
+              {
+                "key": "estimate",
+                "source": "и Смета только вместе",
+                "operation": {
+                  "intent": "create_task",
+                  "arguments": {
+                    "title": "Смета"
+                  },
+                  "confidence": "high",
+                  "clarification": null
+                },
+                "atomic_group": "all"
+              },
+              {
+                "key": "bread",
+                "source": "Купить хлеб",
+                "operation": {
+                  "intent": "create_task",
+                  "arguments": {
+                    "title": "Купить хлеб"
+                  },
+                  "confidence": "high",
+                  "clarification": null
+                }
+              }
+            ]
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "Pending": true,
+          "DBCount": 1,
+          "Operations": [
+            "waiting",
+            "waiting",
+            "done"
+          ]
+        }
+      },
+      {
+        "Message": "да",
+        "Operation": {
+          "intent": "confirm",
+          "arguments": {},
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "DBCount": 3,
+          "Operations": [
+            "done",
+            "done",
+            "done"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "Name": "06 atomic cancellation",
+    "Now": "2026-10-26T04:53:00+03:00",
+    "Turns": [
+      {
+        "Message": "Добавь задачу Отчёт и задачу Смета только вместе: обе задачи или ни одной",
+        "Operation": {
+          "intent": "multi_action",
+          "arguments": {
+            "steps": [
+              {
+                "key": "report",
+                "source": "задачу Отчёт",
+                "operation": {
+                  "intent": "create_task",
+                  "arguments": {
+                    "title": "Отчёт"
+                  },
+                  "confidence": "high",
+                  "clarification": null
+                },
+                "atomic_group": "all"
+              },
+              {
+                "key": "estimate",
+                "source": "и задачу Смета только вместе",
+                "operation": {
+                  "intent": "create_task",
+                  "arguments": {
+                    "title": "Смета"
+                  },
+                  "confidence": "high",
+                  "clarification": null
+                },
+                "atomic_group": "all"
+              }
+            ]
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "clarify",
+          "Pending": true,
+          "DBCount": 0,
+          "Operations": [
+            "waiting",
+            "waiting"
+          ]
+        }
+      },
+      {
+        "Message": "отмена",
+        "Operation": {
+          "intent": "cancel",
+          "arguments": {},
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "cancel",
+          "DBCount": 0,
+          "Operations": [
+            "cancelled",
+            "cancelled"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "Name": "07 bounded daily recurrence",
+    "Now": "2026-10-26T04:53:00+03:00",
+    "Turns": [
+      {
+        "Message": "Напоминай принимать витамины ежедневно в 09:00 три раза",
+        "Operation": {
+          "intent": "create_reminder",
+          "arguments": {
+            "title": "Принимать витамины",
+            "time": "09:00",
+            "recurrence": {
+              "frequency": "day",
+              "count": 3
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "DBCount": 1,
+          "Event": {
+            "TitleContains": "витамин",
+            "RecurrenceFrequency": "day",
+            "RecurrenceCount": 3,
+            "Time": "09:00"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "Name": "08 recurrence missing time is preserved",
+    "Now": "2026-10-26T04:53:00+03:00",
+    "Turns": [
+      {
+        "Message": "Напоминай делать зарядку по понедельникам три раза",
+        "Operation": {
+          "intent": "create_reminder",
+          "arguments": {
+            "title": "Делать зарядку",
+            "recurrence": {
+              "frequency": "week",
+              "weekdays": [
+                "monday"
+              ],
+              "count": 3
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "clarify",
+          "Pending": true,
+          "DBCount": 0
+        }
+      },
+      {
+        "Message": "В 09:00",
+        "Operation": {
+          "intent": "continue",
+          "arguments": {
+            "changes": {
+              "time": "09:00"
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "DBCount": 1,
+          "Event": {
+            "RecurrenceFrequency": "week",
+            "RecurrenceCount": 3,
+            "Time": "09:00"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "Name": "09 next occurrence keeps series",
+    "Now": "2026-10-26T04:53:00+03:00",
+    "Turns": [
+      {
+        "Message": "Напоминай принимать витамины ежедневно в 09:00 три раза",
+        "Operation": {
+          "intent": "create_reminder",
+          "arguments": {
+            "title": "Принимать витамины",
+            "time": "09:00",
+            "recurrence": {
+              "frequency": "day",
+              "count": 3
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "DBCount": 1
+        }
+      },
+      {
+        "Message": "Только ближайший приём перенеси на 10:00",
+        "Operation": {
+          "intent": "update",
+          "arguments": {
+            "target": {
+              "type": "last"
+            },
+            "changes": {
+              "scope": "occurrence",
+              "time": "10:00"
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "update",
+          "DBCount": 2,
+          "Event": {
+            "Time": "10:00"
+          },
+          "Records": [
+            {
+              "RecurrenceFrequency": "day",
+              "RecurrenceCount": 3,
+              "Time": "09:00"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "Name": "10 second precision",
+    "Now": "2026-10-26T04:53:00+03:00",
+    "Turns": [
+      {
+        "Message": "Через 75 секунд напомни выключить чайник",
+        "Operation": {
+          "intent": "create_reminder",
+          "arguments": {
+            "title": "Выключить чайник",
+            "date": {
+              "type": "relative_delay",
+              "unit": "second",
+              "value": 75
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "DBCount": 1,
+          "Event": {
+            "TitleContains": "чайник",
+            "Date": "2026-10-26",
+            "Time": "04:54"
+          }
+        }
+      }
+    ]
+  }
+]

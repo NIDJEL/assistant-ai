@@ -11,6 +11,8 @@ import (
 )
 
 type Event struct {
+	OccurrencesInDay   int    `json:"occurrences_in_day,omitempty"`
+	VirtualOccurrence  bool   `json:"virtual_occurrence,omitempty"`
 	DisplayTitle       string `json:"display_title,omitempty"`
 	OrganizerName      string `json:"organizer_name,omitempty"`
 	OrganizerAvatarURL string `json:"organizer_avatar_url,omitempty"`
@@ -68,11 +70,20 @@ func (e Event) Validate() error {
 		if err := e.Recurrence.Validate(true); err != nil {
 			return err
 		}
-		if e.Kind == EventMeeting {
-			return errors.New("Повторение поддерживается для задач и напоминаний")
-		}
 		if e.Date == nil || e.StartTime == nil {
 			return errors.New("Для повторения нужны дата и время")
+		}
+		if e.Kind == EventMeeting {
+			zone, _ := time.LoadLocation(e.Recurrence.Timezone)
+			slots, err := e.MeetingSlots(zone)
+			if err != nil {
+				return err
+			}
+			for i := 1; i < len(slots); i++ {
+				if slots[i].Start.Before(slots[i-1].End) {
+					return errors.New("Повторения одной серии пересекаются: измените интервал или длительность")
+				}
+			}
 		}
 	}
 	if err := e.EventDetails.Validate(); err != nil {
@@ -302,6 +313,7 @@ type Pending struct {
 	Candidates        []Event            `json:"candidates,omitempty"`
 }
 type State struct {
+	Actions  *ActionPlan    `json:"actions,omitempty"`
 	Pending  *Pending       `json:"pending,omitempty"`
 	LastIDs  []int64        `json:"last_ids,omitempty"`
 	Dialogue *DialogueState `json:"dialogue,omitempty"`
@@ -338,6 +350,9 @@ type DialogueSearch struct {
 
 func (s State) MarshalJSON() ([]byte, error) {
 	value := map[string]any{}
+	if s.Actions != nil {
+		value["actions"] = s.Actions
+	}
 	if s.Pending != nil {
 		value["pending"] = s.Pending
 	}
@@ -351,22 +366,26 @@ func (s State) MarshalJSON() ([]byte, error) {
 }
 
 type Response struct {
-	Scheduling      *SchedulingCard `json:"scheduling,omitempty"`
-	SubmittedChoice *ChatChoice     `json:"submitted_choice,omitempty"`
-	Social          *SocialNotice   `json:"social,omitempty"`
-	ZoomMeetings    []ZoomMeeting   `json:"zoom_meetings,omitempty"`
-	Reply           string          `json:"reply"`
-	Action          Action          `json:"action"`
-	Events          []Event         `json:"events"`
-	Candidates      []Event         `json:"candidates"`
-	Conflicts       []Event         `json:"conflicts"`
-	Total           *int            `json:"total,omitempty"`
-	SessionID       string          `json:"session_id"`
-	RequestID       string          `json:"request_id"`
-	Provider        string          `json:"provider"`
-	Timezone        string          `json:"timezone"`
-	Pending         bool            `json:"pending"`
-	Suggestions     []string        `json:"suggestions,omitempty"`
+	Execution       []ExecutionStatus `json:"execution,omitempty"`
+	Search          *SearchStatus     `json:"search,omitempty"`
+	Diagnostics     *TurnMetrics      `json:"diagnostics,omitempty"`
+	Operations      []ActionResult    `json:"operations,omitempty"`
+	Scheduling      *SchedulingCard   `json:"scheduling,omitempty"`
+	SubmittedChoice *ChatChoice       `json:"submitted_choice,omitempty"`
+	Social          *SocialNotice     `json:"social,omitempty"`
+	ZoomMeetings    []ZoomMeeting     `json:"zoom_meetings,omitempty"`
+	Reply           string            `json:"reply"`
+	Action          Action            `json:"action"`
+	Events          []Event           `json:"events"`
+	Candidates      []Event           `json:"candidates"`
+	Conflicts       []Event           `json:"conflicts"`
+	Total           *int              `json:"total,omitempty"`
+	SessionID       string            `json:"session_id"`
+	RequestID       string            `json:"request_id"`
+	Provider        string            `json:"provider"`
+	Timezone        string            `json:"timezone"`
+	Pending         bool              `json:"pending"`
+	Suggestions     []string          `json:"suggestions,omitempty"`
 }
 type Exchange struct {
 	Notification bool      `json:"notification,omitempty"`

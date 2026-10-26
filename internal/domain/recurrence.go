@@ -9,6 +9,9 @@ import (
 // advancing an occurrence never changes it. Minute/hour rules measure elapsed
 // time; day/week/month/year rules preserve the civil clock.
 type Recurrence struct {
+	ExDates   []time.Time    `json:"exdates,omitempty"`
+	Until     *Date          `json:"until,omitempty"`
+	Count     int            `json:"count,omitempty"`
 	Frequency string         `json:"frequency"`
 	Interval  int            `json:"interval"`
 	Weekdays  []time.Weekday `json:"weekdays,omitempty"`
@@ -22,6 +25,20 @@ type Recurrence struct {
 func (r Recurrence) Elapsed() bool { return r.Frequency == "minute" || r.Frequency == "hour" }
 func (r Recurrence) Validate(complete bool) error {
 	bad := errors.New("Некорректное правило повторения")
+	if len(r.ExDates) > 1000 {
+		return errors.New("Допустимо не более 1000 исключений серии")
+	}
+	excluded := map[string]bool{}
+	for _, at := range r.ExDates {
+		key := at.UTC().Format(time.RFC3339Nano)
+		if at.IsZero() || at.Year() < 1 || at.Year() > 9998 || excluded[key] {
+			return errors.New("Некорректные исключения серии")
+		}
+		excluded[key] = true
+	}
+	if r.Count < 0 || r.Count > 1000 || r.Until != nil && r.Count != 0 {
+		return errors.New("Укажите либо дату окончания, либо число повторений от 1 до 1000")
+	}
 	if r.Interval < 1 || r.Interval > 366 {
 		return bad
 	}
@@ -49,7 +66,7 @@ func (r Recurrence) Validate(complete bool) error {
 		}
 		seen[w] = true
 	}
-	if complete && r.Frequency == "week" && len(r.Weekdays) == 0 || (r.Frequency == "month" || r.Frequency == "year") && (r.Day < 1 || r.Day > 31) {
+	if complete && (r.Frequency == "week" && len(r.Weekdays) == 0 || (r.Frequency == "month" || r.Frequency == "year") && (r.Day < 1 || r.Day > 31)) || r.Day < 0 || r.Day > 31 {
 		return bad
 	}
 	if r.Frequency == "year" && (r.Month < 1 || r.Month > 12 || r.Day > time.Date(2000, r.Month+1, 0, 0, 0, 0, 0, time.UTC).Day()) {
@@ -109,6 +126,59 @@ func (r Recurrence) Next(after time.Time) (time.Time, error) {
 	if err := r.Validate(true); err != nil {
 		return time.Time{}, err
 	}
+	var next time.Time
+	var err error
+	if r.Count > 0 && !r.Elapsed() {
+		cursor := r.Anchor.Add(-time.Nanosecond)
+		found := false
+		for i := 0; i < r.Count; i++ {
+			next, err = r.nextUnbounded(cursor)
+			if err != nil {
+				return next, err
+			}
+			if next.After(after) && !r.Excluded(next) {
+				found = true
+				break
+			}
+			cursor = next
+		}
+		if !found {
+			return time.Time{}, ErrRecurrenceExhausted
+		}
+	} else {
+		cursor := after
+		for skipped := 0; skipped <= len(r.ExDates); skipped++ {
+			next, err = r.nextUnbounded(cursor)
+			if err != nil || !r.Excluded(next) {
+				break
+			}
+			cursor = next
+		}
+		if err != nil {
+			return next, err
+		}
+		if r.Count > 0 {
+			step := time.Duration(r.Interval) * time.Minute
+			if r.Frequency == "hour" {
+				step *= 60
+			}
+			if next.Sub(r.Anchor)/step > time.Duration(r.Count) {
+				return time.Time{}, ErrRecurrenceExhausted
+			}
+		}
+	}
+	if r.Until != nil {
+		loc, _ := time.LoadLocation(r.Timezone)
+		if Day(next.In(loc)).After(r.Until.Time) {
+			return time.Time{}, ErrRecurrenceExhausted
+		}
+	}
+	return next, nil
+}
+
+var ErrRecurrenceExhausted = errors.New("Все повторения этой серии завершены")
+
+func (r Recurrence) nextUnbounded(after time.Time) (time.Time, error) {
 	loc, _ := time.LoadLocation(r.Timezone)
 	a, b := r.Anchor.In(loc), after.In(loc)
 	if r.Elapsed() {

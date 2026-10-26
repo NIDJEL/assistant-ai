@@ -45,20 +45,20 @@ export function EventActionsProvider({ children }: { children: ReactNode }) {
     complete: async event => {
       if (sharedGuest(event)) { navigate(`/meetings?shared=${event.id}`); return; }
       if (pendingIds.current.has(event.id)) return; pendingIds.current.add(event.id);
-      try { await data.update(event.id, { status: event.status === 'done' ? 'open' : 'done' }); if (event.status === 'open') setNotice({ event, deleted: false }); }
+      try { await data.update(event.id, { status: event.status === 'done' ? 'open' : 'done', ...(event.virtual_occurrence ? { edit_occurrence_at: event.recurrence_id } : {}) }); if (event.status === 'open' && !event.virtual_occurrence) setNotice({ event, deleted: false }); }
       catch (e) { setError(errorMessage(e)); } finally { pendingIds.current.delete(event.id); }
     },
   };
   async function confirmDelete() {
     if (!deleting || locked.current) return; locked.current = true; setBusy(true);
-    try { await data.remove(deleting.id); setNotice({ event: deleting, deleted: true }); setDeleting(null); setError(''); }
+    try { if (deleting.virtual_occurrence) { await data.update(deleting.id, { edit_occurrence_at: deleting.recurrence_id, status: 'done' }); } else { await data.remove(deleting.id); setNotice({ event: deleting, deleted: true }); } setDeleting(null); setError(''); }
     catch (e) { setError(errorMessage(e)); } finally { setBusy(false); locked.current = false; }
   }
   return <Context value={actions}>{children}
     {notice && <div className="toast"><div className="action-notice" role="status"><span>{notice.deleted ? 'Запись перенесена в удалённые' : 'Запись выполнена и перенесена в архив'}</span><Button variant="soft" disabled={undoBusy} onClick={() => void undo()}>Отменить</Button>{notice.deleted && <MotionLink to="/archive?view=deleted" className="text-action" onClick={() => setNotice(null)}>Открыть архив</MotionLink>}<IconButton icon={X} label="Закрыть сообщение" onClick={() => setNotice(null)}/></div></div>}
     {error && !deleting && <div className="toast"><Alert action={<Button variant="ghost" onClick={() => setError('')}>Закрыть</Button>}>{error}</Alert></div>}
     <Presence present={!!editor}>{editor && <EventEditor key={editor.nonce} spec={editor} onClose={() => setEditor(null)}/>}</Presence>
-    <Presence present={!!deleting}>{deleting && <Dialog title="Удалить запись?" onClose={() => setDeleting(null)}><p className="delete-title">{deleting.title}</p><p className="muted">Запись попадёт в раздел «Удалённые». Её можно восстановить в архиве.</p>{error && <Alert>{error}</Alert>}<footer className="dialog-actions"><Button variant="ghost" onClick={() => setDeleting(null)}>Отмена</Button><Button variant="danger" onClick={() => void confirmDelete()} disabled={busy}>{busy ? 'Удаляю…' : 'Удалить'}</Button></footer></Dialog>}</Presence>
+    <Presence present={!!deleting}>{deleting && <Dialog title={deleting.virtual_occurrence ? "Отменить одно повторение?" : "Удалить запись?"} onClose={() => setDeleting(null)}><p className="delete-title">{deleting.title}</p><p className="muted">{deleting.virtual_occurrence ? "Это повторение будет отменено. Остальная серия сохранится." : "Запись попадёт в раздел «Удалённые». Её можно восстановить в архиве."}</p>{error && <Alert>{error}</Alert>}<footer className="dialog-actions"><Button variant="ghost" onClick={() => setDeleting(null)}>Отмена</Button><Button variant="danger" onClick={() => void confirmDelete()} disabled={busy}>{busy ? 'Удаляю…' : 'Удалить'}</Button></footer></Dialog>}</Presence>
   </Context>;
 }
 export function useEventActions() { const actions = useContext(Context); if (!actions) throw new Error('EventActionsProvider missing'); return actions; }

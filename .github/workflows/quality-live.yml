@@ -1,0 +1,75 @@
+name: Gena live quality corpus
+on:
+  workflow_dispatch:
+    inputs:
+      retrieval:
+        description: Also evaluate cloud search on the original and fresh 1000-record corpora
+        type: boolean
+        default: false
+  schedule:
+    - cron: '0 6 * * 1'
+permissions:
+  contents: read
+concurrency:
+  group: gena-live-quality
+  cancel-in-progress: false
+jobs:
+  quality:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17-bookworm
+        env:
+          POSTGRES_DB: semantic_test
+          POSTGRES_USER: quality
+          POSTGRES_PASSWORD: disposable-quality-only
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd 'pg_isready -U quality -d semantic_test'
+          --health-interval 5s --health-timeout 3s --health-retries 12
+    env:
+      TEST_DATABASE_URL: postgres://quality:disposable-quality-only@127.0.0.1:5432/semantic_test?sslmode=disable
+      GIGACHAT_AUTHORIZATION_KEY: ${{ secrets.GIGACHAT_AUTHORIZATION_KEY }}
+      GIGACHAT_MODEL: GigaChat-3-Ultra
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - name: Check live credentials
+        id: configured
+        shell: bash
+        run: |
+          if [ -n "$GIGACHAT_AUTHORIZATION_KEY" ]; then
+            echo 'ready=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'Live checks skipped: GIGACHAT_AUTHORIZATION_KEY is not configured.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Optional trusted certificate bundle
+        if: steps.configured.outputs.ready == 'true'
+        env:
+          QUALITY_CA: ${{ secrets.GIGACHAT_CA_BUNDLE }}
+        shell: bash
+        run: |
+          if [ -n "$QUALITY_CA" ]; then
+            printf '%s' "$QUALITY_CA" > "$RUNNER_TEMP/gigachat-ca.pem"
+            echo "GIGACHAT_CA_FILE=$RUNNER_TEMP/gigachat-ca.pem" >> "$GITHUB_ENV"
+          fi
+      - name: Mandatory corpus against GigaChat and disposable PostgreSQL
+        if: steps.configured.outputs.ready == 'true'
+        run: go run ./cmd/simple-smoke -mode live -postgres -input testdata/simple_llm/top10.json -output artifacts/top10_live_postgres.json
+      - name: Optional retrieval benchmark
+        if: steps.configured.outputs.ready == 'true' && inputs.retrieval
+        run: |
+          go run ./cmd/retrieval-eval -mode cloud -budget 8s -output artifacts/top10_retrieval_live.json
+          go run ./cmd/retrieval-eval -mode cloud -budget 8s -dataset testdata/retrieval/fresh_v2_events_1000.csv -qrels testdata/retrieval/fresh_v2_qrels.json -output artifacts/top10_retrieval_fresh_v2.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gena-live-quality-${{ github.sha }}
+          path: artifacts/top10_*.json
+          if-no-files-found: ignore
+          retention-days: 30

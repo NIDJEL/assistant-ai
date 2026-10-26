@@ -1,0 +1,395 @@
+{
+  "DatasetSHA256": "bad39ab7d2862d8d67ed94cfba2a3607e147b0804f03a49d506923c07d1bf475",
+  "Queries": [
+    {
+      "Name": "fresh_v2_01",
+      "Split": "fresh_v2_after_freeze",
+      "Query": "Где запись к специалисту по уху горлу и носу?",
+      "Relevant": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "Rationale": "Five exhaustive topic positives; 850 distractors from the previous corpus are reused. All 30 topic/query pairs are new after final catalogue freeze. Synthetic, internally authored."
+    },
+    {
+      "Name": "fresh_v2_02",
+      "Split": "fresh_v2_after_freeze",
+      "Query": "Найди консультацию по проблемам кожи",
+      "Relevant": [
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "Rationale": "Five exhaustive topic positives; 850 distractors from the previous corpus are reused. All 30 topic/query pairs are new after final catalogue freeze. Synthetic, internally authored."
+    },
+    {
+      "Name": "fresh_v2_03",
+      "Split": "fresh_v2_after_freeze",
+      "Query": "Какие занятия по обучению управлению автомобилем?",
+      "Relevant": [
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "Rationale": "Five exhaustive topic positives; 850 distractors from the previous corpus are reused. All 30 topic/query pairs are new after final catalogue freeze. Synthetic, internally authored."
+    },
+    {
+      "Name": "fresh_v2_04",
+      "Split": "fresh_v2_after_freeze",
+      "Query": "Где проверка пригодности машины к эксплуатации?",
+      "Relevant": [
+        16,
+        17,
+        18,
+        19,
+        20
+      ],
+      "Rationale": "Five exhaustive topic positives; 850 distractors from the previous corpus are reused. All 30 topic/query pairs are new after final catalogue freeze. Synthetic, internally authored."
+    },
+    {
+      "Name": "fresh_v2_05",
+      "Split": "fresh_v2_after_freeze",
+      "Query": "Что запланировано по обновлению добровольной медицинской страховки?",
+      "Relevant": [
+        21,
+        22,
+        23,
+        24,
+        25
+      ],
+      "Rationale": "Five exhaustive topic positives; 850 distractors from the previous corpus are reused. All 30 topic/query pairs are new after final catalogue freeze. Synthetic, internally authored."
+    },
+    {
+      "Name": "fresh_v2_06",
+      "Split": "fresh_v2_after_freeze",
+      "Query": "Найди дела по новой прописке",
+      "Relevant": [
+        26,
+        27,
+        28,
+        29,
+        30
+      ],
+      "Rationale": "Five exhaustive topic positives; 850 distractors from the previous corpus are reused. All 30 topic/query pairs are new after final catalogue freeze. Synthetic, internally authored."
+    },
+    {
+      "Name": "fresh_v2_07",
+      "Split": "fresh_v2_after_freeze",
+      "Query": "Где уход за шерстью пса у специалиста?",
+      "Relevant": [
+        31,
+        32,
+        33,
+        34,
+        35
+      ],
+      "Rationale": "Five exhaustive topic positives; 850 distractors from the previous corpus are reused. All 30 topic/query pairs are new after final catalogue freeze. Synthetic, internally authored."
+    },
+    {
+      "Name": "fresh_v2_08",
+      "Split": "fresh_v2_after_freeze",
+      "Query": "Какие дела по презенту дедуле?",
+      "Relevant": [
+        36,
+        37,
+        38,
+        39,
+        40
+      ],
+      "Rationale": "Five exhaustive topic positives; 850 distractors from the previous corpus are reused. All 30 topic/query pairs are new after final catalogue freeze. Synthetic, internally authored."
+    },
+    {
+      "Name": "fresh_v2_09",
+      "Split": "fresh_v2_after_freeze",
+      "Query": "Найди уроки языка Испании",
+      "Relevant": [
+        41,
+        42,
+        43,
+        44,
+        45
+      ],
+      "Rationale": "Five exhaustive topic positives; 850 distractors from the previous corpus are reused. All 30 topic/query pairs are new after final catalogue freeze. Synthetic, internally authored."
+    },
+    {
+      "Name": "fresh_v2_10",
+      "Split": "fresh_v2_after_freeze",
+      "Query": "Где погашение долга по банковской кредитке?",
+      "Relevant": [
+        46,
+        47,
+        48,
+        49,
+        50
+      ],
+      "Rationale": "Five exhaustive topic positives; 850 distractors from the previous corpus are reused. All 30 topic/query pairs are new after final catalogue freeze. Synthetic, internally authored."
+    },
+    {
+      "Name": "fresh_v2_11",
+      "Split": "fresh_v2_after_freeze",
+      "Query": "Что у меня по налогу на профессиональный доход?",
+      "Relevant": [
+        51,
+        52,
+        53,
+        54,
+        55
+      ],
+      "Rationale": "Five exhaustive topic positives; 850 distractors from the previous corpus are reused. All 30 topic/query pairs are new after final catalogue freeze. Synthetic, internally authored."
+    },
+    {
+      "Name": "fresh_v2_12",
+      "Split": "fresh_v2_after_freeze",
+      "Query": "Найди передачу расхода электричества",
+      "Relevant": [
+        56,
+        57,
+        58,
+        59,
+        60
+      ],
+      "Rationale": "Five exhaustive topic positives; 850 distractors from the previous corpus are reused. All 30 topic/query pairs are new after final catalogue freeze. Synthetic, internally authored."
+    },
+    {
+      "Name": "fresh_v2_13",
+      "Split": "fresh_v2_after_freeze",
+      "Query": "Где покупка места на самолет?",
+      "Relevant": [
+        61,
+        62,
+        63,
+        64,
+        65
+      ],
+      "Rationale": "Five exhaustive topic positives; 850 distractors from the previous corpus are reused. All 30 topic/query pairs are new after final catalogue freeze. Synthetic, internally authored."
+    },
+    {
+      "Name": "fresh_v2_14",
+      "Split": "fresh_v2_after_freeze",
+      "Query": "Найди обращение к работодателю в дополнение к резюме",
+      "Relevant": [
+        66,
+        67,
+        68,
+        69,
+        70
+      ],
+      "Rationale": "Five exhaustive topic positives; 850 distractors from the previous corpus are reused. All 30 topic/query pairs are new after final catalogue freeze. Synthetic, internally authored."
+    },
+    {
+      "Name": "fresh_v2_15",
+      "Split": "fresh_v2_after_freeze",
+      "Query": "Какие дела с проверкой сервиса под большим числом запросов?",
+      "Relevant": [
+        71,
+        72,
+        73,
+        74,
+        75
+      ],
+      "Rationale": "Five exhaustive topic positives; 850 distractors from the previous corpus are reused. All 30 topic/query pairs are new after final catalogue freeze. Synthetic, internally authored."
+    },
+    {
+      "Name": "fresh_v2_16",
+      "Split": "fresh_v2_after_freeze",
+      "Query": "Найди возврат доступа после потери секретной фразы для входа",
+      "Relevant": [
+        76,
+        77,
+        78,
+        79,
+        80
+      ],
+      "Rationale": "Five exhaustive topic positives; 850 distractors from the previous corpus are reused. All 30 topic/query pairs are new after final catalogue freeze. Synthetic, internally authored."
+    },
+    {
+      "Name": "fresh_v2_17",
+      "Split": "fresh_v2_after_freeze",
+      "Query": "Где очистка и архивирование старых журналов сервера?",
+      "Relevant": [
+        81,
+        82,
+        83,
+        84,
+        85
+      ],
+      "Rationale": "Five exhaustive topic positives; 850 distractors from the previous corpus are reused. All 30 topic/query pairs are new after final catalogue freeze. Synthetic, internally authored."
+    },
+    {
+      "Name": "fresh_v2_18",
+      "Split": "fresh_v2_after_freeze",
+      "Query": "Что у меня по разбиению большой работы на небольшие части?",
+      "Relevant": [
+        86,
+        87,
+        88,
+        89,
+        90
+      ],
+      "Rationale": "Five exhaustive topic positives; 850 distractors from the previous corpus are reused. All 30 topic/query pairs are new after final catalogue freeze. Synthetic, internally authored."
+    },
+    {
+      "Name": "fresh_v2_19",
+      "Split": "fresh_v2_after_freeze",
+      "Query": "Найди выплату денежной поддержки студенту",
+      "Relevant": [
+        91,
+        92,
+        93,
+        94,
+        95
+      ],
+      "Rationale": "Five exhaustive topic positives; 850 distractors from the previous corpus are reused. All 30 topic/query pairs are new after final catalogue freeze. Synthetic, internally authored."
+    },
+    {
+      "Name": "fresh_v2_20",
+      "Split": "fresh_v2_after_freeze",
+      "Query": "Где обследование грудной клетки рентгеном?",
+      "Relevant": [
+        96,
+        97,
+        98,
+        99,
+        100
+      ],
+      "Rationale": "Five exhaustive topic positives; 850 distractors from the previous corpus are reused. All 30 topic/query pairs are new after final catalogue freeze. Synthetic, internally authored."
+    },
+    {
+      "Name": "fresh_v2_21",
+      "Split": "fresh_v2_after_freeze",
+      "Query": "Найди документ о праве действовать от чужого имени",
+      "Relevant": [
+        101,
+        102,
+        103,
+        104,
+        105
+      ],
+      "Rationale": "Five exhaustive topic positives; 850 distractors from the previous corpus are reused. All 30 topic/query pairs are new after final catalogue freeze. Synthetic, internally authored."
+    },
+    {
+      "Name": "fresh_v2_22",
+      "Split": "fresh_v2_after_freeze",
+      "Query": "Что запланировано по передаче покупки обратно продавцу?",
+      "Relevant": [
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "Rationale": "Five exhaustive topic positives; 850 distractors from the previous corpus are reused. All 30 topic/query pairs are new after final catalogue freeze. Synthetic, internally authored."
+    },
+    {
+      "Name": "fresh_v2_23",
+      "Split": "fresh_v2_after_freeze",
+      "Query": "Где обновление разрешения на долгосрочное проживание иностранца?",
+      "Relevant": [
+        111,
+        112,
+        113,
+        114,
+        115
+      ],
+      "Rationale": "Five exhaustive topic positives; 850 distractors from the previous corpus are reused. All 30 topic/query pairs are new after final catalogue freeze. Synthetic, internally authored."
+    },
+    {
+      "Name": "fresh_v2_24",
+      "Split": "fresh_v2_after_freeze",
+      "Query": "Найди документ о появлении ребенка на свет",
+      "Relevant": [
+        116,
+        117,
+        118,
+        119,
+        120
+      ],
+      "Rationale": "Five exhaustive topic positives; 850 distractors from the previous corpus are reused. All 30 topic/query pairs are new after final catalogue freeze. Synthetic, internally authored."
+    },
+    {
+      "Name": "fresh_v2_25",
+      "Split": "fresh_v2_after_freeze",
+      "Query": "Где оценка нового сотрудника в первые месяцы работы?",
+      "Relevant": [
+        121,
+        122,
+        123,
+        124,
+        125
+      ],
+      "Rationale": "Five exhaustive topic positives; 850 distractors from the previous corpus are reused. All 30 topic/query pairs are new after final catalogue freeze. Synthetic, internally authored."
+    },
+    {
+      "Name": "fresh_v2_26",
+      "Split": "fresh_v2_after_freeze",
+      "Query": "Найди оплату регулярных занятий плаванием",
+      "Relevant": [
+        126,
+        127,
+        128,
+        129,
+        130
+      ],
+      "Rationale": "Five exhaustive topic positives; 850 distractors from the previous corpus are reused. All 30 topic/query pairs are new after final catalogue freeze. Synthetic, internally authored."
+    },
+    {
+      "Name": "fresh_v2_27",
+      "Split": "fresh_v2_after_freeze",
+      "Query": "Что у меня по починке ботинок?",
+      "Relevant": [
+        131,
+        132,
+        133,
+        134,
+        135
+      ],
+      "Rationale": "Five exhaustive topic positives; 850 distractors from the previous corpus are reused. All 30 topic/query pairs are new after final catalogue freeze. Synthetic, internally authored."
+    },
+    {
+      "Name": "fresh_v2_28",
+      "Split": "fresh_v2_after_freeze",
+      "Query": "Где организация праздничного застолья к круглой дате?",
+      "Relevant": [
+        136,
+        137,
+        138,
+        139,
+        140
+      ],
+      "Rationale": "Five exhaustive topic positives; 850 distractors from the previous corpus are reused. All 30 topic/query pairs are new after final catalogue freeze. Synthetic, internally authored."
+    },
+    {
+      "Name": "fresh_v2_29",
+      "Split": "fresh_v2_after_freeze",
+      "Query": "Найди аренду места для временного размещения домашнего имущества",
+      "Relevant": [
+        141,
+        142,
+        143,
+        144,
+        145
+      ],
+      "Rationale": "Five exhaustive topic positives; 850 distractors from the previous corpus are reused. All 30 topic/query pairs are new after final catalogue freeze. Synthetic, internally authored."
+    },
+    {
+      "Name": "fresh_v2_30",
+      "Split": "fresh_v2_after_freeze",
+      "Query": "Где сравнение поведения групп пользователей по времени регистрации?",
+      "Relevant": [
+        146,
+        147,
+        148,
+        149,
+        150
+      ],
+      "Rationale": "Five exhaustive topic positives; 850 distractors from the previous corpus are reused. All 30 topic/query pairs are new after final catalogue freeze. Synthetic, internally authored."
+    }
+  ]
+}

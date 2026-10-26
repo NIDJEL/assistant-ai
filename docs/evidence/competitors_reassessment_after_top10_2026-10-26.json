@@ -1,0 +1,252 @@
+{
+  "type": "expert ordinal assessment, not benchmark accuracy",
+  "criteria": [
+    [
+      "Multi-Action",
+      [
+        4,
+        4,
+        0,
+        2
+      ]
+    ],
+    [
+      "Защита от сбоев",
+      [
+        4,
+        5,
+        3,
+        2
+      ]
+    ],
+    [
+      "Приглашения",
+      [
+        4,
+        0,
+        0,
+        0
+      ]
+    ],
+    [
+      "Серии встреч",
+      [
+        0,
+        5,
+        0,
+        3
+      ]
+    ],
+    [
+      "Поиск истории",
+      [
+        3,
+        4,
+        2,
+        3
+      ]
+    ],
+    [
+      "Календари / Zoom",
+      [
+        4,
+        3,
+        0,
+        0
+      ]
+    ]
+  ],
+  "rows": [
+    {
+      "project": "Гена",
+      "criterion": "Multi-Action",
+      "grade": 4
+    },
+    {
+      "project": "xm1k",
+      "criterion": "Multi-Action",
+      "grade": 4
+    },
+    {
+      "project": "TRIADA",
+      "criterion": "Multi-Action",
+      "grade": 0
+    },
+    {
+      "project": "ryzhilx",
+      "criterion": "Multi-Action",
+      "grade": 2
+    },
+    {
+      "project": "Гена",
+      "criterion": "Защита от сбоев",
+      "grade": 4
+    },
+    {
+      "project": "xm1k",
+      "criterion": "Защита от сбоев",
+      "grade": 5
+    },
+    {
+      "project": "TRIADA",
+      "criterion": "Защита от сбоев",
+      "grade": 3
+    },
+    {
+      "project": "ryzhilx",
+      "criterion": "Защита от сбоев",
+      "grade": 2
+    },
+    {
+      "project": "Гена",
+      "criterion": "Приглашения",
+      "grade": 4
+    },
+    {
+      "project": "xm1k",
+      "criterion": "Приглашения",
+      "grade": 0
+    },
+    {
+      "project": "TRIADA",
+      "criterion": "Приглашения",
+      "grade": 0
+    },
+    {
+      "project": "ryzhilx",
+      "criterion": "Приглашения",
+      "grade": 0
+    },
+    {
+      "project": "Гена",
+      "criterion": "Серии встреч",
+      "grade": 0
+    },
+    {
+      "project": "xm1k",
+      "criterion": "Серии встреч",
+      "grade": 5
+    },
+    {
+      "project": "TRIADA",
+      "criterion": "Серии встреч",
+      "grade": 0
+    },
+    {
+      "project": "ryzhilx",
+      "criterion": "Серии встреч",
+      "grade": 3
+    },
+    {
+      "project": "Гена",
+      "criterion": "Поиск истории",
+      "grade": 3
+    },
+    {
+      "project": "xm1k",
+      "criterion": "Поиск истории",
+      "grade": 4
+    },
+    {
+      "project": "TRIADA",
+      "criterion": "Поиск истории",
+      "grade": 2
+    },
+    {
+      "project": "ryzhilx",
+      "criterion": "Поиск истории",
+      "grade": 3
+    },
+    {
+      "project": "Гена",
+      "criterion": "Календари / Zoom",
+      "grade": 4
+    },
+    {
+      "project": "xm1k",
+      "criterion": "Календари / Zoom",
+      "grade": 3
+    },
+    {
+      "project": "TRIADA",
+      "criterion": "Календари / Zoom",
+      "grade": 0
+    },
+    {
+      "project": "ryzhilx",
+      "criterion": "Календари / Zoom",
+      "grade": 0
+    }
+  ],
+  "placement": [
+    {
+      "rank": "1–2",
+      "project": "Гена",
+      "reason": "Широкий продуктовый контур, durable Multi-Action и личные повторы; локальная версия, embeddings недоступны."
+    },
+    {
+      "rank": "1–2",
+      "project": "xm1k",
+      "reason": "Сильнейшая архитектура сбоев/заданий, серии встреч и подключённый RAG; общий live-замер отсутствует."
+    },
+    {
+      "rank": "3",
+      "project": "TRIADA",
+      "reason": "Связанный одиночный ассистент и durable-контекст; Multi-Action не подтверждён."
+    },
+    {
+      "rank": "4–5",
+      "project": "ryzhilx",
+      "reason": "Tool calls, Telegram и повторы задач/встреч; нет durable pending-плана и общей атомарности."
+    },
+    {
+      "rank": "4–5",
+      "project": "Margaryan22",
+      "reason": "Хорошие FSM/транзакции/контекст; rule NLU и одиночная команда ограничивают сценарии."
+    },
+    {
+      "rank": "6",
+      "project": "ArtemST2006",
+      "reason": "Go/Python, Redis-уточнения; одиночный контракт, ILIKE-поиск и drift OpenAPI."
+    },
+    {
+      "rank": "7",
+      "project": "Britnispirs",
+      "reason": "Базовый web-сценарий и FTS5; context в памяти, ICS экспорт не равен синхронизации."
+    },
+    {
+      "rank": "8",
+      "project": "Svoloch2940194",
+      "reason": "Соединённый Telegram/SQLite сценарий; воспроизведена ошибка вечернего времени."
+    },
+    {
+      "rank": "9",
+      "project": "Agend AI",
+      "reason": "Интерфейс и создание реализованы; остальные основные intents не завершены."
+    },
+    {
+      "rank": "10",
+      "project": "Lefiper",
+      "reason": "Сильные storage/transport компоненты; сквозной LLM agent не реализован."
+    },
+    {
+      "rank": "11",
+      "project": "anastbezu",
+      "reason": "Реальные БД/сервисы, но полноценное исполнение LLM actions не подключено."
+    },
+    {
+      "rank": "12",
+      "project": "Neyromark",
+      "reason": "Модули STT/LLM существуют отдельно; поиск и уведомления не завершены."
+    }
+  ],
+  "caveats": [
+    "Баллы отражают экспертную оценку глубины подключённой реализации, а не точность NLU, долю успешных запросов или вероятность победы. Общий балл не рассчитывается.",
+    "0 означает отсутствие подтверждённого подключённого пути в рассмотренном коде. Скрытые ветки и частные развёртывания не оценивались.",
+    "Гена оценена по локальной рабочей копии после TOP-10. Изменения ещё не опубликованы. У конкурентов проверены публичные default-ветки.",
+    "У xm1k neural retrieval прослежен в исходниках; его качество на одинаковом с Геной live-корпусе не измерялось. У Гены embeddings-провайдер возвращает HTTP 402.",
+    "Live-корпус Гены — 10 разработочных сценариев, не независимый тест общей точности. У конкурентов сохранены прежние результаты тестов на неизменных SHA."
+  ],
+  "source": "competitors_refresh_after_top10_2026-10-26.json",
+  "evidenceFilesVerified": 69
+}

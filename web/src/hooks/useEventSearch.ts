@@ -11,7 +11,7 @@ export function useEventSearch(query: string) {
   useEffect(() => {
     if (!debounced) { setError(''); setLoading(false); return; }
     const controller = new AbortController(); setLoading(true); setError('');
-    listEvents({ q: debounced }, controller.signal).then(items => { if (!controller.signal.aborted) { setResult(items); setResolvedQuery(debounced); } }).catch(e => { if (!controller.signal.aborted) setError(errorMessage(e)); }).finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    listEvents({ q: debounced }, controller.signal, status => { if (!controller.signal.aborted && status?.warning) setError(status.warning); }).then(items => { if (!controller.signal.aborted) { setResult(items); setResolvedQuery(debounced); } }).catch(e => { if (!controller.signal.aborted) setError(errorMessage(e)); }).finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => controller.abort();
   }, [debounced, revision]);
   const current = new Map(events.map(event => [event.id, event]));

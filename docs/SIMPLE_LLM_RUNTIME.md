@@ -2,7 +2,9 @@
 
 [← Документация](README.md)
 
-`text/voice → compact context → GigaChat-3-Ultra → intent + arguments → Go validation/calendar/target resolution → assistant.Service → repository`.
+`text/voice → compact context → GigaChat-3-Ultra → operation / multi_action → Go validation/calendar/target resolution → assistant.Service → repository`.
+
+Несколько команд, зависимости, отдельные pending и продолжения поддерживаются контрактом [Multi-Action](MULTI_ACTION.md). Одиночный envelope сохранён. Неоднозначные «в 8» требуют уточнения части суток.
 
 Полный режим использует `GENA_NLU_MODE=simple_llm`, `GENA_SEMANTIC_PROVIDER=gigachat` и `GIGACHAT_AUTHORIZATION_KEY`. GigaChat — единственный внешний текстовый провайдер. При необходимости задаётся проверенный CA bundle. [Запуск одной командой](QUICKSTART.md).
 
@@ -14,7 +16,7 @@
 
 Модель понимает фразу, отрицания, corrections, refinements, references и фильтры. Go принимает строгий JSON и проверяет конкретный тип аргументов; неизвестные поля отклоняются рекурсивно. Модель не получает DB IDs и не может прислать `id`/`target_id` вместо ссылки.
 
-Новый путь не вызывает `SemanticPlan`, canonicalizer, evidence, source/reverse coverage, lexical provenance или legacy Russian command parser. В GigaChat отправляются system prompt и один JSON с текущим текстом и компактным контекстом. Ответ строго декодируется в Go. У GigaChat в этом пути нет огромной schema и нет второго вызова для обычного ответа после исполнения. Некорректный ответ модели приводит к уточнению без изменения данных.
+Новый путь не вызывает `SemanticPlan`, canonicalizer, evidence, source/reverse coverage, lexical provenance или legacy Russian command parser. В GigaChat отправляются system prompt и один JSON с текущим текстом и компактным контекстом. Ответ строго декодируется в Go. Для невалидного ответа либо ошибки Go-валидации допускается один ограниченный repair до commit. После неудачного repair запрашивается уточнение без изменения данных; обычный ответ после исполнения формирует Go.
 
 Общий исполнитель выделен в `executeValidated`: он получает Go-команду без исходного текста пользователя. Legacy вход `execute` по-прежнему обслуживает старые тесты и явно выбранный legacy mode.
 
@@ -93,6 +95,8 @@ go run ./cmd/simple-smoke -mode live -output artifacts/simple_llm_smoke_live.jso
 go run ./cmd/simple-smoke -interactive -output artifacts/simple_llm_manual.json
 ```
 
-`simple-smoke` использует только временные пустые SQLite-базы, удаляет их после завершения и никогда не открывает `DATABASE_URL`/`DATABASE_PATH` приложения. Live mode читает конфигурацию только для GigaChat. Интерактивный режим начинает пустую сессию, сохраняет transcript; `/quit` завершает диалог. Учётная запись GigaChat может ограничивать concurrency, поэтому эти команды запускаются последовательно.
+По умолчанию `simple-smoke` использует временные пустые SQLite-базы. `-postgres` создаёт отдельную временную схему и пользователя в локальном `TEST_DATABASE_URL`, имя БД должно содержать `semantic_test`; схема удаляется после прогона. Этот режим проверяет production-путь совместного планирования. `DATABASE_URL`/`DATABASE_PATH` приложения не используются. Live mode читает конфигурацию GigaChat. Интерактивный режим начинает пустую сессию, сохраняет transcript; `/quit` завершает диалог.
+
+В runtime добавлены bounded repair, откатываемый preflight, повторы, атомарные группы, управление шагами и внешние статусы. Пределы, конфигурация и результаты fixture/live проверок описаны в [TOP-10](TOP10_IMPLEMENTATION.md).
 
 Корпус `testdata/simple_llm/smoke.json` содержит небольшие диалоговые сценарии; `deadlines.json` проверяет формулировки дедлайнов. Fixture mode проверяет исполнитель, live mode — реальную модель и исполнитель вместе. Старые semantic-корпуса и их отчёты относятся к legacy-контракту и не измеряют качество этого runtime.

@@ -62,6 +62,17 @@ func (t Temporal) Resolve(now time.Time) (start, end *domain.Date, exact *time.T
 			break
 		}
 		start, err = domain.ParseDate(t.Date)
+	case "absolute_time":
+		if t.Offset != 0 || t.Value != 0 || t.Unit != "" || t.Weekday != "" || t.Direction != "" {
+			err = errTemporal
+			break
+		}
+		var instant time.Time
+		instant, err = time.Parse(time.RFC3339Nano, t.Date)
+		if err == nil {
+			instant = instant.In(now.Location())
+			start, exact = domain.Day(instant), &instant
+		}
 	case "date_range":
 		if t.Offset != 0 || t.Value != 0 || t.Unit != "" || t.Weekday != "" || t.Direction != "" {
 			err = errTemporal

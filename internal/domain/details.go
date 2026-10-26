@@ -15,6 +15,9 @@ type Subtask struct {
 
 // Optional personal event metadata. Empty fields preserve the existing JSON contract.
 type EventDetails struct {
+	SeriesDeleted         bool          `json:"series_deleted,omitempty"`
+	SeriesID              *int64        `json:"series_id,omitempty"`
+	RecurrenceID          *time.Time    `json:"recurrence_id,omitempty"`
 	GoogleTransparent     bool          `json:"google_transparent,omitempty"`
 	GoogleAllDayDays      int           `json:"google_all_day_days,omitempty"`
 	GoogleDurationSeconds int64         `json:"google_duration_seconds,omitempty"`
@@ -34,6 +37,12 @@ type EventDetails struct {
 }
 
 func (d EventDetails) Validate() error {
+	if d.SeriesDeleted && d.SeriesID == nil {
+		return errors.New("Некорректная отметка удаления серии")
+	}
+	if (d.SeriesID == nil) != (d.RecurrenceID == nil) || d.SeriesID != nil && (*d.SeriesID <= 0 || d.RecurrenceID.IsZero() || d.Recurrence != nil) {
+		return errors.New("Некорректная связь отдельного повторения с серией")
+	}
 	if d.GoogleAllDayDays < 0 || d.GoogleAllDayDays > 36600 || d.GoogleDurationSeconds < 0 || d.GoogleDurationSeconds > 315360000 {
 		return errors.New("Некорректная длительность внешнего события")
 	}

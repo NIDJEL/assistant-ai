@@ -15,5 +15,7 @@ export function recurrenceLabel(rule?: Recurrence | null): string {
   }
   if (f === 'month') text = `${rule.day_of_month} числа ${n === 1 ? 'каждого месяца' : `каждые ${n} мес`}`;
   if (f === 'year') text = `${n === 1 ? 'Каждый год' : `Каждые ${n} лет`} ${rule.day_of_month}.${String(rule.month).padStart(2, '0')}`;
-  return text + (rule.local_time ? `, ${rule.local_time}` : '');
+  return text + (rule.local_time ? `, ${rule.local_time}` : '')
+    + (rule.count ? `, всего ${rule.count}` : '')
+    + (rule.until ? `, до ${rule.until.split('-').reverse().join('.')} включительно` : '');
 }

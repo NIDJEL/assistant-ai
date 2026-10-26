@@ -1,0 +1,121 @@
+{
+  "created_at": "2026-10-26T08:30:40.393833+00:00",
+  "scope": "Local working tree; no deployment, push, competitor rerun or model download. Ratings are not inflated to meet a requested number.",
+  "linux_race": {
+    "command": "go test -race -count=1 -json ./...",
+    "image": "golang:1.27.2-bookworm",
+    "postgres": "postgres:17.6-alpine, disposable loopback test database",
+    "exit_code": 0,
+    "counts": {
+      "package_skip": 22,
+      "test_pass": 1384,
+      "package_pass": 21,
+      "test_skip": 10
+    },
+    "race_reports": 0,
+    "failures": [],
+    "skipped_tests": [
+      "TestGigaChatIntegration",
+      "TestAssignmentLiveFreeSpeech",
+      "TestGigaChatRecordedMandatoryExecutor",
+      "TestGigaChatRecordedReadOnlyCannotMutate",
+      "TestMeetingPeopleLiveZoomDialogue",
+      "TestMultiActionLivePostgres",
+      "TestMultiActionAmbiguousLivePostgres",
+      "TestMultiActionDependencyLivePostgres",
+      "TestAssignmentLiveTypedContextReference",
+      "TestAssignmentLiveVoiceTimeContinuation"
+    ],
+    "log_sha256": "6f3bc5ca098021a5406d0b2fa3c5746fbb9b6897ef730fa0d838421b26756581"
+  },
+  "frontend": {
+    "tests_passed": 226,
+    "files_passed": 29,
+    "production_build": "passed",
+    "chromium_passed": 2,
+    "scenarios": [
+      "calendar future series occurrence edit persists only one change",
+      "Multi-Action mobile 320/390px and keyboard controls"
+    ]
+  },
+  "live_top10": {
+    "Scenarios": 10,
+    "Passed": 10,
+    "Turns": 16,
+    "LLMCalls": 14,
+    "P50MS": 1446.441,
+    "P95MS": 3265.028,
+    "Repairs": 0
+  },
+  "live_retrieval": {
+    "status": "complete",
+    "model": "GigaChat-3-Ultra/search-v2",
+    "records": 1000,
+    "summary": {
+      "fresh_v2_after_freeze/cloud": {
+        "Count": 30,
+        "Recall10": 0.6,
+        "MRR": 0.8666666666666667,
+        "Success10": 0.8666666666666667,
+        "P50MS": 1988.499,
+        "P95MS": 2792.264
+      },
+      "fresh_v2_after_freeze/lexical": {
+        "Count": 30,
+        "Recall10": 0,
+        "MRR": 0,
+        "Success10": 0,
+        "P50MS": 42.987,
+        "P95MS": 78.942
+      }
+    },
+    "search_calls": 57,
+    "runtime_still_matches_pre_evaluation_freeze": {
+      "internal/search/cloud.go": true,
+      "internal/llm/cloud_search.go": true,
+      "internal/search/hybrid.go": true,
+      "internal/search/engine.go": true
+    },
+    "dataset_sha256": "bad39ab7d2862d8d67ed94cfba2a3607e147b0804f03a49d506923c07d1bf475",
+    "qrels_sha256": "4a816c4c1ab1902e2036910d324f6d9cdf73b73dd1263672eed932bd563270c1",
+    "limitations": "Internally authored synthetic data. 30 new positive topics with five positives each; 850 distractors reused. Not a blinded external benchmark; four misses remain."
+  },
+  "recovery": {
+    "pre_commit_process_exit": "rollback verified",
+    "post_commit_process_exit": "durable request replay verified, no duplicated events/history",
+    "worker_exit_after_gateway_acceptance": "pending delivery remains retryable with the same notification_id; at-least-once semantics",
+    "finite_series_last_notification": "actual sender called successfully after automatic completion"
+  },
+  "verification": {
+    "go_vet": "passed",
+    "git_diff_check": "passed",
+    "production_build": "passed"
+  },
+  "not_yet_five": [
+    "4/30 fresh semantic queries missed",
+    "series invitations and per-participant occurrence exceptions",
+    "native external calendar series with bidirectional exceptions",
+    "whole-rule rescheduling after detached exceptions",
+    "all dialogue filters over future series instances",
+    "live external integrations and physical-device voice; shared competitor benchmark"
+  ],
+  "source_sha256": {
+    "internal/search/cloud.go": "da17684a514dac976cb258f4dadcd4f266503073401b1819a0823a9cfd54db9a",
+    "internal/search/cloud_test.go": "8f12f04813b5caf5a9637bc1a458f625742ad6e4243e2e2e02d4371a45379c23",
+    "internal/llm/cloud_search.go": "811e336655d4e103650b62f3c2fb61b86e3d92291fcce9ea9cf2ce149184f31d",
+    "internal/llm/cloud_search_test.go": "2bea348be7adf3c4deaf414d5d3bc2a233498f0b799fb8777ca530528eabb87c",
+    "internal/assistant/search.go": "b597402eae2591636396efd32d496c3d926a747993a38d33732e1ae180f6b838",
+    "internal/assistant/search_test.go": "b0d87c8cfc97fb2dc4e7c0396df822abc9898172e969526785aadcaa69a623f3",
+    "internal/assistant/preflight.go": "22230595463ec574579b373b6b4bfbb529db4baee9950c1b9c1bd7b26eac53aa",
+    "internal/nlu/multi.go": "4292b9d8f8a0459d8631e2d0e1225787d4ffe40821cb9adf3c88de0a2005b7dc",
+    "internal/domain/series.go": "f3495998038e8913d1d15d857075fcb32e948b53137fa7154d8e648cd79b17c4",
+    "internal/domain/elapsed_range.go": "6cf2f8d9aec0476933626dae3aea8389d53e807f1ec2fb2d9007b889094c10f6",
+    "internal/calendar/occurrence.go": "feb6cc0ca22a380b06c6b7cd44500bb6ca22b3930d321bb7f8b6bb79d6189e75",
+    "internal/calendar/series_list.go": "3da75637cacaee815fc382a0f10b8d4dd62e05561329cd8fc886da95bd82b519",
+    "internal/repository/series.go": "0135666de11fb469a9a806e62d827e23a7e339fe7c66bee95ba0bceec341d963",
+    "tests/contract/crash_recovery_postgres_test.go": "888f0ebab26c3d62c7c27daf60310bc8e4f08248837ac5f14a8f05fd22442dd5",
+    "tests/contract/meeting_series_postgres_test.go": "ded5bf40c37bfba1c782eecb7f63681f6195c817617d1a9cd683da8ad2af5236",
+    "web/src/hooks/useCalendarEvents.ts": "fd7a735d392b68b9515f8dc400c93236e18e38069aabee051ae6590f190d63e8",
+    "web/e2e/meeting-series.spec.ts": "88e05c41910e5f1ae405874a0371f5d344b882e1dcff80eb09bb39dabc364a2e"
+  }
+}

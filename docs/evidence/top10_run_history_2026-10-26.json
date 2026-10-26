@@ -1,0 +1,635 @@
+[
+  {
+    "Source": {
+      "Commit": "22ff6627ac61cf087ee4105d1aa12dead23182cf",
+      "GoTreeSHA256": "41e8e9f9b374a57a00a182817f60130fbd7983e1df5b8cd1026a8e58fcfad735",
+      "Dirty": true
+    },
+    "CorpusSHA256": "4360a5cb54d26b5d438a9e4f3d2470c1e72f0eba08ea0ad04290c7efe0393a94",
+    "CreatedAt": "2026-10-26T06:15:11Z",
+    "Scenarios": 10,
+    "Passed": 3,
+    "Turns": 16,
+    "LLMCalls": 22,
+    "P50MS": 1683.841,
+    "P95MS": 3417.107,
+    "LocalLog": "top10_live.json",
+    "Store": "SQLite (no social repository)",
+    "Failures": [
+      {
+        "Scenario": "01 mandatory explicit triple",
+        "Message": "Создай встречу с Колей сегодня в 20:00, задачу купить продукты и напомни позвонить маме сегодня в 10:00",
+        "Error": null,
+        "Checks": [
+          "pending mismatch",
+          "operation 1 status want done",
+          "database count mismatch",
+          "record mismatch: "
+        ],
+        "Operation": {
+          "intent": "multi_action",
+          "arguments": {
+            "steps": [
+              {
+                "key": "a",
+                "source": "Создай встречу с Колей сегодня в 20:00",
+                "operation": {
+                  "intent": "create_meeting",
+                  "arguments": {
+                    "title": "Встреча с Колей",
+                    "friends": [
+                      "Коля"
+                    ],
+                    "date": {
+                      "type": "relative_day",
+                      "offset": 0
+                    },
+                    "time": "20:00"
+                  },
+                  "confidence": "high",
+                  "clarification": null
+                }
+              },
+              {
+                "key": "b",
+                "source": "задачу купить продукты",
+                "operation": {
+                  "intent": "create_task",
+                  "arguments": {
+                    "title": "Купить продукты"
+                  },
+                  "confidence": "high",
+                  "clarification": null
+                }
+              },
+              {
+                "key": "c",
+                "source": "напомни позвонить маме сегодня в 10:00",
+                "operation": {
+                  "intent": "create_reminder",
+                  "arguments": {
+                    "title": "Позвонить маме",
+                    "date": {
+                      "type": "relative_day",
+                      "offset": 0
+                    },
+                    "time": "10:00"
+                  },
+                  "confidence": "high",
+                  "clarification": null
+                }
+              }
+            ]
+          },
+          "confidence": "high",
+          "clarification": null
+        }
+      },
+      {
+        "Scenario": "02 mandatory original screenshot",
+        "Message": "Создай встречу с Колей в 8, добавь задачу купить продукты и напомни позвонить маме в 10",
+        "Error": null,
+        "Checks": [
+          "operation 1 status want waiting"
+        ],
+        "Operation": {
+          "intent": "multi_action",
+          "arguments": {
+            "steps": [
+              {
+                "key": "a",
+                "source": "Создай встречу с Колей в 8",
+                "operation": {
+                  "intent": "create_meeting",
+                  "arguments": {
+                    "title": "Встреча с Колей",
+                    "friends": [
+                      "Коля"
+                    ],
+                    "time": "08:00"
+                  },
+                  "confidence": "high",
+                  "clarification": null
+                }
+              },
+              {
+                "key": "b",
+                "source": "добавь задачу купить продукты",
+                "operation": {
+                  "intent": "create_task",
+                  "arguments": {
+                    "title": "Купить продукты"
+                  },
+                  "confidence": "high",
+                  "clarification": null
+                }
+              },
+              {
+                "key": "c",
+                "source": "напомни позвонить маме в 10",
+                "operation": {
+                  "intent": "create_reminder",
+                  "arguments": {
+                    "title": "Позвонить маме",
+                    "time": "10:00"
+                  },
+                  "confidence": "high",
+                  "clarification": null
+                }
+              }
+            ]
+          },
+          "confidence": "high",
+          "clarification": null
+        }
+      },
+      {
+        "Scenario": "02 mandatory original screenshot",
+        "Message": "Сегодня в 20:00",
+        "Error": null,
+        "Checks": [
+          "operation 1 status want done",
+          "operation 3 status want waiting"
+        ],
+        "Operation": {
+          "intent": "continue",
+          "arguments": {
+            "changes": {
+              "date": {
+                "type": "relative_day",
+                "offset": 0
+              },
+              "time": "20:00"
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        }
+      },
+      {
+        "Scenario": "02 mandatory original screenshot",
+        "Message": "Сегодня в 10:00",
+        "Error": null,
+        "Checks": [
+          "action want create",
+          "pending mismatch",
+          "operation 1 status want done",
+          "database count mismatch"
+        ],
+        "Operation": {
+          "intent": "continue",
+          "arguments": {
+            "changes": {
+              "date": {
+                "type": "relative_day",
+                "offset": 0
+              },
+              "time": "10:00"
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        }
+      },
+      {
+        "Scenario": "05 atomic preview then commit",
+        "Message": "Добавь задачи Отчёт и Смета только вместе, либо обе либо ни одной; независимо добавь Купить хлеб",
+        "Error": "json: unknown field \"atomic_group\"",
+        "Checks": [
+          "action want create",
+          "pending mismatch",
+          "operation omitted or added",
+          "database count mismatch"
+        ],
+        "Operation": {
+          "intent": "multi_action",
+          "arguments": {
+            "steps": [
+              {
+                "key": "a",
+                "source": "Добавь задачи Отчёт и Смета только вместе, либо обе либо ни одной",
+                "operation": {
+                  "intent": "create_task",
+                  "arguments": {
+                    "title": "Отчёт"
+                  },
+                  "confidence": "high",
+                  "clarification": null,
+                  "atomic_group": "g1"
+                }
+              },
+              {
+                "key": "b",
+                "source": "Добавь задачи Отчёт и Смета только вместе, либо обе либо ни одной",
+                "operation": {
+                  "intent": "create_task",
+                  "arguments": {
+                    "title": "Смета"
+                  },
+                  "confidence": "high",
+                  "clarification": null,
+                  "atomic_group": "g1"
+                }
+              },
+              {
+                "key": "c",
+                "source": "независимо добавь Купить хлеб",
+                "operation": {
+                  "intent": "create_task",
+                  "arguments": {
+                    "title": "Купить хлеб"
+                  },
+                  "confidence": "high",
+                  "clarification": null
+                }
+              }
+            ]
+          },
+          "confidence": "high",
+          "clarification": null
+        }
+      },
+      {
+        "Scenario": "05 atomic preview then commit",
+        "Message": "да",
+        "Error": null,
+        "Checks": [
+          "action want create",
+          "operation omitted or added",
+          "database count mismatch"
+        ],
+        "Operation": {
+          "intent": "confirm",
+          "arguments": {},
+          "confidence": "high",
+          "clarification": null
+        }
+      },
+      {
+        "Scenario": "06 atomic cancellation",
+        "Message": "Добавь Отчёт и Смета только вместе",
+        "Error": null,
+        "Checks": [
+          "action want clarify",
+          "pending mismatch",
+          "operation omitted or added",
+          "database count mismatch"
+        ],
+        "Operation": {
+          "intent": "create_task",
+          "arguments": {
+            "title": "Отчёт и Смета"
+          },
+          "confidence": "high",
+          "clarification": null
+        }
+      },
+      {
+        "Scenario": "06 atomic cancellation",
+        "Message": "отмена",
+        "Error": null,
+        "Checks": [
+          "operation omitted or added",
+          "database count mismatch"
+        ],
+        "Operation": {
+          "intent": "cancel",
+          "arguments": {},
+          "confidence": "high",
+          "clarification": null
+        }
+      },
+      {
+        "Scenario": "07 bounded daily recurrence",
+        "Message": "Напоминай принимать витамины ежедневно в 09:00 три раза",
+        "Error": "invalid_recurrence at arguments.recurrence",
+        "Checks": [
+          "action want create",
+          "event mismatch",
+          "database count mismatch"
+        ],
+        "Operation": {
+          "intent": "create_reminder",
+          "arguments": {
+            "title": "Принимать витамины",
+            "date": {
+              "type": "relative_day",
+              "offset": 0
+            },
+            "time": "09:00",
+            "recurrence": {
+              "frequency": "day",
+              "interval": 1,
+              "count": 3
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        }
+      },
+      {
+        "Scenario": "08 recurrence missing time is preserved",
+        "Message": "Напоминай делать зарядку по понедельникам три раза",
+        "Error": "invalid_recurrence at arguments.recurrence",
+        "Checks": [
+          "pending mismatch"
+        ],
+        "Operation": {
+          "intent": "create_reminder",
+          "arguments": {
+            "title": "Делать зарядку",
+            "date": {
+              "type": "weekday",
+              "weekday": "monday",
+              "direction": "next_or_current"
+            },
+            "recurrence": {
+              "frequency": "week",
+              "interval": 1,
+              "weekdays": [
+                "monday"
+              ],
+              "count": 3
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        }
+      },
+      {
+        "Scenario": "08 recurrence missing time is preserved",
+        "Message": "В 09:00",
+        "Error": null,
+        "Checks": [
+          "action want create",
+          "event mismatch",
+          "database count mismatch"
+        ],
+        "Operation": {
+          "intent": "continue",
+          "arguments": {
+            "changes": {
+              "time": "09:00"
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        }
+      },
+      {
+        "Scenario": "09 next occurrence keeps series",
+        "Message": "Напоминай принимать витамины ежедневно в 09:00 три раза",
+        "Error": "invalid_recurrence at arguments.recurrence",
+        "Checks": [
+          "action want create",
+          "database count mismatch"
+        ],
+        "Operation": {
+          "intent": "create_reminder",
+          "arguments": {
+            "title": "Принимать витамины",
+            "date": {
+              "type": "relative_day",
+              "offset": 0
+            },
+            "time": "09:00",
+            "recurrence": {
+              "frequency": "day",
+              "interval": 1,
+              "count": 3
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        }
+      },
+      {
+        "Scenario": "09 next occurrence keeps series",
+        "Message": "Только ближайший приём перенеси на 10:00",
+        "Error": null,
+        "Checks": [
+          "action want update",
+          "event mismatch",
+          "database count mismatch",
+          "record mismatch: "
+        ],
+        "Operation": {
+          "intent": "update",
+          "arguments": {
+            "target": {
+              "type": "query",
+              "value": "приём",
+              "filter": {
+                "kind": "meeting",
+                "status": "open"
+              }
+            },
+            "changes": {
+              "time": "10:00"
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        }
+      }
+    ]
+  },
+  {
+    "Source": {
+      "Commit": "22ff6627ac61cf087ee4105d1aa12dead23182cf",
+      "GoTreeSHA256": "17f0722833b7ad2cce9357ca41cc169040da4737a449a37565f637211939237c",
+      "Dirty": true
+    },
+    "CorpusSHA256": "2e19b861b4187eed3c43303da0b5488b147e2fa81274001e575b721fc606852e",
+    "CreatedAt": "2026-10-26T06:17:54Z",
+    "Scenarios": 10,
+    "Passed": 9,
+    "Turns": 16,
+    "LLMCalls": 14,
+    "P50MS": 1211.845,
+    "P95MS": 2396.705,
+    "LocalLog": "top10_live_postgres.json",
+    "Store": "disposable PostgreSQL",
+    "Failures": [
+      {
+        "Scenario": "09 next occurrence keeps series",
+        "Message": "Только ближайший приём перенеси на 10:00",
+        "Error": null,
+        "Checks": [
+          "database count mismatch",
+          "record mismatch: "
+        ],
+        "Operation": {
+          "intent": "update",
+          "arguments": {
+            "target": {
+              "type": "last"
+            },
+            "changes": {
+              "time": "10:00"
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        }
+      }
+    ]
+  },
+  {
+    "Source": {
+      "Commit": "22ff6627ac61cf087ee4105d1aa12dead23182cf",
+      "GoTreeSHA256": "5a915109957c66d51c2a7dfd03d1771aec7bae4c533f342c3e1786fb06d3c200",
+      "Dirty": true
+    },
+    "CorpusSHA256": "2e19b861b4187eed3c43303da0b5488b147e2fa81274001e575b721fc606852e",
+    "CreatedAt": "2026-10-26T06:20:11Z",
+    "Scenarios": 1,
+    "Passed": 1,
+    "Turns": 2,
+    "LLMCalls": 2,
+    "P50MS": 1165.109,
+    "P95MS": 1840.822,
+    "LocalLog": "top10_live_occurrence.json",
+    "Store": "disposable PostgreSQL",
+    "Failures": []
+  },
+  {
+    "Source": {
+      "Commit": "22ff6627ac61cf087ee4105d1aa12dead23182cf",
+      "GoTreeSHA256": "696ebd06977727faf83ff117b64bb0ac9e665c9699c5973a71063fb0f3b7857a",
+      "Dirty": true
+    },
+    "CorpusSHA256": "50b44b926fae61dcf1a548c9c48488823757a6cf70090038b16aeadd5ef269c7",
+    "CreatedAt": "2026-10-26T06:26:25Z",
+    "Scenarios": 10,
+    "Passed": 10,
+    "Turns": 16,
+    "LLMCalls": 14,
+    "P50MS": 1608.739,
+    "P95MS": 4177.109,
+    "LocalLog": "top10_live_final.json",
+    "Store": "disposable PostgreSQL",
+    "Failures": []
+  },
+  {
+    "Source": {
+      "Commit": "22ff6627ac61cf087ee4105d1aa12dead23182cf",
+      "GoTreeSHA256": "901781be95de80d436f43f00b06558d27a139787127ebe853089c44289f17b90",
+      "Dirty": true
+    },
+    "CorpusSHA256": "50b44b926fae61dcf1a548c9c48488823757a6cf70090038b16aeadd5ef269c7",
+    "CreatedAt": "2026-10-26T06:30:27Z",
+    "Scenarios": 10,
+    "Passed": 9,
+    "Turns": 16,
+    "LLMCalls": 15,
+    "P50MS": 1490.84,
+    "P95MS": 3997.737,
+    "LocalLog": "top10_live_verified.json",
+    "Store": "disposable PostgreSQL",
+    "Failures": [
+      {
+        "Scenario": "08 recurrence missing time is preserved",
+        "Message": "Напоминай делать зарядку по понедельникам три раза",
+        "Error": null,
+        "Checks": [
+          "action want clarify",
+          "pending mismatch",
+          "database count mismatch"
+        ],
+        "Operation": {
+          "intent": "create_reminder",
+          "arguments": {
+            "title": "Делать зарядку",
+            "recurrence": {
+              "frequency": "week",
+              "interval": 1,
+              "weekdays": [
+                "monday"
+              ],
+              "count": 3
+            },
+            "time": "09:00"
+          },
+          "confidence": "high",
+          "clarification": null
+        }
+      },
+      {
+        "Scenario": "08 recurrence missing time is preserved",
+        "Message": "В 09:00",
+        "Error": null,
+        "Checks": [
+          "action want create",
+          "event mismatch"
+        ],
+        "Operation": {
+          "intent": "continue",
+          "arguments": {
+            "changes": {
+              "time": "09:00"
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        }
+      }
+    ]
+  },
+  {
+    "Source": {
+      "Commit": "22ff6627ac61cf087ee4105d1aa12dead23182cf",
+      "GoTreeSHA256": "48e8cba622d0f221a22c8ce8dd05c6c962ebf6807f491edc21cdba25a7f4695a",
+      "Dirty": true
+    },
+    "CorpusSHA256": "50b44b926fae61dcf1a548c9c48488823757a6cf70090038b16aeadd5ef269c7",
+    "CreatedAt": "2026-10-26T06:34:02Z",
+    "Scenarios": 10,
+    "Passed": 9,
+    "Turns": 16,
+    "LLMCalls": 14,
+    "P50MS": 1195.059,
+    "P95MS": 21068.741,
+    "LocalLog": "top10_live_guarded.json",
+    "Store": "disposable PostgreSQL",
+    "Failures": [
+      {
+        "Scenario": "01 mandatory explicit triple",
+        "Message": "Создай встречу с Колей сегодня в 20:00, задачу купить продукты и напомни позвонить маме сегодня в 10:00",
+        "Error": "GigaChat transport failed",
+        "Checks": [
+          "action want create",
+          "operation omitted or added",
+          "database count mismatch",
+          "record mismatch: ",
+          "record mismatch: ",
+          "record mismatch: "
+        ],
+        "Operation": {
+          "intent": "",
+          "arguments": null,
+          "confidence": "",
+          "clarification": null
+        }
+      }
+    ]
+  },
+  {
+    "Source": {
+      "Commit": "22ff6627ac61cf087ee4105d1aa12dead23182cf",
+      "GoTreeSHA256": "48e8cba622d0f221a22c8ce8dd05c6c962ebf6807f491edc21cdba25a7f4695a",
+      "Dirty": true
+    },
+    "CorpusSHA256": "50b44b926fae61dcf1a548c9c48488823757a6cf70090038b16aeadd5ef269c7",
+    "CreatedAt": "2026-10-26T06:35:47Z",
+    "Scenarios": 10,
+    "Passed": 10,
+    "Turns": 16,
+    "LLMCalls": 14,
+    "P50MS": 1214.905,
+    "P95MS": 2557.375,
+    "LocalLog": "top10_live_releasecheck.json",
+    "Store": "disposable PostgreSQL",
+    "Failures": []
+  }
+]

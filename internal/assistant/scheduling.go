@@ -180,12 +180,16 @@ func socialContinuation(p *domain.Pending, op nlu.Operation, args any, now time.
 		q.Slots = nil
 	}
 	if changes.Time != nil {
+		c.TimeAmbiguous = false
 		q.SlotChosen = q.Preview
 		q.Selected = nil
 		q.Meetings = nil
 		c.Time = changes.Time
 		q.After = nil
 		q.Slots = nil
+	}
+	if changes.TimeAmbiguous {
+		c.Time, c.TimeAmbiguous = nil, true
 	}
 	if changes.DurationMinutes != nil {
 		c.DurationMinutes = changes.DurationMinutes
@@ -203,6 +207,12 @@ func socialContinuation(p *domain.Pending, op nlu.Operation, args any, now time.
 	}
 	if changes.ReminderEnabled != nil {
 		c.ReminderEnabled = changes.ReminderEnabled
+	}
+	if changes.Recurrence != nil {
+		c.Recurrence = changes.Recurrence
+	}
+	if changes.ClearRecurrence {
+		c.Recurrence = nil
 	}
 	original.Arguments, _ = json.Marshal(c)
 	return original, c, nil
@@ -247,6 +257,18 @@ func (s *Service) createSocialMeeting(ctx context.Context, tx repository.Tx, sta
 	c.Kind = domain.EventMeeting
 	if err = simpleDate(&c, a.Date, a.Time, now); err != nil {
 		return question("Уточните дату и время встречи.")
+	}
+	if a.Recurrence != nil {
+		c.Recurrence, err = a.Recurrence.Bind(now, c.Date, c.Time)
+		if err != nil {
+			return question("Уточните правило повторения.")
+		}
+		if err = resolveSimpleRecurrence(&c, now); err != nil {
+			return question(err.Error())
+		}
+		if !c.Recurrence.Bounded() {
+			return question("Сколько встреч создать или до какой даты повторять?")
+		}
 	}
 	var ids []string
 	if !q.Personal {
@@ -397,6 +419,11 @@ func (s *Service) createSocialMeeting(ctx context.Context, tx repository.Tx, sta
 	if c.Date == nil {
 		return question("В какой день назначить встречу?")
 	}
+	if a.TimeAmbiguous {
+		r, e := question("Укажите точное время встречи.")
+		state.Pending.RequiredSlot = "time"
+		return r, e
+	}
 	if c.Time == nil {
 		return question("Во сколько назначить встречу?")
 	}
@@ -487,6 +514,9 @@ func (s *Service) createSocialMeeting(ctx context.Context, tx repository.Tx, sta
 	c.ConferenceProvider = a.Conference
 	c.ReminderEnabled = a.ReminderEnabled
 	c.ReminderMinutes = a.ReminderMinutes
+	if c.Recurrence != nil && len(ids) > 0 {
+		return question("Повторяющуюся встречу можно сохранить в личном плане. Для приглашений создайте отдельную встречу.")
+	}
 	if len(ids) == 0 {
 		state.Pending = nil
 		r, e := s.executeValidated(ctx, tx, state, c, now, false)

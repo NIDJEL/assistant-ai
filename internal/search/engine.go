@@ -24,6 +24,8 @@ type lexicon struct {
 	Stop     []string          `json:"stop"`
 }
 type Engine struct {
+	cloud        *Cloud
+	hybrid       *Hybrid
 	dict         lexicon
 	stop         map[string]bool
 	conceptWords []string

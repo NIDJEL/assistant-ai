@@ -334,7 +334,7 @@ func TestPostgresSchedulingMoreCorrectionCancelAndTagAmbiguity(t *testing.T) {
 	if r.Scheduling == nil || r.Scheduling.Slots[0].Start.Before(last) {
 		t.Fatal(r)
 	}
-	r = h.say(h.a, "choose_time", `{"changes":{"date":{"type":"relative_day","offset":1},"time":"11:00"}}`, "Нет, лучше завтра в 11")
+	r = h.say(h.a, "choose_time", `{"changes":{"date":{"type":"relative_day","offset":1},"time":"11:00"}}`, "Нет, лучше завтра в 11:00")
 	if r.Pending || len(r.Events) != 1 || r.Events[0].StartTime.Hour != 11 || r.Events[0].Date.String() != domain.Day(h.now.AddDate(0, 0, 1)).String() {
 		t.Fatal(r)
 	}

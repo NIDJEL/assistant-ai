@@ -27,3 +27,9 @@ type Store interface {
 	Read(context.Context, func(Tx) error) error
 	Write(context.Context, func(Tx) error) error
 }
+
+// Checkpoint isolates a subset of a write transaction. Returning an error rolls
+// back its effects while leaving the surrounding transaction usable.
+type Checkpoint interface {
+	WithinSavepoint(context.Context, func() error) error
+}

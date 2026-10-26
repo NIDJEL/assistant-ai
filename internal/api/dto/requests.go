@@ -22,6 +22,9 @@ type Chat struct {
 
 func (c *Chat) Validate() error {
 	if c.Choice != nil {
+		if strings.HasPrefix(c.Choice.Action, "action_") && (len(c.Choice.Key) == 0 || len(c.Choice.Key) > 32 || c.Choice.Slot != nil || c.Choice.Index != 0) {
+			return domain.Validation("Некорректный выбор действия")
+		}
 		if _, err := uuid.Parse(c.Choice.Token); err != nil {
 			return domain.Validation("Некорректный выбор")
 		}
@@ -69,6 +72,9 @@ type Event struct {
 }
 
 func (d Event) Domain() (domain.Event, error) {
+	if d.SeriesID != nil || d.RecurrenceID != nil || d.SeriesDeleted {
+		return domain.Event{}, domain.Validation("Связь повторения с серией задаётся сервером")
+	}
 	duration := time.Hour
 	if d.DurationMinutes != nil {
 		if *d.DurationMinutes < 5 || *d.DurationMinutes > 1440 {
@@ -80,6 +86,7 @@ func (d Event) Domain() (domain.Event, error) {
 }
 
 type Patch struct {
+	OccurrenceAt    *time.Time            `json:"edit_occurrence_at"`
 	Recurrence      json.RawMessage       `json:"recurrence"`
 	Tags            *[]string             `json:"tags"`
 	Subtasks        *[]domain.Subtask     `json:"subtasks"`
@@ -100,6 +107,7 @@ type Patch struct {
 
 func (p Patch) Domain() (calendar.Patch, error) {
 	result := calendar.Patch{Tags: p.Tags, Subtasks: p.Subtasks, Participants: p.Participants, ReminderEnabled: p.ReminderEnabled, Title: p.Title, Description: p.Description, Location: p.Location, MeetingURL: p.MeetingURL, Status: p.Status, Priority: p.Priority, Force: p.Force}
+	result.OccurrenceAt = p.OccurrenceAt
 	result.ReminderMinutes = p.ReminderMinutes
 	if p.DurationMinutes != nil {
 		if *p.DurationMinutes < 5 || *p.DurationMinutes > 1440 {

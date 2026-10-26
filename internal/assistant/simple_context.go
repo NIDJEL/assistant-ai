@@ -2,6 +2,7 @@ package assistant
 
 import (
 	"context"
+	"encoding/json"
 	"time"
 
 	"github.com/NIDJEL/assistant-ai/internal/domain"
@@ -20,6 +21,7 @@ func operationName(c domain.Command) string {
 }
 func compactItem(e domain.Event, index int) nlu.Item {
 	v := nlu.Item{Index: index, Kind: e.Kind.String(), Title: bounded(e.Label(), 200), Status: e.Status.String()}
+	v.Recurrence = nlu.DisplayRecurrence(e.Recurrence)
 	if e.Date != nil {
 		v.Date = e.Date.String()
 	}
@@ -30,6 +32,18 @@ func compactItem(e domain.Event, index int) nlu.Item {
 }
 func buildSimpleContext(ctx context.Context, tx repository.Tx, state domain.State, now time.Time) (nlu.Context, error) {
 	d := nlu.Context{Now: now.Format(time.RFC3339), Timezone: now.Location().String()}
+	if plan := state.Actions; plan != nil {
+		d.ActiveAction = plan.Active
+		for _, step := range plan.Steps {
+			var op nlu.Operation
+			_ = json.Unmarshal(step.Operation, &op)
+			v := nlu.ActionContext{AtomicGroup: step.AtomicGroup, Key: step.Key, Status: step.Status, Source: step.Source, Intent: op.Intent, DependsOn: step.DependsOn}
+			if _, err := op.Args(); err == nil && nlu.StepAllowed(op.Intent) && step.Status != "done" {
+				v.Operation = &op
+			}
+			d.Actions = append(d.Actions, v)
+		}
+	}
 	for i, id := range state.LastIDs {
 		if i >= 8 {
 			break
@@ -77,6 +91,7 @@ func buildSimpleContext(ctx context.Context, tx repository.Tx, state domain.Stat
 	}
 	if p := state.Pending; p != nil {
 		v := &nlu.Pending{Intent: operationName(p.Command), Expected: p.Expectation, Title: bounded(p.Command.Title, 200), Confirmation: in(p.Expectation, "batch", "delete", "delete_many", "conflict")}
+		v.Recurrence = nlu.DisplayRecurrence(p.Command.Recurrence)
 		if p.Expectation == "fields" && p.Command.Action == domain.ActionCreate {
 			if p.Command.Title == "" {
 				v.Missing = append(v.Missing, "title")

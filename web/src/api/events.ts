@@ -1,12 +1,13 @@
 import { request } from './client';
 import type { EventInput, EventList, EventPatch, EventQuery, RhythmEvent } from '../types/api';
 
-export async function listEvents(query: EventQuery = {}, signal?: AbortSignal): Promise<RhythmEvent[]> {
+export async function listEvents(query: EventQuery = {}, signal?: AbortSignal, onSearch?: (status: EventList['search']) => void): Promise<RhythmEvent[]> {
   const result: RhythmEvent[] = [];
   let offset = 0;
   do {
     const params = new URLSearchParams({ ...query, limit: '200', offset: String(offset) });
     const page = await request<EventList>(`/api/events?${params}`, { signal });
+    onSearch?.(page.search);
     result.push(...page.events);
     offset += page.events.length;
     if (offset >= page.total) break;
