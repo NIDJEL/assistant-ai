@@ -4,7 +4,7 @@ import { usePointerSpring } from './useAuthMotion';
 import gena from '../../assets/auth/gena.webp';
 import calendar from '../../assets/auth/calendar.webp';
 import tasks from '../../assets/auth/tasks.webp';
-import integrations from '../../assets/auth/integrations.webp';
+import integrations from '../../assets/onboarding/yandex.webp';
 
 const illustrations = { gena, calendar, tasks, integrations };
 const asset = (name: keyof typeof illustrations) => illustrations[name];
@@ -21,7 +21,7 @@ function GenaMascot() {
 const features: { image: keyof typeof illustrations; title: string; text: string }[] = [
   { image: 'calendar', title: 'Календарь', text: 'Все события\nв одном месте' },
   { image: 'tasks', title: 'Задачи', text: 'Под контролем.\nБез лишних усилий.' },
-  { image: 'integrations', title: 'Интеграции', text: 'Яндекс Календарь,\nZoom и другие сервисы' },
+  { image: 'integrations', title: 'Яндекс Календарь', text: 'Ваши дела\nв привычном календаре' },
 ];
 
 function FeatureCard({ image, title, text, index }: typeof features[number] & { index: number }) {

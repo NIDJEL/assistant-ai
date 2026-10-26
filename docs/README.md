@@ -43,8 +43,6 @@
 | Azure TTS и воспроизведение | [Голос Гены](AZURE_TTS.md) |
 | Друзья и подбор времени | [Совместное планирование](FRIENDS_AND_SCHEDULING.md) |
 | Яндекс ID / односторонний экспорт | [Яндекс](YANDEX_CALENDAR.md) |
-| Google Calendar и Zoom | [Облачные интеграции](GOOGLE_CALENDAR_ZOOM.md) |
-| Zoom в диалоге и карточках | [Zoom в чате](ZOOM_CHAT.md) |
 | Push, повторения, PWA | [Web Push](WEB_PUSH.md) |
 | Production Compose, Nginx, backup и восстановление | [Эксплуатация](../deploy/README.md) |
 | Автоматический выпуск main, receiver и rollback | [CI/CD](../deploy/CI_CD.md) |

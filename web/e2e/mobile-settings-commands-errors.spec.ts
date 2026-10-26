@@ -9,7 +9,7 @@ test('mobile integration settings open on the first tap and account settings nav
   await mockSchedule(page); await page.emulateMedia({ reducedMotion: 'reduce' });
   for (const width of [320, 390, 768]) {
     await page.setViewportSize({ width, height: 844 }); await page.goto('/integrations');
-    for (const name of ['Яндекс Календарь', 'Google Calendar', 'Zoom']) {
+    for (const name of ['Яндекс Календарь']) {
       const card = page.locator('.integration-card').filter({ has: page.getByRole('heading', { name, exact: true }) });
       await card.getByRole('button', { name: 'Настроить', exact: true }).click();
       const detail = page.getByRole('dialog', { name: 'Интеграция', exact: true });

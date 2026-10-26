@@ -20,17 +20,7 @@ func (a *API) integrations(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	configured := a.CalendarSync != nil && a.Auth != nil && a.Auth.Providers["yandex"] != nil
-	google, zoom := false, false
-	if a.Cloud != nil {
-		list, err := a.Cloud.Store.CloudConnections(r.Context())
-		if err != nil {
-			a.fail(w, r, err)
-			return
-		}
-		connections = append(connections, list...)
-		google, zoom = a.Cloud.Providers["google"] != nil, a.Cloud.Providers["zoom"] != nil
-	}
-	write(w, 200, map[string]any{"connections": connections, "yandex_configured": configured, "google_configured": google, "zoom_configured": zoom})
+	write(w, 200, map[string]any{"connections": connections, "yandex_configured": configured})
 }
 func (a *API) syncYandexCalendar(w http.ResponseWriter, r *http.Request) {
 	if a.CalendarSync == nil {

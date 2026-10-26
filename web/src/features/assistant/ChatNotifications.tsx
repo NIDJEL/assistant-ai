@@ -59,5 +59,5 @@ export function ChatNotificationsProvider({ children }: { children: ReactNode })
     await Promise.all(waiting);
   }, [user?.id]);
   const unread = exchanges.filter(x => !x.read); const ids = unread.map(x => x.response.request_id);
-  return <ChatNotifications.Provider value={{ exchanges, loading, markRead }}>{children}{pathname !== '/' && unread.length > 0 && <Link className="zoom-chat-notice" to={`/#chat-message-${ids[0]}`} state={{ chatNotifications: ids }} aria-live="polite">Новые сообщения Гены: {unread.length}</Link>}</ChatNotifications.Provider>;
+  return <ChatNotifications.Provider value={{ exchanges, loading, markRead }}>{children}{pathname !== '/' && unread.length > 0 && <Link className="chat-notice" to={`/#chat-message-${ids[0]}`} state={{ chatNotifications: ids }} aria-live="polite">Новые сообщения Гены: {unread.length}</Link>}</ChatNotifications.Provider>;
 }

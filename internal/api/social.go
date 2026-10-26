@@ -285,18 +285,14 @@ func (a *API) refreshPlanning(ctx context.Context, ids []string, from, to time.T
 			defer func() { <-sem }()
 			job, cancel := context.WithTimeout(repository.WithUser(ctx, uid), 12*time.Second)
 			defer cancel()
-			for _, provider := range []string{"google", "yandex"} {
+			for _, provider := range []string{"yandex"} {
 				connected := false
 				_ = a.Calendar.Store.Read(job, func(tx repository.Tx) error {
 					s, e := social.In(job, tx, a.Calendar.Location)
 					if e != nil {
 						return e
 					}
-					if provider == "google" {
-						e = s.Q.QueryRowContext(job, `SELECT EXISTS(SELECT 1 FROM cloud_connections WHERE user_id=$1 AND provider='google' AND status<>'disconnected')`, uid).Scan(&connected)
-					} else {
-						e = s.Q.QueryRowContext(job, `SELECT EXISTS(SELECT 1 FROM calendar_connections WHERE user_id=$1 AND provider='yandex' AND status<>'disconnected')`, uid).Scan(&connected)
-					}
+					e = s.Q.QueryRowContext(job, `SELECT EXISTS(SELECT 1 FROM calendar_connections WHERE user_id=$1 AND provider='yandex' AND status<>'disconnected')`, uid).Scan(&connected)
 					if e != nil {
 						return e
 					}
@@ -307,9 +303,7 @@ func (a *API) refreshPlanning(ctx context.Context, ids []string, from, to time.T
 				}
 				var busy []social.BusySlot
 				var e error
-				if provider == "google" && a.Cloud != nil {
-					busy, e = a.Cloud.PlanningBusy(job, from, to)
-				} else if provider == "yandex" && a.CalendarSync != nil {
+				if provider == "yandex" && a.CalendarSync != nil {
 					busy, e = a.CalendarSync.PlanningBusy(job, from, to)
 				} else {
 					e = errors.New("provider unavailable")

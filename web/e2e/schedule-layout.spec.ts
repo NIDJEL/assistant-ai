@@ -80,7 +80,7 @@ test('reminder toolbar, dates and group expansion stay aligned at every width', 
 test('integrations starts close to its heading and home is named Главная', async ({ page }, info) => {
   await mockSchedule(page); await page.goto('/integrations');
   await expect(page.getByText('Подключите нужные сервисы')).toHaveCount(0);
-  await expect(page.locator('.integration-card')).toHaveCount(3);
+  await expect(page.locator('.integration-card')).toHaveCount(1);
   await expect(page.getByRole('link', { name: 'Главная', exact: true })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Сегодня', exact: true })).toHaveCount(0);
   for (const width of [1440, 390, 320]) {
@@ -112,10 +112,7 @@ test('assistant reply shares one panel and speaks human text from its lower righ
   await page.goto('/');
   const answer = page.locator('#chat-message-zoom-reply .assistant-reply'); const bubble = answer.locator(':scope > .message-bubble');
   await expect(bubble.locator('.reply-text')).toHaveText(visibleReply);
-  await expect(bubble.getByRole('region', { name: `Zoom: ${event.title}` })).toBeVisible();
-  await expect(bubble.getByRole('link', { name: 'Подключиться', exact: true })).toHaveAttribute('href', 'https://zoom.us/j/123456789');
   await expect(bubble.getByRole('link', { name: 'Открыть в календаре' })).toHaveAttribute('href', '/calendar?date=2026-10-21');
-  await expect(bubble.getByRole('button', { name: 'Скопировать ссылку' })).toBeEnabled();
   const speech = answer.getByRole('button', { name: 'Озвучить ответ', exact: true });
   await expect(bubble.locator('.tts-button')).toHaveCount(0);
   await answer.evaluate(async root => { await Promise.all(root.getAnimations().map(animation => animation.finished)); });
@@ -123,7 +120,7 @@ test('assistant reply shares one panel and speaks human text from its lower righ
     await page.setViewportSize({ width, height });
     const geometry = await answer.evaluate(root => {
       const panel = root.querySelector('.message-bubble')!.getBoundingClientRect(); const audio = root.querySelector('.tts-button')!.getBoundingClientRect();
-      const children = [...root.querySelectorAll('.reply-text, .zoom-meeting-card, .calendar-link')].map(node => node.getBoundingClientRect());
+      const children = [...root.querySelectorAll('.reply-text, .chat-event-card, .calendar-link')].map(node => node.getBoundingClientRect());
       return { right: panel.right - audio.right, gap: audio.top - panel.bottom, enclosed: children.every(rect => rect.top >= panel.top && rect.bottom <= panel.bottom && rect.left >= panel.left && rect.right <= panel.right), background: getComputedStyle(root.querySelector('.message-bubble')!).backgroundColor, docWidth: document.documentElement.scrollWidth, docHeight: document.documentElement.scrollHeight, composerBottom: document.querySelector('.composer')!.getBoundingClientRect().bottom };
     });
     expect(Math.abs(geometry.right)).toBeLessThanOrEqual(3); expect(geometry.gap).toBeGreaterThanOrEqual(5);

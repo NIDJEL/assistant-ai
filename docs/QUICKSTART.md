@@ -33,8 +33,6 @@ python scripts/service.py up
 | Диктовка | `GROQ_API_KEY`; при необходимости `GROQ_PROXY_URL`. |
 | Озвучивание | `AZURE_SPEECH_KEY`, `AZURE_SPEECH_REGION`; голос по умолчанию `ru-RU-DmitryNeural`. |
 | Яндекс | `YANDEX_CLIENT_ID`, `YANDEX_CLIENT_SECRET`, `YANDEX_REDIRECT_URI`. |
-| Google | `GOOGLE_CALENDAR_CLIENT_ID`, `GOOGLE_CALENDAR_CLIENT_SECRET`, `GOOGLE_CALENDAR_REDIRECT_URI`. |
-| Zoom | `ZOOM_CLIENT_ID`, `ZOOM_CLIENT_SECRET`, `ZOOM_REDIRECT_URI`; webhook secret при использовании webhook. |
 
 ```bash
 python scripts/service.py up --mode full
@@ -42,7 +40,7 @@ python scripts/service.py up --mode full
 
 Launcher включает `simple_llm`/GigaChat. Если заданы Groq/Azure credentials, включает соответствующий голосовой сервис. При `GIGACHAT_CA_FILE_HOST` создаёт отдельный Compose override и монтирует проверенный CA read-only. Пример Windows-пути: `D:/certs/gigachat-ca.pem`. Проверка TLS не отключается.
 
-Внешние ключи не создаются скриптом. OAuth-приложения нужно зарегистрировать у провайдеров, задать callback `<PUBLIC_URL>/api/auth/<provider>/callback`, а затем явно подключить аккаунт из интерфейса. Для доступа с телефона, Web Push и внешних callback нужен корректный HTTPS origin. [GigaChat](GIGACHAT_CONFIGURATION.md) · [Голос](DEADLINES_AND_VOICE.md) · [Azure](AZURE_TTS.md) · [Яндекс](YANDEX_CALENDAR.md) · [Google/Zoom](GOOGLE_CALENDAR_ZOOM.md).
+Внешние ключи не создаются скриптом. OAuth-приложения нужно зарегистрировать у провайдеров, задать callback `<PUBLIC_URL>/api/auth/yandex/callback`, а затем явно подключить аккаунт из интерфейса. Для доступа с телефона, Web Push и внешних callback нужен корректный HTTPS origin. [GigaChat](GIGACHAT_CONFIGURATION.md) · [Голос](DEADLINES_AND_VOICE.md) · [Azure](AZURE_TTS.md) · [Яндекс](YANDEX_CALENDAR.md).
 
 ## Независимые установки и управление
 

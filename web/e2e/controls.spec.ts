@@ -102,16 +102,9 @@ test('focus follows controls and composite fields, and dropdowns inherit light a
   expect(await composer.evaluate(node => getComputedStyle(node).outlineStyle)).toBe('none');
 });
 
-test('long calendar lists, reminder fields and widget settings all use custom selects', async ({ page }, info) => {
+test('reminder fields and widget settings use custom selects', async ({ page }, info) => {
   const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
-  await mockSchedule(page); await page.goto('/integrations?service=google');
-  await page.setViewportSize({ width: 390, height: 844 });
-  const integration = page.getByRole('dialog', { name: 'Интеграция', exact: true }); const calendar = integration.getByRole('combobox', { name: 'Календарь Google' });
-  await expect(calendar).toContainText('Календарь 1:'); await calendar.click(); await expect(page.getByRole('option')).toHaveCount(46);
-  await page.keyboard.press('End'); await expect.poll(() => page.getByRole('listbox').evaluate(node => node.scrollTop)).toBeGreaterThan(0);
-  await settleMenu(page.getByRole('listbox')); await page.screenshot({ path: info.outputPath('long-calendar-list.png') });
-  await page.keyboard.press('Enter'); await expect(calendar).toContainText('Календарь 45:'); await expect(integration.getByRole('button', { name: 'Сохранить и синхронизировать' })).toBeEnabled();
-  await page.keyboard.press('Escape'); await expect(integration).toHaveCount(0);
+  await mockSchedule(page); await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/reminders'); await page.locator('.reminder-title').first().click();
   const editor = page.getByRole('form', { name: /Редактор:/ }); await chooseOption(editor.getByRole('combobox', { name: 'Повтор напоминания' }), 'Каждый месяц');
   await chooseOption(editor.getByRole('combobox', { name: 'Когда напомнить' }), 'За 1 ч.'); await expect(editor.getByRole('spinbutton', { name: 'За сколько минут' })).toHaveValue('60');

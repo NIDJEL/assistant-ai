@@ -20,25 +20,22 @@ import (
 )
 
 type Config struct {
-	SearchMode, EmbeddingModel                                                    string
-	SearchBudget, TurnTimeout                                                     time.Duration
-	ZoomWebhookSecret                                                             string
-	GoogleCalendarClientID, GoogleCalendarClientSecret, GoogleCalendarRedirectURI string
-	ZoomClientID, ZoomClientSecret, ZoomRedirectURI                               string
-	TTSProvider, AzureSpeechKey, AzureSpeechRegion, AzureTTSVoice                 string
-	STTProvider, GroqAPIKey, GroqSTTModel, GroqProxyURL                           string
-	NLUMode                                                                       string
-	SemanticProvider                                                              string
-	GigaChat                                                                      llm.GigaChatConfig
-	WebPush                                                                       notifications.Config
-	ImportUserEmail, ImportUserName, ImportUserPassword                           string
-	AuthRateLimit                                                                 int
-	TrustedProxyCIDRs                                                             []*net.IPNet
-	DatabaseURL, SessionSecret, PublicURL, Environment                            string
-	YandexClientID, YandexClientSecret, YandexRedirectURI                         string
-	Address, Root, DatabasePath, Timezone, NLPProvider                            string
-	AutoImport                                                                    bool
-	Location                                                                      *time.Location
+	SearchMode, EmbeddingModel                                    string
+	SearchBudget, TurnTimeout                                     time.Duration
+	TTSProvider, AzureSpeechKey, AzureSpeechRegion, AzureTTSVoice string
+	STTProvider, GroqAPIKey, GroqSTTModel, GroqProxyURL           string
+	NLUMode                                                       string
+	SemanticProvider                                              string
+	GigaChat                                                      llm.GigaChatConfig
+	WebPush                                                       notifications.Config
+	ImportUserEmail, ImportUserName, ImportUserPassword           string
+	AuthRateLimit                                                 int
+	TrustedProxyCIDRs                                             []*net.IPNet
+	DatabaseURL, SessionSecret, PublicURL, Environment            string
+	YandexClientID, YandexClientSecret, YandexRedirectURI         string
+	Address, Root, DatabasePath, Timezone, NLPProvider            string
+	AutoImport                                                    bool
+	Location                                                      *time.Location
 }
 
 func env(name, fallback string) string {
@@ -78,9 +75,6 @@ func Load() (Config, error) {
 	}
 	c := Config{
 		SearchMode: value("GENA_SEARCH_MODE", ""), EmbeddingModel: value("GENA_EMBEDDING_MODEL", "Embeddings-2"),
-		ZoomWebhookSecret:      value("ZOOM_WEBHOOK_SECRET_TOKEN", ""),
-		GoogleCalendarClientID: value("GOOGLE_CALENDAR_CLIENT_ID", ""), GoogleCalendarClientSecret: value("GOOGLE_CALENDAR_CLIENT_SECRET", ""), GoogleCalendarRedirectURI: value("GOOGLE_CALENDAR_REDIRECT_URI", ""),
-		ZoomClientID: value("ZOOM_CLIENT_ID", ""), ZoomClientSecret: value("ZOOM_CLIENT_SECRET", ""), ZoomRedirectURI: value("ZOOM_REDIRECT_URI", ""),
 		TTSProvider:       value("GENA_TTS_PROVIDER", ""),
 		AzureSpeechKey:    value("AZURE_SPEECH_KEY", ""),
 		AzureSpeechRegion: value("AZURE_SPEECH_REGION", "eastus"),
@@ -167,7 +161,7 @@ func Load() (Config, error) {
 	if c.Environment == "production" && public.Scheme != "https" {
 		return c, errors.New("production requires HTTPS PUBLIC_URL")
 	}
-	for provider, redirect := range map[string]string{"yandex": c.YandexRedirectURI, "google": c.GoogleCalendarRedirectURI, "zoom": c.ZoomRedirectURI} {
+	for provider, redirect := range map[string]string{"yandex": c.YandexRedirectURI} {
 		if redirect == "" {
 			continue
 		}

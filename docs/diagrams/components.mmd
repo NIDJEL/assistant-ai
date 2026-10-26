@@ -9,10 +9,10 @@ flowchart TB
         assistant["assistant.Service\nКонтекст, выбор, подтверждение, идемпотентность"]
         nlu["nlu / llm.Simple\nСтрогий разбор Operation"]
         calendar["calendar.Service\nДаты, конфликты, CRUD, CSV"]
-        social["social / cloud\nДрузья, приглашения, интеграции"]
+        social["social / yandexcalendar\nДрузья, приглашения, интеграции"]
         search["search\nНормализация, словарь, нечёткий поиск"]
         repo["repository.Store / Tx\nОбласть пользователя и транзакции"]
-        workers["Workers\nКалендари, Zoom, напоминания, push"]
+        workers["Workers\nЯндекс Календарь, напоминания, push"]
         routes --> assistant --> nlu
         assistant --> calendar --> search
         assistant --> social

@@ -18,7 +18,6 @@ html[data-surface='workspace'] .composer { position: relative; padding-left: 8px
 html[data-surface='workspace'] .assistant-reply > .message-bubble { width: 100%; max-width: none; padding: 16px 18px; border: 1px solid var(--border); border-radius: 18px; background: var(--surface); box-shadow: none; animation: none; }
 .exchange:target .assistant-reply > .message-bubble { border-color: var(--accent); }
 .assistant-reply .response-events { margin-top: 14px; gap: 12px; }
-.assistant-reply .zoom-meeting-card { padding: 0; border: 0; border-radius: 0; background: transparent; }
 .assistant-reply .reply-footer { flex-wrap: wrap; gap: 12px; margin-top: 6px; padding-inline: 2px; }
 .assistant-reply .reply-footer small { color: var(--muted); font-size: 11px; }
 .reply-audio { display: flex; flex-direction: row-reverse; align-items: center; gap: 8px; max-width: 100%; }

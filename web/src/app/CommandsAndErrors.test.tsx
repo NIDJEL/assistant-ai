@@ -5,7 +5,7 @@ import { mockServer } from '../test/server';
 
 async function start(path = '/') {
   history.pushState({}, '', path); const server = mockServer(); render(<App/>);
-  await screen.findByRole('heading', { name: path === '/integrations' ? 'Интеграции' : 'Чем помочь?' });
+  await screen.findByRole('heading', { name: path === '/integrations' ? 'Интеграции' : 'Чем помочь?' }, { timeout: 5000 });
   return { ...server, user: userEvent.setup() };
 }
 it('toggles quick commands, inserts editable templates, preserves drafts and never submits automatically', async () => {

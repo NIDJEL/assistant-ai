@@ -126,7 +126,7 @@ func (s *Session) busy(ctx context.Context, id string, from, to time.Time, exclu
 	}
 	// A connected external calendar is complete only after a recent successful
 	// free/busy read covering the requested horizon. Outbound sync is not evidence.
-	rows, err = s.Q.QueryContext(ctx, `SELECT provider,status FROM calendar_connections WHERE user_id=$1 AND provider='yandex' AND status<>'disconnected' UNION SELECT provider,status FROM cloud_connections WHERE user_id=$1 AND provider='google' AND status<>'disconnected'`, id)
+	rows, err = s.Q.QueryContext(ctx, `SELECT provider,status FROM calendar_connections WHERE user_id=$1 AND provider='yandex' AND status<>'disconnected'`, id)
 	if err != nil {
 		return b, err
 	}

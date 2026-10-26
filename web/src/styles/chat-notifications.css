@@ -1,0 +1,4 @@
+.chat-unread-marker { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: var(--accent); font-size: 12px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+.chat-unread-marker .button { font-size: 12px; }
+.chat-notice { position: fixed; bottom: 20px; right: 20px; z-index: 60; background: var(--surface); color: var(--accent); border: 1px solid var(--border); border-radius: 12px; padding: 11px 15px; font-size: 13px; max-width: calc(100vw - 32px); text-align: left; box-shadow: var(--shadow); }
+@media (max-width: 480px) { .chat-notice { right: 16px; bottom: 16px; } }

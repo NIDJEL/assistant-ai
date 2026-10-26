@@ -6,18 +6,15 @@ import tasks from '../../assets/onboarding/tasks.webp';
 import board from '../../assets/onboarding/board.webp';
 import reminder from '../../assets/onboarding/reminder.webp';
 import yandex from '../../assets/onboarding/yandex.webp';
-import google from '../../assets/onboarding/google.webp';
-import zoom from '../../assets/onboarding/zoom.webp';
 import sparkle from '../../assets/onboarding/sparkle.webp';
 import logo from '../../assets/onboarding/logo.webp';
 import lightWelcome from '../../assets/onboarding/light/welcome.webp';
 import lightPlanner from '../../assets/onboarding/light/planner.webp';
-import lightIntegrations from '../../assets/onboarding/light/integrations.webp';
 import lightLogo from '../../assets/onboarding/light/logo.webp';
 
 const artwork = {
-  dark: { ghost, tasks, board, reminder, yandex, google, zoom, logo },
-  light: { welcome: lightWelcome, planner: lightPlanner, integrations: lightIntegrations, logo: lightLogo },
+  dark: { ghost, tasks, board, reminder, yandex, logo },
+  light: { welcome: lightWelcome, planner: lightPlanner, reminder, yandex, logo: lightLogo },
 };
 // Decode before a theme crossfade so a cold cache cannot leave an empty scene.
 export function useOnboardingArtwork(theme: Theme) {
@@ -50,8 +47,8 @@ export function OnboardingScene({ step, reduce, theme }: { step: number; reduce:
     <span className="ob-particle ob-particle-one"/><span className="ob-particle ob-particle-two"/>
     <AnimatePresence mode="sync" initial={false}>
       <motion.div key={`${step}-${theme}`} className={`ob-art ob-art-${step} ob-art-${theme}`} initial={{ opacity: 0, scale: reduce ? 1 : .98, y: reduce ? 0 : 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: reduce ? 0 : .5, ease: [.22, 1, .36, 1] }}>
-        {theme === 'light' ? <div className={`ob-art-piece ob-light-composition ob-light-composition-${step}`}>
-          <img src={[lightWelcome, lightPlanner, lightIntegrations][step]} alt="" width="1056" height="816" fetchPriority={step === 0 ? 'high' : 'auto'}/>
+        {theme === 'light' && step !== 2 ? <div className={`ob-art-piece ob-light-composition ob-light-composition-${step}`}>
+          <img src={[lightWelcome, lightPlanner][step]} alt="" width="1056" height="816" fetchPriority={step === 0 ? 'high' : 'auto'}/>
         </div> : <>
         {step === 0 && <>
           <div className="ob-art-piece ob-welcome-tasks"><img src={tasks} alt="" width="580" height="435"/></div>
@@ -63,10 +60,8 @@ export function OnboardingScene({ step, reduce, theme }: { step: number; reduce:
           <div className="ob-mini-ghost"><img src={ghost} alt="" width="700" height="700"/></div>
         </>}
         {step === 2 && <>
-          <svg className="ob-connectors" viewBox="0 0 540 470" fill="none"><path d="M124 126C124 220 185 205 220 270M272 103V270M422 126C422 219 363 214 322 270" stroke={`url(#ob-connection-${theme})`} strokeWidth="1.5" strokeDasharray="5 8"/><defs><linearGradient id={`ob-connection-${theme}`} x2="0" y2="1"><stop stopColor="#0E7AFF"/><stop offset="1" stopColor="#6edaff" stopOpacity=".25"/></linearGradient></defs></svg>
+          <svg className="ob-connectors" viewBox="0 0 540 470" fill="none"><path d="M272 126V270" stroke={`url(#ob-connection-${theme})`} strokeWidth="1.5" strokeDasharray="5 8"/><defs><linearGradient id={`ob-connection-${theme}`} x2="0" y2="1"><stop stopColor="#0E7AFF"/><stop offset="1" stopColor="#6edaff" stopOpacity=".25"/></linearGradient></defs></svg>
           <div className="ob-art-piece ob-service ob-service-yandex"><img src={yandex} alt="" width="220" height="220"/></div>
-          <div className="ob-art-piece ob-service ob-service-google"><img src={google} alt="" width="220" height="220"/></div>
-          <div className="ob-art-piece ob-service ob-service-zoom"><img src={zoom} alt="" width="220" height="220"/></div>
           <div className="ob-art-piece ob-reminder"><img src={reminder} alt="" width="760" height="570"/></div>
         </>}
         </>}

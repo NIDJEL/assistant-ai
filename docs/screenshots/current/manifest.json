@@ -1,6 +1,6 @@
 {
-  "captured_at": "2026-10-26T01:35:38.056Z",
-  "source_commit": "d85213b5581bf262d05e2ecb74e50c49b94785f2",
+  "captured_at": "2026-10-26T17:13:48.640Z",
+  "source_commit": "9bfc5570803dcf5cf1199eb7f0bebc9fe5f80f02",
   "working_tree_changes": true,
   "base_url": "http://localhost:18087",
   "source": "real local Go/PostgreSQL application; synthetic accounts and records; no mocked API responses",
@@ -13,7 +13,7 @@
         "width": 1440,
         "height": 1000
       },
-      "sha256": "dbf336137d17415d47e2456d7f65d7eaaafd39db969a69bfe4d01ca31810ca70"
+      "sha256": "41e51341a44948ceb933b0d8bf9d2f39da8350ee3706c015e0e445ec0236961f"
     },
     {
       "file": "onboarding.png",
@@ -31,7 +31,7 @@
         "width": 1440,
         "height": 1000
       },
-      "sha256": "c1be9ac026e85371d44f24944bbe1b64e754565f13875fbc5c72c4d8a61d7ad8"
+      "sha256": "36ea93b61efb2d03fae546f25661f9d9b712d0ab84495c30da0e183ae2811b63"
     },
     {
       "file": "quick-commands.png",
@@ -40,7 +40,7 @@
         "width": 1440,
         "height": 1000
       },
-      "sha256": "68d48315766124ccc0e2d9ef3683bf0d2063007b287b38c84bf80f92257fc9ca"
+      "sha256": "9fd4b97e68f489f263509dd0ae0710d2453a2fc1044dd22e24c7d40480f839f1"
     },
     {
       "file": "calendar.png",
@@ -85,7 +85,7 @@
         "width": 1440,
         "height": 1000
       },
-      "sha256": "f99b69bb39e550839795558fe1fa3af4d57f448b0882843a138148a754e0092e"
+      "sha256": "1aa20023fa0cfc7d4d3e5f2882e1c5817756d0c3b79689ad1a4ce1f109b84fec"
     },
     {
       "file": "settings.png",
@@ -94,7 +94,7 @@
         "width": 1440,
         "height": 1000
       },
-      "sha256": "28d88973a035d708cc55b132b5f17d7006a96dfc7e719115ca677257fad1f336"
+      "sha256": "5ee953ebad1c11cb504b47b2b46e672b41168b1ef25e42495a2df073f193c1f2"
     },
     {
       "file": "archive.png",
@@ -112,7 +112,7 @@
         "width": 1440,
         "height": 1000
       },
-      "sha256": "569c88f3e2be03835cfb95e557b9cab530119c03041870d7308eae8b9e8bc678"
+      "sha256": "32aed9b479c59abfa0633e3f254452cecbfb543f089a3c85cd65c7e2a25eec8e"
     },
     {
       "file": "calendar-light.png",
@@ -148,7 +148,7 @@
         "width": 390,
         "height": 844
       },
-      "sha256": "900208dfd8919f4d1b67f2f09debee8dab8e4cb8f12ae3144da89cd71b574a21"
+      "sha256": "96e72c181aafcd394908c7cd70aa7a742345bf3b38ce6c1b3f3f91aa69fafce7"
     },
     {
       "file": "mobile-commands.png",
@@ -157,7 +157,7 @@
         "width": 390,
         "height": 844
       },
-      "sha256": "a1dcca4b875b6a286528b95aea03e7d6789a85f6eeec2722e66f57a9b985ecb0"
+      "sha256": "4cc2a546140e8d14499f92c2a00fdb4b461347f344bc5ce7a11d69d39a713cd1"
     },
     {
       "file": "error-404.png",
@@ -184,7 +184,7 @@
         "width": 1440,
         "height": 1000
       },
-      "sha256": "f07cb56870b523ab3b617dc1ef04065ac7b305a61c0199904472456ff7ad08c7"
+      "sha256": "0e53b2455feb96e09b2ba2fccf87e2cd3b6700fc103efa5851591df98c2efc42"
     }
   ]
 }

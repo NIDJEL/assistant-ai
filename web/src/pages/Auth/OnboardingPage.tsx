@@ -113,9 +113,9 @@ export function OnboardingPage() {
               initial="enter" animate="visible" exit="leave" transition={{ duration: reduce ? 0 : .24, ease }} onAnimationComplete={phase => { if (phase === 'visible') focusHeading(); }}>
               <motion.h1 variants={reveal} ref={heading} tabIndex={-1} id="onboarding-title">{title}</motion.h1>
               <motion.p variants={reveal} className="ob-description">{description}</motion.p>
-              <motion.div variants={reveal} className="ob-detail"><span className="ob-detail-line"/><p>{step === 0 ? 'Несколько простых шагов — и мы знакомы.' : step === 1 ? 'Задачи, календарь и фокус — в одном месте.' : 'Яндекс Календарь, Google Календарь и Zoom.'}</p></motion.div>
+              <motion.div variants={reveal} className="ob-detail"><span className="ob-detail-line"/><p>{step === 0 ? 'Несколько простых шагов — и мы знакомы.' : step === 1 ? 'Задачи, календарь и фокус — в одном месте.' : 'Ваши дела в Яндекс Календаре.'}</p></motion.div>
               {step === 0 && <motion.div variants={reveal} className="ob-theme-card"><ThemePicker theme={preferences.theme} onChange={theme => update({ theme })} disabled={!!busy}/>{preferenceError && <p className="ob-theme-error" role="alert">Тема применена на этом устройстве. {preferenceError}</p>}</motion.div>}
-              {step === 2 && <motion.p variants={reveal} className="ob-permission">Доступ к календарю вы подтвердите на странице Яндекса. Другие сервисы можно подключить в интеграциях.</motion.p>}
+              {step === 2 && <motion.p variants={reveal} className="ob-permission">Доступ к календарю вы подтвердите на странице Яндекса. Управлять подключением можно в настройках календаря.</motion.p>}
             </motion.div>
           </AnimatePresence></div>
           <div className="ob-scene-shell"><OnboardingScene step={step} reduce={reduce} theme={artworkTheme}/></div>

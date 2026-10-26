@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { App } from '../../app/App';
 import { fixture, mockServer } from '../../test/server';
@@ -7,7 +7,7 @@ import type { SharedMeeting } from '../../features/social/types';
 const owner = { id: '11111111-1111-4111-8111-111111111111', name: 'Алексей', email: 'alex@example.test', avatar_url: '/alex.png', tags: [] };
 const friend = { id: '22222222-2222-4222-8222-222222222222', name: 'Борис', avatar_url: '/boris.png', tags: [] };
 
-it('shows friend photos, Zoom and the organizer as a participant without adding them to the editor', async () => {
+it('shows friend photos, a meeting link and the organizer as a participant without adding them to the editor', async () => {
   history.pushState({}, '', '/meetings'); const server = mockServer();
   server.events().splice(0, server.events().length, fixture(20, 'meeting', 'Созвон с Борисом', {
     meeting_url: 'https://us04web.zoom.us/j/123456789', organizer_id: owner.id,
@@ -18,12 +18,12 @@ it('shows friend photos, Zoom and the organizer as a participant without adding 
   await screen.findByRole('heading', { name: 'Созвон с Борисом' });
   expect(screen.queryByText('Управляйте встречами и созвонами')).not.toBeInTheDocument();
   expect(screen.getByText('2 участника')).toBeInTheDocument();
-  expect(screen.getAllByRole('img', { name: 'Zoom' })).toHaveLength(2);
-  expect(screen.queryByText('us04web.zoom.us')).not.toBeInTheDocument();
+  expect(screen.getAllByText('us04web.zoom.us')).toHaveLength(2);
   expect(document.querySelectorAll('.participant img')).toHaveLength(2);
   expect(document.querySelectorAll('.participant-avatars img')).toHaveLength(2);
   expect(document.querySelector('.participant img')).toHaveAttribute('src', owner.avatar_url);
   const guestPhoto = document.querySelector(`.participant img[src="${friend.avatar_url}"]`)!;
+  await act(async () => {});
   fireEvent.error(guestPhoto);
   await waitFor(() => expect(document.querySelectorAll('.participant img')).toHaveLength(1));
   expect(document.querySelector('.participants')).toHaveTextContent('Б');

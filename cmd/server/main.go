@@ -20,8 +20,6 @@ import (
 	"github.com/NIDJEL/assistant-ai/internal/calendar"
 	"github.com/NIDJEL/assistant-ai/internal/clock"
 	"github.com/NIDJEL/assistant-ai/internal/config"
-	"github.com/NIDJEL/assistant-ai/internal/integrations/cloud"
-	"github.com/NIDJEL/assistant-ai/internal/integrations/oauth"
 	"github.com/NIDJEL/assistant-ai/internal/integrations/yandex"
 	"github.com/NIDJEL/assistant-ai/internal/integrations/yandexcalendar"
 	"github.com/NIDJEL/assistant-ai/internal/llm"
@@ -80,15 +78,6 @@ func run(log *slog.Logger) error {
 	}
 	defer store.Close()
 	providers := map[string]auth.Provider{}
-	cloudProviders := map[string]*oauth.Provider{}
-	if cfg.GoogleCalendarClientID != "" && cfg.GoogleCalendarClientSecret != "" && cfg.GoogleCalendarRedirectURI != "" {
-		p := cloud.Google(cfg.GoogleCalendarClientID, cfg.GoogleCalendarClientSecret, cfg.GoogleCalendarRedirectURI)
-		providers["google"], cloudProviders["google"] = p, p
-	}
-	if cfg.ZoomClientID != "" && cfg.ZoomClientSecret != "" && cfg.ZoomRedirectURI != "" {
-		p := cloud.Zoom(cfg.ZoomClientID, cfg.ZoomClientSecret, cfg.ZoomRedirectURI)
-		providers["zoom"], cloudProviders["zoom"] = p, p
-	}
 	if cfg.YandexClientID != "" && cfg.YandexClientSecret != "" && cfg.YandexRedirectURI != "" {
 		providers["yandex"] = yandex.New(cfg.YandexClientID, cfg.YandexClientSecret, cfg.YandexRedirectURI)
 	}
@@ -103,14 +92,6 @@ func run(log *slog.Logger) error {
 	authService.Calendar = calendarSync
 	workerCtx, workerStop := context.WithCancel(ctx)
 	defer workerStop()
-	cloudService, err := cloud.New(store, cloudProviders, cfg.SessionSecret, cfg.Location)
-	if err != nil {
-		return err
-	}
-	authService.Integrations = cloudService
-	cloudDone := make(chan struct{})
-	go func() { defer close(cloudDone); cloudService.Run(workerCtx) }()
-	defer func() { workerStop(); <-cloudDone }()
 	workerDone := make(chan struct{})
 	go func() { defer close(workerDone); calendarSync.Run(workerCtx) }()
 	defer func() { workerStop(); <-workerDone }()
@@ -164,14 +145,13 @@ func run(log *slog.Logger) error {
 	}
 	service := assistant.New(store, interpreter, cal)
 	service.TurnTimeout = cfg.TurnTimeout
-	service.Integrations = cloudService
 	service.AskReminderSettings = cfg.NLUMode != "simple_llm"
 	service.ObserveTurn = func(o assistant.DialogueObservation) {
 		if o.Route.Path != "" {
 			log.Info("nlu_route", "route", o.Route.Path, "reason", o.Route.Reason, "semantic_calls", o.SemanticCalls, "search_calls", o.Metrics.SearchCalls, "plan_valid", o.PlanValid, "repairs", o.Metrics.Repairs, "plan_steps", o.Metrics.PlanSteps, "waiting_steps", o.Metrics.WaitingSteps, "state_bytes", o.Metrics.StateBytes, "precommit_ms", o.Metrics.DurationMS, "latency_ms", float64(o.InterpretationLatency.Microseconds())/1000)
 		}
 	}
-	app := &api.API{Cloud: cloudService, Config: cfg, Clock: now, Calendar: cal, CalendarSync: calendarSync, Assistant: service, Auth: authService, Logger: log}
+	app := &api.API{Config: cfg, Clock: now, Calendar: cal, CalendarSync: calendarSync, Assistant: service, Auth: authService, Logger: log}
 	if cfg.TTSProvider == "azure" {
 		synthesizer, err := tts.NewAzure(cfg.AzureSpeechKey, cfg.AzureSpeechRegion, cfg.AzureTTSVoice)
 		if err != nil {

@@ -12,7 +12,7 @@ import './styles/layout.css';
 import './styles/auth.css';
 import './styles/auth-premium.css';
 import './styles/notifications.css';
-import './styles/zoom.css';
+import './styles/chat-notifications.css';
 import './styles/social.css';
 import './styles/workspace.css';
 import './styles/date-picker.css';

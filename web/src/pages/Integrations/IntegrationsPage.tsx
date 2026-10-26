@@ -2,23 +2,19 @@ import { useState } from 'react';
 import { motionUpdate } from '../../components/motion/motion';
 import { AnimatedList } from '../../components/motion/AnimatedList';
 import { useSearchParams } from 'react-router-dom';
-import { CalendarDays, Video, Settings, ArrowLeft, RefreshCw, CheckSquare, Bell, Trash2 } from 'lucide-react';
+import { CalendarDays, Settings, ArrowLeft, RefreshCw, CheckSquare, Bell, Trash2 } from 'lucide-react';
 import { PageHeader, SearchBox, Button, Empty, Segments, IconButton } from '../../components/UI';
 import { disconnectYandex, syncYandex, type CalendarConnection } from '../../api/integrations';
 import { errorMessage } from '../../api/client';
-import { CloudDetail } from './CloudDetail';
 import { refreshIntegrations, useYandexIntegration } from './useYandexIntegration';
 export const services = [
   { id: 'yandex', title: 'Яндекс Календарь', description: 'Ваши задачи, встречи и напоминания из приложения в Яндекс Календаре.' },
-  { id: 'google', title: 'Google Calendar', description: 'Синхронизация событий с Google Календарём.' },
-  { id: 'zoom', title: 'Zoom', description: 'Создавайте встречи в Zoom из Гена.' },
 ];
 export function ServiceLogo({ id }: { id: string }) {
-  return <span className={`service-logo service-${id}`} aria-hidden="true">{id === 'zoom' ? <Video size={32} fill="white"/> : id === 'google' ? <span className="google-calendar-logo"><b>31</b></span> : <span className="yandex-logo">Я</span>}</span>;
+  return <span className={`service-logo service-${id}`} aria-hidden="true"><span className="yandex-logo">Я</span></span>;
 }
 export function IntegrationDetail({ id, onBack }: { id: string; onBack: () => void }) {
-  if (id === 'yandex') return <YandexDetail onBack={onBack}/>;
-  return <CloudDetail provider={id === 'zoom' ? 'zoom' : 'google'} onBack={onBack}/>;
+  return id === 'yandex' ? <YandexDetail onBack={onBack}/> : null;
 }
 function connectionLabel(connection?: CalendarConnection, loaded = true) {
   if (!loaded) return 'Проверяем подключение…';

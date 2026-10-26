@@ -36,7 +36,7 @@ it('navigates all eight pages and preserves explicit integration states', async 
     await user.click(within(nav).getByRole('link', { name })); expect(screen.getByRole('heading', { level: 1, name })).toBeInTheDocument();
   }
   expect(screen.queryByText('Скоро')).not.toBeInTheDocument();
-  expect(document.querySelectorAll('.integration-state')).toHaveLength(3);
+  expect(document.querySelectorAll('.integration-state')).toHaveLength(1);
   await user.click(screen.getAllByRole('button', { name: 'Настроить' })[0]); expect(screen.getByRole('complementary', { name: 'Интеграция' })).toHaveTextContent('Разрешите Гене добавлять ваши дела в календарь.'); expect(screen.queryByRole('complementary', { name: 'Виджеты' })).not.toBeInTheDocument();
   await user.click(screen.getByRole('button', { name: 'Назад к виджетам' })); await user.click(screen.getByRole('link', { name: 'Настройки' })); expect(screen.getByRole('heading', { level: 1, name: 'Настройки' })).toBeInTheDocument();
 });

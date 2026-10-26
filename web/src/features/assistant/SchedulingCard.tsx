@@ -21,7 +21,6 @@ export function SchedulingCard({ card, active, busy, onChoose }: { card: Card; a
     </div>
     <div className="chat-scheduling-actions">{times && !!card.slots?.length && <Button variant="ghost" disabled={disabled} onClick={() => choose('Показать ещё варианты', 'more')}>Показать ещё</Button>}
       {card.kind === 'confirm' && <Button disabled={disabled} onClick={() => choose('Подтверждаю создание встречи и отправку приглашений', 'confirm')}>Отправить приглашения</Button>}
-      {card.kind === 'existing' && <Button disabled={disabled} onClick={() => choose('Добавить Zoom к этой встрече', 'confirm')}>Добавить Zoom</Button>}
       {(card.kind === 'meetings' || card.kind === 'existing') && <Button variant="ghost" disabled={disabled} onClick={() => choose('Создать отдельную новую встречу', 'new')}>Создать отдельную</Button>}
       <Button variant="ghost" disabled={disabled} onClick={() => choose('Отмена', 'cancel')}>Отмена</Button></div>
   </section>;
