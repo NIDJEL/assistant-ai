@@ -4,9 +4,9 @@
 
 `text/voice → compact context → GigaChat-3-Ultra → intent + arguments → Go validation/calendar/target resolution → assistant.Service → repository`.
 
-Локально используется `GENA_NLU_MODE=simple_llm`. В development это значение по умолчанию; provider по умолчанию GigaChat. Нужны локальные `GIGACHAT_AUTHORIZATION_KEY` и при необходимости `GIGACHAT_CA_FILE`. `GENA_SEMANTIC_PROVIDER=ollama` включает альтернативного провайдера с тем же коротким контрактом.
+Полный режим использует `GENA_NLU_MODE=simple_llm`, `GENA_SEMANTIC_PROVIDER=gigachat` и `GIGACHAT_AUTHORIZATION_KEY`. GigaChat — единственный внешний текстовый провайдер. При необходимости задаётся проверенный CA bundle. [Запуск одной командой](QUICKSTART.md).
 
-`GENA_NLU_MODE=semantic_plan_legacy` сохраняет прежний runtime, включая явный rules mode. В production без явного режима config выбирает legacy; базовый локальный Compose также явно выбирает legacy, если переменная отсутствует. `.env.example` задаёт simple_llm. Штатный GigaChat override включает `simple_llm`, `GENA_SEMANTIC_PROVIDER=gigachat`, `GIGACHAT_MODEL=GigaChat-3-Ultra`, concurrency 1. [Настройка и Compose](GIGACHAT_CONFIGURATION.md).
+`.env.example`, базовый Compose и launcher по умолчанию задают `semantic_plan_legacy`/`rules`: это демонстрация без внешних ключей. `python scripts/service.py up --mode full` включает `simple_llm`/GigaChat с сохранёнными credentials; модель по умолчанию — `GigaChat-3-Ultra`, concurrency 1. В native config без env development выбирает `simple_llm`, production — legacy; поэтому задавайте режим явно. [Настройка GigaChat](GIGACHAT_CONFIGURATION.md).
 
 Смена только `GENA_NLU_MODE` на legacy сохраняет выбранный provider и включает прежний planner. Для режима без внешних моделей нужны также `GENA_SEMANTIC_PROVIDER=rules` и базовый Compose без GigaChat override. [Обновление и откат](../deploy/README.md).
 

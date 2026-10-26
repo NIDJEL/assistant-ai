@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"flag"
+	"fmt"
 	"log/slog"
 	"net"
 	"net/http"
@@ -30,11 +31,21 @@ import (
 	"github.com/NIDJEL/assistant-ai/internal/storage/postgres"
 	"github.com/NIDJEL/assistant-ai/internal/stt"
 	"github.com/NIDJEL/assistant-ai/internal/tts"
+	webpush "github.com/SherClockHolmes/webpush-go"
 )
 
 func run(log *slog.Logger) error {
 	health := flag.Bool("healthcheck", false, "check running server health")
+	generatePushKeys := flag.Bool("generate-web-push-keys", false, "generate VAPID keys without starting the server")
 	flag.Parse()
+	if *generatePushKeys {
+		private, public, err := webpush.GenerateVAPIDKeys()
+		if err != nil {
+			return err
+		}
+		_, err = fmt.Fprintf(os.Stdout, "WEB_PUSH_VAPID_PUBLIC_KEY=%s\nWEB_PUSH_VAPID_PRIVATE_KEY=%s\n", public, private)
+		return err
+	}
 	cfg, err := config.Load()
 	if err != nil {
 		return err
@@ -127,14 +138,8 @@ func run(log *slog.Logger) error {
 			}
 			defer provider.Close()
 			interpreter = &llm.Simple{Provider: provider}
-		case "ollama":
-			provider, err := llm.NewOllamaSemantic(cfg.OllamaURL, cfg.OllamaModel, cfg.OllamaTimeout)
-			if err != nil {
-				return err
-			}
-			interpreter = &llm.Simple{Provider: provider}
 		default:
-			return errors.New("simple_llm requires gigachat or ollama; use semantic_plan_legacy for rules")
+			return errors.New("simple_llm requires gigachat; use semantic_plan_legacy for rules")
 		}
 	} else {
 		switch cfg.SemanticProvider {
@@ -145,20 +150,10 @@ func run(log *slog.Logger) error {
 			}
 			defer provider.Close()
 			interpreter = &llm.Planner{Provider: provider}
-		case "ollama":
-			provider, err := llm.NewOllamaSemantic(cfg.OllamaURL, cfg.OllamaModel, cfg.OllamaTimeout)
-			if err != nil {
-				return err
-			}
-			interpreter = &llm.Planner{Provider: provider}
 		case "rules":
 			interpreter = nlp.Parser{}
 		default:
-			legacy := nlp.Hybrid{}
-			if cfg.NLPProvider != "rules" {
-				legacy.Fallback = &llm.Ollama{URL: cfg.OllamaURL, Model: cfg.OllamaModel, Timezone: cfg.Timezone, Client: &http.Client{Timeout: cfg.OllamaTimeout}}
-			}
-			interpreter = legacy
+			interpreter = nlp.Parser{}
 		}
 	}
 	service := assistant.New(store, interpreter, cal)

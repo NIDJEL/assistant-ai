@@ -48,6 +48,8 @@ func (h Hybrid) Interpret(ctx context.Context, text string, now time.Time) (doma
 	if base.ReminderEnabled != nil {
 		cmd.ReminderEnabled = base.ReminderEnabled
 	}
-	cmd.Provider = "ollama"
+	if cmd.Provider == "" {
+		cmd.Provider = "model"
+	}
 	return cmd, nil
 }

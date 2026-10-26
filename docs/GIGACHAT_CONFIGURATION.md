@@ -1,12 +1,22 @@
 # Настройка GigaChat
 
-[← Документация](README.md)
+[Документация](README.md) · [Быстрый запуск](QUICKSTART.md) · [Контракт модели](SIMPLE_LLM_RUNTIME.md)
 
-GigaChat используется для разбора текста в `simple_llm`. Голос предварительно превращается в текст отдельным провайдером Groq. [Контракт LLM](SIMPLE_LLM_RUNTIME.md) · [Голос](DEADLINES_AND_VOICE.md).
+GigaChat — единственный внешний провайдер текста. Groq STT и Azure TTS настраиваются отдельно; для текстового ассистента они не обязательны.
+
+## Запуск в Docker одной командой
+
+Создайте `.env` из `.env.example` или сначала запустите обычный demo. Заполните `GIGACHAT_AUTHORIZATION_KEY` и при необходимости `GIGACHAT_CA_FILE_HOST`, затем:
+
+```bash
+python scripts/service.py up --mode full
+```
+
+Launcher сохраняет существующие секреты/данные, выбирает `simple_llm` и GigaChat, собирает приложение, запускает PostgreSQL и проверяет health. Базовый Compose уже передаёт GigaChat-переменные. Действительность credentials проверяется реальным запросом ассистенту, а не только health сервера.
+
+Для доверенного CA bundle задайте абсолютный путь на Docker-хосте, например `D:/certs/gigachat-ca.pem`. Launcher создаёт override и монтирует файл read-only как `/etc/gigachat/ca.pem`. TLS-проверка остаётся включённой. Файл CA и ключи не добавляйте в Git.
 
 ## Сервер вне Docker
-
-В локальном `.env` задайте:
 
 ```dotenv
 GENA_NLU_MODE=simple_llm
@@ -18,52 +28,31 @@ GIGACHAT_TIMEOUT=30s
 GIGACHAT_MAX_CONCURRENT=1
 ```
 
-`GIGACHAT_AUTHORIZATION_KEY` — credential приложения; runtime не использует отдельные `GIGACHAT_CLIENT_ID` и `GIGACHAT_CLIENT_SECRET`. Access token получает backend и хранит только в памяти.
+Для native Go `GIGACHAT_CA_FILE` — путь на той машине, где работает процесс. `GIGACHAT_AUTHORIZATION_KEY` — credential приложения; отдельные client ID/secret runtime не использует. Полученный access token остаётся в памяти backend.
 
-Если доверенных системных сертификатов недостаточно, укажите `GIGACHAT_CA_FILE` — абсолютный путь к проверенному CA bundle на машине, где запущен Go. TLS-проверка остаётся включённой. Файл сертификатов и ключи не добавляйте в Git.
+Ручная альтернатива launcher: [compose.gigachat.example.yaml](../deploy/compose.gigachat.example.yaml) вместе с локальным `compose.yaml`. Override требует `GIGACHAT_CA_FILE_HOST`; все команды управления выполняйте с той же парой `-f`. Production использует отдельные [файлы и процедуру](../deploy/README.md).
 
-## Docker Compose
+## Ошибки и контракт
 
-Базовый `compose.yaml` не передаёт GigaChat environment в контейнер. Используйте [override](../deploy/compose.gigachat.example.yaml) вместе с базовым файлом:
+Клиент переиспользует transport, обновляет токен и ограничивает concurrency на процесс. После 401 инвалидирует token и повторяет запрос один раз; временные ошибки имеют ограниченные повторы. Для нескольких replicas с общей квотой нужен общий inference worker/очередь.
 
-1. Добавьте AI-переменные выше в `.env`.
-2. Задайте `GIGACHAT_CA_FILE_HOST` — абсолютный путь к проверенному CA bundle на Docker-хосте. На Windows используйте путь с прямыми слешами, например `D:/certs/gigachat-ca.pem`.
-3. Выполните:
-
-```bash
-docker compose -f compose.yaml -f deploy/compose.gigachat.example.yaml config --quiet
-docker compose -f compose.yaml -f deploy/compose.gigachat.example.yaml up --build -d --wait
-```
-
-Override монтирует bundle read-only как `/etc/gigachat/ca.pem` и задаёт контейнерный `GIGACHAT_CA_FILE`. Команды управления этим запуском выполняйте с той же парой `-f`.
-
-Для production используется `deploy/compose.production.yaml` вместо локального `compose.yaml`; оба production-файла уже указаны в `deploy/rhythm.service`. [Порядок обновления](../deploy/README.md).
-
-## Поведение при ошибках
-
-Клиент переиспользует HTTP transport, обновляет токен и ограничивает число одновременных запросов. После 401 инвалидирует токен и повторяет запрос один раз; временные ошибки имеют ограниченные повторы. Timeout, отмена и некорректный ответ не должны приводить к мутации пользовательских данных.
-
-LLM получает текст и компактный контекст. Go отклоняет неизвестные JSON-поля и разрешает ссылки только на существующие записи пользователя. Точные подтверждения/отмена при pending обрабатываются без inference; остальные реплики в AI-режиме идут в модель.
-
-Concurrency ограничена на процесс. Для нескольких replicas с общей квотой провайдера нужна общая очередь либо один inference worker.
+Модель получает текст и компактный контекст без DB IDs. Go отклоняет неизвестные JSON-поля, выбирает только записи текущего пользователя и проверяет даты/конфликты. Timeout, отмена и некорректный ответ не должны изменять дела. Точные подтверждения/отмена pending обрабатываются без inference, остальные реплики в AI-режиме идут в модель.
 
 ## Проверки
 
-Обычные Go-тесты не требуют обращения к GigaChat. Проверка исполнительного пути с фиксированными ответами:
+Без платной модели:
 
 ```bash
 go run ./cmd/simple-smoke -mode fixture -output artifacts/simple_llm_smoke_fixture.json
 ```
 
-Явная проверка реального провайдера, с использованием его квоты:
+Явный живой запуск с расходованием квоты:
 
 ```bash
 go run ./cmd/simple-smoke -mode live -output artifacts/simple_llm_smoke_live.json
 go run ./cmd/simple-smoke -interactive -output artifacts/simple_llm_manual.json
 ```
 
-Smoke работает во временной SQLite-базе, не в PostgreSQL приложения. Команды запускайте последовательно. `cmd/semantic-eval` и корпуса `testdata/semantic` сохранены для регрессий legacy-контракта; их оценки не являются оценками `simple_llm`.
+Запускайте команды последовательно. Smoke использует временную SQLite; PostgreSQL live-проверка — в [ASSIGNMENT_REVIEW](ASSIGNMENT_REVIEW.md). `cmd/semantic-eval` оценивает прежний semantic-контракт и не заменяет оценку `simple_llm`.
 
-## Режим правил
-
-Для запуска без LLM задайте `GENA_NLU_MODE=semantic_plan_legacy`, `GENA_SEMANTIC_PROVIDER=rules`, `NLP_PROVIDER=rules` и используйте базовый Compose без GigaChat override. Это выбор другого runtime, а не автоматический fallback при недоступности GigaChat.
+Для независимой демонстрации без внешних ключей используйте отдельный env с `GENA_NLU_MODE=semantic_plan_legacy`, `GENA_SEMANTIC_PROVIDER=rules`, `NLP_PROVIDER=rules`. Demo проверяет правила/интерфейс и не обещает качество свободной речи.

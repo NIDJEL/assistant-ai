@@ -15,7 +15,6 @@ import (
 	"github.com/NIDJEL/assistant-ai/internal/assistant"
 	"github.com/NIDJEL/assistant-ai/internal/calendar"
 	"github.com/NIDJEL/assistant-ai/internal/domain"
-	"github.com/NIDJEL/assistant-ai/internal/llm"
 	"github.com/NIDJEL/assistant-ai/internal/nlp"
 	"github.com/NIDJEL/assistant-ai/internal/repository"
 	"github.com/NIDJEL/assistant-ai/internal/search"
@@ -96,10 +95,23 @@ func TestLLMHTTPDoesNotHoldSQLiteWriteTransaction(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		close(started)
 		<-release
-		_ = json.NewEncoder(w).Encode(map[string]any{"message": map[string]string{"content": `{"action":"create","kind":"task","title":"Проверить почту"}`}})
+		_ = json.NewEncoder(w).Encode(domain.Command{Action: domain.ActionCreate, Kind: domain.EventTask, Title: "Проверить почту", Duration: time.Hour})
 	}))
 	defer server.Close()
-	adapter := &llm.Ollama{URL: server.URL, Model: "test", Client: server.Client()}
+	adapter := httpInterpreter(func(ctx context.Context, _ string, _ time.Time) (domain.Command, error) {
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, server.URL, nil)
+		if err != nil {
+			return domain.Command{}, err
+		}
+		response, err := server.Client().Do(req)
+		if err != nil {
+			return domain.Command{}, err
+		}
+		defer response.Body.Close()
+		var command domain.Command
+		err = json.NewDecoder(response.Body).Decode(&command)
+		return command, err
+	})
 	service := assistant.New(db, nlp.Hybrid{Fallback: adapter}, cal)
 	done := make(chan error, 1)
 	go func() {
@@ -132,4 +144,10 @@ func TestCSVValidationIsAtomic(t *testing.T) {
 			t.Fatalf("partial CSV write: %d %v", n, err)
 		}
 	}
+}
+
+type httpInterpreter func(context.Context, string, time.Time) (domain.Command, error)
+
+func (f httpInterpreter) Interpret(ctx context.Context, text string, now time.Time) (domain.Command, error) {
+	return f(ctx, text, now)
 }

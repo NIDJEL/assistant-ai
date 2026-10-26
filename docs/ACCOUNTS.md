@@ -6,7 +6,7 @@
 
 ## Конфигурация
 
-Задайте `DATABASE_URL`, независимый случайный `SESSION_SECRET` длиной от 32 символов и фактический `PUBLIC_URL`. В Docker адрес базы задаёт Compose; строка подключения с localhost в `.env.example` предназначена для Go вне контейнера. Нестандартные символы пароля в URL должны быть percent-encoded.
+Локальный [launcher](QUICKSTART.md) создаёт секреты и поднимает PostgreSQL автоматически. Для ручной настройки задайте `DATABASE_URL`, независимый случайный `SESSION_SECRET` длиной от 32 символов и фактический `PUBLIC_URL`. В Docker адрес базы задаёт Compose; строка подключения с localhost в `.env.example` предназначена для Go вне контейнера. Нестандартные символы пароля в URL должны быть percent-encoded.
 
 Origin браузера, `PUBLIC_URL` и callback должны совпадать: localhost и 127.0.0.1 — разные origins. Production требует `APP_ENV=production` и HTTPS. Для удалённой базы используйте проверяемое TLS-соединение.
 
@@ -25,7 +25,7 @@ Repository ограничивает чтение и изменение влад�
 
 | Маршрут | Назначение |
 | --- | --- |
-| `POST /api/auth/register` | Регистрация: name, email, password, password_confirmation. Пароль от 10 символов. |
+| `POST /api/auth/register` | Регистрация: name, email, password, password_confirmation, явные terms_accepted/personal_data_consent и текущая legal_version. Пароль от 10 символов. |
 | `POST /api/auth/login` | Вход с ротацией текущей сессии. |
 | `POST /api/auth/logout` | Удаление сессии и очистка cookie. |
 | `GET /api/auth/me` | Текущий профиль, providers и состояние onboarding. |

@@ -56,6 +56,10 @@
   .friends-controls .segments.segments--sliding button { flex-direction: column; justify-content: center; gap: 5px; min-height: 65px; padding: 8px 5px; font-size: 11px; white-space: normal; }
   .friends-controls .segments.segments--sliding .count { margin: 0; }
 }
+@media (max-width: 500px) {
+  .tasks-toolbar .segments.segments--sliding { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; border-radius: 24px; }
+  .tasks-toolbar .segments.segments--sliding button { justify-content: center; min-width: 0; }
+}
 @media (prefers-reduced-motion: reduce) {
   html:not([data-motion='full']) .segments--sliding[data-ready='true'] > .segment-indicator { transition: none; }
 }

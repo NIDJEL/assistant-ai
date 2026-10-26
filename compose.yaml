@@ -2,26 +2,44 @@ services:
   app:
     build: .
     ports:
-      - "127.0.0.1:8081:8000"
+      - "127.0.0.1:${APP_HTTP_PORT:-8081}:8000"
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER:-rhythm}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@postgres:5432/${POSTGRES_DB:-rhythm}?sslmode=disable
       SESSION_SECRET: ${SESSION_SECRET:?Set SESSION_SECRET (32+ random characters) in .env}
       PUBLIC_URL: ${PUBLIC_URL:-http://localhost:8081}
+      AUTO_IMPORT_DEMO: "false"
       APP_ENV: ${APP_ENV:-development}
       APP_TIMEZONE: ${APP_TIMEZONE:-Europe/Moscow}
+      AUTH_RATE_LIMIT: ${AUTH_RATE_LIMIT:-20}
+      TRUSTED_PROXY_CIDRS: ${TRUSTED_PROXY_CIDRS:-}
       # Rules-only Docker/CI remains available without external credentials.
       GENA_NLU_MODE: ${GENA_NLU_MODE:-semantic_plan_legacy}
+      GENA_SEMANTIC_PROVIDER: ${GENA_SEMANTIC_PROVIDER:-rules}
+      GIGACHAT_AUTHORIZATION_KEY: ${GIGACHAT_AUTHORIZATION_KEY:-}
+      GIGACHAT_SCOPE: ${GIGACHAT_SCOPE:-GIGACHAT_API_PERS}
+      GIGACHAT_BASE_URL: ${GIGACHAT_BASE_URL:-https://api.giga.chat}
+      GIGACHAT_MODEL: ${GIGACHAT_MODEL:-GigaChat-3-Ultra}
+      GIGACHAT_TIMEOUT: ${GIGACHAT_TIMEOUT:-30s}
+      GIGACHAT_MAX_CONCURRENT: ${GIGACHAT_MAX_CONCURRENT:-1}
+      GIGACHAT_CA_FILE: ${GIGACHAT_CA_FILE:-}
+      GENA_TTS_PROVIDER: ${GENA_TTS_PROVIDER:-}
+      AZURE_SPEECH_KEY: ${AZURE_SPEECH_KEY:-}
+      AZURE_SPEECH_REGION: ${AZURE_SPEECH_REGION:-eastus}
+      AZURE_TTS_VOICE: ${AZURE_TTS_VOICE:-ru-RU-DmitryNeural}
       GENA_STT_PROVIDER: ${GENA_STT_PROVIDER:-}
       GROQ_API_KEY: ${GROQ_API_KEY:-}
       GROQ_STT_MODEL: ${GROQ_STT_MODEL:-whisper-large-v3-turbo}
       GROQ_PROXY_URL: ${GROQ_PROXY_URL:-}
       NLP_PROVIDER: ${NLP_PROVIDER:-rules}
-      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://ollama:11434}
-      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:7b}
-      OLLAMA_TIMEOUT: ${OLLAMA_TIMEOUT:-20}
       YANDEX_CLIENT_ID: ${YANDEX_CLIENT_ID:-}
       YANDEX_CLIENT_SECRET: ${YANDEX_CLIENT_SECRET:-}
       YANDEX_REDIRECT_URI: ${YANDEX_REDIRECT_URI:-}
+      GOOGLE_CALENDAR_CLIENT_ID: ${GOOGLE_CALENDAR_CLIENT_ID:-}
+      GOOGLE_CALENDAR_CLIENT_SECRET: ${GOOGLE_CALENDAR_CLIENT_SECRET:-}
+      GOOGLE_CALENDAR_REDIRECT_URI: ${GOOGLE_CALENDAR_REDIRECT_URI:-}
+      ZOOM_CLIENT_ID: ${ZOOM_CLIENT_ID:-}
+      ZOOM_CLIENT_SECRET: ${ZOOM_CLIENT_SECRET:-}
+      ZOOM_REDIRECT_URI: ${ZOOM_REDIRECT_URI:-}
       ZOOM_WEBHOOK_SECRET_TOKEN: ${ZOOM_WEBHOOK_SECRET_TOKEN:-}
       WEB_PUSH_VAPID_PUBLIC_KEY: ${WEB_PUSH_VAPID_PUBLIC_KEY:-}
       WEB_PUSH_VAPID_PRIVATE_KEY: ${WEB_PUSH_VAPID_PRIVATE_KEY:-}
@@ -44,12 +62,6 @@ services:
       timeout: 3s
       retries: 12
     restart: unless-stopped
-  ollama:
-    image: ollama/ollama:latest
-    profiles: ["ollama"]
-    volumes:
-      - rhythm-ollama-data:/root/.ollama
-    restart: unless-stopped
+
 volumes:
   rhythm-postgres-data:
-  rhythm-ollama-data:

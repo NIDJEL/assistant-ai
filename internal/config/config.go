@@ -34,9 +34,8 @@ type Config struct {
 	TrustedProxyCIDRs                                                             []*net.IPNet
 	DatabaseURL, SessionSecret, PublicURL, Environment                            string
 	YandexClientID, YandexClientSecret, YandexRedirectURI                         string
-	Address, Root, DatabasePath, Timezone, NLPProvider, OllamaURL, OllamaModel    string
+	Address, Root, DatabasePath, Timezone, NLPProvider                            string
 	AutoImport                                                                    bool
-	OllamaTimeout                                                                 time.Duration
 	Location                                                                      *time.Location
 }
 
@@ -98,7 +97,6 @@ func Load() (Config, error) {
 		Address: value("APP_ADDR", "127.0.0.1:8081"), Root: root,
 		DatabasePath: value("DATABASE_PATH", filepath.Join(root, "var/assistant-go.sqlite3")),
 		Timezone:     value("APP_TIMEZONE", "Europe/Moscow"), NLPProvider: value("NLP_PROVIDER", "rules"),
-		OllamaURL: value("OLLAMA_BASE_URL", "http://127.0.0.1:11434"), OllamaModel: value("OLLAMA_MODEL", "qwen2.5:7b"),
 	}
 	if c.NLUMode == "" {
 		c.NLUMode = "simple_llm"
@@ -121,8 +119,8 @@ func Load() (Config, error) {
 	if err := c.WebPush.Validate(); err != nil {
 		return c, err
 	}
-	if c.SemanticProvider != "" && c.SemanticProvider != "rules" && c.SemanticProvider != "ollama" && c.SemanticProvider != "gigachat" {
-		return c, errors.New("GENA_SEMANTIC_PROVIDER must be rules, ollama or gigachat")
+	if c.SemanticProvider != "" && c.SemanticProvider != "rules" && c.SemanticProvider != "gigachat" {
+		return c, errors.New("GENA_SEMANTIC_PROVIDER must be rules or gigachat")
 	}
 	if c.GigaChat.Timeout, err = time.ParseDuration(value("GIGACHAT_TIMEOUT", "30s")); err != nil || c.GigaChat.Timeout <= 0 || c.GigaChat.Timeout > 2*time.Minute {
 		return c, errors.New("GIGACHAT_TIMEOUT must be a duration between 0 and 2m")
@@ -167,17 +165,8 @@ func Load() (Config, error) {
 	if c.AutoImport, err = strconv.ParseBool(value("AUTO_IMPORT_DEMO", "true")); err != nil {
 		return c, fmt.Errorf("AUTO_IMPORT_DEMO: %w", err)
 	}
-	seconds, err := strconv.Atoi(value("OLLAMA_TIMEOUT", "20"))
-	if err != nil || seconds < 1 || seconds > 120 {
-		return c, errors.New("OLLAMA_TIMEOUT must be between 1 and 120 seconds")
-	}
-	c.OllamaTimeout = time.Duration(seconds) * time.Second
-	if c.NLPProvider != "rules" && c.NLPProvider != "ollama" && c.NLPProvider != "hybrid" {
-		return c, errors.New("NLP_PROVIDER must be rules, ollama or hybrid")
-	}
-	u, err := url.Parse(c.OllamaURL)
-	if err != nil || u.Host == "" || (u.Scheme != "http" && u.Scheme != "https") {
-		return c, errors.New("OLLAMA_BASE_URL must be an HTTP(S) URL")
+	if c.NLPProvider != "rules" {
+		return c, errors.New("NLP_PROVIDER must be rules; use GENA_SEMANTIC_PROVIDER=gigachat for AI")
 	}
 	return c, nil
 }

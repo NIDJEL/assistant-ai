@@ -1,0 +1,30 @@
+erDiagram
+    users ||--o{ sessions : "вход"
+    users ||--o{ auth_identities : "способы входа"
+    users ||--o{ events : "владелец"
+    users ||--o{ dialogue_sessions : "контекст"
+    dialogue_sessions ||--o{ dialogue_exchanges : "история и request_id"
+    users ||--o{ preferences : "настройки"
+    users ||--o{ cloud_connections : "OAuth токены"
+    events ||--o{ cloud_event_links : "внешние события"
+    users ||--o{ cloud_outbox : "экспорт и Zoom"
+    users ||--o{ calendar_outbox : "Яндекс"
+    users ||--o{ push_subscriptions : "устройства"
+    events ||--o{ notification_occurrences : "сигналы"
+    notification_occurrences ||--o{ notification_deliveries : "доставка"
+    events ||--o| collaborative_meetings : "совместная встреча"
+    collaborative_meetings ||--o{ meeting_participants : "участники"
+    users ||--o{ meeting_participants : "приглашения"
+    users {
+        uuid id PK
+        text display_name
+        text email
+    }
+    events {
+        bigint id PK
+        uuid user_id FK
+        text kind
+        text title
+        text date
+        text status
+    }

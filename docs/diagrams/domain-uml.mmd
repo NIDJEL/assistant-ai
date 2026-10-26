@@ -1,0 +1,52 @@
+classDiagram
+    direction LR
+    class AssistantService {
+        +Respond(ctx, text, sessionID, requestID, now)
+        +Store repository.Store
+        +Interpreter Interpreter
+        +Calendar calendar.Service
+    }
+    class Interpreter {
+        <<interface>>
+        +Interpret(ctx, text, now) Command
+    }
+    class Simple {
+        +Provider SimpleProvider
+        +Interpret(ctx, text, now) Command
+        +InterpretOperation(ctx, text, context) Operation
+    }
+    class GigaChat {
+        +ParseOperation(ctx, request, context) Operation
+        +Close()
+    }
+    class CalendarService {
+        +Store repository.Store
+        +Location time.Location
+        +Create(ctx, input, now)
+        +Import(ctx, reader, name, now)
+    }
+    class Store {
+        <<interface>>
+        +Read(ctx, callback)
+        +Write(ctx, callback)
+    }
+    class PostgresDatabase {
+        +Read(ctx, callback)
+        +Write(ctx, callback)
+    }
+    class Event {
+        +ID int64
+        +Kind EventKind
+        +Title string
+        +Date Date
+        +StartTime TimeOfDay
+        +Status Status
+    }
+    AssistantService --> Interpreter : использует
+    Simple ..|> Interpreter
+    Simple --> GigaChat : понимание речи
+    AssistantService --> CalendarService : исполняет проверенную команду
+    AssistantService --> Store : диалог и результат
+    CalendarService --> Store
+    PostgresDatabase ..|> Store
+    CalendarService --> Event

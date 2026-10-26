@@ -8,7 +8,7 @@
 
 1. В существующем приложении [Яндекс OAuth](https://oauth.yandex.ru/) включите право **«Чтение и изменение содержимого календарей и списков дел» (`calendar:all`)** вместе с используемыми правами `login:info`, `login:email`, `login:avatar`.
 2. Используйте прежние `YANDEX_CLIENT_ID`, `YANDEX_CLIENT_SECRET`, `YANDEX_REDIRECT_URI`. Новый callback не требуется. `PUBLIC_URL` должен совпадать с адресом приложения.
-3. Пересоберите приложение: `docker compose up --build -d app`. Миграция PostgreSQL выполняется автоматически при старте.
+3. Примените настройки: локально — `python scripts/service.py up` с тем же env/project, в production — [штатный выпуск](../deploy/CI_CD.md). Миграция PostgreSQL выполняется автоматически при старте. [Быстрый запуск](QUICKSTART.md).
 4. Нажмите **«Подключить Яндекс Календарь»** в onboarding и разрешите доступ на странице Яндекса. Callback завершает onboarding и открывает чат `/`. **«Сделать позже»** также сразу открывает чат. Для подключения позже используйте **Интеграции → Яндекс Календарь → Настроить**.
 
 OAuth сохраняет source=onboarding/integrations в одноразовом серверном state. Flow из «Интеграций» возвращается туда для управления. Ошибка/отмена из onboarding возвращает `/onboarding?error=...` с повторной попыткой и пропуском. Активное/pending подключение пропускает лишний onboarding connect. Callback сохраняет зашифрованные credentials и очередь initial sync, будит calendar worker; в чате пользователь уже может работать, состояние синхронизации доступно в «Интеграциях». [Аккаунты и onboarding](ACCOUNTS.md).

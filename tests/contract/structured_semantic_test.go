@@ -4,8 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"net"
-	"net/http"
-	"net/http/httptest"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -25,14 +23,7 @@ import (
 func structuredRenameModel(t *testing.T) *llm.Semantic {
 	t.Helper()
 	content := structuredFixture(t, `{"status":"ok","action":"update","kind":"meeting","title":null,"query":null,"target":{"query":"Встреча с Никитой","all":false},"changes":{"title":"Встреча с Геной","date_expression":"завтра"}}`)
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		_ = json.NewEncoder(w).Encode(map[string]any{"done": true, "message": map[string]string{"content": content}})
-	}))
-	t.Cleanup(server.Close)
-	provider, err := llm.NewOllamaSemantic(server.URL, "test", time.Second)
-	if err != nil {
-		t.Fatal(err)
-	}
+	provider := semanticFixtureProvider{raw: content}
 	return &llm.Semantic{Provider: provider, CacheDir: t.TempDir()}
 }
 
@@ -141,17 +132,7 @@ func TestStructuredSemanticDryRunCorpusDoesNotMutate(t *testing.T) {
 func TestStructuredSemanticDialogueUsesExistingPendingFlow(t *testing.T) {
 	store, cal, now := services(t)
 	calls := 0
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		calls++
-		_ = json.NewEncoder(w).Encode(map[string]any{"done": true, "message": map[string]string{
-			"content": structuredFixture(t, `{"status":"ok","action":"create","kind":"reminder","title":"Проверить аквариум","date_expression":"завтра"}`),
-		}})
-	}))
-	defer server.Close()
-	provider, err := llm.NewOllamaSemantic(server.URL, "test", time.Second)
-	if err != nil {
-		t.Fatal(err)
-	}
+	provider := semanticFixtureProvider{raw: structuredFixture(t, `{"status":"ok","action":"create","kind":"reminder","title":"Проверить аквариум","date_expression":"завтра"}`), onParse: func() { calls++ }}
 	model := &llm.Semantic{Provider: provider, CacheDir: t.TempDir()}
 	service := assistant.New(store, model, cal)
 	first, err := service.Respond(t.Context(), "Напомни завтра проверить аквариум", "dialogue", "one", now)
@@ -231,4 +212,20 @@ func structuredFixture(t *testing.T, raw string) string {
 	fill(value, nlp.SemanticSchema())
 	data, _ := json.Marshal(value)
 	return string(data)
+}
+
+// A deterministic provider keeps contract tests independent of unused transports.
+type semanticFixtureProvider struct {
+	raw     string
+	onParse func()
+}
+
+func (semanticFixtureProvider) Name() string    { return "fixture" }
+func (semanticFixtureProvider) ModelID() string { return "structured-test" }
+func (p semanticFixtureProvider) Parse(context.Context, llm.SemanticRequest) (nlp.SemanticCommand, llm.ProviderMeta, error) {
+	if p.onParse != nil {
+		p.onParse()
+	}
+	command, err := nlp.DecodeSemantic([]byte(p.raw))
+	return command, llm.ProviderMeta{Raw: p.raw}, err
 }

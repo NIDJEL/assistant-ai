@@ -1,0 +1,190 @@
+{
+  "captured_at": "2026-10-26T01:35:38.056Z",
+  "source_commit": "d85213b5581bf262d05e2ecb74e50c49b94785f2",
+  "working_tree_changes": true,
+  "base_url": "http://localhost:18087",
+  "source": "real local Go/PostgreSQL application; synthetic accounts and records; no mocked API responses",
+  "nlp_provider": "rules",
+  "screenshots": [
+    {
+      "file": "auth.png",
+      "route": "/auth",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "sha256": "dbf336137d17415d47e2456d7f65d7eaaafd39db969a69bfe4d01ca31810ca70"
+    },
+    {
+      "file": "onboarding.png",
+      "route": "/onboarding",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "sha256": "3940f01faad427cf69cc012c8c1670f0d5eb122a7e5839faeaa1acc9645d4a8b"
+    },
+    {
+      "file": "assistant.png",
+      "route": "/",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "sha256": "c1be9ac026e85371d44f24944bbe1b64e754565f13875fbc5c72c4d8a61d7ad8"
+    },
+    {
+      "file": "quick-commands.png",
+      "route": "/",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "sha256": "68d48315766124ccc0e2d9ef3683bf0d2063007b287b38c84bf80f92257fc9ca"
+    },
+    {
+      "file": "calendar.png",
+      "route": "/calendar",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "sha256": "c92af0418910c5e610e042c7017e96a53afd08d29ab50e443772af19b66d37d3"
+    },
+    {
+      "file": "tasks.png",
+      "route": "/tasks",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "sha256": "b76c41f608cbf13320b4aa9cd9068688c3e65181b6ed2c12a3cbe9ea5be4b313"
+    },
+    {
+      "file": "meetings.png",
+      "route": "/meetings",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "sha256": "9d5c4bfd1c9604a490005eec062853e1827c2d4eb73bb20ca8be65e656366b42"
+    },
+    {
+      "file": "reminders.png",
+      "route": "/reminders",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "sha256": "ced6821770037e9179f6b0b3964a51bf8d0a964d2f883454c42d9507f615df68"
+    },
+    {
+      "file": "integrations.png",
+      "route": "/integrations",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "sha256": "f99b69bb39e550839795558fe1fa3af4d57f448b0882843a138148a754e0092e"
+    },
+    {
+      "file": "settings.png",
+      "route": "/settings",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "sha256": "28d88973a035d708cc55b132b5f17d7006a96dfc7e719115ca677257fad1f336"
+    },
+    {
+      "file": "archive.png",
+      "route": "/archive",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "sha256": "f9b84409739a1969e4cf9c453ee3609015560fcbbebe1c138ead8e22cb99ce96"
+    },
+    {
+      "file": "assistant-light.png",
+      "route": "/",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "sha256": "569c88f3e2be03835cfb95e557b9cab530119c03041870d7308eae8b9e8bc678"
+    },
+    {
+      "file": "calendar-light.png",
+      "route": "/calendar",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "sha256": "c0902c63d679c692bc6e6badf48545ba19b9e1220b75dc39bf6adca4649b432d"
+    },
+    {
+      "file": "mobile.png",
+      "route": "/tasks",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "sha256": "51a95caa5825f985048518f449f963b953f9c133950a2fc2e92ff36ffcd06465"
+    },
+    {
+      "file": "mobile-calendar.png",
+      "route": "/calendar",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "sha256": "484ee0328f8a9d2e4f63b4a8305149d080d858bb42aa99b7d5d0350d034d07cc"
+    },
+    {
+      "file": "mobile-integration.png",
+      "route": "/integrations",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "sha256": "900208dfd8919f4d1b67f2f09debee8dab8e4cb8f12ae3144da89cd71b574a21"
+    },
+    {
+      "file": "mobile-commands.png",
+      "route": "/",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "sha256": "a1dcca4b875b6a286528b95aea03e7d6789a85f6eeec2722e66f57a9b985ecb0"
+    },
+    {
+      "file": "error-404.png",
+      "route": "/errors/404",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "sha256": "add2f2394bea6c2c4bb887c1c2b829d148ac514c8eaa55e0ef824ade1880c416"
+    },
+    {
+      "file": "error-503.png",
+      "route": "/errors/503",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "sha256": "eb04d3e611b0673cce9df842486af0eb55f89f66af34c4bbee2fd776ad5d70e7"
+    },
+    {
+      "file": "friends.png",
+      "route": "/friends",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "sha256": "f07cb56870b523ab3b617dc1ef04065ac7b305a61c0199904472456ff7ad08c7"
+    }
+  ]
+}

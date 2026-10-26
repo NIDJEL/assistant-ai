@@ -1,0 +1,32 @@
+sequenceDiagram
+    autonumber
+    actor U as Пользователь
+    participant UI as React / Composer
+    participant API as Go API
+    participant A as Assistant
+    participant G as GigaChat
+    participant DB as PostgreSQL
+    participant W as Worker
+    participant C as Внешний календарь
+    U->>UI: Вводит текст или проверяет голосовой черновик
+    U->>UI: Нажимает отправку
+    UI->>API: POST /api/chat + session_id + request_id
+    API->>A: Авторизованный контекст пользователя
+    A->>DB: Прочитать контекст / проверить request_id
+    A->>G: Фраза + компактный контекст, без DB IDs
+    G-->>A: intent + arguments + confidence
+    Note over A,G: Вызов модели не держит write-транзакцию
+    A->>A: Проверить JSON, даты, цель, права и конфликты
+    alt Не хватает данных или нужно подтверждение
+        A->>DB: Сохранить pending и ответ без изменения дел
+        A-->>UI: Уточнение или preview
+    else Операция разрешена
+        A->>DB: BEGIN: дело + диалог + результат + outbox
+        DB-->>A: COMMIT
+        A-->>UI: Сохранённый результат
+        W->>DB: Забрать запись очереди
+        W->>C: Экспорт / синхронизация
+        C-->>W: Результат или временная ошибка
+        W->>DB: Статус доставки / повтор
+    end
+    UI-->>U: Показать ответ и карточку
