@@ -1,5 +1,8 @@
 # Semantic evidence policy v2 и fresh v7
 
+Полные журналы и архивы из `artifacts/plan/` сохранены локально и не входят в публикуемый репозиторий. Наборы для воспроизведения находятся в `testdata/semantic/`; актуальные публичные доказательства приведены в [отчёте об улучшениях](QUALITY5_IMPROVEMENTS.md).
+
+
 **Production ready: NO. Deploy не выполнялся.** Production/VPS, production DB/env не затронуты. Frozen v6 не перезапускался и не переоценивался. Второго LLM verifier нет.
 
 В fresh v7 обнаружена **1 wrong-value mutation**: по запросу «Заведи задачу «Заменить привод купола» на завтра» модель создала задачу без даты, опустив `schedule`. Unsafe=0 означает отсутствие записей на неожиданные ID; это не обнуляет ошибочную дату/её отсутствие на разрешённой записи. End-to-end=75,41%, multi-turn=50%, complex=73,03%. Полный разбор: [postmortem](SEMANTIC_POLICY_V7_POSTMORTEM.md).
@@ -22,7 +25,7 @@ Search normalization удаляет только пустые title/changes/sche
 | search | 0 | 15 | 18 |
 | update | 22 | 1 | 10 |
 
-Матрица полей: [policy-inventory.json](../artifacts/plan/policy-inventory.json).
+Матрица полей: policy-inventory.json (локальный файл `artifacts/plan/policy-inventory.json`).
 
 ## DEV
 
@@ -35,11 +38,11 @@ Search normalization удаляет только пустые title/changes/sche
 
 Focused reference суммарно: **152/152 = 100.00%**, 56 conversations. Основные 50 дополнены 6 диалогами с буквальными короткими «её», «его», «ту» при одном или нескольких результатах.
 
-Новые независимые DEV: `scripts/plan_policy_dev.py`. Первые результаты сохранены; финальные прогоны используют окончательный prompt/runtime. Offline raw-response replay финальным evaluator подтверждает accuracy без новых inference; сетевые latency берутся только из live runs. В policy gold исправлены только 8 Count-проверок: batch complete возвращает реально изменённые задачи, уже выполненная задача сохраняется и проверяется отдельно. Сообщения, seeds и ожидаемые write values не менялись; [аудит исправления](../artifacts/plan/policy-dev-gold-correction.json).
+Новые независимые DEV: `scripts/plan_policy_dev.py`. Первые результаты сохранены; финальные прогоны используют окончательный prompt/runtime. Offline raw-response replay финальным evaluator подтверждает accuracy без новых inference; сетевые latency берутся только из live runs. В policy gold исправлены только 8 Count-проверок: batch complete возвращает реально изменённые задачи, уже выполненная задача сохраняется и проверяется отдельно. Сообщения, seeds и ожидаемые write values не менялись; аудит исправления (локальный файл `artifacts/plan/policy-dev-gold-correction.json`).
 
 Таймеры: 0 evidence rejections на 12 новых timer conversations. Neutral any/read/shift: 0 evidence rejections.
 
-Старый reference 29/40 разобран по исходным raw plans: 6 wrong kind; 2 incompatible search payload; 2 последующих потери результата из-за неуспешного поиска; 1 model semantic failure. Wrong reference и strict JSON shape failure среди этих 11 ошибок отсутствуют (payload compatibility учитывается отдельно). [Классификация](../artifacts/plan/reference-legacy-root-causes.json). Слово «проверка» в runtime/prompt не hardcoded.
+Старый reference 29/40 разобран по исходным raw plans: 6 wrong kind; 2 incompatible search payload; 2 последующих потери результата из-за неуспешного поиска; 1 model semantic failure. Wrong reference и strict JSON shape failure среди этих 11 ошибок отсутствуют (payload compatibility учитывается отдельно). Классификация (локальный файл `artifacts/plan/reference-legacy-root-causes.json`). Слово «проверка» в runtime/prompt не hardcoded.
 
 Adversarial: исходные 48/48 + новые 20/20, **68/68 PASS**. Все проходят strict decoder → Service → disposable SQLite → последующее «да»; mutation count=0. Новые случаи: explicit status mismatch при optional any proof, подмена требуемого поля optional proof, case day mismatch, duplicate required proof, exclusion kind mismatch.
 
@@ -193,4 +196,4 @@ Logical ParsePlan calls: 304; network inference requests: 261. Network latency �
 
 **Production ready: NO.** Решение основано на единственном frozen v7 и обоих reference DEV. Пороги не снижались. Все safe refusals остаются в accuracy; модельные semantic/schema ошибки не исправлялись post-holdout.
 
-Отчёты: [policy DEV](../artifacts/plan/policy-dev-final-corrected.json), [context DEV](../artifacts/plan/context-dev-final.json), [старый reference](../artifacts/plan/policy-reference-final.json), [fresh v7](../artifacts/plan/heldout-v7-first.json), [машинная сводка](../artifacts/plan/policy-v7-summary.json).
+Отчёты: policy DEV (локальный файл `artifacts/plan/policy-dev-final-corrected.json`), context DEV (локальный файл `artifacts/plan/context-dev-final.json`), старый reference (локальный файл `artifacts/plan/policy-reference-final.json`), fresh v7 (локальный файл `artifacts/plan/heldout-v7-first.json`), машинная сводка (локальный файл `artifacts/plan/policy-v7-summary.json`).

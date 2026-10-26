@@ -1,5 +1,8 @@
 # Локальная архитектура и первый frozen v8
 
+Полные журналы и архивы из `artifacts/plan/` сохранены локально и не входят в публикуемый репозиторий. Наборы для воспроизведения находятся в `testdata/semantic/`; актуальные публичные доказательства приведены в [отчёте об улучшениях](QUALITY5_IMPROVEMENTS.md).
+
+
 **Production ready: NO. Production/VPS не использовались, deploy не выполнялся. Frozen v7 не перезапускался.**
 
 V8: end-to-end 472/563 = 83,84%, multi-turn 121/180 = 67,22%, complex 429/519 = 82,66%, strict validity 365/385 = 94,81%. Не достигнуты все четыре quality gate. Помимо model failures выявлен false-reject в source coverage: 10 семантически правильных source/destination date pairs отклонены из-за неверного определения роли двух «на X». После holdout код не исправлялся.
@@ -32,7 +35,7 @@ Search/reference TTL — 15 минут либо 4 unrelated chat turns; pending 
 
 40/40 намеренно неполных JSON-планов проходят strict shape/compatibility и отклоняются SOURCE → PLAN guard до preview/write. После последующего подтверждения записей также нет: **wrong writes=0**.
 
-Те же 40 планов дополнительно проверены с реально существующими matching targets/exclusions, тремя result candidates и одним fresh Affected в достижимом состоянии после update. Результат также 40/40 PASS, wrong writes=0: отказ не зависит от отсутствующей записи в базе. Это повторная проверка тех же payloads, не 40 дополнительных уникальных атак. [Seeded audit](../artifacts/plan/omission-adversarial40-seeded.json).
+Те же 40 планов дополнительно проверены с реально существующими matching targets/exclusions, тремя result candidates и одним fresh Affected в достижимом состоянии после update. Результат также 40/40 PASS, wrong writes=0: отказ не зависит от отсутствующей записи в базе. Это повторная проверка тех же payloads, не 40 дополнительных уникальных атак. Seeded audit (локальный файл `artifacts/plan/omission-adversarial40-seeded.json`).
 
 | Отсутствующее поле | Поймано |
 |---|---:|
@@ -187,4 +190,4 @@ Transport retry разрешён только для 429/502/503/transport failu
 
 **Production ready: NO. Deploy не выполнялся.**
 
-Артефакты: [raw v8](../artifacts/plan/heldout-v8-first.json), [freeze protocol](../testdata/semantic/plan_heldout_v8_protocol.json), [freeze verification](../artifacts/plan/v8-freeze-verification.json), [machine summary](../artifacts/plan/architecture-v8-summary.json), [failure inventory](../artifacts/plan/architecture-v8-failures.json), [DEV](../artifacts/plan/architecture-dev-verified.json), [omissions](../artifacts/plan/omission-adversarial40.json), [state machine](SEMANTIC_STATE_MACHINE.md).
+Артефакты: raw v8 (локальный файл `artifacts/plan/heldout-v8-first.json`), [freeze protocol](../testdata/semantic/plan_heldout_v8_protocol.json), freeze verification (локальный файл `artifacts/plan/v8-freeze-verification.json`), machine summary (локальный файл `artifacts/plan/architecture-v8-summary.json`), failure inventory (локальный файл `artifacts/plan/architecture-v8-failures.json`), DEV (локальный файл `artifacts/plan/architecture-dev-verified.json`), omissions (локальный файл `artifacts/plan/omission-adversarial40.json`), [state machine](SEMANTIC_STATE_MACHINE.md).

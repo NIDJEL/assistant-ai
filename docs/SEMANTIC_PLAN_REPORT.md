@@ -1,5 +1,8 @@
 # SemanticPlan — локальная реализация и независимые прогоны
 
+Полные журналы и архивы из `artifacts/plan/` сохранены локально и не входят в публикуемый репозиторий. Наборы для воспроизведения находятся в `testdata/semantic/`; актуальные публичные доказательства приведены в [отчёте об улучшениях](QUALITY5_IMPROVEMENTS.md).
+
+
 17 октября 2026. Модель: **GigaChat-3-Ultra**, temperature=0.
 
 **Production ready: NO.** Архитектура реализована локально. В финальном полном
@@ -243,13 +246,13 @@ production PostgreSQL; production специально не использова
 
 Основные локальные артефакты:
 
-- [Текущий DEV replay](../artifacts/plan/dev-post-safety.json).
-- [Дополнительный reference DEV](../artifacts/plan/reference-dev.json).
-- [Оригинальный v3, первый полный run](../artifacts/plan/heldout-v3-first.json).
-- [Исходники замороженного v3](../artifacts/plan/v3-frozen-source.zip).
-- [Focused v4, первый run](../artifacts/plan/reference-v4-first.json).
-- [Полный v5, первый run](../artifacts/plan/heldout-v5-first.json).
-- [Go tests](../artifacts/plan/go-test-final.log), [go vet](../artifacts/plan/go-vet-final.log).
+- Текущий DEV replay (локальный файл `artifacts/plan/dev-post-safety.json`).
+- Дополнительный reference DEV (локальный файл `artifacts/plan/reference-dev.json`).
+- Оригинальный v3, первый полный run (локальный файл `artifacts/plan/heldout-v3-first.json`).
+- Исходники замороженного v3 (локальный файл `artifacts/plan/v3-frozen-source.zip`).
+- Focused v4, первый run (локальный файл `artifacts/plan/reference-v4-first.json`).
+- Полный v5, первый run (локальный файл `artifacts/plan/heldout-v5-first.json`).
+- Go tests (локальный файл `artifacts/plan/go-test-final.log`), go vet (локальный файл `artifacts/plan/go-vet-final.log`).
 
 Protocols: [v3](../testdata/semantic/plan_heldout_v3_protocol.json),
 [v4](../testdata/semantic/plan_reference_heldout_v4_protocol.json),

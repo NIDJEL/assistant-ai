@@ -16,6 +16,8 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def main():
     tracked = subprocess.check_output(['git', 'ls-files', '-z'], cwd=ROOT).decode().split('\0')
+    tracked_files = set(tracked)
+    tracked_dirs = {parent.as_posix() for name in tracked if name for parent in Path(name).parents}
     errors = []
     documents = [ROOT / name for name in tracked if name.endswith('.md') and (ROOT / name).is_file()]
     links = 0
@@ -34,6 +36,14 @@ def main():
             resolved = (path.parent / unquote(parsed.path)).resolve()
             if not resolved.exists():
                 errors.append(f'{path.relative_to(ROOT)}: missing {target}')
+            else:
+                try:
+                    relative = resolved.relative_to(ROOT).as_posix()
+                except ValueError:
+                    errors.append(f'{path.relative_to(ROOT)}: nonportable local link {target}')
+                    continue
+                if relative not in tracked_files and relative not in tracked_dirs:
+                    errors.append(f'{path.relative_to(ROOT)}: link target is not in Git: {target}')
 
     class Gallery(HTMLParser):
         def handle_starttag(self, tag, attrs):

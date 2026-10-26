@@ -1,5 +1,8 @@
 # Первый frozen v7: разбор без исправления результатов
 
+Полные журналы и архивы из `artifacts/plan/` сохранены локально и не входят в публикуемый репозиторий. Наборы для воспроизведения находятся в `testdata/semantic/`; актуальные публичные доказательства приведены в [отчёте об улучшениях](QUALITY5_IMPROVEMENTS.md).
+
+
 **Production ready: NO.** Единственный полный прогон: 150 диалогов / 370 ходов. Corpus, prompt, schema, code и evaluator после freeze не менялись; inference/replay v7 не повторялся. Изменения после получения результатов ограничены отчётом и диагностическими артефактами.
 
 ## Неправильная запись
@@ -58,4 +61,4 @@ Focused DEV: 56 диалогов / 152 хода — 100%; старый reference
 - 304 logical ParsePlan calls, 66 exact fast paths, verifier calls=0.
 - `go test -count=1 ./...` и `go vet ./...`: PASS перед freeze; все 172 замороженных файла совпали после полного inference.
 
-Raw result: [heldout-v7-first.json](../artifacts/plan/heldout-v7-first.json). Protocol: [plan_heldout_v7_protocol.json](../testdata/semantic/plan_heldout_v7_protocol.json). Freeze verification: [v7-freeze-verification.json](../artifacts/plan/v7-freeze-verification.json). Машинная сводка: [policy-v7-summary.json](../artifacts/plan/policy-v7-summary.json).
+Raw result: heldout-v7-first.json (локальный файл `artifacts/plan/heldout-v7-first.json`). Protocol: [plan_heldout_v7_protocol.json](../testdata/semantic/plan_heldout_v7_protocol.json). Freeze verification: v7-freeze-verification.json (локальный файл `artifacts/plan/v7-freeze-verification.json`). Машинная сводка: policy-v7-summary.json (локальный файл `artifacts/plan/policy-v7-summary.json`).
