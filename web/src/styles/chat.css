@@ -5,6 +5,13 @@ html[data-surface='workspace'] .today-page.has-messages { height: calc(100dvh - 
 html[data-surface='workspace'] .today-page.has-messages > .conversation { margin-top: 0; padding-top: 8px; }
 .conversation { scrollbar-width: none; }
 .conversation::-webkit-scrollbar { display: none; width: 0; height: 0; }
+html[data-surface='workspace'] .composer { position: relative; padding-left: 8px; }
+.composer-plus { display: grid; place-items: center; flex: 0 0 38px; width: 38px; height: 38px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--microphone-fg, var(--muted)); transition: background-color 160ms ease, color 160ms ease; }
+.composer-plus:is(:hover, [aria-expanded='true']) { background: var(--surface-hover); color: var(--text); }
+.composer-commands { position: absolute; z-index: 12; bottom: calc(100% + 12px); left: 0; display: flex; flex-wrap: wrap; gap: 8px; max-width: 100%; animation: motion-message-in 180ms var(--motion-ease) both; }
+.composer-commands button { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 10px 13px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface); color: var(--text); font-size: 13px; line-height: 1.3; white-space: nowrap; box-shadow: 0 5px 18px var(--overlay-shadow, #0002); transition: background-color 160ms ease, border-color 160ms ease; }
+.composer-commands button svg { flex-shrink: 0; color: var(--accent); }
+.composer-commands button:hover { background: var(--surface-hover); border-color: var(--selected-border, var(--accent)); }
 .exchange { overflow-anchor: none; }
 .assistant-reply { flex: 0 1 auto; min-width: 0; max-width: calc(100% - 56px); animation: motion-message-in var(--motion-normal) var(--motion-ease) both; }
 .assistant-reply:has(.response-events, .reply-choices, .chat-scheduling-card) { flex: 1; }
@@ -26,6 +33,9 @@ html[data-surface='workspace'] .assistant-reply > .message-bubble { width: 100%;
   html[data-surface='workspace'] .today-page.has-messages { height: calc(100dvh - 120px - var(--safe-top) - var(--safe-bottom)); }
 }
 @media (max-width: 760px) {
+  .composer-plus { flex-basis: 36px; width: 36px; height: 36px; }
+  .composer-commands { gap: 6px; }
+  .composer-commands button { min-height: 40px; padding: 10px; font-size: 12px; }
   .assistant-reply { max-width: calc(100% - 38px); }
   html[data-surface='workspace'] .assistant-reply > .message-bubble { padding: 12px; }
   html[data-surface='workspace'] .main-panel:has(> .today-page) { padding-inline: 16px; }

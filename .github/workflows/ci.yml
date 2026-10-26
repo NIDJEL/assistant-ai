@@ -98,7 +98,7 @@ jobs:
         run: |
           pnpm --dir web exec playwright install --with-deps chromium
           pnpm --dir web e2e flows.spec.ts --grep 'UI CRUD:'
-          pnpm --dir web e2e password-strength.spec.ts
+          pnpm --dir web e2e password-strength.spec.ts mobile-settings-commands-errors.spec.ts
       - name: Complete browser regression
         if: ${{ inputs.full_browser }}
         run: |
@@ -138,6 +138,12 @@ jobs:
           }
           wait_health
           curl --silent --fail http://127.0.0.1:8081/auth | grep 'id="root"'
+          status=$(curl --silent --output /tmp/rhythm-error.html --write-out '%{http_code}' -H 'Accept: text/html' http://127.0.0.1:8081/missing-page)
+          test "$status" = 404
+          grep 'class="error-code">404' /tmp/rhythm-error.html
+          status=$(curl --silent --output /tmp/rhythm-error.html --write-out '%{http_code}' -H 'Accept: text/html' http://127.0.0.1:8081/errors/503)
+          test "$status" = 503
+          grep 'class="error-code">503' /tmp/rhythm-error.html
           python3 scripts/smoke_auth.py --base http://127.0.0.1:8081 --phase prepare
           docker restart rhythm-ci-runtime
           wait_health

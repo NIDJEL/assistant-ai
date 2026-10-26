@@ -48,7 +48,6 @@ test('Yandex consent errors and reconnect remain usable on mobile', async ({ pag
   await page.setViewportSize({ width: 390, height: 844 });
   await page.route('**/api/integrations', route => route.fulfill({ json: { connections: [{ provider: 'yandex', status: 'reauthorization_required', last_sync: null, last_error: 'Подключите календарь снова.', pending_events: 1 }], yandex_configured: true } }));
   await ready(page, '/integrations?service=yandex&error=calendar_permission');
-  await page.getByRole('button', { name: 'Открыть виджеты' }).click();
   const detail = page.getByRole('dialog', { name: 'Интеграция', exact: true });
   await expect(detail.getByRole('alert')).toHaveText('Разрешите доступ к календарю на странице Яндекса.');
   await expect(detail.getByRole('link', { name: 'Подключить заново' })).toBeVisible();
