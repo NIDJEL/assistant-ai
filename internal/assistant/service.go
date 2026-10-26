@@ -482,6 +482,19 @@ func (s *Service) executeValidated(ctx context.Context, tx repository.Tx, state 
 		if question != "" {
 			return ask(state, cmd, question, now, "fields", nil), nil
 		}
+		reminderAt := time.Time{}
+		if cmd.Date != nil && cmd.Time != nil {
+			reminderAt = cmd.Date.At(*cmd.Time, now.Location()).Add(time.Duration(cmd.StartSecond) * time.Second)
+		}
+		if cmd.ExactAt != nil {
+			reminderAt = *cmd.ExactAt
+		}
+		if cmd.Kind == domain.EventReminder && cmd.Date != nil && cmd.Time != nil && cmd.Recurrence == nil && !reminderAt.After(now) {
+			cmd.Date = nil
+			r := ask(state, cmd, "Это время уже прошло. На какую дату напомнить «"+cmd.Title+"» — сегодня или завтра?", now, "fields", nil)
+			state.Pending.RequiredSlot = "date"
+			return r, nil
+		}
 		if utf8.RuneCountInString(cmd.Title) > 500 {
 			return answer("Сократите название до 500 символов.", domain.ActionClarify), nil
 		}
@@ -579,6 +592,32 @@ func (s *Service) executeValidated(ctx context.Context, tx repository.Tx, state 
 			intro = fmt.Sprintf("Запланировано событий: %d", len(events))
 			if len(events) == 0 {
 				intro = "На этот период событий нет."
+				if period := readPeriodLabel(cmd, now); period == "Сегодня" || period == "Завтра" {
+					intro = period + " ничего не запланировано."
+				}
+			}
+		}
+		if len(events) == 0 && cmd.Provider == "simple_llm" && cmd.Kind == domain.EventTask && (cmd.Filter == nil || !cmd.Filter.StrictKind) {
+			wide := f
+			wide.Kind = domain.EventUnknown
+			others, e := tx.Events(ctx, wide)
+			if e != nil {
+				return domain.Response{}, e
+			}
+			if cmd.Filter != nil {
+				filter := *cmd.Filter
+				filter.Kind, filter.Query = domain.EventUnknown, ""
+				others = s.filterEvents(others, &filter)
+			}
+			if cmd.Action == domain.ActionSearch {
+				others, searchStatus = s.Calendar.Search.SearchContext(ctx, others, cmd.Query, len(others))
+			}
+			if cmd.Next {
+				others = nextScheduled(others, now, s.Calendar.Location)
+			}
+			if len(others) > 0 {
+				events = others
+				intro = "Задач по запросу нет. Есть другие подходящие дела:"
 			}
 		}
 		state.LastIDs = []int64{}
@@ -589,13 +628,21 @@ func (s *Service) executeValidated(ctx context.Context, tx repository.Tx, state 
 			state.LastIDs = append(state.LastIDs, e.ID)
 		}
 		if len(events) > 0 {
-			intro += "\n" + joinEvents(events, 8, "\n")
-		}
-		if len(events) > 8 {
-			intro += fmt.Sprintf("\nЕщё %d — в списке результатов.", min(len(events), 100)-8)
+			if intro == "Нашёл записи" {
+				intro = "Вот что нашёл:"
+			}
+			if strings.HasPrefix(intro, "Запланировано событий:") {
+				intro = fmt.Sprintf("%s — %d %s:", readPeriodLabel(cmd, now), len(events), readKindLabel(cmd.Kind, len(events)))
+			}
+			for i, event := range events {
+				if i >= 100 {
+					break
+				}
+				intro += "\n" + relativeDescription(event, now)
+			}
 		}
 		if len(events) > 100 {
-			intro += "\nПоказаны первые 100 записей. Уточните период или тему для остальных."
+			intro += fmt.Sprintf("\nЕщё %d. Уточните период, чтобы увидеть остальные дела.", len(events)-100)
 		}
 		total := len(events)
 		if len(events) > 100 {
@@ -764,6 +811,12 @@ func (s *Service) executeValidated(ctx context.Context, tx repository.Tx, state 
 	}
 	state.LastIDs = []int64{e.ID}
 	label := "Перенесено: "
+	if cmd.Changes != nil && cmd.Changes.Status != nil {
+		label = "Вернул в работу: "
+		if *cmd.Changes.Status == domain.StatusDone {
+			label = "Отмечено выполненным: "
+		}
+	}
 	if cmd.Title != "" {
 		label = "Изменено: "
 	}

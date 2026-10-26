@@ -557,6 +557,10 @@ func relativeReminderReply(cmd domain.Command, now time.Time) string {
 	}
 	delay := cmd.ExactAt.Sub(now)
 	if delay > 0 && delay%time.Minute == 0 {
+		if delay%time.Hour == 0 {
+			hours := int(delay / time.Hour)
+			return fmt.Sprintf("Готово. Через %d %s, в %s, напомню %s.", hours, russianCases(hours, "час", "часа", "часов"), cmd.ExactAt.Format("15:04"), lowerFirst(cmd.Title))
+		}
 		return fmt.Sprintf("Готово. Через %d минут напомню %s.", int(delay/time.Minute), lowerFirst(cmd.Title))
 	}
 	return ""

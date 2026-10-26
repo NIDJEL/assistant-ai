@@ -8,6 +8,7 @@ import (
 
 // ExecutionFilter is grounded exclusively by Go and retained for refinements.
 type ExecutionFilter struct {
+	StrictKind bool              `json:"strict_kind,omitempty"`
 	Conference string            `json:"conference,omitempty"`
 	Query      string            `json:"query,omitempty"`
 	Kind       EventType         `json:"kind"`

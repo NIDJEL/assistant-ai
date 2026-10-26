@@ -12,6 +12,9 @@ import (
 
 func simpleReadFilter(a *nlu.Read, state domain.State, now time.Time) (*domain.ExecutionFilter, error) {
 	f, err := simpleFilter(a.Filter, now)
+	if f != nil {
+		f.StrictKind = a.StrictKind
+	}
 	if err != nil || !a.Inherit {
 		return f, err
 	}
@@ -25,6 +28,7 @@ func simpleReadFilter(a *nlu.Read, state domain.State, now time.Time) (*domain.E
 	}
 	if a.Kind != "" {
 		base.Kind = f.Kind
+		base.StrictKind = a.StrictKind
 	}
 	if a.Conference != "" {
 		base.Conference = f.Conference
@@ -79,7 +83,15 @@ func (s *Service) prepareSearches(ctx context.Context, op nlu.Operation, state d
 		query := f.Query
 		copy := *f
 		copy.Query = ""
-		ctx = s.Calendar.Search.Prepare(ctx, s.filterEvents(events, &copy), query)
+		pool := s.filterEvents(events, &copy)
+		ctx = s.Calendar.Search.Prepare(ctx, pool, query)
+		if f.Kind == domain.EventTask && !f.StrictKind {
+			matches, _ := s.Calendar.Search.SearchContext(ctx, pool, query, len(pool))
+			if len(matches) == 0 {
+				copy.Kind = domain.EventUnknown
+				ctx = s.Calendar.Search.Prepare(ctx, s.filterEvents(events, &copy), query)
+			}
+		}
 	}
 	return ctx, nil
 }

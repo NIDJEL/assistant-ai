@@ -45,6 +45,10 @@ func New() (*Engine, error) {
 	}
 	for canonical, aliases := range synonyms {
 		concept := e.dict.Concepts[canonical]
+		if concept == "" {
+			concept = "concept_" + canonical
+		}
+		e.dict.Concepts[e.tokenLemma(canonical)] = concept
 		for _, alias := range aliases {
 			e.dict.Concepts[e.tokenLemma(alias)] = concept
 		}

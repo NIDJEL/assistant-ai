@@ -209,7 +209,11 @@ func socialContinuation(p *domain.Pending, op nlu.Operation, args any, now time.
 		c.ReminderEnabled = changes.ReminderEnabled
 	}
 	if changes.Recurrence != nil {
-		c.Recurrence = changes.Recurrence
+		var err error
+		c.Recurrence, err = nlu.MergeRecurrence(c.Recurrence, changes.Recurrence)
+		if err != nil {
+			return op, args, err
+		}
 	}
 	if changes.ClearRecurrence {
 		c.Recurrence = nil
@@ -298,7 +302,10 @@ func (s *Service) createSocialMeeting(ctx context.Context, tx repository.Tx, sta
 	if q.Personal {
 		a.Title = domain.MeetingDisplayTitle(a.Title, a.Friends)
 		for _, name := range a.Friends {
-			c.Participants = append(c.Participants, domain.Participant{Name: name})
+			if collectiveParticipant(name) {
+				continue
+			}
+			c.Participants = append(c.Participants, domain.Participant{Name: personalParticipantLabel(name)})
 		}
 	}
 	if q.Selected != nil {
@@ -390,7 +397,9 @@ func (s *Service) createSocialMeeting(ctx context.Context, tx repository.Tx, sta
 		}
 		q.Personal, q.Uninvited = true, []string{person}
 		a.Friends = []string{person}
-		c.Participants = []domain.Participant{{Name: person}}
+		if !collectiveParticipant(person) {
+			c.Participants = []domain.Participant{{Name: personalParticipantLabel(person)}}
+		}
 	}
 	if domain.GenericMeetingTitle(a.Title) {
 		if len(ids) == 0 {
@@ -466,6 +475,13 @@ func (s *Service) createSocialMeeting(ctx context.Context, tx repository.Tx, sta
 			q.Slots = append(q.Slots, domain.PlanningSlot{Start: slot.Start, End: slot.End})
 		}
 		text := "В это время у вас или участников уже есть планы. Нашёл ближайшие свободные варианты."
+		ownConflicts, e := s.Calendar.Conflicts(ctx, tx, domain.Event{Kind: domain.EventMeeting, Date: c.Date, StartTime: c.Time, Duration: end.Sub(start)}, 0)
+		if e != nil {
+			return domain.Response{}, e
+		}
+		if len(ownConflicts) > 0 {
+			text = "Это время пересекается с «" + ownConflicts[0].Title + "». Выберите свободное время ниже или отмените создание встречи."
+		}
 		if start.Before(now) {
 			text = "Это время уже прошло. Нашёл ближайшие свободные варианты."
 		}
@@ -521,10 +537,7 @@ func (s *Service) createSocialMeeting(ctx context.Context, tx repository.Tx, sta
 		state.Pending = nil
 		r, e := s.executeValidated(ctx, tx, state, c, now, false)
 		if e == nil && !r.Pending && r.Action == domain.ActionCreate && q.Personal {
-			r.Reply += " Встреча сохранена только в вашем плане. Приглашения не отправлены."
-			if len(q.Uninvited) > 0 {
-				r.Reply += " Если участники («" + strings.Join(q.Uninvited, "», «") + "») ещё не добавлены в друзья, добавьте их в разделе «Друзья». Отправить им приглашение можно отдельным действием."
-			}
+			r.Reply += " Приглашения не отправлены."
 		}
 		return r, e
 	}

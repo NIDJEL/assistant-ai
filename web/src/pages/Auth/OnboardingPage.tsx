@@ -40,9 +40,9 @@ export function OnboardingPage() {
   const [appReduced, setAppReduced] = useState(() => document.documentElement.dataset.motion === 'reduced');
   const reduce = !!systemReduced || appReduced;
   const reveal = {
-    enter: { opacity: 0, y: reduce ? 0 : 7 },
+    enter: { opacity: 1, y: reduce ? 0 : 7 },
     visible: { opacity: 1, y: 0, transition: { duration: reduce ? 0 : .4, ease } },
-    leave: { opacity: 0, y: 0, transition: { duration: reduce ? 0 : .16, ease } },
+    leave: { opacity: 1, y: 0, transition: { duration: reduce ? 0 : .16, ease } },
   };
   const { connection, loaded, error: integrationError } = useYandexIntegration();
   const connected = connection?.status === 'connected' || connection?.status === 'pending';
@@ -109,7 +109,7 @@ export function OnboardingPage() {
         <div className="ob-body">
           <div className="ob-copy-shell"><AnimatePresence mode="wait" custom={direction} initial={false}>
             <motion.div className="ob-copy" key={step} custom={direction}
-              variants={{ enter: (d: number) => ({ opacity: 0, x: reduce ? 0 : 16 * d }), visible: { opacity: 1, x: 0, transition: { staggerChildren: reduce ? 0 : .045 } }, leave: (d: number) => ({ opacity: 0, x: reduce ? 0 : -12 * d }) }}
+              variants={{ enter: (d: number) => ({ opacity: 1, x: reduce ? 0 : 16 * d }), visible: { opacity: 1, x: 0, transition: { staggerChildren: reduce ? 0 : .045 } }, leave: (d: number) => ({ opacity: 1, x: reduce ? 0 : -12 * d }) }}
               initial="enter" animate="visible" exit="leave" transition={{ duration: reduce ? 0 : .24, ease }} onAnimationComplete={phase => { if (phase === 'visible') focusHeading(); }}>
               <motion.h1 variants={reveal} ref={heading} tabIndex={-1} id="onboarding-title">{title}</motion.h1>
               <motion.p variants={reveal} className="ob-description">{description}</motion.p>

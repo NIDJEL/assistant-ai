@@ -16,7 +16,7 @@ test('Azure Dmitry, persisted volume, real MP3 playback, stop and error recovery
   page.on('request', req => { if (req.url().endsWith('/api/voice/synthesize')) synthesisRequests++; });
   await page.goto('/settings');
   const settings = page.locator('.settings-card').filter({ has: page.getByRole('heading', { name: 'Голос ассистента' }) });
-  await expect(settings.getByText('Дмитрий, мужской')).toBeVisible();
+  await expect(settings.getByText('Гена, мужской')).toBeVisible();
   await expect(settings.getByText(/Светлана|Дарья/)).toHaveCount(0);
   const volume = settings.getByRole('slider', { name: 'Громкость голоса' });
   await expect(volume).toHaveValue('65');

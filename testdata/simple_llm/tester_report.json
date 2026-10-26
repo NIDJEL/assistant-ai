@@ -1,0 +1,4307 @@
+[
+  {
+    "Name": "1.1",
+    "Now": "2026-10-26T22:15:00+03:00",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "Напомни мне завтра в 10 утра позвонить Ивану",
+        "Operation": {
+          "intent": "create_reminder",
+          "arguments": {
+            "title": "Позвонить Ивану",
+            "date": {
+              "type": "relative_day",
+              "offset": 1
+            },
+            "time": "10:00"
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "DBCount": 1,
+          "Event": {
+            "Date": "2026-10-27",
+            "Time": "10:00",
+            "NoParticipants": false
+          }
+        }
+      }
+    ]
+  },
+  {
+    "Name": "1.2",
+    "Now": "2026-10-26T22:15:00+03:00",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "В пятницу нужно отправить отчет",
+        "Operation": {
+          "intent": "create_task",
+          "arguments": {
+            "title": "Отправить отчет",
+            "date": {
+              "type": "weekday",
+              "weekday": "friday",
+              "direction": "next_or_current"
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "DBCount": 1,
+          "Event": {
+            "Date": "2026-10-30",
+            "Time": "",
+            "NoParticipants": false
+          }
+        }
+      }
+    ]
+  },
+  {
+    "Name": "1.3",
+    "Now": "2026-10-26T22:15:00+03:00",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "Поставь задачу купить билеты до конца недели",
+        "Operation": {
+          "intent": "create_task",
+          "arguments": {
+            "title": "Купить билеты",
+            "date": {
+              "type": "period_end",
+              "unit": "week",
+              "offset": 0
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "DBCount": 1,
+          "Event": {
+            "Date": "2026-11-01",
+            "Time": "",
+            "NoParticipants": false
+          }
+        }
+      }
+    ]
+  },
+  {
+    "Name": "1.6",
+    "Now": "2026-10-26T22:15:00+03:00",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "на следующей неделе записаться к стоматологу",
+        "Operation": {
+          "intent": "create_task",
+          "arguments": {
+            "title": "Записаться к стоматологу",
+            "date": {
+              "type": "weekday",
+              "weekday": "monday",
+              "direction": "next_week"
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "DBCount": 1,
+          "Event": {
+            "Date": "2026-11-02",
+            "Time": "",
+            "NoParticipants": false
+          }
+        }
+      }
+    ]
+  },
+  {
+    "Name": "2.1",
+    "Now": "2026-10-26T22:15:00+03:00",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "Добавь встречу с командой завтра в 15:00",
+        "Operation": {
+          "intent": "create_meeting",
+          "arguments": {
+            "title": "Встреча с командой",
+            "date": {
+              "type": "relative_day",
+              "offset": 1
+            },
+            "time": "15:00"
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "DBCount": 1,
+          "Event": {
+            "Date": "2026-10-27",
+            "Time": "15:00",
+            "NoParticipants": true
+          }
+        }
+      }
+    ]
+  },
+  {
+    "Name": "2.2",
+    "Now": "2026-10-26T22:15:00+03:00",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "В четверг в 11 у меня встреча с дизайнером",
+        "Operation": {
+          "intent": "create_meeting",
+          "arguments": {
+            "title": "Встреча с дизайнером",
+            "date": {
+              "type": "weekday",
+              "weekday": "thursday",
+              "direction": "next_or_current"
+            },
+            "time": "11:00"
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "DBCount": 1,
+          "Event": {
+            "Date": "2026-10-29",
+            "Time": "11:00",
+            "NoParticipants": false
+          }
+        }
+      }
+    ]
+  },
+  {
+    "Name": "2.6",
+    "Now": "2026-10-26T22:15:00+03:00",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "в среду в 18:30 созвон с Петей по презентации",
+        "Operation": {
+          "intent": "create_meeting",
+          "arguments": {
+            "title": "Созвон с Петей по презентации",
+            "date": {
+              "type": "weekday",
+              "weekday": "wednesday",
+              "direction": "next_or_current"
+            },
+            "time": "18:30"
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "DBCount": 1,
+          "Event": {
+            "Date": "2026-10-28",
+            "Time": "18:30",
+            "NoParticipants": false
+          }
+        }
+      }
+    ]
+  },
+  {
+    "Name": "2.7",
+    "Now": "2026-10-26T22:15:00+03:00",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "запиши, что в субботу в 7 вечера ужинаем с родителями",
+        "Operation": {
+          "intent": "create_meeting",
+          "arguments": {
+            "title": "Ужин с родителями",
+            "date": {
+              "type": "weekday",
+              "weekday": "saturday",
+              "direction": "next_or_current"
+            },
+            "time": "19:00"
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "DBCount": 1,
+          "Event": {
+            "Date": "2026-10-31",
+            "Time": "19:00",
+            "NoParticipants": true
+          }
+        }
+      }
+    ]
+  },
+  {
+    "Name": "similar 11",
+    "Now": "2026-10-26T22:15:00+03:00",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "Запиши встречу с инженером завтра в одиннадцать",
+        "Operation": {
+          "intent": "create_meeting",
+          "arguments": {
+            "title": "Встреча с инженером",
+            "date": {
+              "type": "relative_day",
+              "offset": 1
+            },
+            "time": "11:00"
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "DBCount": 1,
+          "Event": {
+            "Date": "2026-10-27",
+            "Time": "11:00",
+            "NoParticipants": false
+          }
+        }
+      }
+    ]
+  },
+  {
+    "Name": "similar noon",
+    "Now": "2026-10-26T22:15:00+03:00",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "Добавь встречу с редактором завтра в 12",
+        "Operation": {
+          "intent": "create_meeting",
+          "arguments": {
+            "title": "Встреча с редактором",
+            "date": {
+              "type": "relative_day",
+              "offset": 1
+            },
+            "time": "12:00"
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "DBCount": 1,
+          "Event": {
+            "Date": "2026-10-27",
+            "Time": "12:00",
+            "NoParticipants": false
+          }
+        }
+      }
+    ]
+  },
+  {
+    "Name": "1.4 midnight",
+    "Now": "2026-10-26T22:17:00+03:00",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "через два часа напомни выпить таблетки",
+        "Operation": {
+          "intent": "create_reminder",
+          "arguments": {
+            "title": "Выпить таблетки",
+            "date": {
+              "type": "relative_delay",
+              "unit": "hour",
+              "value": 2
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "DBCount": 1,
+          "Event": {
+            "Date": "2026-10-27",
+            "Time": "00:17"
+          },
+          "ReplyContains": [
+            "2 часа",
+            "00:17"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "Name": "1.5 contextual question",
+    "Now": "2026-10-26T22:15:00+03:00",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "слушай, послезавтра надо бы оплатить интернет, не дай забыть",
+        "Operation": {
+          "intent": "create_reminder",
+          "arguments": {
+            "title": "Оплатить интернет",
+            "date": {
+              "type": "relative_day",
+              "offset": 2
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "clarify",
+          "Pending": true,
+          "DBCount": 0,
+          "ReplyContains": [
+            "интернет",
+            "28.10"
+          ]
+        }
+      },
+      {
+        "Message": "на следующей неделе записаться к стоматологу",
+        "Operation": {
+          "intent": "create_task",
+          "arguments": {
+            "title": "Записаться к стоматологу",
+            "date": {
+              "type": "weekday",
+              "weekday": "monday",
+              "direction": "next_week"
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "DBCount": 1,
+          "ReplyContains": [
+            "Предыдущий запрос",
+            "не сохранён"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "Name": "1.7 followup",
+    "Now": "2026-10-26T22:15:00+03:00",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "напомни послезавтра оплатить интернет",
+        "Operation": {
+          "intent": "create_reminder",
+          "arguments": {
+            "title": "Оплатить интернет",
+            "date": {
+              "type": "relative_day",
+              "offset": 2
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "clarify",
+          "Pending": true,
+          "DBCount": 0
+        }
+      },
+      {
+        "Message": "давай в девять вечера",
+        "Operation": {
+          "intent": "continue",
+          "arguments": {
+            "changes": {
+              "time": "21:00"
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "DBCount": 1,
+          "Event": {
+            "Date": "2026-10-28",
+            "Time": "21:00"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "Name": "2.3 half past noon",
+    "Now": "2026-10-26T22:15:00+03:00",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "Поставь встречу с Иваном завтра",
+        "Operation": {
+          "intent": "create_meeting",
+          "arguments": {
+            "title": "Встреча с Иваном",
+            "date": {
+              "type": "relative_day",
+              "offset": 1
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "clarify",
+          "Pending": true,
+          "DBCount": 0
+        }
+      },
+      {
+        "Message": "в полпервого дня",
+        "Operation": {
+          "intent": "continue",
+          "arguments": {
+            "changes": {
+              "time": "12:30"
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "DBCount": 1,
+          "Event": {
+            "Date": "2026-10-27",
+            "Time": "12:30"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "Name": "3.1",
+    "Now": "2026-10-26T22:15:00+03:00",
+    "Seeds": [
+      {
+        "Key": "report",
+        "Kind": "task",
+        "Title": "Отправить отчет",
+        "Date": "2026-10-30",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "tickets",
+        "Kind": "task",
+        "Title": "Купить билеты",
+        "Date": "2026-11-01",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "dentist",
+        "Kind": "task",
+        "Title": "Записаться к стоматологу",
+        "Date": "2026-11-02",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "call",
+        "Kind": "reminder",
+        "Title": "Позвонить Ивану",
+        "Date": "2026-10-27",
+        "Time": "10:00",
+        "Status": "open"
+      },
+      {
+        "Key": "pills",
+        "Kind": "reminder",
+        "Title": "Выпить таблетки",
+        "Date": "2026-10-27",
+        "Time": "00:17",
+        "Status": "open"
+      },
+      {
+        "Key": "internet",
+        "Kind": "reminder",
+        "Title": "Оплатить интернет",
+        "Date": "2026-10-28",
+        "Time": "21:00",
+        "Status": "open"
+      },
+      {
+        "Key": "ivan",
+        "Kind": "meeting",
+        "Title": "Встреча с Иваном",
+        "Date": "2026-10-27",
+        "Time": "12:30",
+        "Status": "open"
+      },
+      {
+        "Key": "team",
+        "Kind": "meeting",
+        "Title": "Встреча с командой",
+        "Date": "2026-10-27",
+        "Time": "15:00",
+        "Status": "open"
+      },
+      {
+        "Key": "presentation",
+        "Kind": "meeting",
+        "Title": "Созвон с Петей по презентации",
+        "Date": "2026-10-28",
+        "Time": "18:30",
+        "Status": "open"
+      },
+      {
+        "Key": "designer",
+        "Kind": "meeting",
+        "Title": "Встреча с дизайнером",
+        "Date": "2026-10-29",
+        "Time": "11:00",
+        "Status": "open"
+      },
+      {
+        "Key": "parents",
+        "Kind": "meeting",
+        "Title": "Ужин с родителями",
+        "Date": "2026-10-31",
+        "Time": "19:00",
+        "Status": "open"
+      }
+    ],
+    "Turns": [
+      {
+        "Message": "Что у меня сегодня?",
+        "Operation": {
+          "intent": "list",
+          "arguments": {
+            "date": {
+              "type": "relative_day",
+              "offset": 0
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "list",
+          "Count": 0,
+          "DBCount": 11
+        }
+      }
+    ]
+  },
+  {
+    "Name": "3.2",
+    "Now": "2026-10-26T22:15:00+03:00",
+    "Seeds": [
+      {
+        "Key": "report",
+        "Kind": "task",
+        "Title": "Отправить отчет",
+        "Date": "2026-10-30",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "tickets",
+        "Kind": "task",
+        "Title": "Купить билеты",
+        "Date": "2026-11-01",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "dentist",
+        "Kind": "task",
+        "Title": "Записаться к стоматологу",
+        "Date": "2026-11-02",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "call",
+        "Kind": "reminder",
+        "Title": "Позвонить Ивану",
+        "Date": "2026-10-27",
+        "Time": "10:00",
+        "Status": "open"
+      },
+      {
+        "Key": "pills",
+        "Kind": "reminder",
+        "Title": "Выпить таблетки",
+        "Date": "2026-10-27",
+        "Time": "00:17",
+        "Status": "open"
+      },
+      {
+        "Key": "internet",
+        "Kind": "reminder",
+        "Title": "Оплатить интернет",
+        "Date": "2026-10-28",
+        "Time": "21:00",
+        "Status": "open"
+      },
+      {
+        "Key": "ivan",
+        "Kind": "meeting",
+        "Title": "Встреча с Иваном",
+        "Date": "2026-10-27",
+        "Time": "12:30",
+        "Status": "open"
+      },
+      {
+        "Key": "team",
+        "Kind": "meeting",
+        "Title": "Встреча с командой",
+        "Date": "2026-10-27",
+        "Time": "15:00",
+        "Status": "open"
+      },
+      {
+        "Key": "presentation",
+        "Kind": "meeting",
+        "Title": "Созвон с Петей по презентации",
+        "Date": "2026-10-28",
+        "Time": "18:30",
+        "Status": "open"
+      },
+      {
+        "Key": "designer",
+        "Kind": "meeting",
+        "Title": "Встреча с дизайнером",
+        "Date": "2026-10-29",
+        "Time": "11:00",
+        "Status": "open"
+      },
+      {
+        "Key": "parents",
+        "Kind": "meeting",
+        "Title": "Ужин с родителями",
+        "Date": "2026-10-31",
+        "Time": "19:00",
+        "Status": "open"
+      }
+    ],
+    "Turns": [
+      {
+        "Message": "Какие задачи у меня на завтра?",
+        "Operation": {
+          "intent": "list",
+          "arguments": {
+            "kind": "task",
+            "date": {
+              "type": "relative_day",
+              "offset": 1
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "list",
+          "Count": 4,
+          "DBCount": 11
+        }
+      }
+    ]
+  },
+  {
+    "Name": "3.3",
+    "Now": "2026-10-26T22:15:00+03:00",
+    "Seeds": [
+      {
+        "Key": "report",
+        "Kind": "task",
+        "Title": "Отправить отчет",
+        "Date": "2026-10-30",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "tickets",
+        "Kind": "task",
+        "Title": "Купить билеты",
+        "Date": "2026-11-01",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "dentist",
+        "Kind": "task",
+        "Title": "Записаться к стоматологу",
+        "Date": "2026-11-02",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "call",
+        "Kind": "reminder",
+        "Title": "Позвонить Ивану",
+        "Date": "2026-10-27",
+        "Time": "10:00",
+        "Status": "open"
+      },
+      {
+        "Key": "pills",
+        "Kind": "reminder",
+        "Title": "Выпить таблетки",
+        "Date": "2026-10-27",
+        "Time": "00:17",
+        "Status": "open"
+      },
+      {
+        "Key": "internet",
+        "Kind": "reminder",
+        "Title": "Оплатить интернет",
+        "Date": "2026-10-28",
+        "Time": "21:00",
+        "Status": "open"
+      },
+      {
+        "Key": "ivan",
+        "Kind": "meeting",
+        "Title": "Встреча с Иваном",
+        "Date": "2026-10-27",
+        "Time": "12:30",
+        "Status": "open"
+      },
+      {
+        "Key": "team",
+        "Kind": "meeting",
+        "Title": "Встреча с командой",
+        "Date": "2026-10-27",
+        "Time": "15:00",
+        "Status": "open"
+      },
+      {
+        "Key": "presentation",
+        "Kind": "meeting",
+        "Title": "Созвон с Петей по презентации",
+        "Date": "2026-10-28",
+        "Time": "18:30",
+        "Status": "open"
+      },
+      {
+        "Key": "designer",
+        "Kind": "meeting",
+        "Title": "Встреча с дизайнером",
+        "Date": "2026-10-29",
+        "Time": "11:00",
+        "Status": "open"
+      },
+      {
+        "Key": "parents",
+        "Kind": "meeting",
+        "Title": "Ужин с родителями",
+        "Date": "2026-10-31",
+        "Time": "19:00",
+        "Status": "open"
+      }
+    ],
+    "Turns": [
+      {
+        "Message": "а что у меня вообще завтра по планам?",
+        "Operation": {
+          "intent": "list",
+          "arguments": {
+            "date": {
+              "type": "relative_day",
+              "offset": 1
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "list",
+          "Count": 4,
+          "DBCount": 11
+        }
+      }
+    ]
+  },
+  {
+    "Name": "3.4",
+    "Now": "2026-10-26T22:15:00+03:00",
+    "Seeds": [
+      {
+        "Key": "report",
+        "Kind": "task",
+        "Title": "Отправить отчет",
+        "Date": "2026-10-30",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "tickets",
+        "Kind": "task",
+        "Title": "Купить билеты",
+        "Date": "2026-11-01",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "dentist",
+        "Kind": "task",
+        "Title": "Записаться к стоматологу",
+        "Date": "2026-11-02",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "call",
+        "Kind": "reminder",
+        "Title": "Позвонить Ивану",
+        "Date": "2026-10-27",
+        "Time": "10:00",
+        "Status": "open"
+      },
+      {
+        "Key": "pills",
+        "Kind": "reminder",
+        "Title": "Выпить таблетки",
+        "Date": "2026-10-27",
+        "Time": "00:17",
+        "Status": "open"
+      },
+      {
+        "Key": "internet",
+        "Kind": "reminder",
+        "Title": "Оплатить интернет",
+        "Date": "2026-10-28",
+        "Time": "21:00",
+        "Status": "open"
+      },
+      {
+        "Key": "ivan",
+        "Kind": "meeting",
+        "Title": "Встреча с Иваном",
+        "Date": "2026-10-27",
+        "Time": "12:30",
+        "Status": "open"
+      },
+      {
+        "Key": "team",
+        "Kind": "meeting",
+        "Title": "Встреча с командой",
+        "Date": "2026-10-27",
+        "Time": "15:00",
+        "Status": "open"
+      },
+      {
+        "Key": "presentation",
+        "Kind": "meeting",
+        "Title": "Созвон с Петей по презентации",
+        "Date": "2026-10-28",
+        "Time": "18:30",
+        "Status": "open"
+      },
+      {
+        "Key": "designer",
+        "Kind": "meeting",
+        "Title": "Встреча с дизайнером",
+        "Date": "2026-10-29",
+        "Time": "11:00",
+        "Status": "open"
+      },
+      {
+        "Key": "parents",
+        "Kind": "meeting",
+        "Title": "Ужин с родителями",
+        "Date": "2026-10-31",
+        "Time": "19:00",
+        "Status": "open"
+      }
+    ],
+    "Turns": [
+      {
+        "Message": "Есть ли у меня встречи завтра?",
+        "Operation": {
+          "intent": "list",
+          "arguments": {
+            "kind": "meeting",
+            "date": {
+              "type": "relative_day",
+              "offset": 1
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "list",
+          "Count": 2,
+          "DBCount": 11
+        }
+      }
+    ]
+  },
+  {
+    "Name": "3.5",
+    "Now": "2026-10-26T22:15:00+03:00",
+    "Seeds": [
+      {
+        "Key": "report",
+        "Kind": "task",
+        "Title": "Отправить отчет",
+        "Date": "2026-10-30",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "tickets",
+        "Kind": "task",
+        "Title": "Купить билеты",
+        "Date": "2026-11-01",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "dentist",
+        "Kind": "task",
+        "Title": "Записаться к стоматологу",
+        "Date": "2026-11-02",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "call",
+        "Kind": "reminder",
+        "Title": "Позвонить Ивану",
+        "Date": "2026-10-27",
+        "Time": "10:00",
+        "Status": "open"
+      },
+      {
+        "Key": "pills",
+        "Kind": "reminder",
+        "Title": "Выпить таблетки",
+        "Date": "2026-10-27",
+        "Time": "00:17",
+        "Status": "open"
+      },
+      {
+        "Key": "internet",
+        "Kind": "reminder",
+        "Title": "Оплатить интернет",
+        "Date": "2026-10-28",
+        "Time": "21:00",
+        "Status": "open"
+      },
+      {
+        "Key": "ivan",
+        "Kind": "meeting",
+        "Title": "Встреча с Иваном",
+        "Date": "2026-10-27",
+        "Time": "12:30",
+        "Status": "open"
+      },
+      {
+        "Key": "team",
+        "Kind": "meeting",
+        "Title": "Встреча с командой",
+        "Date": "2026-10-27",
+        "Time": "15:00",
+        "Status": "open"
+      },
+      {
+        "Key": "presentation",
+        "Kind": "meeting",
+        "Title": "Созвон с Петей по презентации",
+        "Date": "2026-10-28",
+        "Time": "18:30",
+        "Status": "open"
+      },
+      {
+        "Key": "designer",
+        "Kind": "meeting",
+        "Title": "Встреча с дизайнером",
+        "Date": "2026-10-29",
+        "Time": "11:00",
+        "Status": "open"
+      },
+      {
+        "Key": "parents",
+        "Kind": "meeting",
+        "Title": "Ужин с родителями",
+        "Date": "2026-10-31",
+        "Time": "19:00",
+        "Status": "open"
+      }
+    ],
+    "Turns": [
+      {
+        "Message": "Что запланировано на эту неделю?",
+        "Operation": {
+          "intent": "list",
+          "arguments": {
+            "period": {
+              "type": "calendar_period",
+              "unit": "week",
+              "offset": 0
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "list",
+          "Count": 10,
+          "DBCount": 11,
+          "ReplyContains": [
+            "Ужин с родителями",
+            "Купить билеты"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "Name": "3.6",
+    "Now": "2026-10-26T22:15:00+03:00",
+    "Seeds": [
+      {
+        "Key": "report",
+        "Kind": "task",
+        "Title": "Отправить отчет",
+        "Date": "2026-10-30",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "tickets",
+        "Kind": "task",
+        "Title": "Купить билеты",
+        "Date": "2026-11-01",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "dentist",
+        "Kind": "task",
+        "Title": "Записаться к стоматологу",
+        "Date": "2026-11-02",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "call",
+        "Kind": "reminder",
+        "Title": "Позвонить Ивану",
+        "Date": "2026-10-27",
+        "Time": "10:00",
+        "Status": "open"
+      },
+      {
+        "Key": "pills",
+        "Kind": "reminder",
+        "Title": "Выпить таблетки",
+        "Date": "2026-10-27",
+        "Time": "00:17",
+        "Status": "open"
+      },
+      {
+        "Key": "internet",
+        "Kind": "reminder",
+        "Title": "Оплатить интернет",
+        "Date": "2026-10-28",
+        "Time": "21:00",
+        "Status": "open"
+      },
+      {
+        "Key": "ivan",
+        "Kind": "meeting",
+        "Title": "Встреча с Иваном",
+        "Date": "2026-10-27",
+        "Time": "12:30",
+        "Status": "open"
+      },
+      {
+        "Key": "team",
+        "Kind": "meeting",
+        "Title": "Встреча с командой",
+        "Date": "2026-10-27",
+        "Time": "15:00",
+        "Status": "open"
+      },
+      {
+        "Key": "presentation",
+        "Kind": "meeting",
+        "Title": "Созвон с Петей по презентации",
+        "Date": "2026-10-28",
+        "Time": "18:30",
+        "Status": "open"
+      },
+      {
+        "Key": "designer",
+        "Kind": "meeting",
+        "Title": "Встреча с дизайнером",
+        "Date": "2026-10-29",
+        "Time": "11:00",
+        "Status": "open"
+      },
+      {
+        "Key": "parents",
+        "Kind": "meeting",
+        "Title": "Ужин с родителями",
+        "Date": "2026-10-31",
+        "Time": "19:00",
+        "Status": "open"
+      }
+    ],
+    "Turns": [
+      {
+        "Message": "Какие планы на сегодня?",
+        "Operation": {
+          "intent": "list",
+          "arguments": {
+            "date": {
+              "type": "relative_day",
+              "offset": 0
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "list",
+          "Count": 0,
+          "DBCount": 11
+        }
+      }
+    ]
+  },
+  {
+    "Name": "3.7",
+    "Now": "2026-10-26T22:15:00+03:00",
+    "Seeds": [
+      {
+        "Key": "report",
+        "Kind": "task",
+        "Title": "Отправить отчет",
+        "Date": "2026-10-30",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "tickets",
+        "Kind": "task",
+        "Title": "Купить билеты",
+        "Date": "2026-11-01",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "dentist",
+        "Kind": "task",
+        "Title": "Записаться к стоматологу",
+        "Date": "2026-11-02",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "call",
+        "Kind": "reminder",
+        "Title": "Позвонить Ивану",
+        "Date": "2026-10-27",
+        "Time": "10:00",
+        "Status": "open"
+      },
+      {
+        "Key": "pills",
+        "Kind": "reminder",
+        "Title": "Выпить таблетки",
+        "Date": "2026-10-27",
+        "Time": "00:17",
+        "Status": "open"
+      },
+      {
+        "Key": "internet",
+        "Kind": "reminder",
+        "Title": "Оплатить интернет",
+        "Date": "2026-10-28",
+        "Time": "21:00",
+        "Status": "open"
+      },
+      {
+        "Key": "ivan",
+        "Kind": "meeting",
+        "Title": "Встреча с Иваном",
+        "Date": "2026-10-27",
+        "Time": "12:30",
+        "Status": "open"
+      },
+      {
+        "Key": "team",
+        "Kind": "meeting",
+        "Title": "Встреча с командой",
+        "Date": "2026-10-27",
+        "Time": "15:00",
+        "Status": "open"
+      },
+      {
+        "Key": "presentation",
+        "Kind": "meeting",
+        "Title": "Созвон с Петей по презентации",
+        "Date": "2026-10-28",
+        "Time": "18:30",
+        "Status": "open"
+      },
+      {
+        "Key": "designer",
+        "Kind": "meeting",
+        "Title": "Встреча с дизайнером",
+        "Date": "2026-10-29",
+        "Time": "11:00",
+        "Status": "open"
+      },
+      {
+        "Key": "parents",
+        "Kind": "meeting",
+        "Title": "Ужин с родителями",
+        "Date": "2026-10-31",
+        "Time": "19:00",
+        "Status": "open"
+      }
+    ],
+    "Turns": [
+      {
+        "Message": "что у меня в пятницу?",
+        "Operation": {
+          "intent": "list",
+          "arguments": {
+            "date": {
+              "type": "weekday",
+              "weekday": "friday",
+              "direction": "next_or_current"
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "list",
+          "Count": 1,
+          "DBCount": 11
+        }
+      }
+    ]
+  },
+  {
+    "Name": "3.8",
+    "Now": "2026-10-26T22:15:00+03:00",
+    "Seeds": [
+      {
+        "Key": "report",
+        "Kind": "task",
+        "Title": "Отправить отчет",
+        "Date": "2026-10-30",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "tickets",
+        "Kind": "task",
+        "Title": "Купить билеты",
+        "Date": "2026-11-01",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "dentist",
+        "Kind": "task",
+        "Title": "Записаться к стоматологу",
+        "Date": "2026-11-02",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "call",
+        "Kind": "reminder",
+        "Title": "Позвонить Ивану",
+        "Date": "2026-10-27",
+        "Time": "10:00",
+        "Status": "open"
+      },
+      {
+        "Key": "pills",
+        "Kind": "reminder",
+        "Title": "Выпить таблетки",
+        "Date": "2026-10-27",
+        "Time": "00:17",
+        "Status": "open"
+      },
+      {
+        "Key": "internet",
+        "Kind": "reminder",
+        "Title": "Оплатить интернет",
+        "Date": "2026-10-28",
+        "Time": "21:00",
+        "Status": "open"
+      },
+      {
+        "Key": "ivan",
+        "Kind": "meeting",
+        "Title": "Встреча с Иваном",
+        "Date": "2026-10-27",
+        "Time": "12:30",
+        "Status": "open"
+      },
+      {
+        "Key": "team",
+        "Kind": "meeting",
+        "Title": "Встреча с командой",
+        "Date": "2026-10-27",
+        "Time": "15:00",
+        "Status": "open"
+      },
+      {
+        "Key": "presentation",
+        "Kind": "meeting",
+        "Title": "Созвон с Петей по презентации",
+        "Date": "2026-10-28",
+        "Time": "18:30",
+        "Status": "open"
+      },
+      {
+        "Key": "designer",
+        "Kind": "meeting",
+        "Title": "Встреча с дизайнером",
+        "Date": "2026-10-29",
+        "Time": "11:00",
+        "Status": "open"
+      },
+      {
+        "Key": "parents",
+        "Kind": "meeting",
+        "Title": "Ужин с родителями",
+        "Date": "2026-10-31",
+        "Time": "19:00",
+        "Status": "open"
+      }
+    ],
+    "Turns": [
+      {
+        "Message": "какие дела на следующей неделе?",
+        "Operation": {
+          "intent": "list",
+          "arguments": {
+            "period": {
+              "type": "calendar_period",
+              "unit": "week",
+              "offset": 1
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "list",
+          "Count": 1,
+          "DBCount": 11
+        }
+      }
+    ]
+  },
+  {
+    "Name": "3.9",
+    "Now": "2026-10-26T22:15:00+03:00",
+    "Seeds": [
+      {
+        "Key": "report",
+        "Kind": "task",
+        "Title": "Отправить отчет",
+        "Date": "2026-10-30",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "tickets",
+        "Kind": "task",
+        "Title": "Купить билеты",
+        "Date": "2026-11-01",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "dentist",
+        "Kind": "task",
+        "Title": "Записаться к стоматологу",
+        "Date": "2026-11-02",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "call",
+        "Kind": "reminder",
+        "Title": "Позвонить Ивану",
+        "Date": "2026-10-27",
+        "Time": "10:00",
+        "Status": "open"
+      },
+      {
+        "Key": "pills",
+        "Kind": "reminder",
+        "Title": "Выпить таблетки",
+        "Date": "2026-10-27",
+        "Time": "00:17",
+        "Status": "open"
+      },
+      {
+        "Key": "internet",
+        "Kind": "reminder",
+        "Title": "Оплатить интернет",
+        "Date": "2026-10-28",
+        "Time": "21:00",
+        "Status": "open"
+      },
+      {
+        "Key": "ivan",
+        "Kind": "meeting",
+        "Title": "Встреча с Иваном",
+        "Date": "2026-10-27",
+        "Time": "12:30",
+        "Status": "open"
+      },
+      {
+        "Key": "team",
+        "Kind": "meeting",
+        "Title": "Встреча с командой",
+        "Date": "2026-10-27",
+        "Time": "15:00",
+        "Status": "open"
+      },
+      {
+        "Key": "presentation",
+        "Kind": "meeting",
+        "Title": "Созвон с Петей по презентации",
+        "Date": "2026-10-28",
+        "Time": "18:30",
+        "Status": "open"
+      },
+      {
+        "Key": "designer",
+        "Kind": "meeting",
+        "Title": "Встреча с дизайнером",
+        "Date": "2026-10-29",
+        "Time": "11:00",
+        "Status": "open"
+      },
+      {
+        "Key": "parents",
+        "Kind": "meeting",
+        "Title": "Ужин с родителями",
+        "Date": "2026-10-31",
+        "Time": "19:00",
+        "Status": "open"
+      }
+    ],
+    "Turns": [
+      {
+        "Message": "что мне надо сделать завтра?",
+        "Operation": {
+          "intent": "list",
+          "arguments": {
+            "kind": "any",
+            "date": {
+              "type": "relative_day",
+              "offset": 1
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "list",
+          "Count": 4,
+          "DBCount": 11
+        }
+      }
+    ]
+  },
+  {
+    "Name": "strict task",
+    "Now": "2026-10-26T22:15:00+03:00",
+    "Seeds": [
+      {
+        "Key": "report",
+        "Kind": "task",
+        "Title": "Отправить отчет",
+        "Date": "2026-10-30",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "tickets",
+        "Kind": "task",
+        "Title": "Купить билеты",
+        "Date": "2026-11-01",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "dentist",
+        "Kind": "task",
+        "Title": "Записаться к стоматологу",
+        "Date": "2026-11-02",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "call",
+        "Kind": "reminder",
+        "Title": "Позвонить Ивану",
+        "Date": "2026-10-27",
+        "Time": "10:00",
+        "Status": "open"
+      },
+      {
+        "Key": "pills",
+        "Kind": "reminder",
+        "Title": "Выпить таблетки",
+        "Date": "2026-10-27",
+        "Time": "00:17",
+        "Status": "open"
+      },
+      {
+        "Key": "internet",
+        "Kind": "reminder",
+        "Title": "Оплатить интернет",
+        "Date": "2026-10-28",
+        "Time": "21:00",
+        "Status": "open"
+      },
+      {
+        "Key": "ivan",
+        "Kind": "meeting",
+        "Title": "Встреча с Иваном",
+        "Date": "2026-10-27",
+        "Time": "12:30",
+        "Status": "open"
+      },
+      {
+        "Key": "team",
+        "Kind": "meeting",
+        "Title": "Встреча с командой",
+        "Date": "2026-10-27",
+        "Time": "15:00",
+        "Status": "open"
+      },
+      {
+        "Key": "presentation",
+        "Kind": "meeting",
+        "Title": "Созвон с Петей по презентации",
+        "Date": "2026-10-28",
+        "Time": "18:30",
+        "Status": "open"
+      },
+      {
+        "Key": "designer",
+        "Kind": "meeting",
+        "Title": "Встреча с дизайнером",
+        "Date": "2026-10-29",
+        "Time": "11:00",
+        "Status": "open"
+      },
+      {
+        "Key": "parents",
+        "Kind": "meeting",
+        "Title": "Ужин с родителями",
+        "Date": "2026-10-31",
+        "Time": "19:00",
+        "Status": "open"
+      }
+    ],
+    "Turns": [
+      {
+        "Message": "Покажи только задачи на завтра, без встреч и напоминаний",
+        "Operation": {
+          "intent": "list",
+          "arguments": {
+            "kind": "task",
+            "strict_kind": true,
+            "date": {
+              "type": "relative_day",
+              "offset": 1
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "list",
+          "Count": 0,
+          "DBCount": 11
+        }
+      }
+    ]
+  },
+  {
+    "Name": "similar day",
+    "Now": "2026-10-26T22:15:00+03:00",
+    "Seeds": [
+      {
+        "Key": "report",
+        "Kind": "task",
+        "Title": "Отправить отчет",
+        "Date": "2026-10-30",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "tickets",
+        "Kind": "task",
+        "Title": "Купить билеты",
+        "Date": "2026-11-01",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "dentist",
+        "Kind": "task",
+        "Title": "Записаться к стоматологу",
+        "Date": "2026-11-02",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "call",
+        "Kind": "reminder",
+        "Title": "Позвонить Ивану",
+        "Date": "2026-10-27",
+        "Time": "10:00",
+        "Status": "open"
+      },
+      {
+        "Key": "pills",
+        "Kind": "reminder",
+        "Title": "Выпить таблетки",
+        "Date": "2026-10-27",
+        "Time": "00:17",
+        "Status": "open"
+      },
+      {
+        "Key": "internet",
+        "Kind": "reminder",
+        "Title": "Оплатить интернет",
+        "Date": "2026-10-28",
+        "Time": "21:00",
+        "Status": "open"
+      },
+      {
+        "Key": "ivan",
+        "Kind": "meeting",
+        "Title": "Встреча с Иваном",
+        "Date": "2026-10-27",
+        "Time": "12:30",
+        "Status": "open"
+      },
+      {
+        "Key": "team",
+        "Kind": "meeting",
+        "Title": "Встреча с командой",
+        "Date": "2026-10-27",
+        "Time": "15:00",
+        "Status": "open"
+      },
+      {
+        "Key": "presentation",
+        "Kind": "meeting",
+        "Title": "Созвон с Петей по презентации",
+        "Date": "2026-10-28",
+        "Time": "18:30",
+        "Status": "open"
+      },
+      {
+        "Key": "designer",
+        "Kind": "meeting",
+        "Title": "Встреча с дизайнером",
+        "Date": "2026-10-29",
+        "Time": "11:00",
+        "Status": "open"
+      },
+      {
+        "Key": "parents",
+        "Kind": "meeting",
+        "Title": "Ужин с родителями",
+        "Date": "2026-10-31",
+        "Time": "19:00",
+        "Status": "open"
+      }
+    ],
+    "Turns": [
+      {
+        "Message": "Какие дела запланированы на завтра?",
+        "Operation": {
+          "intent": "list",
+          "arguments": {
+            "kind": "any",
+            "date": {
+              "type": "relative_day",
+              "offset": 1
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "list",
+          "Count": 4,
+          "DBCount": 11
+        }
+      }
+    ]
+  },
+  {
+    "Name": "4.1",
+    "Now": "2026-10-26T22:15:00+03:00",
+    "Seeds": [
+      {
+        "Key": "report",
+        "Kind": "task",
+        "Title": "Отправить отчет",
+        "Date": "2026-10-30",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "tickets",
+        "Kind": "task",
+        "Title": "Купить билеты",
+        "Date": "2026-11-01",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "dentist",
+        "Kind": "task",
+        "Title": "Записаться к стоматологу",
+        "Date": "2026-11-02",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "call",
+        "Kind": "reminder",
+        "Title": "Позвонить Ивану",
+        "Date": "2026-10-27",
+        "Time": "10:00",
+        "Status": "open"
+      },
+      {
+        "Key": "pills",
+        "Kind": "reminder",
+        "Title": "Выпить таблетки",
+        "Date": "2026-10-27",
+        "Time": "00:17",
+        "Status": "open"
+      },
+      {
+        "Key": "internet",
+        "Kind": "reminder",
+        "Title": "Оплатить интернет",
+        "Date": "2026-10-28",
+        "Time": "21:00",
+        "Status": "open"
+      },
+      {
+        "Key": "ivan",
+        "Kind": "meeting",
+        "Title": "Встреча с Иваном",
+        "Date": "2026-10-27",
+        "Time": "12:30",
+        "Status": "open"
+      },
+      {
+        "Key": "team",
+        "Kind": "meeting",
+        "Title": "Встреча с командой",
+        "Date": "2026-10-27",
+        "Time": "15:00",
+        "Status": "open"
+      },
+      {
+        "Key": "presentation",
+        "Kind": "meeting",
+        "Title": "Созвон с Петей по презентации",
+        "Date": "2026-10-28",
+        "Time": "18:30",
+        "Status": "open"
+      },
+      {
+        "Key": "designer",
+        "Kind": "meeting",
+        "Title": "Встреча с дизайнером",
+        "Date": "2026-10-29",
+        "Time": "11:00",
+        "Status": "open"
+      },
+      {
+        "Key": "parents",
+        "Kind": "meeting",
+        "Title": "Ужин с родителями",
+        "Date": "2026-10-31",
+        "Time": "19:00",
+        "Status": "open"
+      }
+    ],
+    "Turns": [
+      {
+        "Message": "Найди задачу про презентацию",
+        "Operation": {
+          "intent": "search",
+          "arguments": {
+            "query": "презентация",
+            "kind": "task"
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "search",
+          "Count": 1,
+          "Event": {
+            "TitleContains": "презентаци"
+          },
+          "DBCount": 11
+        }
+      }
+    ]
+  },
+  {
+    "Name": "4.2",
+    "Now": "2026-10-26T22:15:00+03:00",
+    "Seeds": [
+      {
+        "Key": "report",
+        "Kind": "task",
+        "Title": "Отправить отчет",
+        "Date": "2026-10-30",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "tickets",
+        "Kind": "task",
+        "Title": "Купить билеты",
+        "Date": "2026-11-01",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "dentist",
+        "Kind": "task",
+        "Title": "Записаться к стоматологу",
+        "Date": "2026-11-02",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "call",
+        "Kind": "reminder",
+        "Title": "Позвонить Ивану",
+        "Date": "2026-10-27",
+        "Time": "10:00",
+        "Status": "open"
+      },
+      {
+        "Key": "pills",
+        "Kind": "reminder",
+        "Title": "Выпить таблетки",
+        "Date": "2026-10-27",
+        "Time": "00:17",
+        "Status": "open"
+      },
+      {
+        "Key": "internet",
+        "Kind": "reminder",
+        "Title": "Оплатить интернет",
+        "Date": "2026-10-28",
+        "Time": "21:00",
+        "Status": "open"
+      },
+      {
+        "Key": "ivan",
+        "Kind": "meeting",
+        "Title": "Встреча с Иваном",
+        "Date": "2026-10-27",
+        "Time": "12:30",
+        "Status": "open"
+      },
+      {
+        "Key": "team",
+        "Kind": "meeting",
+        "Title": "Встреча с командой",
+        "Date": "2026-10-27",
+        "Time": "15:00",
+        "Status": "open"
+      },
+      {
+        "Key": "presentation",
+        "Kind": "meeting",
+        "Title": "Созвон с Петей по презентации",
+        "Date": "2026-10-28",
+        "Time": "18:30",
+        "Status": "open"
+      },
+      {
+        "Key": "designer",
+        "Kind": "meeting",
+        "Title": "Встреча с дизайнером",
+        "Date": "2026-10-29",
+        "Time": "11:00",
+        "Status": "open"
+      },
+      {
+        "Key": "parents",
+        "Kind": "meeting",
+        "Title": "Ужин с родителями",
+        "Date": "2026-10-31",
+        "Time": "19:00",
+        "Status": "open"
+      }
+    ],
+    "Turns": [
+      {
+        "Message": "Когда у меня встреча с Иваном?",
+        "Operation": {
+          "intent": "search",
+          "arguments": {
+            "query": "Иван",
+            "kind": "meeting"
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "search",
+          "Count": 1,
+          "Event": {
+            "TitleContains": "Иван"
+          },
+          "DBCount": 11
+        }
+      }
+    ]
+  },
+  {
+    "Name": "4.4",
+    "Now": "2026-10-26T22:15:00+03:00",
+    "Seeds": [
+      {
+        "Key": "report",
+        "Kind": "task",
+        "Title": "Отправить отчет",
+        "Date": "2026-10-30",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "tickets",
+        "Kind": "task",
+        "Title": "Купить билеты",
+        "Date": "2026-11-01",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "dentist",
+        "Kind": "task",
+        "Title": "Записаться к стоматологу",
+        "Date": "2026-11-02",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "call",
+        "Kind": "reminder",
+        "Title": "Позвонить Ивану",
+        "Date": "2026-10-27",
+        "Time": "10:00",
+        "Status": "open"
+      },
+      {
+        "Key": "pills",
+        "Kind": "reminder",
+        "Title": "Выпить таблетки",
+        "Date": "2026-10-27",
+        "Time": "00:17",
+        "Status": "open"
+      },
+      {
+        "Key": "internet",
+        "Kind": "reminder",
+        "Title": "Оплатить интернет",
+        "Date": "2026-10-28",
+        "Time": "21:00",
+        "Status": "open"
+      },
+      {
+        "Key": "ivan",
+        "Kind": "meeting",
+        "Title": "Встреча с Иваном",
+        "Date": "2026-10-27",
+        "Time": "12:30",
+        "Status": "open"
+      },
+      {
+        "Key": "team",
+        "Kind": "meeting",
+        "Title": "Встреча с командой",
+        "Date": "2026-10-27",
+        "Time": "15:00",
+        "Status": "open"
+      },
+      {
+        "Key": "presentation",
+        "Kind": "meeting",
+        "Title": "Созвон с Петей по презентации",
+        "Date": "2026-10-28",
+        "Time": "18:30",
+        "Status": "open"
+      },
+      {
+        "Key": "designer",
+        "Kind": "meeting",
+        "Title": "Встреча с дизайнером",
+        "Date": "2026-10-29",
+        "Time": "11:00",
+        "Status": "open"
+      },
+      {
+        "Key": "parents",
+        "Kind": "meeting",
+        "Title": "Ужин с родителями",
+        "Date": "2026-10-31",
+        "Time": "19:00",
+        "Status": "open"
+      }
+    ],
+    "Turns": [
+      {
+        "Message": "найди что-нибудь про зубы",
+        "Operation": {
+          "intent": "search",
+          "arguments": {
+            "query": "стоматолог",
+            "kind": "any"
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "search",
+          "Count": 1,
+          "Event": {
+            "TitleContains": "стоматолог"
+          },
+          "DBCount": 11
+        }
+      }
+    ]
+  },
+  {
+    "Name": "4.5",
+    "Now": "2026-10-26T22:15:00+03:00",
+    "Seeds": [
+      {
+        "Key": "report",
+        "Kind": "task",
+        "Title": "Отправить отчет",
+        "Date": "2026-10-30",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "tickets",
+        "Kind": "task",
+        "Title": "Купить билеты",
+        "Date": "2026-11-01",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "dentist",
+        "Kind": "task",
+        "Title": "Записаться к стоматологу",
+        "Date": "2026-11-02",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "call",
+        "Kind": "reminder",
+        "Title": "Позвонить Ивану",
+        "Date": "2026-10-27",
+        "Time": "10:00",
+        "Status": "open"
+      },
+      {
+        "Key": "pills",
+        "Kind": "reminder",
+        "Title": "Выпить таблетки",
+        "Date": "2026-10-27",
+        "Time": "00:17",
+        "Status": "open"
+      },
+      {
+        "Key": "internet",
+        "Kind": "reminder",
+        "Title": "Оплатить интернет",
+        "Date": "2026-10-28",
+        "Time": "21:00",
+        "Status": "open"
+      },
+      {
+        "Key": "ivan",
+        "Kind": "meeting",
+        "Title": "Встреча с Иваном",
+        "Date": "2026-10-27",
+        "Time": "12:30",
+        "Status": "open"
+      },
+      {
+        "Key": "team",
+        "Kind": "meeting",
+        "Title": "Встреча с командой",
+        "Date": "2026-10-27",
+        "Time": "15:00",
+        "Status": "open"
+      },
+      {
+        "Key": "presentation",
+        "Kind": "meeting",
+        "Title": "Созвон с Петей по презентации",
+        "Date": "2026-10-28",
+        "Time": "18:30",
+        "Status": "open"
+      },
+      {
+        "Key": "designer",
+        "Kind": "meeting",
+        "Title": "Встреча с дизайнером",
+        "Date": "2026-10-29",
+        "Time": "11:00",
+        "Status": "open"
+      },
+      {
+        "Key": "parents",
+        "Kind": "meeting",
+        "Title": "Ужин с родителями",
+        "Date": "2026-10-31",
+        "Time": "19:00",
+        "Status": "open"
+      }
+    ],
+    "Turns": [
+      {
+        "Message": "найди всё, что связано с презентацией",
+        "Operation": {
+          "intent": "search",
+          "arguments": {
+            "query": "презентация",
+            "kind": "any"
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "search",
+          "Count": 1,
+          "Event": {
+            "TitleContains": "презентаци"
+          },
+          "DBCount": 11
+        }
+      }
+    ]
+  },
+  {
+    "Name": "4.6",
+    "Now": "2026-10-26T22:15:00+03:00",
+    "Seeds": [
+      {
+        "Key": "report",
+        "Kind": "task",
+        "Title": "Отправить отчет",
+        "Date": "2026-10-30",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "tickets",
+        "Kind": "task",
+        "Title": "Купить билеты",
+        "Date": "2026-11-01",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "dentist",
+        "Kind": "task",
+        "Title": "Записаться к стоматологу",
+        "Date": "2026-11-02",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "call",
+        "Kind": "reminder",
+        "Title": "Позвонить Ивану",
+        "Date": "2026-10-27",
+        "Time": "10:00",
+        "Status": "open"
+      },
+      {
+        "Key": "pills",
+        "Kind": "reminder",
+        "Title": "Выпить таблетки",
+        "Date": "2026-10-27",
+        "Time": "00:17",
+        "Status": "open"
+      },
+      {
+        "Key": "internet",
+        "Kind": "reminder",
+        "Title": "Оплатить интернет",
+        "Date": "2026-10-28",
+        "Time": "21:00",
+        "Status": "open"
+      },
+      {
+        "Key": "ivan",
+        "Kind": "meeting",
+        "Title": "Встреча с Иваном",
+        "Date": "2026-10-27",
+        "Time": "12:30",
+        "Status": "open"
+      },
+      {
+        "Key": "team",
+        "Kind": "meeting",
+        "Title": "Встреча с командой",
+        "Date": "2026-10-27",
+        "Time": "15:00",
+        "Status": "open"
+      },
+      {
+        "Key": "presentation",
+        "Kind": "meeting",
+        "Title": "Созвон с Петей по презентации",
+        "Date": "2026-10-28",
+        "Time": "18:30",
+        "Status": "open"
+      },
+      {
+        "Key": "designer",
+        "Kind": "meeting",
+        "Title": "Встреча с дизайнером",
+        "Date": "2026-10-29",
+        "Time": "11:00",
+        "Status": "open"
+      },
+      {
+        "Key": "parents",
+        "Kind": "meeting",
+        "Title": "Ужин с родителями",
+        "Date": "2026-10-31",
+        "Time": "19:00",
+        "Status": "open"
+      }
+    ],
+    "Turns": [
+      {
+        "Message": "когда мне надо заплатить за связь?",
+        "Operation": {
+          "intent": "search",
+          "arguments": {
+            "query": "оплатить интернет",
+            "kind": "any"
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "search",
+          "Count": 1,
+          "Event": {
+            "TitleContains": "интернет"
+          },
+          "DBCount": 11
+        }
+      }
+    ]
+  },
+  {
+    "Name": "4.7",
+    "Now": "2026-10-26T22:15:00+03:00",
+    "Seeds": [
+      {
+        "Key": "report",
+        "Kind": "task",
+        "Title": "Отправить отчет",
+        "Date": "2026-10-30",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "tickets",
+        "Kind": "task",
+        "Title": "Купить билеты",
+        "Date": "2026-11-01",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "dentist",
+        "Kind": "task",
+        "Title": "Записаться к стоматологу",
+        "Date": "2026-11-02",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "call",
+        "Kind": "reminder",
+        "Title": "Позвонить Ивану",
+        "Date": "2026-10-27",
+        "Time": "10:00",
+        "Status": "open"
+      },
+      {
+        "Key": "pills",
+        "Kind": "reminder",
+        "Title": "Выпить таблетки",
+        "Date": "2026-10-27",
+        "Time": "00:17",
+        "Status": "open"
+      },
+      {
+        "Key": "internet",
+        "Kind": "reminder",
+        "Title": "Оплатить интернет",
+        "Date": "2026-10-28",
+        "Time": "21:00",
+        "Status": "open"
+      },
+      {
+        "Key": "ivan",
+        "Kind": "meeting",
+        "Title": "Встреча с Иваном",
+        "Date": "2026-10-27",
+        "Time": "12:30",
+        "Status": "open"
+      },
+      {
+        "Key": "team",
+        "Kind": "meeting",
+        "Title": "Встреча с командой",
+        "Date": "2026-10-27",
+        "Time": "15:00",
+        "Status": "open"
+      },
+      {
+        "Key": "presentation",
+        "Kind": "meeting",
+        "Title": "Созвон с Петей по презентации",
+        "Date": "2026-10-28",
+        "Time": "18:30",
+        "Status": "open"
+      },
+      {
+        "Key": "designer",
+        "Kind": "meeting",
+        "Title": "Встреча с дизайнером",
+        "Date": "2026-10-29",
+        "Time": "11:00",
+        "Status": "open"
+      },
+      {
+        "Key": "parents",
+        "Kind": "meeting",
+        "Title": "Ужин с родителями",
+        "Date": "2026-10-31",
+        "Time": "19:00",
+        "Status": "open"
+      }
+    ],
+    "Turns": [
+      {
+        "Message": "когда я вижусь с мамой и папой?",
+        "Operation": {
+          "intent": "search",
+          "arguments": {
+            "query": "родители",
+            "kind": "any"
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "search",
+          "Count": 1,
+          "Event": {
+            "TitleContains": "родител"
+          },
+          "DBCount": 11
+        }
+      }
+    ]
+  },
+  {
+    "Name": "4.8",
+    "Now": "2026-10-26T22:15:00+03:00",
+    "Seeds": [
+      {
+        "Key": "report",
+        "Kind": "task",
+        "Title": "Отправить отчет",
+        "Date": "2026-10-30",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "tickets",
+        "Kind": "task",
+        "Title": "Купить билеты",
+        "Date": "2026-11-01",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "dentist",
+        "Kind": "task",
+        "Title": "Записаться к стоматологу",
+        "Date": "2026-11-02",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "call",
+        "Kind": "reminder",
+        "Title": "Позвонить Ивану",
+        "Date": "2026-10-27",
+        "Time": "10:00",
+        "Status": "open"
+      },
+      {
+        "Key": "pills",
+        "Kind": "reminder",
+        "Title": "Выпить таблетки",
+        "Date": "2026-10-27",
+        "Time": "00:17",
+        "Status": "open"
+      },
+      {
+        "Key": "internet",
+        "Kind": "reminder",
+        "Title": "Оплатить интернет",
+        "Date": "2026-10-28",
+        "Time": "21:00",
+        "Status": "open"
+      },
+      {
+        "Key": "ivan",
+        "Kind": "meeting",
+        "Title": "Встреча с Иваном",
+        "Date": "2026-10-27",
+        "Time": "12:30",
+        "Status": "open"
+      },
+      {
+        "Key": "team",
+        "Kind": "meeting",
+        "Title": "Встреча с командой",
+        "Date": "2026-10-27",
+        "Time": "15:00",
+        "Status": "open"
+      },
+      {
+        "Key": "presentation",
+        "Kind": "meeting",
+        "Title": "Созвон с Петей по презентации",
+        "Date": "2026-10-28",
+        "Time": "18:30",
+        "Status": "open"
+      },
+      {
+        "Key": "designer",
+        "Kind": "meeting",
+        "Title": "Встреча с дизайнером",
+        "Date": "2026-10-29",
+        "Time": "11:00",
+        "Status": "open"
+      },
+      {
+        "Key": "parents",
+        "Kind": "meeting",
+        "Title": "Ужин с родителями",
+        "Date": "2026-10-31",
+        "Time": "19:00",
+        "Status": "open"
+      }
+    ],
+    "Turns": [
+      {
+        "Message": "что там у меня с билетами?",
+        "Operation": {
+          "intent": "search",
+          "arguments": {
+            "query": "билеты",
+            "kind": "any"
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "search",
+          "Count": 1,
+          "Event": {
+            "TitleContains": "билет"
+          },
+          "DBCount": 11
+        }
+      }
+    ]
+  },
+  {
+    "Name": "similar internet",
+    "Now": "2026-10-26T22:15:00+03:00",
+    "Seeds": [
+      {
+        "Key": "report",
+        "Kind": "task",
+        "Title": "Отправить отчет",
+        "Date": "2026-10-30",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "tickets",
+        "Kind": "task",
+        "Title": "Купить билеты",
+        "Date": "2026-11-01",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "dentist",
+        "Kind": "task",
+        "Title": "Записаться к стоматологу",
+        "Date": "2026-11-02",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "call",
+        "Kind": "reminder",
+        "Title": "Позвонить Ивану",
+        "Date": "2026-10-27",
+        "Time": "10:00",
+        "Status": "open"
+      },
+      {
+        "Key": "pills",
+        "Kind": "reminder",
+        "Title": "Выпить таблетки",
+        "Date": "2026-10-27",
+        "Time": "00:17",
+        "Status": "open"
+      },
+      {
+        "Key": "internet",
+        "Kind": "reminder",
+        "Title": "Оплатить интернет",
+        "Date": "2026-10-28",
+        "Time": "21:00",
+        "Status": "open"
+      },
+      {
+        "Key": "ivan",
+        "Kind": "meeting",
+        "Title": "Встреча с Иваном",
+        "Date": "2026-10-27",
+        "Time": "12:30",
+        "Status": "open"
+      },
+      {
+        "Key": "team",
+        "Kind": "meeting",
+        "Title": "Встреча с командой",
+        "Date": "2026-10-27",
+        "Time": "15:00",
+        "Status": "open"
+      },
+      {
+        "Key": "presentation",
+        "Kind": "meeting",
+        "Title": "Созвон с Петей по презентации",
+        "Date": "2026-10-28",
+        "Time": "18:30",
+        "Status": "open"
+      },
+      {
+        "Key": "designer",
+        "Kind": "meeting",
+        "Title": "Встреча с дизайнером",
+        "Date": "2026-10-29",
+        "Time": "11:00",
+        "Status": "open"
+      },
+      {
+        "Key": "parents",
+        "Kind": "meeting",
+        "Title": "Ужин с родителями",
+        "Date": "2026-10-31",
+        "Time": "19:00",
+        "Status": "open"
+      }
+    ],
+    "Turns": [
+      {
+        "Message": "Когда платить за домашний интернет?",
+        "Operation": {
+          "intent": "search",
+          "arguments": {
+            "query": "интернет",
+            "kind": "any"
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "search",
+          "Count": 1,
+          "Event": {
+            "TitleContains": "интернет"
+          },
+          "DBCount": 11
+        }
+      }
+    ]
+  },
+  {
+    "Name": "similar status",
+    "Now": "2026-10-26T22:15:00+03:00",
+    "Seeds": [
+      {
+        "Key": "report",
+        "Kind": "task",
+        "Title": "Отправить отчет",
+        "Date": "2026-10-30",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "tickets",
+        "Kind": "task",
+        "Title": "Купить билеты",
+        "Date": "2026-11-01",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "dentist",
+        "Kind": "task",
+        "Title": "Записаться к стоматологу",
+        "Date": "2026-11-02",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "call",
+        "Kind": "reminder",
+        "Title": "Позвонить Ивану",
+        "Date": "2026-10-27",
+        "Time": "10:00",
+        "Status": "open"
+      },
+      {
+        "Key": "pills",
+        "Kind": "reminder",
+        "Title": "Выпить таблетки",
+        "Date": "2026-10-27",
+        "Time": "00:17",
+        "Status": "open"
+      },
+      {
+        "Key": "internet",
+        "Kind": "reminder",
+        "Title": "Оплатить интернет",
+        "Date": "2026-10-28",
+        "Time": "21:00",
+        "Status": "open"
+      },
+      {
+        "Key": "ivan",
+        "Kind": "meeting",
+        "Title": "Встреча с Иваном",
+        "Date": "2026-10-27",
+        "Time": "12:30",
+        "Status": "open"
+      },
+      {
+        "Key": "team",
+        "Kind": "meeting",
+        "Title": "Встреча с командой",
+        "Date": "2026-10-27",
+        "Time": "15:00",
+        "Status": "open"
+      },
+      {
+        "Key": "presentation",
+        "Kind": "meeting",
+        "Title": "Созвон с Петей по презентации",
+        "Date": "2026-10-28",
+        "Time": "18:30",
+        "Status": "open"
+      },
+      {
+        "Key": "designer",
+        "Kind": "meeting",
+        "Title": "Встреча с дизайнером",
+        "Date": "2026-10-29",
+        "Time": "11:00",
+        "Status": "open"
+      },
+      {
+        "Key": "parents",
+        "Kind": "meeting",
+        "Title": "Ужин с родителями",
+        "Date": "2026-10-31",
+        "Time": "19:00",
+        "Status": "open"
+      }
+    ],
+    "Turns": [
+      {
+        "Message": "Как там моя задача с билетами?",
+        "Operation": {
+          "intent": "search",
+          "arguments": {
+            "query": "билеты",
+            "kind": "task"
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "search",
+          "Count": 1,
+          "Event": {
+            "TitleContains": "билет"
+          },
+          "DBCount": 11
+        }
+      }
+    ]
+  },
+  {
+    "Name": "4.3 no hallucination",
+    "Now": "2026-10-26T22:15:00+03:00",
+    "Seeds": [
+      {
+        "Key": "report",
+        "Kind": "task",
+        "Title": "Отправить отчет",
+        "Date": "2026-10-30",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "tickets",
+        "Kind": "task",
+        "Title": "Купить билеты",
+        "Date": "2026-11-01",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "dentist",
+        "Kind": "task",
+        "Title": "Записаться к стоматологу",
+        "Date": "2026-11-02",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "call",
+        "Kind": "reminder",
+        "Title": "Позвонить Ивану",
+        "Date": "2026-10-27",
+        "Time": "10:00",
+        "Status": "open"
+      },
+      {
+        "Key": "pills",
+        "Kind": "reminder",
+        "Title": "Выпить таблетки",
+        "Date": "2026-10-27",
+        "Time": "00:17",
+        "Status": "open"
+      },
+      {
+        "Key": "internet",
+        "Kind": "reminder",
+        "Title": "Оплатить интернет",
+        "Date": "2026-10-28",
+        "Time": "21:00",
+        "Status": "open"
+      },
+      {
+        "Key": "ivan",
+        "Kind": "meeting",
+        "Title": "Встреча с Иваном",
+        "Date": "2026-10-27",
+        "Time": "12:30",
+        "Status": "open"
+      },
+      {
+        "Key": "team",
+        "Kind": "meeting",
+        "Title": "Встреча с командой",
+        "Date": "2026-10-27",
+        "Time": "15:00",
+        "Status": "open"
+      },
+      {
+        "Key": "presentation",
+        "Kind": "meeting",
+        "Title": "Созвон с Петей по презентации",
+        "Date": "2026-10-28",
+        "Time": "18:30",
+        "Status": "open"
+      },
+      {
+        "Key": "designer",
+        "Kind": "meeting",
+        "Title": "Встреча с дизайнером",
+        "Date": "2026-10-29",
+        "Time": "11:00",
+        "Status": "open"
+      },
+      {
+        "Key": "parents",
+        "Kind": "meeting",
+        "Title": "Ужин с родителями",
+        "Date": "2026-10-31",
+        "Time": "19:00",
+        "Status": "open"
+      }
+    ],
+    "Turns": [
+      {
+        "Message": "Я когда-то ставил задачу по договору, найди ее",
+        "Operation": {
+          "intent": "search",
+          "arguments": {
+            "kind": "task",
+            "query": "договор"
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "search",
+          "Count": 0,
+          "DBCount": 11
+        }
+      }
+    ]
+  },
+  {
+    "Name": "4.9 4.10 apartment",
+    "Now": "2026-10-26T22:15:00+03:00",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "поставь задачу согласовать договор аренды с юристом в четверг",
+        "Operation": {
+          "intent": "create_task",
+          "arguments": {
+            "title": "Согласовать договор аренды с юристом",
+            "date": {
+              "type": "weekday",
+              "weekday": "thursday",
+              "direction": "next_or_current"
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "DBCount": 1
+        }
+      },
+      {
+        "Message": "Я когда-то ставил задачу по договору, найди ее",
+        "Operation": {
+          "intent": "search",
+          "arguments": {
+            "kind": "task",
+            "query": "договор"
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "search",
+          "Count": 1
+        }
+      },
+      {
+        "Message": "было что-то про квартиру, не помню что",
+        "Operation": {
+          "intent": "search",
+          "arguments": {
+            "query": "аренда"
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "search",
+          "Count": 1
+        }
+      }
+    ]
+  },
+  {
+    "Name": "6.2 critical я отправил отчёт, можно вычеркнуть",
+    "Now": "2026-10-26T22:15:00+03:00",
+    "Seeds": [
+      {
+        "Key": "report",
+        "Kind": "task",
+        "Title": "Отправить отчет",
+        "Date": "2026-10-30",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "contract",
+        "Kind": "task",
+        "Title": "Согласовать договор аренды с юристом",
+        "Date": "2026-10-29",
+        "Time": "",
+        "Status": "open"
+      }
+    ],
+    "Turns": [
+      {
+        "Message": "найди задачу по договору",
+        "Operation": {
+          "intent": "search",
+          "arguments": {
+            "query": "договор"
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "search",
+          "Count": 1
+        }
+      },
+      {
+        "Message": "а перенеси её на пятницу",
+        "Operation": {
+          "intent": "update",
+          "arguments": {
+            "target": {
+              "type": "last"
+            },
+            "changes": {
+              "date": {
+                "type": "weekday",
+                "weekday": "friday",
+                "direction": "next_or_current"
+              }
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "update",
+          "Event": {
+            "TitleContains": "договор",
+            "Date": "2026-10-30"
+          }
+        }
+      },
+      {
+        "Message": "я отправил отчёт, можно вычеркнуть",
+        "Operation": {
+          "intent": "complete",
+          "arguments": {
+            "target": {
+              "type": "query",
+              "value": "отчёт",
+              "filter": {
+                "kind": "task"
+              }
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "complete",
+          "Event": {
+            "TitleContains": "отчет",
+            "Status": "done"
+          },
+          "Records": [
+            {
+              "Key": "contract",
+              "Status": "open"
+            },
+            {
+              "Key": "report",
+              "Status": "done"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "Name": "6.2 critical Отчёт уже отправлен, отметь выполненным",
+    "Now": "2026-10-26T22:15:00+03:00",
+    "Seeds": [
+      {
+        "Key": "report",
+        "Kind": "task",
+        "Title": "Отправить отчет",
+        "Date": "2026-10-30",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "contract",
+        "Kind": "task",
+        "Title": "Согласовать договор аренды с юристом",
+        "Date": "2026-10-29",
+        "Time": "",
+        "Status": "open"
+      }
+    ],
+    "Turns": [
+      {
+        "Message": "найди задачу по договору",
+        "Operation": {
+          "intent": "search",
+          "arguments": {
+            "query": "договор"
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "search",
+          "Count": 1
+        }
+      },
+      {
+        "Message": "а перенеси её на пятницу",
+        "Operation": {
+          "intent": "update",
+          "arguments": {
+            "target": {
+              "type": "last"
+            },
+            "changes": {
+              "date": {
+                "type": "weekday",
+                "weekday": "friday",
+                "direction": "next_or_current"
+              }
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "update",
+          "Event": {
+            "TitleContains": "договор",
+            "Date": "2026-10-30"
+          }
+        }
+      },
+      {
+        "Message": "Отчёт уже отправлен, отметь выполненным",
+        "Operation": {
+          "intent": "complete",
+          "arguments": {
+            "target": {
+              "type": "query",
+              "value": "отчёт",
+              "filter": {
+                "kind": "task"
+              }
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "complete",
+          "Event": {
+            "TitleContains": "отчет",
+            "Status": "done"
+          },
+          "Records": [
+            {
+              "Key": "contract",
+              "Status": "open"
+            },
+            {
+              "Key": "report",
+              "Status": "done"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "Name": "6.2 critical С договором позже разберусь, а отчёт отметь готовым",
+    "Now": "2026-10-26T22:15:00+03:00",
+    "Seeds": [
+      {
+        "Key": "report",
+        "Kind": "task",
+        "Title": "Отправить отчет",
+        "Date": "2026-10-30",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "contract",
+        "Kind": "task",
+        "Title": "Согласовать договор аренды с юристом",
+        "Date": "2026-10-29",
+        "Time": "",
+        "Status": "open"
+      }
+    ],
+    "Turns": [
+      {
+        "Message": "найди задачу по договору",
+        "Operation": {
+          "intent": "search",
+          "arguments": {
+            "query": "договор"
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "search",
+          "Count": 1
+        }
+      },
+      {
+        "Message": "а перенеси её на пятницу",
+        "Operation": {
+          "intent": "update",
+          "arguments": {
+            "target": {
+              "type": "last"
+            },
+            "changes": {
+              "date": {
+                "type": "weekday",
+                "weekday": "friday",
+                "direction": "next_or_current"
+              }
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "update",
+          "Event": {
+            "TitleContains": "договор",
+            "Date": "2026-10-30"
+          }
+        }
+      },
+      {
+        "Message": "С договором позже разберусь, а отчёт отметь готовым",
+        "Operation": {
+          "intent": "complete",
+          "arguments": {
+            "target": {
+              "type": "query",
+              "value": "отчёт",
+              "filter": {
+                "kind": "task"
+              }
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "complete",
+          "Event": {
+            "TitleContains": "отчет",
+            "Status": "done"
+          },
+          "Records": [
+            {
+              "Key": "contract",
+              "Status": "open"
+            },
+            {
+              "Key": "report",
+              "Status": "done"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "Name": "6.6 reopen",
+    "Now": "2026-10-26T22:15:00+03:00",
+    "Seeds": [
+      {
+        "Key": "contract",
+        "Kind": "task",
+        "Title": "Согласовать договор аренды с юристом",
+        "Date": "2026-10-29",
+        "Time": "",
+        "Status": "done"
+      }
+    ],
+    "Turns": [
+      {
+        "Message": "а задачу про договор верни в невыполненные, она ещё не сделана",
+        "Operation": {
+          "intent": "update",
+          "arguments": {
+            "target": {
+              "type": "query",
+              "value": "договор"
+            },
+            "changes": {
+              "status": "open"
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "update",
+          "Event": {
+            "Status": "open"
+          },
+          "ReplyContains": [
+            "Вернул в работу"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "Name": "6.7 shift",
+    "Now": "2026-10-26T22:15:00+03:00",
+    "Seeds": [
+      {
+        "Key": "report",
+        "Kind": "task",
+        "Title": "Отправить отчет",
+        "Date": "2026-10-30",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "tickets",
+        "Kind": "task",
+        "Title": "Купить билеты",
+        "Date": "2026-11-01",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "dentist",
+        "Kind": "task",
+        "Title": "Записаться к стоматологу",
+        "Date": "2026-11-02",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "call",
+        "Kind": "reminder",
+        "Title": "Позвонить Ивану",
+        "Date": "2026-10-27",
+        "Time": "10:00",
+        "Status": "open"
+      },
+      {
+        "Key": "pills",
+        "Kind": "reminder",
+        "Title": "Выпить таблетки",
+        "Date": "2026-10-27",
+        "Time": "00:17",
+        "Status": "open"
+      },
+      {
+        "Key": "internet",
+        "Kind": "reminder",
+        "Title": "Оплатить интернет",
+        "Date": "2026-10-28",
+        "Time": "21:00",
+        "Status": "open"
+      },
+      {
+        "Key": "ivan",
+        "Kind": "meeting",
+        "Title": "Встреча с Иваном",
+        "Date": "2026-10-27",
+        "Time": "12:30",
+        "Status": "open"
+      },
+      {
+        "Key": "team",
+        "Kind": "meeting",
+        "Title": "Встреча с командой",
+        "Date": "2026-10-27",
+        "Time": "15:00",
+        "Status": "open"
+      },
+      {
+        "Key": "presentation",
+        "Kind": "meeting",
+        "Title": "Созвон с Петей по презентации",
+        "Date": "2026-10-28",
+        "Time": "18:30",
+        "Status": "open"
+      },
+      {
+        "Key": "designer",
+        "Kind": "meeting",
+        "Title": "Встреча с дизайнером",
+        "Date": "2026-10-29",
+        "Time": "11:00",
+        "Status": "open"
+      },
+      {
+        "Key": "parents",
+        "Kind": "meeting",
+        "Title": "Ужин с родителями",
+        "Date": "2026-10-31",
+        "Time": "19:00",
+        "Status": "open"
+      }
+    ],
+    "Turns": [
+      {
+        "Message": "встречу с дизайнером сдвинь на час позже",
+        "Operation": {
+          "intent": "update",
+          "arguments": {
+            "target": {
+              "type": "query",
+              "value": "дизайнер",
+              "filter": {
+                "kind": "meeting"
+              }
+            },
+            "changes": {
+              "shift_minutes": 60
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "update",
+          "Event": {
+            "Date": "2026-10-29",
+            "Time": "12:00"
+          },
+          "DBCount": 11
+        }
+      }
+    ]
+  },
+  {
+    "Name": "6.8 удали напоминание про таблетки, оно уже не нужно",
+    "Now": "2026-10-26T22:15:00+03:00",
+    "Seeds": [
+      {
+        "Key": "report",
+        "Kind": "task",
+        "Title": "Отправить отчет",
+        "Date": "2026-10-30",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "tickets",
+        "Kind": "task",
+        "Title": "Купить билеты",
+        "Date": "2026-11-01",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "dentist",
+        "Kind": "task",
+        "Title": "Записаться к стоматологу",
+        "Date": "2026-11-02",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "call",
+        "Kind": "reminder",
+        "Title": "Позвонить Ивану",
+        "Date": "2026-10-27",
+        "Time": "10:00",
+        "Status": "open"
+      },
+      {
+        "Key": "pills",
+        "Kind": "reminder",
+        "Title": "Выпить таблетки",
+        "Date": "2026-10-27",
+        "Time": "00:17",
+        "Status": "open"
+      },
+      {
+        "Key": "internet",
+        "Kind": "reminder",
+        "Title": "Оплатить интернет",
+        "Date": "2026-10-28",
+        "Time": "21:00",
+        "Status": "open"
+      },
+      {
+        "Key": "ivan",
+        "Kind": "meeting",
+        "Title": "Встреча с Иваном",
+        "Date": "2026-10-27",
+        "Time": "12:30",
+        "Status": "open"
+      },
+      {
+        "Key": "team",
+        "Kind": "meeting",
+        "Title": "Встреча с командой",
+        "Date": "2026-10-27",
+        "Time": "15:00",
+        "Status": "open"
+      },
+      {
+        "Key": "presentation",
+        "Kind": "meeting",
+        "Title": "Созвон с Петей по презентации",
+        "Date": "2026-10-28",
+        "Time": "18:30",
+        "Status": "open"
+      },
+      {
+        "Key": "designer",
+        "Kind": "meeting",
+        "Title": "Встреча с дизайнером",
+        "Date": "2026-10-29",
+        "Time": "11:00",
+        "Status": "open"
+      },
+      {
+        "Key": "parents",
+        "Kind": "meeting",
+        "Title": "Ужин с родителями",
+        "Date": "2026-10-31",
+        "Time": "19:00",
+        "Status": "open"
+      }
+    ],
+    "Turns": [
+      {
+        "Message": "удали напоминание про таблетки, оно уже не нужно",
+        "Operation": {
+          "intent": "delete",
+          "arguments": {
+            "target": {
+              "type": "query",
+              "value": "таблетки",
+              "filter": {
+                "kind": "reminder"
+              }
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "clarify",
+          "Pending": true,
+          "DBCount": 11,
+          "ReplyContains": [
+            "Удалить"
+          ]
+        }
+      },
+      {
+        "Message": "да",
+        "Operation": {
+          "intent": "confirm",
+          "arguments": {},
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "delete",
+          "DBCount": 10,
+          "Absent": [
+            "pills"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "Name": "6.8 Убери напоминание о таблетках, больше не надо",
+    "Now": "2026-10-26T22:15:00+03:00",
+    "Seeds": [
+      {
+        "Key": "report",
+        "Kind": "task",
+        "Title": "Отправить отчет",
+        "Date": "2026-10-30",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "tickets",
+        "Kind": "task",
+        "Title": "Купить билеты",
+        "Date": "2026-11-01",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "dentist",
+        "Kind": "task",
+        "Title": "Записаться к стоматологу",
+        "Date": "2026-11-02",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "call",
+        "Kind": "reminder",
+        "Title": "Позвонить Ивану",
+        "Date": "2026-10-27",
+        "Time": "10:00",
+        "Status": "open"
+      },
+      {
+        "Key": "pills",
+        "Kind": "reminder",
+        "Title": "Выпить таблетки",
+        "Date": "2026-10-27",
+        "Time": "00:17",
+        "Status": "open"
+      },
+      {
+        "Key": "internet",
+        "Kind": "reminder",
+        "Title": "Оплатить интернет",
+        "Date": "2026-10-28",
+        "Time": "21:00",
+        "Status": "open"
+      },
+      {
+        "Key": "ivan",
+        "Kind": "meeting",
+        "Title": "Встреча с Иваном",
+        "Date": "2026-10-27",
+        "Time": "12:30",
+        "Status": "open"
+      },
+      {
+        "Key": "team",
+        "Kind": "meeting",
+        "Title": "Встреча с командой",
+        "Date": "2026-10-27",
+        "Time": "15:00",
+        "Status": "open"
+      },
+      {
+        "Key": "presentation",
+        "Kind": "meeting",
+        "Title": "Созвон с Петей по презентации",
+        "Date": "2026-10-28",
+        "Time": "18:30",
+        "Status": "open"
+      },
+      {
+        "Key": "designer",
+        "Kind": "meeting",
+        "Title": "Встреча с дизайнером",
+        "Date": "2026-10-29",
+        "Time": "11:00",
+        "Status": "open"
+      },
+      {
+        "Key": "parents",
+        "Kind": "meeting",
+        "Title": "Ужин с родителями",
+        "Date": "2026-10-31",
+        "Time": "19:00",
+        "Status": "open"
+      }
+    ],
+    "Turns": [
+      {
+        "Message": "Убери напоминание о таблетках, больше не надо",
+        "Operation": {
+          "intent": "delete",
+          "arguments": {
+            "target": {
+              "type": "query",
+              "value": "таблетки",
+              "filter": {
+                "kind": "reminder"
+              }
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "clarify",
+          "Pending": true,
+          "DBCount": 11,
+          "ReplyContains": [
+            "Удалить"
+          ]
+        }
+      },
+      {
+        "Message": "да",
+        "Operation": {
+          "intent": "confirm",
+          "arguments": {},
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "delete",
+          "DBCount": 10,
+          "Absent": [
+            "pills"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "Name": "6.8 удали «Выпить таблетки»",
+    "Now": "2026-10-26T22:15:00+03:00",
+    "Seeds": [
+      {
+        "Key": "report",
+        "Kind": "task",
+        "Title": "Отправить отчет",
+        "Date": "2026-10-30",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "tickets",
+        "Kind": "task",
+        "Title": "Купить билеты",
+        "Date": "2026-11-01",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "dentist",
+        "Kind": "task",
+        "Title": "Записаться к стоматологу",
+        "Date": "2026-11-02",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "call",
+        "Kind": "reminder",
+        "Title": "Позвонить Ивану",
+        "Date": "2026-10-27",
+        "Time": "10:00",
+        "Status": "open"
+      },
+      {
+        "Key": "pills",
+        "Kind": "reminder",
+        "Title": "Выпить таблетки",
+        "Date": "2026-10-27",
+        "Time": "00:17",
+        "Status": "open"
+      },
+      {
+        "Key": "internet",
+        "Kind": "reminder",
+        "Title": "Оплатить интернет",
+        "Date": "2026-10-28",
+        "Time": "21:00",
+        "Status": "open"
+      },
+      {
+        "Key": "ivan",
+        "Kind": "meeting",
+        "Title": "Встреча с Иваном",
+        "Date": "2026-10-27",
+        "Time": "12:30",
+        "Status": "open"
+      },
+      {
+        "Key": "team",
+        "Kind": "meeting",
+        "Title": "Встреча с командой",
+        "Date": "2026-10-27",
+        "Time": "15:00",
+        "Status": "open"
+      },
+      {
+        "Key": "presentation",
+        "Kind": "meeting",
+        "Title": "Созвон с Петей по презентации",
+        "Date": "2026-10-28",
+        "Time": "18:30",
+        "Status": "open"
+      },
+      {
+        "Key": "designer",
+        "Kind": "meeting",
+        "Title": "Встреча с дизайнером",
+        "Date": "2026-10-29",
+        "Time": "11:00",
+        "Status": "open"
+      },
+      {
+        "Key": "parents",
+        "Kind": "meeting",
+        "Title": "Ужин с родителями",
+        "Date": "2026-10-31",
+        "Time": "19:00",
+        "Status": "open"
+      }
+    ],
+    "Turns": [
+      {
+        "Message": "удали «Выпить таблетки»",
+        "Operation": {
+          "intent": "delete",
+          "arguments": {
+            "target": {
+              "type": "query",
+              "value": "таблетки",
+              "filter": {
+                "kind": "reminder"
+              }
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "clarify",
+          "Pending": true,
+          "DBCount": 11,
+          "ReplyContains": [
+            "Удалить"
+          ]
+        }
+      },
+      {
+        "Message": "да",
+        "Operation": {
+          "intent": "confirm",
+          "arguments": {},
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "delete",
+          "DBCount": 10,
+          "Absent": [
+            "pills"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "Name": "6.3 6.4 conflict and slot",
+    "Now": "2026-10-26T22:15:00+03:00",
+    "Seeds": [
+      {
+        "Key": "report",
+        "Kind": "task",
+        "Title": "Отправить отчет",
+        "Date": "2026-10-30",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "tickets",
+        "Kind": "task",
+        "Title": "Купить билеты",
+        "Date": "2026-11-01",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "dentist",
+        "Kind": "task",
+        "Title": "Записаться к стоматологу",
+        "Date": "2026-11-02",
+        "Time": "",
+        "Status": "open"
+      },
+      {
+        "Key": "call",
+        "Kind": "reminder",
+        "Title": "Позвонить Ивану",
+        "Date": "2026-10-27",
+        "Time": "10:00",
+        "Status": "open"
+      },
+      {
+        "Key": "pills",
+        "Kind": "reminder",
+        "Title": "Выпить таблетки",
+        "Date": "2026-10-27",
+        "Time": "00:17",
+        "Status": "open"
+      },
+      {
+        "Key": "internet",
+        "Kind": "reminder",
+        "Title": "Оплатить интернет",
+        "Date": "2026-10-28",
+        "Time": "21:00",
+        "Status": "open"
+      },
+      {
+        "Key": "ivan",
+        "Kind": "meeting",
+        "Title": "Встреча с Иваном",
+        "Date": "2026-10-27",
+        "Time": "12:30",
+        "Status": "open"
+      },
+      {
+        "Key": "team",
+        "Kind": "meeting",
+        "Title": "Встреча с командой",
+        "Date": "2026-10-27",
+        "Time": "15:00",
+        "Status": "open"
+      },
+      {
+        "Key": "presentation",
+        "Kind": "meeting",
+        "Title": "Созвон с Петей по презентации",
+        "Date": "2026-10-28",
+        "Time": "18:30",
+        "Status": "open"
+      },
+      {
+        "Key": "designer",
+        "Kind": "meeting",
+        "Title": "Встреча с дизайнером",
+        "Date": "2026-10-29",
+        "Time": "11:00",
+        "Status": "open"
+      },
+      {
+        "Key": "parents",
+        "Kind": "meeting",
+        "Title": "Ужин с родителями",
+        "Date": "2026-10-31",
+        "Time": "19:00",
+        "Status": "open"
+      }
+    ],
+    "Turns": [
+      {
+        "Message": "завтра в 12:30 встреча с бухгалтером",
+        "Operation": {
+          "intent": "create_meeting",
+          "arguments": {
+            "title": "Встреча с бухгалтером",
+            "friends": [
+              "Бухгалтер"
+            ],
+            "date": {
+              "type": "relative_day",
+              "offset": 1
+            },
+            "time": "12:30"
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "clarify",
+          "Pending": true,
+          "DBCount": 11,
+          "ReplyContains": [
+            "Иван"
+          ]
+        }
+      },
+      {
+        "Message": "Завтра в 16:00",
+        "Operation": {
+          "intent": "choose_time",
+          "arguments": {
+            "changes": {
+              "time": "16:00"
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "DBCount": 12,
+          "Event": {
+            "Date": "2026-10-27",
+            "Time": "16:00"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "Name": "6.9 until year",
+    "Now": "2026-10-26T22:15:00+03:00",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "каждый понедельник в 9:30 у нас планёрка",
+        "Operation": {
+          "intent": "create_meeting",
+          "arguments": {
+            "title": "Планёрка",
+            "time": "09:30",
+            "recurrence": {
+              "frequency": "week",
+              "interval": 1,
+              "weekdays": [
+                "monday"
+              ]
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "clarify",
+          "Pending": true,
+          "DBCount": 0
+        }
+      },
+      {
+        "Message": "до конца года",
+        "Operation": {
+          "intent": "continue",
+          "arguments": {
+            "changes": {
+              "recurrence": {
+                "until": {
+                  "type": "period_end",
+                  "unit": "year",
+                  "offset": 0
+                }
+              }
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "DBCount": 1,
+          "Event": {
+            "Date": "2026-11-02",
+            "Time": "09:30",
+            "RecurrenceFrequency": "week",
+            "RecurrenceUntil": "2026-12-31"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "Name": "6.9 similar until month",
+    "Now": "2026-10-26T22:15:00+03:00",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "каждый вторник в 10:30 созвон по проекту",
+        "Operation": {
+          "intent": "create_meeting",
+          "arguments": {
+            "title": "Созвон по проекту",
+            "time": "10:30",
+            "recurrence": {
+              "frequency": "week",
+              "interval": 1,
+              "weekdays": [
+                "tuesday"
+              ]
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "clarify",
+          "Pending": true
+        }
+      },
+      {
+        "Message": "до конца месяца",
+        "Operation": {
+          "intent": "continue",
+          "arguments": {
+            "changes": {
+              "recurrence": {
+                "frequency": "week",
+                "interval": 1,
+                "weekdays": [
+                  "tuesday"
+                ],
+                "until": {
+                  "type": "period_end",
+                  "unit": "month",
+                  "offset": 0
+                }
+              }
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "DBCount": 1,
+          "Event": {
+            "Date": "2026-10-27",
+            "Time": "10:30",
+            "RecurrenceUntil": "2026-10-31"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "Name": "6.9b four",
+    "Now": "2026-10-26T22:15:00+03:00",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "каждый понедельник в 9:30 планёрка, 4 раза",
+        "Operation": {
+          "intent": "create_meeting",
+          "arguments": {
+            "title": "Планёрка",
+            "time": "09:30",
+            "recurrence": {
+              "frequency": "week",
+              "interval": 1,
+              "weekdays": [
+                "monday"
+              ],
+              "count": 4
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "DBCount": 1,
+          "Event": {
+            "Date": "2026-11-02",
+            "Time": "09:30",
+            "RecurrenceCount": 4
+          }
+        }
+      }
+    ]
+  },
+  {
+    "Name": "7.1 past",
+    "Now": "2026-10-26T22:15:00+03:00",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "напомни вчера в 9 утра сдать анализы",
+        "Operation": {
+          "intent": "create_reminder",
+          "arguments": {
+            "title": "Сдать анализы",
+            "date": {
+              "type": "relative_day",
+              "offset": -1
+            },
+            "time": "09:00"
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "clarify",
+          "Pending": true,
+          "DBCount": 0,
+          "ReplyContains": [
+            "уже прошло"
+          ]
+        }
+      },
+      {
+        "Message": "завтра",
+        "Operation": {
+          "intent": "continue",
+          "arguments": {
+            "changes": {
+              "date": {
+                "type": "relative_day",
+                "offset": 1
+              }
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "create",
+          "DBCount": 1,
+          "Event": {
+            "Date": "2026-10-27",
+            "Time": "09:00"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "Name": "7.2 empty",
+    "Now": "2026-10-26T22:15:00+03:00",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "напомни",
+        "Operation": {
+          "intent": "create_reminder",
+          "arguments": {
+            "title": ""
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "clarify",
+          "Pending": true,
+          "DBCount": 0
+        }
+      }
+    ]
+  },
+  {
+    "Name": "7.3 chat",
+    "Now": "2026-10-26T22:15:00+03:00",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "привет, как дела? какая завтра погода?",
+        "Operation": {
+          "intent": "chat",
+          "arguments": {
+            "reply": "Привет! Помогу с планами. Прогноз погоды пока недоступен."
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "help",
+          "DBCount": 0
+        }
+      }
+    ]
+  },
+  {
+    "Name": "7.4 garbage",
+    "Now": "2026-10-26T22:15:00+03:00",
+    "Seeds": [],
+    "Turns": [
+      {
+        "Message": "выфвлао 123 ыыы",
+        "Operation": {
+          "intent": "clarify",
+          "arguments": {},
+          "confidence": "high",
+          "clarification": "Что вы хотите запланировать или найти?"
+        },
+        "Want": {
+          "Action": "clarify",
+          "AllowedActions": [
+            "help"
+          ],
+          "DBCount": 0
+        }
+      }
+    ]
+  }
+]

@@ -108,15 +108,22 @@ func compare(t *testing.T, path string, expected, actual any) {
 	}
 }
 
-// Keep the Python corpus immutable while explicitly tracking the two Go copy
-// changes: selecting by name/date and no longer asking users to remember IDs.
-// All other fields, history entries and reply text are still compared exactly.
+// Keep the historical Python corpus immutable. Track intentional copy changes
+// explicitly; record contents, history and all other fields remain exact.
 func currentDialogueCopy(value any) any {
 	switch v := value.(type) {
 	case map[string]any:
 		result := make(map[string]any, len(v))
 		for key, item := range v {
 			if text, ok := item.(string); key == "reply" && ok {
+				if strings.HasPrefix(text, "Нашёл записи\n") || strings.HasPrefix(text, "Запланировано событий:") {
+					text = strings.ReplaceAll(text, "13.10.2026", "завтра")
+					text = strings.ReplaceAll(text, "12.10.2026", "сегодня")
+					text = strings.Replace(text, "Нашёл записи\n", "Вот что нашёл:\n", 1)
+					for count, label := range map[string]string{"1": "1 дело", "3": "3 дела"} {
+						text = strings.Replace(text, "Запланировано событий: "+count+"\n", "В ваших планах — "+label+":\n", 1)
+					}
+				}
 				text = strings.Replace(text, "Уточните номер записи:\n", "Подходят несколько записей. Уточните название, дату или время:\n", 1)
 				if text == "Не нашёл запись для этого действия. Укажите название или номер, например #42." {
 					text = "Не нашёл подходящую запись. Укажите название и, если нужно, дату: например, «удали напоминание позвонить маме завтра»."
@@ -196,6 +203,14 @@ func TestSharedCorpusHTTP(t *testing.T) {
 			open()
 			defer func() { db.Close() }()
 			for i, step := range scenario.Steps {
+				// This legacy delivery scenario deliberately seeds already-due
+				// reminders. Seed through CRUD: chat now asks about past times.
+				if scenario.Name == "due_reminders" && i < 3 {
+					event := step.Expected["events"].([]any)[0].(map[string]any)
+					step.Method, step.Path, step.Status = "POST", "/api/events", http.StatusCreated
+					step.Body = map[string]any{"kind": event["kind"], "title": event["title"], "date": event["date"], "time": event["time"], "duration_minutes": 60}
+					step.Expected = event
+				}
 				if step.Restart {
 					if err := db.Close(); err != nil {
 						t.Fatal(err)
@@ -221,6 +236,9 @@ func TestSharedCorpusHTTP(t *testing.T) {
 					// immutable historical corpus predates bounded dialogue state.
 					if scenario.Name == "restart_context" && i == 4 {
 						expected.(map[string]any)["reply"] = "Какую запись вы имеете в виду? Укажите название или выберите её из списка."
+					}
+					if scenario.Name == "four_actions" && i == 4 {
+						expected.(map[string]any)["reply"] = "Завтра — 1 встреча:\n#3 «Встреча с командой» — завтра в 15:00"
 					}
 					compare(t, fmt.Sprintf("step%d", i), expected, actual)
 				}

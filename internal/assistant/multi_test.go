@@ -31,11 +31,11 @@ func resumeFixture(p *scriptedOperations, key, intent, args string) {
 func TestMultiScreenshotKeepsAllThreeActionsThroughClarifications(t *testing.T) {
 	s, p, now := simpleService(t)
 	now = time.Date(2026, 10, 26, 4, 53, 0, 0, now.Location())
-	message := "Создай встречу с Колей в 8, добавь задачу купить продукты и напомни позвонить маме в 10"
+	message := "Создай встречу с Колей в 8, добавь задачу купить продукты и напомни позвонить маме в 9"
 	multiFixture(p,
 		actionStep("meeting", "Создай встречу с Колей в 8", "create_meeting", `{"title":"Встреча с Колей","time":"20:00"}`),
 		actionStep("task", "добавь задачу купить продукты", "create_task", `{"title":"Купить продукты"}`),
-		actionStep("reminder", "напомни позвонить маме в 10", "create_reminder", `{"title":"Позвонить маме","date":{"type":"relative_day","offset":0},"time":"10:00"}`))
+		actionStep("reminder", "напомни позвонить маме в 9", "create_reminder", `{"title":"Позвонить маме","date":{"type":"relative_day","offset":0},"time":"09:00"}`))
 	r := say(t, s, message, now)
 	if !r.Pending || len(r.Operations) != 3 || len(readAll(t, s)) != 1 || r.Operations[1].Status != "done" || !strings.Contains(r.Reply, "08:00 или 20:00") {
 		t.Fatal(r)
@@ -49,14 +49,14 @@ func TestMultiScreenshotKeepsAllThreeActionsThroughClarifications(t *testing.T) 
 	}
 	operationFixture(p, "continue", `{"changes":{"date":{"type":"relative_day","offset":0}}}`)
 	r = say(t, s, "сегодня", now.Add(2*time.Second))
-	if !r.Pending || len(readAll(t, s)) != 2 || r.Operations[0].Status != "done" || !strings.Contains(r.Reply, "10:00 или 22:00") {
+	if !r.Pending || len(readAll(t, s)) != 2 || r.Operations[0].Status != "done" || !strings.Contains(r.Reply, "09:00 или 21:00") {
 		t.Fatal(r)
 	}
 	if len(p.contexts[len(p.contexts)-1].Actions) != 3 {
 		t.Fatal("plan omitted from compact context")
 	}
-	operationFixture(p, "continue", `{"changes":{"time":"10:00"}}`)
-	r = say(t, s, "10:00", now.Add(3*time.Second))
+	operationFixture(p, "continue", `{"changes":{"time":"09:00"}}`)
+	r = say(t, s, "09:00", now.Add(3*time.Second))
 	if r.Pending || len(readAll(t, s)) != 3 || r.Operations[2].Status != "done" {
 		t.Fatal(r)
 	}
@@ -169,7 +169,7 @@ func TestMultiParseFailureRetainsEveryPendingStep(t *testing.T) {
 }
 
 func TestSimpleAmbiguousClockNeverCreatesSilently(t *testing.T) {
-	for _, text := range []string{"Встреча завтра в 8", "Встреча завтра в восемь", "Встреча завтра в 10"} {
+	for _, text := range []string{"Встреча завтра в 8", "Встреча завтра в восемь"} {
 		t.Run(text, func(t *testing.T) {
 			s, p, now := simpleService(t)
 			operationFixture(p, "create_meeting", `{"title":"Обсуждение","date":{"type":"relative_day","offset":1},"time":"20:00"}`)

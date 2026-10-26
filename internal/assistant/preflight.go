@@ -49,6 +49,9 @@ func (s *Service) preflightSimple(ctx context.Context, snapshot domain.State, op
 			// failures remain repairable without regenerating successful siblings.
 			if e == nil && r.Action == domain.ActionClarify && local.Pending == nil && local.Actions == nil {
 				issue = &nlu.ValidationIssue{Code: "business_validation", Field: "arguments"}
+				if target := actionTarget(op); target != nil && target.Type == "last" {
+					issue = &nlu.ValidationIssue{Code: "named_target_required", Field: "arguments.target"}
+				}
 			}
 			return errDryRun
 		})

@@ -2,6 +2,14 @@ import type { ChatResponse } from '../../types/api';
 
 type Reply = Pick<ChatResponse, 'reply'> & Partial<Pick<ChatResponse, 'events' | 'candidates' | 'conflicts' | 'zoom_meetings' | 'scheduling'>>;
 
+// The cards contain the full visible list; speech keeps every line of the
+// server reply, including entries below the collapsed card list.
+export function assistantDisplayText(response: Reply & { action?: string }): string {
+  const text = assistantReplyText(response);
+  if (['list', 'search'].includes(response.action || '') && response.events?.length && text.includes('\n')) return text.split('\n').filter(line => !/^«.*» — /.test(line)).join('\n');
+  return text;
+}
+
 // Keep record references in the response data, and show their titles to the user.
 export function assistantReplyText(response: Reply): string {
   const records = [...(response.events || []), ...(response.candidates || []), ...(response.conflicts || []), ...(response.scheduling?.meetings || [])];

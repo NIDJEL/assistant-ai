@@ -1,7 +1,14 @@
-import { assistantReplyText } from './replyText';
+import { assistantReplyText, assistantDisplayText } from './replyText';
 import { fixture } from '../../test/server';
 
 const event = fixture(1233, 'meeting', 'Обсуждение проекта');
+it('shows a concise list summary while speech includes entries beyond the collapsed cards', () => {
+  const events = Array.from({ length: 10 }, (_, i) => fixture(i + 1, 'task', `Дело ${i + 1}`));
+  const response = { action: 'list', events, reply: `На этой неделе — 10 дел:\n${events.map(e => `#${e.id} «${e.title}» — 30.10.2026`).join('\n')}` };
+  expect(assistantDisplayText(response)).toBe('На этой неделе — 10 дел:');
+  expect(assistantReplyText(response)).toContain('«Дело 10»');
+  expect(assistantDisplayText({ ...response, reply: response.reply + '\nПоиск по смыслу временно недоступен.' })).toContain('Поиск по смыслу временно недоступен.');
+});
 it('hides record numbers before titles while preserving dates, times and response identifiers', () => {
   const response = { reply: 'Изменено: #1233 «Обсуждение проекта» — 23.10.2026 в 19:30.', events: [event] };
   expect(assistantReplyText(response)).toBe('Изменено: «Обсуждение проекта» — 23.10.2026 в 19:30.');

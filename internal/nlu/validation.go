@@ -66,7 +66,11 @@ func ValidateAt(op Operation, now time.Time) error {
 			return bad("incompatible_recurrence", "arguments.changes")
 		}
 		if c.Recurrence != nil {
-			if _, e := c.Recurrence.Bind(now, nil, nil); e != nil {
+			rule := *c.Recurrence
+			if rule.BoundaryOnly() {
+				rule.Frequency = "day"
+			}
+			if _, e := rule.Bind(now, nil, nil); e != nil {
 				return bad("invalid_recurrence", "arguments.recurrence")
 			}
 		}

@@ -77,14 +77,42 @@ func ambiguousHours(message string) []string {
 		h = map[string]int{"первого": 1, "второго": 2, "третьего": 3, "четвертого": 4, "четвёртого": 4, "пятого": 5, "шестого": 6, "седьмого": 7, "восьмого": 8, "девятого": 9, "десятого": 10, "одиннадцатого": 11, "двенадцатого": 12}[hour] - 1
 		minute = 30
 	}
+	if !half && h >= 10 {
+		return nil
+	}
 	return []string{fmt.Sprintf("%02d:%02d", h%12, minute), fmt.Sprintf("%02d:%02d", h%12+12, minute)}
 }
 
+func daytimeClock(message string) *string {
+	low := strings.ToLower(message)
+	idx := bareHour.FindStringSubmatchIndex(low)
+	if idx == nil || halfClock.MatchString(low) {
+		return nil
+	}
+	tail := strings.TrimSpace(low[idx[3]:])
+	if strings.HasPrefix(strings.TrimSpace(low[idx[0]:idx[1]]), "на ") && (strings.HasPrefix(tail, "минут") || strings.HasPrefix(tail, "секунд") || strings.HasPrefix(tail, "час")) {
+		return nil
+	}
+	if explicitClockTail.MatchString(low[idx[3]:]) || clockQualifier.MatchString(low[idx[3]:]) || clockPrefix.MatchString(low[:idx[0]]) {
+		return nil
+	}
+	value := map[string]string{"10": "10:00", "11": "11:00", "12": "12:00", "десять": "10:00", "одиннадцать": "11:00", "двенадцать": "12:00"}[low[idx[2]:idx[3]]]
+	if value == "" {
+		return nil
+	}
+	return &value
+}
+
 func (s *Service) applySimple(ctx context.Context, tx repository.Tx, state *domain.State, op nlu.Operation, message string, now time.Time) (domain.Command, domain.Response, error) {
+	previous := state.Pending
 	args, _ := op.Args()
 	options := ambiguousHours(message)
+	daytime := daytimeClock(message)
 	var ambiguous bool
 	mark := func(ch *nlu.Changes) {
+		if daytime != nil {
+			ch.Time, ch.TimeAmbiguous = daytime, false
+		}
 		ambiguous = ch.TimeAmbiguous || ch.Time != nil && len(options) > 0
 		if ambiguous {
 			ch.Time, ch.TimeAmbiguous = nil, true
@@ -92,6 +120,9 @@ func (s *Service) applySimple(ctx context.Context, tx repository.Tx, state *doma
 	}
 	switch a := args.(type) {
 	case *nlu.Create:
+		if daytime != nil {
+			a.Time, a.TimeAmbiguous = daytime, false
+		}
 		ambiguous = a.TimeAmbiguous || len(options) > 0 && (a.Date == nil || !in(a.Date.Type, "relative_delay", "absolute_time"))
 		if ambiguous {
 			a.Time, a.TimeAmbiguous = nil, true
@@ -103,10 +134,13 @@ func (s *Service) applySimple(ctx context.Context, tx repository.Tx, state *doma
 	case *nlu.SchedulingReply:
 		mark(&a.Changes)
 	}
-	if ambiguous {
+	if ambiguous || daytime != nil {
 		op.Arguments, _ = json.Marshal(args)
 	}
 	c, r, err := s.applySimpleOperation(ctx, tx, state, op, message, now)
+	if err == nil && previous != nil && in(previous.Expectation, "fields", "reminder") && !in(op.Intent, "continue", "select", "confirm", "cancel", "clarify", "chat") {
+		r.Reply += " Предыдущий запрос «" + previous.Command.Title + "» не завершён и не сохранён. Чтобы вернуться к нему, повторите запрос."
+	}
 	if ambiguous && err == nil && state.Pending != nil && state.Pending.RequiredSlot == "time" {
 		r.Reply = "Укажите точное время в формате ЧЧ:ММ или назовите часть суток."
 		if len(options) == 2 {

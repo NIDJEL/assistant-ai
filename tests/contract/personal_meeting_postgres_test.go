@@ -76,7 +76,13 @@ func TestPostgresPersonalMeetingWithUnlinkedRoleInTitle(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			h := schedulingFixture(t)
 			r := h.say(h.a, "create_meeting", `{"title":"Встреча с `+name+`","date":{"type":"relative_day","offset":1},"time":"15:00"}`, "Встреча с "+name+" завтра в 15")
-			assertPersonalMeeting(t, h, r, name)
+			if name == "командой" {
+				assertPersonalMeeting(t, h, r)
+			} else if name == "дизайнером" {
+				assertPersonalMeeting(t, h, r, "Дизайнер")
+			} else {
+				assertPersonalMeeting(t, h, r, name)
+			}
 		})
 	}
 }

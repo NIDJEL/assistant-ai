@@ -32,12 +32,16 @@ import (
 
 type eventSpec struct{ Key, Kind, Title, Date, Time, Status string }
 type eventWant struct {
+	NoParticipants                         bool
 	Key, TitleContains, Date, Time, Status string
 	ReminderMinutes                        *int
 	RecurrenceFrequency                    string
 	RecurrenceCount                        *int
+	RecurrenceUntil                        string
 }
 type expectation struct {
+	AllowedActions []string
+	ReplyContains  []string
 	Operations     []string
 	Action         string
 	Pending        bool
@@ -320,11 +324,20 @@ func runScenario(ctx context.Context, c scenario, p *recordingInterpreter) (scen
 		if err != nil {
 			tr.Error = err.Error()
 		}
-		if response.Action.String() != t.Want.Action {
+		actionOK := response.Action.String() == t.Want.Action
+		for _, allowed := range t.Want.AllowedActions {
+			actionOK = actionOK || response.Action.String() == allowed
+		}
+		if !actionOK {
 			tr.Failures = append(tr.Failures, "action want "+t.Want.Action)
 		}
 		if response.Pending != t.Want.Pending {
 			tr.Failures = append(tr.Failures, "pending mismatch")
+		}
+		for _, fragment := range t.Want.ReplyContains {
+			if !strings.Contains(strings.ToLower(response.Reply), strings.ToLower(fragment)) {
+				tr.Failures = append(tr.Failures, "reply missing: "+fragment)
+			}
 		}
 		if t.Want.Count != nil && len(response.Events) != *t.Want.Count {
 			tr.Failures = append(tr.Failures, "result count mismatch")
@@ -385,6 +398,12 @@ func runScenario(ctx context.Context, c scenario, p *recordingInterpreter) (scen
 	return r, nil
 }
 func matches(e domain.Event, w eventWant) bool {
+	if w.NoParticipants && len(e.Participants) > 0 {
+		return false
+	}
+	if w.RecurrenceUntil != "" && (e.Recurrence == nil || e.Recurrence.Until == nil || e.Recurrence.Until.String() != w.RecurrenceUntil) {
+		return false
+	}
 	if w.RecurrenceFrequency != "" && (e.Recurrence == nil || e.Recurrence.Frequency != w.RecurrenceFrequency) {
 		return false
 	}

@@ -34,7 +34,15 @@ func simpleCreationQuestion(c domain.Command) string {
 		return "На какую дату поставить запись?"
 	}
 	if c.Time == nil && c.Kind != domain.EventTask {
-		return "Во сколько?"
+		verb := "назначить встречу"
+		if c.Kind == domain.EventReminder {
+			verb = "напомнить"
+		}
+		day := ""
+		if c.Date != nil {
+			day = " " + c.Date.Format("02.01.2006")
+		}
+		return "Во сколько " + verb + " «" + c.Title + "»" + day + "?"
 	}
 	return ""
 }
@@ -120,7 +128,11 @@ func simpleChanges(c *domain.Command, ch nlu.Changes, now time.Time) error {
 		return err
 	}
 	if ch.Recurrence != nil {
-		r, err := ch.Recurrence.Bind(now, c.Date, c.Time)
+		rule, err := nlu.MergeRecurrence(nlu.DisplayRecurrence(c.Recurrence), ch.Recurrence)
+		if err != nil {
+			return err
+		}
+		r, err := rule.Bind(now, c.Date, c.Time)
 		if err != nil {
 			return err
 		}

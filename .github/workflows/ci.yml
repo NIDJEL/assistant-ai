@@ -89,6 +89,7 @@ jobs:
           go mod verify
           go vet ./...
           go test -race -count=1 ./...
+          go run ./cmd/simple-smoke -postgres -mode fixture -input testdata/simple_llm/tester_report.json -output artifacts/tester_report_fixture_pg.json
           python3 -m unittest discover -s deploy -p 'test_*.py'
           python3 -m unittest discover -s scripts -p 'test_*.py'
           python3 scripts/check_docs.py
@@ -101,7 +102,7 @@ jobs:
         if: ${{ !inputs.full_browser }}
         run: |
           pnpm --dir web exec playwright install --with-deps chromium
-          pnpm --dir web e2e flows.spec.ts password-strength.spec.ts mobile-settings-commands-errors.spec.ts meeting-series.spec.ts multi-action.spec.ts --grep 'UI CRUD:|all pages at 390px|password-strength.spec.ts|mobile-settings-commands-errors.spec.ts|meeting-series.spec.ts|multi-action.spec.ts'
+          pnpm --dir web e2e flows.spec.ts password-strength.spec.ts mobile-settings-commands-errors.spec.ts meeting-series.spec.ts multi-action.spec.ts tester-report.spec.ts --grep 'UI CRUD:|all pages at 390px|password-strength.spec.ts|mobile-settings-commands-errors.spec.ts|meeting-series.spec.ts|multi-action.spec.ts|tester-report.spec.ts'
       - name: Complete browser regression
         if: ${{ inputs.full_browser }}
         run: |

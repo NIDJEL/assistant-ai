@@ -20,6 +20,29 @@ type Recurrence struct {
 
 var weekdayNames = []string{"sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"}
 
+// A reply to the series-boundary question may provide only its new bound.
+// Never invent a frequency when there is no persisted rule to extend.
+func MergeRecurrence(base, patch *Recurrence) (*Recurrence, error) {
+	if patch == nil || patch.Frequency != "" {
+		return patch, nil
+	}
+	if base == nil || base.Frequency == "" || !patch.BoundaryOnly() {
+		return nil, errors.New("missing recurrence to continue")
+	}
+	merged := *base
+	if patch.Until != nil {
+		merged.Until, merged.Count = patch.Until, 0
+	}
+	if patch.Count > 0 {
+		merged.Count, merged.Until = patch.Count, nil
+	}
+	return &merged, nil
+}
+
+func (r Recurrence) BoundaryOnly() bool {
+	return r.Frequency == "" && r.Interval == 0 && len(r.Weekdays) == 0 && r.Day == 0 && r.Month == 0 && (r.Until != nil || r.Count > 0) && !(r.Until != nil && r.Count > 0)
+}
+
 func (r Recurrence) Bind(now time.Time, date *domain.Date, clock *domain.TimeOfDay) (*domain.Recurrence, error) {
 	interval := r.Interval
 	if interval == 0 {

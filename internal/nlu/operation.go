@@ -42,8 +42,9 @@ type Filter struct {
 }
 type Read struct {
 	Filter
-	Next    bool `json:"next,omitempty"`
-	Inherit bool `json:"inherit,omitempty"`
+	StrictKind bool `json:"strict_kind,omitempty"`
+	Next       bool `json:"next,omitempty"`
+	Inherit    bool `json:"inherit,omitempty"`
 }
 type Target struct {
 	Type   string  `json:"type"`

@@ -119,6 +119,7 @@ func (s *Service) respondSimple(ctx context.Context, interpreter operationInterp
 		op, parseErr = interpreter.InterpretOperation(ctx, message, compact)
 	}
 	if parseErr == nil {
+		op = guardReadDefault(op, message)
 		parseErr = nlu.ValidateAt(op, now)
 	}
 	if ctx.Err() != nil {
@@ -134,6 +135,7 @@ func (s *Service) respondSimple(ctx context.Context, interpreter operationInterp
 				RepairValidation(context.Context, string, nlu.Context, nlu.Operation, nlu.ValidationIssue) (nlu.Operation, error)
 			}); ok && metrics.Repairs == 0 {
 				op, parseErr = repair.RepairValidation(ctx, message, compact, op, *issue)
+				op = guardReadDefault(op, message)
 			}
 		}
 	}
@@ -587,6 +589,11 @@ func (s *Service) applySimpleOperation(ctx context.Context, tx repository.Tx, st
 		if err = s.simpleTarget(ctx, tx, state, p, a.Target, &c, now); err != nil {
 			return clarify(err.Error())
 		}
+		if a.Target.Type == "last" {
+			if e := s.guardContextTarget(ctx, tx, c, message); e != nil {
+				return clarify(e.Error())
+			}
+		}
 		if err = simpleChanges(&c, a.Changes, now); err != nil {
 			return clarify("Уточните изменения. Ничего не изменено.")
 		}
@@ -619,6 +626,11 @@ func (s *Service) applySimpleOperation(ctx context.Context, tx repository.Tx, st
 			}
 			if err = s.simpleTarget(ctx, tx, state, p, a.Target, &c, now); err != nil {
 				return clarify(err.Error())
+			}
+			if a.Target.Type == "last" {
+				if e := s.guardContextTarget(ctx, tx, c, message); e != nil {
+					return clarify(e.Error())
+				}
 			}
 		}
 	case *nlu.Continue:
