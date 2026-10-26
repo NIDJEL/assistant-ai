@@ -1,0 +1,14 @@
+# Override the source-build .dockerignore, which excludes web/dist.
+# Send only the runtime files built and checked by CI.
+**
+!.release/
+!.release/server
+!web/
+!web/dist/
+!web/dist/**
+!docs/
+!docs/diagrams/
+!docs/diagrams/**
+!docs/architecture.html
+!data/
+!data/**
