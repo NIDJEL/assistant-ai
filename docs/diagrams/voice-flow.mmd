@@ -1,0 +1,18 @@
+flowchart LR
+    subgraph input["Запись и проверка"]
+        direction TB
+        mic["Разрешение микрофона"] --> record["MediaRecorder\nЗаписать и остановить"]
+        record --> upload["Go /api/voice/transcribe\nЛимит размера, аудио в памяти"]
+        upload --> groq["Groq STT"]
+        groq --> draft["Редактируемый черновик"]
+        draft --> review{"Пользователь проверил\nи нажал отправку?"}
+        review -->|"Нет"| draft
+    end
+    subgraph output["Выполнение и ответ"]
+        direction TB
+        command["POST /api/chat\nGigaChat → Go → PostgreSQL"] --> response["Ответ текстом и карточками"]
+        response --> play["Нажатие кнопки озвучивания"]
+        play --> azure["Go /api/voice/synthesize\nAzure TTS"]
+        azure --> playback["Воспроизведение в браузере"]
+    end
+    review -->|"Да"| command

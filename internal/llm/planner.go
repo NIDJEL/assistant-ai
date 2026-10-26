@@ -246,11 +246,3 @@ func (g *GigaChat) ParsePlan(ctx context.Context, req SemanticRequest, d nlp.Dia
 	p, err := nlp.DecodeSemanticPlanSource([]byte(m.Raw), req.Text)
 	return p, m, err
 }
-func (o *OllamaSemantic) ParsePlan(ctx context.Context, req SemanticRequest, d nlp.DialogueContext) (nlp.SemanticPlan, ProviderMeta, error) {
-	m, err := o.parseJSON(ctx, planMessages(req, d), nlp.SemanticPlanSchema(), 16384)
-	if err != nil {
-		return nlp.SemanticPlan{}, m, err
-	}
-	p, err := nlp.DecodeSemanticPlanSource([]byte(m.Raw), req.Text)
-	return p, m, err
-}

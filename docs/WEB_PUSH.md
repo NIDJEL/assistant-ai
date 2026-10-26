@@ -103,7 +103,7 @@ UI различает выключенные/включённые уведомл
 
 localhost/loopback допустимы для разработки. Production требует HTTPS PUBLIC_URL; insecure workaround не добавлен. Manifest, icons и worker обслуживаются Go по тому же origin через существующий Nginx.
 
-`.env.example`, `compose.yaml` и `deploy/compose.production.yaml` содержат три переменные VAPID. Секреты production размещаются в существующем `/etc/rhythm/production.env`, права 0600. После настройки ключей используйте обычную процедуру пересборки deployment; worker стартует автоматически. Все экземпляры должны иметь одну пару VAPID и одинаковый APP_TIMEZONE для legacy разовых записей. Ключи не генерируются автоматически при запуске.
+`.env.example`, `compose.yaml` и `deploy/compose.production.yaml` содержат три переменные VAPID. Локальный [launcher](QUICKSTART.md) генерирует пару один раз, если оба ключа отсутствуют, и сохраняет её в env. Сам сервер при обычном старте ключи не меняет. Секреты production размещаются в существующем `/etc/rhythm/production.env`, права 0600. После настройки используйте обычную процедуру обновления; worker стартует автоматически. Все экземпляры должны иметь одну пару VAPID и одинаковый APP_TIMEZONE для legacy разовых записей.
 
 Structured logs: occurrence claimed/count, delivery success/retry/dead/failed/expired/cancelled с UUID доставки/уведомления/устройства, attempts и HTTP status; worker error без чувствительных значений. Отдельный monitoring stack не добавлен.
 

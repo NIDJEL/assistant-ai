@@ -1,0 +1,17 @@
+flowchart LR
+    subgraph github["GitHub: проверка и сборка"]
+        direction TB
+        commit["Изменения в main"] --> ci["Go + PostgreSQL + race\nFrontend + Chromium"]
+        ci --> artifact["Проверенный архив\nBinary + web/dist + SHA256"]
+    end
+    subgraph host["VPS: подготовка релиза"]
+        direction TB
+        receiver["Ограниченный SSH receiver\nВалидация архива и flock"] --> image["Runtime Docker-образ\nБез повторной сборки приложения"]
+        image --> backup["Backup PostgreSQL + env\nПроверка pg_restore --list"]
+        backup --> app["Compose обновляет только app\nnonroot · read-only · healthcheck"]
+    end
+    artifact --> receiver
+    app --> ready{"Контейнер и HTTPS\nработают?"}
+    ready -->|"Да"| activate["Атомарный current → release\nПубликация страниц ошибок"]
+    ready -->|"Нет"| rollback["Прежний env, образ и symlink\nОткат приложения"]
+    app --> db[("Постоянный PostgreSQL-том\nНе удаляется при выпуске")]

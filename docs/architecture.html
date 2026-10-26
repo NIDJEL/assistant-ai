@@ -1,31 +1,36 @@
 <!doctype html>
-<html lang="ru">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Ассистент Гена — архитектура</title>
-<link rel="icon" href="/favicon.svg">
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Гена — архитектура и UML</title><meta name="description" content="Восемь диаграмм: архитектура Гены, компоненты, UML, данные, голос и CI/CD.">
 <style>
-body{margin:0;background:#f2f7ff;color:#172755;font:17px/1.7 "Segoe UI",sans-serif}
-main{max-width:1200px;margin:32px auto;padding:24px}
-a{color:#006aff}h1{font-size:38px;line-height:1.2}
-section{background:#fff;border:1px solid #dfeafb;border-radius:22px;padding:24px;margin:24px 0}
-img{display:block;width:100%;height:auto;border-radius:15px}
-h2{font-size:24px}a:focus-visible{outline:3px solid #006aff;outline-offset:5px}
-@media(max-width:600px){main{padding:16px;margin:0}section{padding:12px}h1{font-size:30px}}
-</style>
-</head>
-<body><main>
-<a href="/">← Вернуться к Гене</a>
-<h1>Как работает Гена</h1>
-<p>React в браузере, Go на сервере, PostgreSQL для данных и фоновых очередей.</p>
-<section><h2>От текста к операции</h2>
-<p>В режиме simple_llm модель возвращает intent и arguments. Go вычисляет даты, выбирает записи текущего пользователя, проверяет данные и сохраняет изменения. Внешний вызов модели выполняется до транзакции изменения дела.</p>
-<a href="/diagrams/architecture.svg"><img src="/diagrams/architecture.svg" alt="React, Go API и ассистент, PostgreSQL; Groq для аудио, GigaChat или Ollama для текста, workers для Яндекса и Web Push."></a>
-</section>
-<section><h2>Запись → черновик → ручная отправка</h2>
-<p>MediaRecorder записывает аудио. Авторизованный Go endpoint передаёт его в Groq, а распознанный текст возвращает в черновик. После проверки пользователь нажимает «Отправить» или Enter. Остановка микрофона сама не создаёт команду в чате.</p>
-<a href="/diagrams/voice-flow.svg"><img src="/diagrams/voice-flow.svg" alt="Запись MediaRecorder, серверная транскрипция Groq, редактирование черновика, ручная отправка, проверка Go и результат."></a>
-</section>
-<p><a href="/docs">HTTP API / OpenAPI ↗</a></p>
-</main></body></html>
+:root{color-scheme:light}*{box-sizing:border-box}body{margin:0;background:#f3f6fc;color:#172b48;font:17px/1.65 "Segoe UI",Arial,sans-serif}main{max-width:1440px;margin:0 auto;padding:44px 32px}header{max-width:950px}h1{font-size:clamp(32px,5vw,52px);line-height:1.15;margin:20px 0}h2{font-size:25px;line-height:1.3;margin:0}a{color:#155cc4;text-underline-offset:4px}a:focus-visible{outline:3px solid #2675e6;outline-offset:5px;border-radius:3px}.eyebrow{letter-spacing:.12em;text-transform:uppercase;font-size:13px;color:#526680}nav{display:flex;flex-wrap:wrap;gap:10px;margin:28px 0 36px}nav a{background:#fff;border:1px solid #cfdaec;border-radius:12px;padding:10px 14px;text-decoration:none}section{background:#fff;border:1px solid #d7e2f2;border-radius:20px;padding:28px;margin:24px 0;scroll-margin-top:20px}.heading{display:flex;align-items:center;justify-content:space-between;gap:20px}.heading a,.source{font-size:14px}.diagram{display:block;overflow:auto;border:1px solid #e0e8f2;border-radius:12px;padding:14px;background:#fff}.diagram img{display:block;width:100%;height:auto;max-height:1000px;object-fit:contain;min-width:600px}.source{margin-bottom:0;color:#526680}footer{margin-top:32px;color:#526680;font-size:14px}@media(max-width:650px){main{padding:24px 14px}section{padding:16px}.heading{display:block}.heading a{display:inline-block;margin-top:8px}nav a{font-size:14px}.diagram{padding:8px}}
+</style></head><body><main id="top"><header><a href="/">← Открыть Гену</a><p class="eyebrow">Архитектура · 26 октября 2026</p><h1>Как устроен Гена</h1><p>Русскоязычный ассистент для задач, встреч и напоминаний. React/TypeScript в браузере, модульный Go backend и PostgreSQL. Восемь схем показывают компоненты, данные и путь от запроса до сохранённого результата.</p><p>Откройте SVG для увеличения. Все диаграммы доступны без внешнего CDN; исходники Mermaid находятся рядом.</p></header><nav aria-label="Диаграммы"><a href="#architecture">Система целиком</a>
+<a href="#components">Блоки приложения</a>
+<a href="#domain-uml">UML: основные зависимости</a>
+<a href="#command-sequence">UML: выполнение команды</a>
+<a href="#confirmation-state">UML: уточнение и подтверждение</a>
+<a href="#data-model">ER: данные и область пользователя</a>
+<a href="#voice-flow">Голос: черновик и ручная отправка</a>
+<a href="#deployment">CI/CD и production</a></nav><section id="architecture"><div class="heading"><h2>Система целиком</h2><a href="diagrams/architecture.svg">Открыть SVG ↗</a></div>
+<p>Браузер/PWA, Nginx, один Go runtime, PostgreSQL и внешние провайдеры. GigaChat понимает текст; Go проверяет и исполняет операции.</p><a class="diagram" href="diagrams/architecture.svg" aria-label="Открыть диаграмму: Система целиком"><img loading="lazy" src="diagrams/architecture.svg" alt="Система целиком"></a>
+<p class="source"><a href="diagrams/architecture.mmd">Исходник Mermaid</a> · <a href="#top">К оглавлению ↑</a></p></section>
+<section id="components"><div class="heading"><h2>Блоки приложения</h2><a href="diagrams/components.svg">Открыть SVG ↗</a></div>
+<p>Границы API, ассистента, календаря, социального модуля, хранилища и фоновых workers внутри модульного монолита.</p><a class="diagram" href="diagrams/components.svg" aria-label="Открыть диаграмму: Блоки приложения"><img loading="lazy" src="diagrams/components.svg" alt="Блоки приложения"></a>
+<p class="source"><a href="diagrams/components.mmd">Исходник Mermaid</a> · <a href="#top">К оглавлению ↑</a></p></section>
+<section id="domain-uml"><div class="heading"><h2>UML: основные зависимости</h2><a href="diagrams/domain-uml.svg">Открыть SVG ↗</a></div>
+<p>Существенные интерфейсы и связи Go в сокращённом виде. Это обзор, а не полный набор полей и сигнатур классов.</p><a class="diagram" href="diagrams/domain-uml.svg" aria-label="Открыть диаграмму: UML: основные зависимости"><img loading="lazy" src="diagrams/domain-uml.svg" alt="UML: основные зависимости"></a>
+<p class="source"><a href="diagrams/domain-uml.mmd">Исходник Mermaid</a> · <a href="#top">К оглавлению ↑</a></p></section>
+<section id="command-sequence"><div class="heading"><h2>UML: выполнение команды</h2><a href="diagrams/command-sequence.svg">Открыть SVG ↗</a></div>
+<p>Inference выполняется вне write-транзакции. Go разрешает ссылки текущего пользователя, проверяет данные и атомарно сохраняет действие и контекст.</p><a class="diagram" href="diagrams/command-sequence.svg" aria-label="Открыть диаграмму: UML: выполнение команды"><img loading="lazy" src="diagrams/command-sequence.svg" alt="UML: выполнение команды"></a>
+<p class="source"><a href="diagrams/command-sequence.mmd">Исходник Mermaid</a> · <a href="#top">К оглавлению ↑</a></p></section>
+<section id="confirmation-state"><div class="heading"><h2>UML: уточнение и подтверждение</h2><a href="diagrams/confirmation-state.svg">Открыть SVG ↗</a></div>
+<p>Недостающие поля и неоднозначные цели требуют уточнения. Удаление и массовые операции выполняются после подтверждения конкретного snapshot.</p><a class="diagram" href="diagrams/confirmation-state.svg" aria-label="Открыть диаграмму: UML: уточнение и подтверждение"><img loading="lazy" src="diagrams/confirmation-state.svg" alt="UML: уточнение и подтверждение"></a>
+<p class="source"><a href="diagrams/confirmation-state.mmd">Исходник Mermaid</a> · <a href="#top">К оглавлению ↑</a></p></section>
+<section id="data-model"><div class="heading"><h2>ER: данные и область пользователя</h2><a href="diagrams/data-model.svg">Открыть SVG ↗</a></div>
+<p>Основные таблицы и логические связи приложения. Не каждая линия означает FK: cloud_event_links сохраняются для удаления внешних событий после локального удаления.</p><a class="diagram" href="diagrams/data-model.svg" aria-label="Открыть диаграмму: ER: данные и область пользователя"><img loading="lazy" src="diagrams/data-model.svg" alt="ER: данные и область пользователя"></a>
+<p class="source"><a href="diagrams/data-model.mmd">Исходник Mermaid</a> · <a href="#top">К оглавлению ↑</a></p></section>
+<section id="voice-flow"><div class="heading"><h2>Голос: черновик и ручная отправка</h2><a href="diagrams/voice-flow.svg">Открыть SVG ↗</a></div>
+<p>MediaRecorder → Groq STT → редактируемый черновик. Только пользователь отправляет текст в чат. Azure TTS вызывается отдельным нажатием.</p><a class="diagram" href="diagrams/voice-flow.svg" aria-label="Открыть диаграмму: Голос: черновик и ручная отправка"><img loading="lazy" src="diagrams/voice-flow.svg" alt="Голос: черновик и ручная отправка"></a>
+<p class="source"><a href="diagrams/voice-flow.mmd">Исходник Mermaid</a> · <a href="#top">К оглавлению ↑</a></p></section>
+<section id="deployment"><div class="heading"><h2>CI/CD и production</h2><a href="diagrams/deployment.svg">Открыть SVG ↗</a></div>
+<p>GitHub проверяет и собирает архив. Ограниченный SSH receiver валидирует его, проверяет backup, обновляет app и проверяет health; при неудаче откатывает приложение. SQL-миграции автоматически не отменяются.</p><a class="diagram" href="diagrams/deployment.svg" aria-label="Открыть диаграмму: CI/CD и production"><img loading="lazy" src="diagrams/deployment.svg" alt="CI/CD и production"></a>
+<p class="source"><a href="diagrams/deployment.mmd">Исходник Mermaid</a> · <a href="#top">К оглавлению ↑</a></p></section><footer>Подробные пояснения и команды регенерации — в docs/ARCHITECTURE.md репозитория. Техническая галерея предназначена для локального просмотра и разработки.</footer></main></body></html>

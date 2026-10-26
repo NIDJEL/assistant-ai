@@ -112,11 +112,3 @@ func (g *GigaChat) ParseOperation(ctx context.Context, req SemanticRequest, d nl
 	op, err := nlu.Decode([]byte(m.Raw))
 	return op, m, err
 }
-func (o *OllamaSemantic) ParseOperation(ctx context.Context, req SemanticRequest, d nlu.Context) (nlu.Operation, ProviderMeta, error) {
-	m, err := o.parseJSON(ctx, simpleMessages(req, d), nil, 8192)
-	if err != nil {
-		return nlu.Operation{}, m, err
-	}
-	op, err := nlu.Decode([]byte(m.Raw))
-	return op, m, err
-}

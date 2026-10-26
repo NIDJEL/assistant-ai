@@ -44,7 +44,7 @@ func TestSemanticCacheProviderModelSourceAndClock(t *testing.T) {
 	if err != nil || !later.CacheHit || first.Command.Date.String() == later.Command.Date.String() || provider.calls != 1 {
 		t.Fatal("cache coupled to Go clock")
 	}
-	for _, change := range []func(){func() { provider.model = "other" }, func() { provider.name = "ollama" }} {
+	for _, change := range []func(){func() { provider.model = "other" }, func() { provider.name = "model_fixture" }} {
 		change()
 		adapter.CacheOnly = true
 		if _, err := adapter.Extract(t.Context(), "нужно отправить отчет завтра"); err == nil || provider.calls != 1 {

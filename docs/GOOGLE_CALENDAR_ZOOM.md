@@ -1,5 +1,7 @@
 # Google Calendar и Zoom
 
+[Документация](README.md) · [Локальный запуск](QUICKSTART.md)
+
 Обе интеграции подключаются из раздела «Интеграции» к уже авторизованному
 пользователю Гены. Они не создают отдельные способы входа и не связывают аккаунты
 по совпадению email. OAuth state одноразовый, привязан к браузеру и текущей сессии.
@@ -9,7 +11,7 @@ backend через HTTP Basic. Токены шифруются AES-GCM с при
 
 ## Настройка сервера
 
-Секреты хранятся только в `/etc/rhythm/production.env` (root, 0600):
+В production секреты хранятся в `/etc/rhythm/production.env` (root, 0600); при локальном запуске — в игнорируемом `.env`, который читает launcher. Они передаются только backend:
 
 ```
 GOOGLE_CALENDAR_CLIENT_ID
@@ -37,7 +39,7 @@ Zoom: General App, User-managed, Development/local test, строгий redirect
 Scopes: `meeting:write:meeting`, `meeting:read:meeting`,
 `meeting:update:meeting`, `meeting:delete:meeting`,
 `meeting:read:list_meetings`, `user:read:user`.
-Приложения не публикуются автоматически; платные планы не нужны для OAuth.
+Приложения не публикуются автоматически; разрешения и доступ приложения проверяются в кабинетах провайдеров.
 Ограничения длительности встреч определяет тариф подключённого Zoom-аккаунта.
 Google в режиме Testing ограничивает срок жизни refresh token; при истечении
 интерфейс требует повторного подключения. Переход к публичной публикации требует

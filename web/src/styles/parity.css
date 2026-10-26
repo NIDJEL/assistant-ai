@@ -72,3 +72,14 @@ html[data-motion='reduced'] .widget-drag-overlay { transform: none; }
 .integration-state.is-connected .dot { background: #19b47b; }
 .integration-detail .integration-error, .integration-error { color: var(--danger); background: var(--danger-soft); padding: 12px; border-radius: 10px; line-height: 1.5; font-size: 13px; overflow-wrap: anywhere; }
 .integration-detail > a.button { text-decoration: none; white-space: normal; text-align: center; }
+
+@media (max-width: 760px) {
+  .task-row { display: grid; grid-template-columns: 22px minmax(0, 1fr) 10px 29px; }
+  .task-row > input { grid-column: 1; grid-row: 1; }
+  .task-row > .task-title { grid-column: 2; grid-row: 1; }
+  .task-row > .dot { grid-column: 3; grid-row: 1; }
+  .task-row > :is(.event-menu, .icon-button) { grid-column: 4; grid-row: 1; }
+  .task-row > :is(.tag-pills, .task-due) { grid-column: 2 / -1; margin-left: 0; }
+  .task-row > :is(.tag-pills, .task-due):empty { display: none; }
+  .task-row .tag-pill { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+}

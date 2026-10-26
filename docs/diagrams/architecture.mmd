@@ -1,0 +1,13 @@
+flowchart TB
+    person["Пользователь: текст и голос"] --> web["Браузер / PWA\nReact + TypeScript"]
+    web -->|"HTTPS · один origin"| edge["Production: Nginx\nTLS · лимиты · страницы ошибок"]
+    edge --> api["Go: API + ассистент + фоновые workers"]
+    api -->|"Сессии, дела, диалоги, очереди"| db[("PostgreSQL 17")]
+    api <-->|"Фраза → типизированная операция"| giga["GigaChat\nПонимание текста"]
+    api <-->|"Аудио → черновик / текст → речь"| audio["Groq STT · Azure TTS\nОпциональные голосовые сервисы"]
+    api <-->|"OAuth и фоновые очереди"| cloud["Яндекс Календарь\nGoogle Calendar · Zoom"]
+    api -->|"Зашифрованные уведомления"| push["Web Push → устройства"]
+    classDef database fill:#e4f3eb,stroke:#66a989,color:#173e2c
+    classDef external fill:#f3effc,stroke:#a396c5,color:#473269
+    class db database
+    class giga,audio,cloud,push external

@@ -36,7 +36,7 @@ func TestConfidenceGateAndFallback(t *testing.T) {
 		t.Fatal("high-confidence commands reached the LLM")
 	}
 	cmd, err := h.Interpret(context.Background(), "Помоги организовать почту", now)
-	if err != nil || cmd.Provider != "ollama" || m.calls.Load() != 1 {
+	if err != nil || cmd.Provider != "model" || m.calls.Load() != 1 {
 		t.Fatalf("fallback not used: %+v %v", cmd, err)
 	}
 	cmd, err = h.Interpret(context.Background(), "Организуй мою почту завтра", now)

@@ -16,6 +16,8 @@ on:
       - 'go.mod'
       - 'go.sum'
       - 'Dockerfile'
+      - 'compose.yaml'
+      - '.env.example'
       - '.dockerignore'
       - '.gitattributes'
       - 'docs/architecture.html'
@@ -88,6 +90,8 @@ jobs:
           go vet ./...
           go test -race -count=1 ./...
           python3 -m unittest discover -s deploy -p 'test_*.py'
+          python3 -m unittest discover -s scripts -p 'test_*.py'
+          python3 scripts/check_docs.py
       - name: Frontend checks and production build
         run: |
           pnpm --dir web install --frozen-lockfile
@@ -97,7 +101,7 @@ jobs:
         if: ${{ !inputs.full_browser }}
         run: |
           pnpm --dir web exec playwright install --with-deps chromium
-          pnpm --dir web e2e flows.spec.ts --grep 'UI CRUD:'
+          pnpm --dir web e2e flows.spec.ts --grep 'UI CRUD:|all pages at 390px'
           pnpm --dir web e2e password-strength.spec.ts mobile-settings-commands-errors.spec.ts
       - name: Complete browser regression
         if: ${{ inputs.full_browser }}
@@ -125,7 +129,7 @@ jobs:
             --tmpfs /app/var:rw,noexec,nosuid,size=16m,uid=65532,gid=65532 \
             --cap-drop ALL --security-opt no-new-privileges:true \
             -e DATABASE_URL="$TEST_DATABASE_URL" \
-            -e SESSION_SECRET=ci-runtime-secret-at-least-32-characters \
+            -e SESSION_SECRET=ci-only-runtime-secret-at-least-32-characters \
             -e PUBLIC_URL=http://127.0.0.1:8081 -e APP_ADDR=127.0.0.1:8081 \
             -e GENA_NLU_MODE=semantic_plan_legacy -e GENA_SEMANTIC_PROVIDER=rules \
             -e NLP_PROVIDER=rules rhythm-ci:release

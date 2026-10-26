@@ -1,0 +1,27 @@
+flowchart TB
+    subgraph browser["Клиент"]
+        ui["Страницы: чат, календарь, задачи,\nвстречи, друзья, интеграции, настройки"]
+        composer["Composer + MediaRecorder\nЧерновик и ручная отправка"]
+        ui --> composer
+    end
+    subgraph server["Один Go-процесс"]
+        routes["HTTP API · auth · CSRF · лимиты"]
+        assistant["assistant.Service\nКонтекст, выбор, подтверждение, идемпотентность"]
+        nlu["nlu / llm.Simple\nСтрогий разбор Operation"]
+        calendar["calendar.Service\nДаты, конфликты, CRUD, CSV"]
+        social["social / cloud\nДрузья, приглашения, интеграции"]
+        search["search\nНормализация, словарь, нечёткий поиск"]
+        repo["repository.Store / Tx\nОбласть пользователя и транзакции"]
+        workers["Workers\nКалендари, Zoom, напоминания, push"]
+        routes --> assistant --> nlu
+        assistant --> calendar --> search
+        assistant --> social
+        calendar --> repo
+        social --> repo
+        assistant --> repo
+        workers --> repo
+    end
+    composer --> routes
+    nlu <-->|"Вне write-транзакции"| model["GigaChat"]
+    repo --> db[("PostgreSQL")]
+    workers <-->|"Повторы через outbox"| providers["Внешние API"]

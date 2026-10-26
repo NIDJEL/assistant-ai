@@ -146,7 +146,7 @@ func main() {
 	output := flag.String("output", "", "JSON report path; stdout when empty")
 	baseURL := flag.String("url", "", "optional provider URL")
 	modelName := flag.String("model", "", "model identifier returned by API")
-	providerName := flag.String("provider", "gigachat", "gigachat or ollama")
+	providerName := flag.String("provider", "gigachat", "gigachat")
 	modelsOnly := flag.Bool("models", false, "authenticate and list accessible model IDs")
 	nowText := flag.String("now", "2026-10-15T12:30:17+03:00", "fixed evaluation time")
 	timezone := flag.String("timezone", "Europe/Moscow", "evaluation timezone")
@@ -155,7 +155,7 @@ func main() {
 	start := flag.Int("start", 0, "optional zero-based case offset")
 	mode := flag.String("mode", "full", "model (model only), go (cache only), full (model+Go)")
 	cache := flag.String("cache", "artifacts/cache/semantic", "date-independent raw model cache")
-	cacheOnly := flag.Bool("cache-only", false, "use saved model outputs only; never call Ollama")
+	cacheOnly := flag.Bool("cache-only", false, "use saved model outputs only; never call the model")
 	bypassCache := flag.Bool("bypass-cache", false, "latency benchmark only; do not use for corpus regression")
 	contract := flag.String("export-contract", "", "write schema and prompt without inference")
 	flag.Parse()
@@ -206,20 +206,6 @@ func main() {
 			raw, _ := json.Marshal(ids)
 			fmt.Println(string(raw))
 			return
-		}
-	case "ollama":
-		if *baseURL == "" {
-			*baseURL = cfg.OllamaURL
-		}
-		if *modelName == "" {
-			*modelName = cfg.OllamaModel
-		}
-		if *timeout == 0 {
-			*timeout = cfg.OllamaTimeout
-		}
-		provider, err = llm.NewOllamaSemantic(*baseURL, *modelName, *timeout)
-		if err != nil {
-			fatalf("Ollama: %v", err)
 		}
 	default:
 		fatalf("invalid provider")

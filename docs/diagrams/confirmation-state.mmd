@@ -1,0 +1,21 @@
+stateDiagram-v2
+    [*] --> Ready
+    state "Ожидание команды" as Ready
+    state "Понимание и валидация" as Validate
+    state "Уточнение обязательных полей" as Clarify
+    state "Выбор конкретной записи" as Select
+    state "Preview и подтверждение" as Confirm
+    state "Транзакция изменения" as Execute
+    state "Результат сохранён" as Saved
+    Ready --> Validate: сообщение пользователя
+    Validate --> Clarify: не хватает данных
+    Clarify --> Validate: ответ с сохранением контекста
+    Validate --> Select: неоднозначная цель
+    Select --> Validate: выбор пользователя
+    Validate --> Confirm: удаление, batch или конфликт
+    Confirm --> Execute: явное подтверждение + актуальный snapshot
+    Confirm --> Ready: отмена / устаревший snapshot
+    Validate --> Execute: безопасная однозначная операция
+    Execute --> Saved: commit + идемпотентный результат
+    Execute --> Ready: ошибка → rollback
+    Saved --> Ready
