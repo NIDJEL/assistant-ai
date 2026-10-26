@@ -1,0 +1,148 @@
+[
+  {
+    "Name": "screenshot named series move, cancel and conflict",
+    "Now": "2026-10-26T15:49:00+03:00",
+    "Turns": [
+      {
+        "Message": "Создай встречу «Тест серия» каждый день в 10:00 на 30 минут, начиная с завтра, всего четыре встречи.",
+        "Want": {
+          "Action": "create",
+          "Count": 1,
+          "DBCount": 1,
+          "Event": {
+            "Date": "2026-10-27",
+            "Time": "10:00",
+            "RecurrenceCount": 4
+          }
+        },
+        "Operation": {
+          "intent": "create_meeting",
+          "arguments": {
+            "title": "Тест серия",
+            "date": {
+              "type": "relative_day",
+              "offset": 1
+            },
+            "time": "10:00",
+            "duration_minutes": 30,
+            "recurrence": {
+              "frequency": "day",
+              "interval": 1,
+              "count": 4
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        }
+      },
+      {
+        "Message": "Перенеси только встречу «Тест серия» послезавтра на 11:00. Остальные повторения оставь как есть.",
+        "Want": {
+          "Action": "update",
+          "Count": 1,
+          "DBCount": 2,
+          "Event": {
+            "Date": "2026-10-28",
+            "Time": "11:00"
+          },
+          "Records": [
+            {
+              "Date": "2026-10-27",
+              "Time": "10:00",
+              "RecurrenceCount": 4
+            }
+          ]
+        },
+        "Operation": {
+          "intent": "update",
+          "arguments": {
+            "target": {
+              "type": "query",
+              "value": "Тест серия",
+              "filter": {
+                "kind": "meeting",
+                "date": {
+                  "type": "relative_day",
+                  "offset": 2
+                }
+              }
+            },
+            "changes": {
+              "scope": "occurrence",
+              "time": "11:00"
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        }
+      },
+      {
+        "Message": "Отмени только встречу «Тест серия» через три дня. Остальные повторения сохрани.",
+        "Want": {
+          "Action": "update",
+          "Count": 1,
+          "DBCount": 3,
+          "Event": {
+            "Date": "2026-10-29",
+            "Time": "10:00",
+            "Status": "done"
+          },
+          "Records": [
+            {
+              "Date": "2026-10-27",
+              "Time": "10:00",
+              "RecurrenceCount": 4
+            },
+            {
+              "Date": "2026-10-28",
+              "Time": "11:00",
+              "Status": "open"
+            }
+          ]
+        },
+        "Operation": {
+          "intent": "update",
+          "arguments": {
+            "target": {
+              "type": "query",
+              "value": "Тест серия"
+            },
+            "changes": {
+              "scope": "occurrence",
+              "occurrence": {
+                "type": "relative_day",
+                "offset": 3
+              },
+              "status": "done"
+            }
+          },
+          "confidence": "high",
+          "clarification": null
+        }
+      },
+      {
+        "Message": "Создай послезавтра в 11:00 встречу «Тест пересечение» на 30 минут.",
+        "Operation": {
+          "intent": "create_meeting",
+          "arguments": {
+            "title": "Тест пересечение",
+            "date": {
+              "type": "relative_day",
+              "offset": 2
+            },
+            "time": "11:00",
+            "duration_minutes": 30
+          },
+          "confidence": "high",
+          "clarification": null
+        },
+        "Want": {
+          "Action": "clarify",
+          "Pending": true,
+          "DBCount": 3,
+          "Count": 0
+        }
+      }
+    ]
+  }
+]

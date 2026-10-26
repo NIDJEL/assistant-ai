@@ -13,6 +13,19 @@ import (
 // saving parent and child together in its existing write transaction.
 func (s *Service) PrepareOccurrence(ctx context.Context, tx repository.Tx, master domain.Event, date *domain.Date, exact *time.Time) (domain.Event, domain.Event, error) {
 	bad := errors.New("Выберите личную активную серию и исходную дату её повторения")
+	if master.SeriesID != nil {
+		if date == nil && exact == nil {
+			exact = master.RecurrenceID
+		}
+		parent, err := tx.Get(ctx, *master.SeriesID)
+		if err != nil {
+			return master, master, err
+		}
+		if parent == nil {
+			return master, master, bad
+		}
+		master = *parent
+	}
 	if master.Recurrence == nil || master.Collaborative {
 		return master, master, bad
 	}

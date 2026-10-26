@@ -119,3 +119,27 @@ it('assistant event cards reflect completion from the server instead of stale hi
   const { user } = await start(); await user.type(screen.getByRole('textbox', { name: 'Сообщение ассистенту' }), 'Создай задачу'); await user.click(screen.getByRole('button', { name: 'Отправить сообщение' })); await screen.findByText('Готово. Задача сохранена.');
   await user.click(screen.getByRole('checkbox', { name: 'Завершить «Подготовить отчёт»' })); await screen.findByRole('checkbox', { name: 'Возобновить «Подготовить отчёт»' });
 });
+it('keeps meeting history time consistent with its reply and opens current data for editing', async () => {
+  const server = await start(); const snapshot = { ...server.events()[1] };
+  const original = server.handler.getMockImplementation()!;
+  server.handler.mockImplementation(async (path, init = {}) => {
+    if (new URL(String(path), 'http://localhost').pathname === '/api/chat') {
+      const input = JSON.parse(String(init.body));
+      return new Response(JSON.stringify({ reply: 'Встреча сохранена в 10:00.', action: 'create', events: [snapshot], pending: false, provider: 'rules', timezone: 'Europe/Moscow', session_id: input.session_id, request_id: input.request_id }), { headers: { 'Content-Type': 'application/json' } });
+    }
+    return original(path, init);
+  });
+  await server.user.type(screen.getByRole('textbox', { name: 'Сообщение ассистенту' }), 'Создай встречу');
+  await server.user.click(screen.getByRole('button', { name: 'Отправить сообщение' }));
+  await screen.findByText('Встреча сохранена в 10:00.');
+  const card = document.querySelector<HTMLElement>('.chat-event-card')!;
+  await server.user.click(card);
+  const editor = screen.getByRole('dialog');
+  fireEvent.change(within(editor).getByLabelText('Время', { exact: true }), { target: { value: '11:00' } });
+  await server.user.click(within(editor).getByRole('button', { name: 'Сохранить' }));
+  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  expect(server.events()[1].time).toBe('11:00');
+  expect(card).toHaveTextContent('10:00'); expect(card).not.toHaveTextContent('11:00');
+  await server.user.click(card);
+  expect(within(screen.getByRole('dialog')).getByLabelText('Время', { exact: true })).toHaveValue('11:00');
+});

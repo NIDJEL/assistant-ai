@@ -93,6 +93,9 @@ func (s *Service) mutationCandidates(ctx context.Context, tx repository.Tx, stat
 	}
 	if cmd.TargetID == nil && cmd.Query != "" {
 		matches, certain := s.Calendar.Search.TitleMatches(pool, cmd.Query, cmd.Selector != nil && cmd.Selector.ExactTitle)
+		if cmd.Action == domain.ActionUpdate && cmd.Changes != nil && cmd.Changes.Scope == "occurrence" {
+			matches = occurrenceCandidates(matches)
+		}
 		return matches, certain, nil
 	}
 	return pool, true, nil

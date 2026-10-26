@@ -581,6 +581,9 @@ func (s *Service) applySimpleOperation(ctx context.Context, tx repository.Tx, st
 		}
 	case *nlu.Update:
 		c.Action = domain.ActionUpdate
+		if err = normalizeOccurrenceTarget(a, now); err != nil {
+			return clarify(err.Error())
+		}
 		if err = s.simpleTarget(ctx, tx, state, p, a.Target, &c, now); err != nil {
 			return clarify(err.Error())
 		}

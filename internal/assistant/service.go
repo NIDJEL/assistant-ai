@@ -770,6 +770,9 @@ func (s *Service) executeValidated(ctx context.Context, tx repository.Tx, state 
 	result := answer(label+describe(*e)+".", domain.ActionUpdate, *e)
 	if series != nil {
 		result.Reply = "Изменено одно повторение: " + describe(*e) + ". Остальная серия сохранена."
+		if e.Status == domain.StatusDone {
+			result.Reply = "Отменено одно повторение: " + describe(*e) + ". Остальная серия сохранена."
+		}
 	}
 	result.Conflicts = conflicts
 	return result, nil
